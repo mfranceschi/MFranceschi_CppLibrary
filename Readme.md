@@ -8,6 +8,6 @@ The languages that I use are mostly:
 - Python
 
 ## What can you find here?
-- {`C++`} (Windows only) "File" module: gives some useful tools for files from their filename (file size, opening an UTF-16LE without worrying about it...), and tools for making ifstreams manipulation easier.
+- {`C++`} "File" module: gives some useful tools for files from their filename (file size, opening an UTF-16LE without worrying about it (*Windows only*)...), and tools for making ifstreams manipulation easier.
 - {`C++`} "Date" class: extends the `struct tm` from the C standard library with milliseconds, and overloads some operators such as comparison, +, -, etc.
 - {`C++`} "CSV-Parser" class: encapsulates an ifstream specifically for parsing CSV files.
