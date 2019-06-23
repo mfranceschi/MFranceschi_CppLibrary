@@ -1,2 +1,10 @@
+# C++-linked files.
 *.o
 *.obj
+
+# Visual Studio Code files except for config files.
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
