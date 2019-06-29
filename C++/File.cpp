@@ -1,8 +1,8 @@
 //---------- Implementation of module <File> (file File.cpp) 
 
 //--------------------------------------------------------------- Includes
-#define _CRT_SECURE_NO_WARNINGS // FILE* operations are considered unsafe.
 #pragma warning( disable: 26444) // Disables a warn' that occurs when using imbue.
+#pragma warning( disable: 6387) // The FILE* seem to be null for compiler.
 
 #include <Windows.h>
 #include <algorithm>
@@ -40,22 +40,27 @@ namespace File
 
 	bool Exists(const string& filename)
 	{
+		return Exists(std::wstring(filename.cbegin(), filename.cend()).c_str());
+	}
+	
+	bool Exists(const wchar_t* filename)
+	{
 		DWORD attr = GetFileAttributes(filename);
 		return attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY);
 	}
 
-	bool IsEmpty(const string& filename, size_t charsToRead)
+	bool IsEmpty(const char* filename, size_t charsToRead)
 	{
 		bool forReturn;
+		FILE* f = nullptr;
 
-		FILE* f = fopen(filename.c_str(), "r");
-		if (f == nullptr)
+		if (fopen_s(&f, filename, "r"))
 		{
 			forReturn = true;
 		}
 		else
 		{
-			for (size_t i=0;i<charsToRead;++i)
+			for (size_t i = 0; i < charsToRead; ++i)
 			{
 				fgetc(f);
 			}
@@ -66,10 +71,12 @@ namespace File
 		return forReturn;
 	}
 
-	void Open(ifstream& ifs, const string& filename)
+	void Open(ifstream& ifs, const char* filename,
+		encoding_t encoding)
 	{
 		ifs.close();
-		encoding_t encoding = File::Encoding(filename);
+		if (encoding == ENC_UNKNOWN)
+			encoding = File::Encoding(filename);
 
 		if (encoding == ENC_UTF8)
 		{
@@ -91,24 +98,27 @@ namespace File
 
 	filesize_t Size(const string& filename)
 	{
-		std::wstring wfilename (filename.cbegin(), filename.cend());
+		return Size(std::wstring(filename.cbegin(), filename.cend()).c_str());
+	}
 
-		HANDLE file = CreateFile(wfilename, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
+	filesize_t Size(const wchar_t* filename)
+	{
+		HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
 		if (file == INVALID_HANDLE_VALUE) return -1;
 		LARGE_INTEGER res;
 		GetFileSizeEx(file, &res);
-		return res.QuadPart;
+		return filesize_t(res.QuadPart);
 	}
 
-	encoding_t Encoding(const string& filename)
+	encoding_t Encoding(const char* filename)
 	{
 		encoding_t forReturn;
-		if (IsEmpty(filename, 3))
-			forReturn = "0";
+		FILE* f = nullptr;
+		if (IsEmpty(filename, 3) || fopen_s(&f, filename, "r"))
+			forReturn = ENC_UNKNOWN;
 		else
 		{
-			FILE* f = fopen(filename.c_str(), "r");
-			fseek(f, 0, SEEK_SET);
+			fseek(f, 0L, SEEK_SET);
 
 			int char1 = fgetc(f);
 			int char2 = fgetc(f);
