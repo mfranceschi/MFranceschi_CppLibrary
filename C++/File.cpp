@@ -9,6 +9,7 @@
 #include <locale>
 #include <codecvt>
 #include "File.h"
+#include "Toolbox.h"
 
 using std::string; 
 using std::locale; 
@@ -40,10 +41,14 @@ namespace File
 
 	bool Exists(const string& filename)
 	{
-		return Exists(std::wstring(filename.cbegin(), filename.cend()).c_str());
+		wchar_t* converted = Toolbox::ToWchar_t(filename.c_str());
+		auto result = Exists(converted);
+		delete[] converted;
+		return result;
 	}
 	
 	bool Exists(const wchar_t* filename)
+	// Algorithm: https://stackoverflow.com/questions/3828835.
 	{
 		DWORD attr = GetFileAttributes(filename);
 		return attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY);
@@ -98,7 +103,10 @@ namespace File
 
 	filesize_t Size(const string& filename)
 	{
-		return Size(std::wstring(filename.cbegin(), filename.cend()).c_str());
+		wchar_t* converted = Toolbox::ToWchar_t(filename.c_str());
+		auto result = Size(converted);
+		delete[] converted;
+		return result;
 	}
 
 	filesize_t Size(const wchar_t* filename)
@@ -135,5 +143,25 @@ namespace File
 			fclose(f);
 		}
 		return forReturn;
+	}
+
+	std::ostream& operator<< (std::ostream& os, encoding_t enc)
+	{
+		switch (enc)
+		{
+		case ENC_UTF16LE:
+			os << "UTF-16LE";
+			break;
+		case ENC_UTF8:
+			os << "UTF-8";
+			break;
+		case ENC_UNKNOWN:
+			os << "<encoding-error>";
+			break;
+		case ENC_DEFAULT:
+			os << "<encoding-unknown>";
+			break;
+		}
+		return os;
 	}
 } 

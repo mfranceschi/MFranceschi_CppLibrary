@@ -25,7 +25,8 @@ namespace File
 {
 	// Type used to deal with file sizes of any weight (GBs are okay).
 	typedef unsigned long filesize_t;
-	// Represents a file encoding
+
+	// Represents a file encoding.
 	enum encoding_t {
 		ENC_UTF16LE, // Normal UTF-16LE
 		ENC_UTF8, // Normal UTF-8
@@ -62,5 +63,8 @@ namespace File
 	// returns ENC_UNKNOWN.
 	// If no encoding is found, returns ENC_DEFAULT.
 	encoding_t Encoding(const char* filename);
+
+	// Displays the file encoding as a string.
+	std::ostream& operator<< (std::ostream& os, encoding_t enc);
 } 
 #endif // FILE_H
