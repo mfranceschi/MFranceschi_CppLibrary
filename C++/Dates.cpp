@@ -5,7 +5,6 @@
 #include <sstream>
 #include <iomanip>
 #include <ctime>
-#include "../Globals.h"
 #include "Dates.h"
 #include <iostream>
 
@@ -49,12 +48,12 @@ namespace Business
 				formatToApply = &B_format;
 				break;*/
 			default:
-				throw S_Exception(Err::UNKNOWN);
+				throw nullptr;//S_Exception(Err::UNKNOWN);
 			}
 
 			if (!strftime(temp, TEMP_SIZE, *formatToApply, &d))
 			{
-				throw S_Exception(Err::STR_D_FAIL);
+				throw nullptr; // S_Exception(Err::STR_D_FAIL);
 			}
 			return string(temp);
 		}

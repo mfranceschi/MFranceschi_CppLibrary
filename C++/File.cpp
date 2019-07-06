@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------- Includes
 #pragma warning( disable: 26444) // Disables a warn' that occurs when using imbue.
-#pragma warning( disable: 6387) // The FILE* seem to be null for compiler.
+//#pragma warning( disable: 6387) // The FILE* seem to be null for compiler.
 
 #include <Windows.h>
 #include <algorithm>
@@ -10,11 +10,15 @@
 #include <codecvt>
 #include "File.h"
 #include "Toolbox.h"
+#include <io.h>
+#include <fcntl.h>
 
 using std::string; 
 using std::locale; 
 using std::ifstream; 
 using std::ios_base;
+
+typedef int FileHandle;
 
 namespace File
 {
@@ -54,7 +58,7 @@ namespace File
 		return attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY);
 	}
 
-	bool IsEmpty(const char* filename, size_t charsToRead)
+	/*bool IsEmpty(const char* filename, size_t charsToRead)
 	{
 		bool forReturn;
 		FILE* f = nullptr;
@@ -71,6 +75,23 @@ namespace File
 			}
 			forReturn = feof(f) + ferror(f);
 			fclose(f);
+		}
+
+		return forReturn;
+	}*/
+
+	bool IsEmpty(const char* filename, size_t charsToRead)
+	{
+		FileHandle file;
+		bool forReturn;
+
+		if (_sopen_s(&file, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD))
+			forReturn = true;
+		else
+		{
+			char* content = new char[charsToRead];
+			forReturn = !(_read(file, content, charsToRead) != charsToRead || _eof(file));
+			_close(file);
 		}
 
 		return forReturn;
@@ -118,7 +139,7 @@ namespace File
 		return filesize_t(res.QuadPart);
 	}
 
-	encoding_t Encoding(const char* filename)
+	/*encoding_t Encoding(const char* filename)
 	{
 		encoding_t forReturn;
 		FILE* f = nullptr;
@@ -141,6 +162,33 @@ namespace File
 				forReturn = ENC_DEFAULT;
 
 			fclose(f);
+		}
+		return forReturn;
+	}*/
+
+	encoding_t Encoding(const char* filename)
+	{
+
+		FileHandle file;
+		encoding_t forReturn;
+
+		if (IsEmpty(filename, 3) || _sopen_s(&file, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD))
+			forReturn = ENC_UNKNOWN;
+		else
+		{
+			char bits[3];
+			if (_read(file, bits, 3))
+				forReturn = ENC_UNKNOWN;
+
+
+			if (bits[0] == 0xff && bits[1] == 0xfe)
+				forReturn = ENC_UTF16LE;
+			else if (bits[0] == 0xef && bits[1] == 0xbb && bits[2] == 0xbf)
+				forReturn = ENC_UTF8;
+			else
+				forReturn = ENC_DEFAULT;
+
+			_close(file);
 		}
 		return forReturn;
 	}

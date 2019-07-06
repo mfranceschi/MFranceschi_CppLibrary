@@ -23,16 +23,20 @@
 
 namespace File
 {
-	// Type used to deal with file sizes of any weight (GBs are okay).
-	typedef unsigned long filesize_t;
-
 	// Represents a file encoding.
-	enum encoding_t {
+	enum encoding_e {
 		ENC_UTF16LE, // Normal UTF-16LE
 		ENC_UTF8, // Normal UTF-8
 		ENC_DEFAULT, // If no encoding is false, we assume the default locale.
 		ENC_UNKNOWN // A problem occured while looking for the encoding.
 	};
+
+	// Represents a file encoding. Please use this instead of "..._e".
+	typedef encoding_e encoding_t;
+	// Type used to deal with file sizes of any weight (GBs are okay).
+	typedef unsigned long filesize_t;
+
+
 
 //-------------------------------------------------------------- Constants
 
