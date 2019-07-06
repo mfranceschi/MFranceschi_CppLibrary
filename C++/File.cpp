@@ -2,7 +2,6 @@
 
 //--------------------------------------------------------------- Includes
 #pragma warning( disable: 26444) // Disables a warn' that occurs when using imbue.
-//#pragma warning( disable: 6387) // The FILE* seem to be null for compiler.
 
 #include <Windows.h>
 #include <algorithm>
@@ -19,6 +18,8 @@ using std::ifstream;
 using std::ios_base;
 
 typedef int FileHandle;
+
+static const size_t NBR_BITS_TO_READ_ENCODING = 3;
 
 namespace File
 {
@@ -91,6 +92,7 @@ namespace File
 		{
 			char* content = new char[charsToRead];
 			forReturn = !(_read(file, content, charsToRead) != charsToRead || _eof(file));
+			delete[] content;
 			_close(file);
 		}
 
@@ -136,6 +138,7 @@ namespace File
 		if (file == INVALID_HANDLE_VALUE) return -1;
 		LARGE_INTEGER res;
 		GetFileSizeEx(file, &res);
+		CloseHandle(file);
 		return filesize_t(res.QuadPart);
 	}
 
@@ -168,22 +171,22 @@ namespace File
 
 	encoding_t Encoding(const char* filename)
 	{
-
 		FileHandle file;
 		encoding_t forReturn;
 
-		if (IsEmpty(filename, 3) || _sopen_s(&file, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD))
+		if (_sopen_s(&file, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD))
 			forReturn = ENC_UNKNOWN;
 		else
 		{
-			char bits[3];
-			if (_read(file, bits, 3))
+			char bits[NBR_BITS_TO_READ_ENCODING];
+			int ret_read = _read(file, bits, NBR_BITS_TO_READ_ENCODING);
+			
+			if (ret_read != NBR_BITS_TO_READ_ENCODING)
 				forReturn = ENC_UNKNOWN;
-
 
 			if (bits[0] == 0xff && bits[1] == 0xfe)
 				forReturn = ENC_UTF16LE;
-			else if (bits[0] == 0xef && bits[1] == 0xbb && bits[2] == 0xbf)
+			else if (ret_read == 3 && bits[0] == 0xef && bits[1] == 0xbb && bits[2] == 0xbf)
 				forReturn = ENC_UTF8;
 			else
 				forReturn = ENC_DEFAULT;
@@ -193,7 +196,7 @@ namespace File
 		return forReturn;
 	}
 
-	std::ostream& operator<< (std::ostream& os, encoding_t enc)
+	std::ostream& operator<< (std::ostream& os, const encoding_t& enc)
 	{
 		switch (enc)
 		{

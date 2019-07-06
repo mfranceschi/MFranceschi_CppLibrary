@@ -1,0 +1,155 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <Windows.h>
+#include <iostream>
+#include <string>
+#include "Shlwapi.h"
+#include "Toolbox.h"
+#include "File.h"
+#include <io.h>
+#include <fcntl.h>
+
+using namespace std;
+
+const size_t NBR_ITER = 10*1000;
+const wchar_t* file_L = L"D:\\Vikings.scx";
+const char* file_s = "D:\\Vikings.scx";
+#define FUNC Toolbox::Timethis(NBR_ITER, [&](void) mutable
+long long reteval;
+
+void timingTimethis()
+{
+	cout << "The duration of the execution of 'Timethis' itself, without anything to do, is: " << FUNC{
+		(void(0));
+	}) << endl;
+	cout << endl;
+}
+
+void timingTheFileExistence()
+{
+	cout << "Timing the file existence functions !" << endl;
+	
+
+	cout << "Time for PathFileExists: " << FUNC {
+		reteval = PathFileExists(file_L);
+	}) << endl;
+
+	cout << "Time for stat: " << FUNC{
+		struct stat d;
+		reteval = !stat(file_s, &d);
+	}) << endl;
+
+	cout << "Time for GetFileAttributes: " << FUNC{
+		DWORD attr = GetFileAttributes(file_L);
+		reteval = (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
+	}) << endl;
+
+	cout << endl;
+}
+
+void timingTheFileSize()
+{
+	cout << "Timing the file size functions !" << endl;
+
+	cout << "Time for fseek : " << FUNC {
+		FILE* f = fopen(file_s, "r");
+		if (f == nullptr)
+			throw nullptr;
+		fseek(f, 0, SEEK_END);
+		reteval = ftell(f);
+		fclose(f);
+	}) << endl;
+
+	cout << "Time for GetFileAttributesEx: " << FUNC{
+		WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+		if (!GetFileAttributesEx(file_L, GetFileExInfoStandard, (void*)& fileInfo))
+			throw nullptr;
+	}) << endl;
+
+	cout << "Time for GetFileSizeEx: " << FUNC {
+		HANDLE file = CreateFile(file_L, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
+		LARGE_INTEGER res;
+		GetFileSizeEx(file, &res);
+		reteval = res.QuadPart;
+		CloseHandle(file);
+	}) << endl;
+
+	cout << endl;
+}
+
+void timingWchar_tConversion()
+{
+	cout << "Timing char to wchar_t conversion functions!" << endl;
+	const wchar_t* newptr = nullptr;
+
+	cout << "Time for mbstowcs_s: " << FUNC{
+		newptr = Toolbox::ToWchar_t(file_s);
+	}) << endl;
+	delete[] newptr;
+
+	cout << "Time for wstring creation: " << FUNC{
+		std::string s = file_s;
+		newptr = std::wstring(s.cbegin(), s.cend()).c_str();
+	}) << endl;
+
+	cout << endl;
+}
+
+void timingFileReading()
+{
+	cout << "Timing functions for reading 5 chars in a file!" << endl;
+	char* buffer = new char[6];
+
+	cout << "Time for FILE* with fgets: " << FUNC{
+		FILE * file = fopen(file_s, "r");
+		fgets(buffer, 6, file);
+		fclose(file);
+	}) << endl;
+
+	cout << "Time for FILE* with fgetc: " << FUNC{
+		FILE * file = fopen(file_s, "r");
+		for (int i = 0; i < 5; ++i)
+			buffer[i] = fgetc(file);
+		buffer[5] = '\0';
+		fclose(file);
+	}) << endl;
+
+	cout << "Time for ifstream with getline: " << FUNC{
+		std::ifstream ifs(file_s);
+		ifs.getline(buffer, 6);
+		ifs.close();
+	}) << endl;
+
+	cout << "Time for ifstream with get: " << FUNC{
+		std::ifstream ifs(file_s);
+		for (int i = 0; i < 5; ++i)
+			buffer[i] = ifs.get();
+		buffer[5] = '\0';
+		ifs.close();
+	}) << endl;
+
+	cout << "Time for Windows syscalls: " << FUNC{
+		int file;
+		_sopen_s(&file, file_s, _O_RDONLY, _SH_DENYNO, _S_IREAD);
+		_read(file, buffer, 5);
+		_close(file);
+	}) << endl;
+}
+
+int main()
+{
+	HANDLE file = CreateFile(file_L, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
+	LARGE_INTEGER res;
+	GetFileSizeEx(file, &res);
+	reteval = res.QuadPart;
+	CloseHandle(file);
+	cout << res.QuadPart << endl;
+
+
+	timingTimethis();
+	timingTheFileExistence();
+	timingTheFileSize();
+	timingWchar_tConversion();
+	timingFileReading();
+	
+	return EXIT_SUCCESS;
+}
