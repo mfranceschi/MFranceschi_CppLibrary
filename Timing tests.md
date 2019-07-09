@@ -8,7 +8,7 @@ For instance, there are several ways of getting a file size in Windows:
 
 Four different ways for getting a file size, each of them are very easy to write and take from one to four lines, and take no longer than a few microseconds to run. But **which one is the shortest**? This simple question was my goal.
 
-In this document, I will present the code I used and the results I obtained. Please note that all timing results are from the same run of the script, without any other process that may slow down the computations.
+In this document, I will present the code I used and the results I obtained. Please note that all timing results are from the same run of the script, without any other process that may slow down the computations. Of course, you could run 
 
 # Basic source code of my tests
 You can find the whole source code on this repo but here are the main parts.
