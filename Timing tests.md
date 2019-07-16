@@ -30,6 +30,39 @@ As it has to make two syscalls (both calls to `...::now()`), I had to ensure tha
 
 Here is today's value: `xxx`.
 
+```
+The duration of the execution of 'Timethis' itself, without anything to do, is: 3.3187e-07
+
+Timing the file existence functions !
+Time for PathFileExists: 2.06946e-05
+Time for stat: 3.40244e-05
+Time for GetFileAttributes: 1.72648e-05
+
+Timing the file size functions !
+Time for fseek : 3.92838e-05
+Time for GetFileAttributesEx: 1.73985e-05
+Time for GetFileSizeEx: 2.93431e-05
+
+Timing char to wchar_t conversion functions!
+Time for mbstowcs_s: 5.1667e-07
+Time for wstring creation: 7.57953e-06
+
+Timing functions for reading 5 chars in a file!
+Time for FILE* with fgets: 4.22333e-05
+Time for FILE* with fgetc: 3.84125e-05
+Time for ifstream with getline: 4.47927e-05
+Time for ifstream with get: 5.11807e-05
+Time for Windows syscalls: 3.99883e-05
+
+Timing <ctime> conversion functions between tm and time_t !
+Time for localtime: 8.4769e-07
+Time for localtime_s: 7.0153e-07
+Time for mktime (with local [FR] time tm): 1.66125e-06
+Time for gmtime: 4.3435e-07
+Time for gmtime_s: 4.6011e-07
+Time for mktime (with GMT time tm): 1.69234e-06
+```
+
 
 # Sources:
 * http://erikerlandson.github.io/blog/2012/03/19/interaction-between-mktime-and-tm-isdst-a-compute-cycle-landmine/
