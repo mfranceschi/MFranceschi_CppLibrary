@@ -1,19 +1,20 @@
-# Summary
-During the creation process of MyWorks C++ repository, a thing that I wanted to ensure was that the code I would write will be the fastest possible. 
+# Introduction
+During the creation process of MyWorks C++ repository, a thing that I wanted to ensure was the speed of my code; in other words: I want the fastest code possible. 
 
 For instance, there are several ways of getting a file size in Windows: 
 * You can get the position of a stream (FILE* or fstream) after positionning it at the end of the file.
 * You can use syscalls to retrieve the file attribute: the portable `fstat`, the Windows-only brother `GetFileInformationEx`.
 * You can use a syscall to retrieve the file size directly: the Windows-only `GetFileSizeEx`.
+* Probably other functions that I don't know the existence yet.
 
-Four different ways for getting a file size, each of them are very easy to write and take from one to four lines, and take no longer than a few microseconds to run. But **which one is the shortest**? This simple question was my goal.
+Four different ways for getting a file size, all of them take from one to four lines, and take no longer than a few microseconds to run. But **which one is the fastest**? This simple question was my goal.
 
-In this document, I will present the code I used and the results I obtained. Please note that all timing results are from the same run of the script, without any other process that may slow down the computations. Of course, you could run 
+In this document, I will present the code I used and the results I obtained. Please note that all timing results are taken from the same run of the script. Of course, please feel free to run it by yourself. To do so, you should use Microsoft Visual Studio (I used Community 2019) and add the `shlwapi.lib` dependency in the Linker/Input settings.
 
-# Basic source code of my tests
 You can find the whole source code on this repo but here are the main parts.
 
-I have created a function (called `Timethis`) for measuring the time a function takes to execute. `Timethis` accepts as arguments the number of iterations of the function and the function itself, which should take no argument and return nothing. Here is the source code for it:
+## Timing function
+I have created a simple tool (called `Timethis`) for measuring the time a function takes to execute. `Timethis` accepts as arguments the number of iterations of the function and the function itself, which should take no argument and return nothing. You can find the source code below.
 ```c++
 double Timethis(size_t iter, const std::function<void(void)>& func)
 {
@@ -26,10 +27,22 @@ double Timethis(size_t iter, const std::function<void(void)>& func)
   return (duration<double>(high_resolution_clock::now() - beggining).count()) / double(iter);
 }
 ```
-As it has to make two syscalls (both calls to `...::now()`), I had to ensure that it would have a minimal impact on the measures. Thus, each time I run my tests, I also call `Timethis` without any argument to have some kind of average offset of the next measures.
+It makes two syscalls (both calls to `now()`) so I had to ensure that it would have a minimal impact on the measures. Thus, each time I run my tests, I also call `Timethis` without any function in order to have an average offset to take into account for the next measures.
 
-Here is today's value: `xxx`.
+Here is today's value: `3.3187e-07` seconds.
 
+# Results
+## Check if, given a filepath, the file exists
+I have two constants that hold the same file path as C-strings, one of them being a `const char*` and the other a `const wchar_t*`. All the functions called have to write into a shared integer variable the boolean return. 
+
+1. [Windows-only] `PathFileExists`: 2.06946e-05 seconds.
+2. `stat`: 3.40244e-05 seconds.
+3. [Windows-only]: `GetFileAttributes`: 1.72648e-05 seconds.
+
+For a request as simple as checking a file existence, where no other information should be gathered, seeing that (3) is faster that (1) is quite surprising. 
+
+---
+UNPOLISHED
 ```
 The duration of the execution of 'Timethis' itself, without anything to do, is: 3.3187e-07
 
