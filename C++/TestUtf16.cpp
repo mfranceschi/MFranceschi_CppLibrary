@@ -7,6 +7,8 @@
 #include "File.h"
 #include <io.h>
 #include <fcntl.h>
+#include <ctime>
+#include "Date.h"
 
 using namespace std;
 
@@ -52,17 +54,21 @@ void timingTheFileSize()
 
 	cout << "Time for fseek : " << FUNC {
 		FILE* f = fopen(file_s, "r");
-		if (f == nullptr)
-			throw nullptr;
 		fseek(f, 0, SEEK_END);
 		reteval = ftell(f);
 		fclose(f);
 	}) << endl;
 
+	cout << "Time for stat: " << FUNC{
+		struct stat st;
+		stat(file_s, &st);
+		reteval = st.st_size;
+	}) << endl;
+
 	cout << "Time for GetFileAttributesEx: " << FUNC{
 		WIN32_FILE_ATTRIBUTE_DATA fileInfo;
-		if (!GetFileAttributesEx(file_L, GetFileExInfoStandard, (void*)& fileInfo))
-			throw nullptr;
+		GetFileAttributesEx(file_L, GetFileExInfoStandard, (void*)& fileInfo);
+		reteval = fileInfo.nFileSizeLow;
 	}) << endl;
 
 	cout << "Time for GetFileSizeEx: " << FUNC {
@@ -130,26 +136,54 @@ void timingFileReading()
 	cout << "Time for Windows syscalls: " << FUNC{
 		int file;
 		_sopen_s(&file, file_s, _O_RDONLY, _SH_DENYNO, _S_IREAD);
-		_read(file, buffer, 5);
+		auto tmp = _read(file, buffer, 5);
 		_close(file);
 	}) << endl;
+
+	cout << endl;
+}
+
+void timingCtimeFunctions()
+{
+	cout << "Timing <ctime> conversion functions between tm and time_t !" << endl;
+	time_t timet = time(nullptr);
+	tm tmt;
+	
+	cout << "Time for localtime: " << FUNC{
+		tmt = *localtime(&timet);
+	}) << endl;
+
+	cout << "Time for localtime_s: " << FUNC{
+		localtime_s(&tmt, &timet);
+	}) << endl;
+
+	cout << "Time for mktime (with local [FR] time tm): " << FUNC{
+		timet = mktime(&tmt);
+	}) << endl;
+
+	cout << "Time for gmtime: " << FUNC{
+		tmt = *gmtime(&timet);
+	}) << endl;
+
+	cout << "Time for gmtime_s: " << FUNC{
+		gmtime_s(&tmt, &timet);
+	}) << endl;
+
+	cout << "Time for mktime (with GMT time tm): " << FUNC{
+		timet = mktime(&tmt);
+	}) << endl;
+
+	cout << endl;
 }
 
 int main()
 {
-	HANDLE file = CreateFile(file_L, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
-	LARGE_INTEGER res;
-	GetFileSizeEx(file, &res);
-	reteval = res.QuadPart;
-	CloseHandle(file);
-	cout << res.QuadPart << endl;
-
-
 	timingTimethis();
 	timingTheFileExistence();
 	timingTheFileSize();
 	timingWchar_tConversion();
 	timingFileReading();
+	timingCtimeFunctions();
 	
 	return EXIT_SUCCESS;
 }

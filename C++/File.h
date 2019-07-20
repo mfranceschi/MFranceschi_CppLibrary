@@ -69,6 +69,6 @@ namespace File
 	encoding_t Encoding(const char* filename);
 
 	// Displays the file encoding as a string.
-	std::ostream& operator<< (std::ostream& os, encoding_t enc);
+	std::ostream& operator<< (std::ostream& os, const encoding_t& enc);
 } 
 #endif // FILE_H
