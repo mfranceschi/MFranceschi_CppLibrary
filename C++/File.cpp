@@ -3,14 +3,20 @@
 //--------------------------------------------------------------- Includes
 #pragma warning( disable: 26444) // Warning that occurs when using imbue.
 
-#include <Windows.h>
 #include <algorithm>
 #include <locale>
 #include <codecvt>
 #include "File.h"
-#include "Toolbox.h"
-#include <io.h>
 #include <fcntl.h>
+
+#ifdef _WIN32
+#include <io.h>
+#include "Toolbox.h"
+#include <Windows.h>
+#else
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 using std::string; 
 using std::locale; 
@@ -118,9 +124,9 @@ namespace File
 
 	/* LOW-LEVEL FILE HANDLING */
 #ifdef _WIN32 // Win32
-	#define _OPEN_FILE_(filename, fd) _sopen_s(fd, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD)
+	#define _OPEN_FILE_(filename, fd) _sopen_s(&fd, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD)
 #else // POSIX
-	#define _OPEN_FILE_(filename, fd) (fd = open(filename, O_RDONLY) == -1)
+	#define _OPEN_FILE_(filename, fd) ((fd = open(filename, O_RDONLY)) == -1)
 	#define _read read /* POSIX form */
 	#define _close close /* POSIX form */
 #endif
@@ -134,7 +140,7 @@ namespace File
 	{
 #ifdef _WIN32 // Win32
 		return ExistsFromCharArrayWindows(filename);
-#else // Unix
+#else // POSIX
 		return ExistsFromCharArrayPOSIX(filename);
 #endif
 	}
@@ -152,7 +158,7 @@ namespace File
 		int file;
 		bool forReturn;
 
-		if (_OPEN_FILE_(filename, &file))
+		if (_OPEN_FILE_(filename, file))
 			forReturn = true;
 		else
 		{
@@ -194,7 +200,7 @@ namespace File
 	{
 #ifdef _WIN32 // Win32
 		return SizeFromCharArrayWindows(filename);
-#else // Unix
+#else // POSIX
 		return SizeFromCharArrayPOSIX(filename);
 #endif
 	}
@@ -216,7 +222,7 @@ namespace File
 		int file;
 		encoding_t forReturn;
 
-		if (_OPEN_FILE_(filename, &file))
+		if (_OPEN_FILE_(filename, file))
 			forReturn = ENC_UNKNOWN;
 		else
 		{

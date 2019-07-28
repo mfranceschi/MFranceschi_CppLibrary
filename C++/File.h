@@ -44,7 +44,7 @@ namespace File
 //------------------------------------------------------- Public functions
 
 	// Returns true if the file exists, false otherwise.
-	bool Exists(const std::string& filename); bool Exists(const wchar_t* filename);
+	bool Exists(const char* filename); 
 
 	// Returns true if trying to read charsToRead characters from the file fails.
 	bool IsEmpty(const char* filename, size_t charsToRead = 0);
@@ -58,9 +58,7 @@ namespace File
 	void Open(std::ifstream& ifs, const char* filename, 
 		encoding_t encoding = ENC_UNKNOWN);
 
-	// Description: Returns file size, or -1 in case of failure.
-	// Inputs: a valid filename.
-	filesize_t Size(const wchar_t* filename); filesize_t Size(const std::string& filename);
+	filesize_t Size(const char* filename);
 
 	// Returns the encoding of the file as one of the strings declared above.
 	// It executes "IsEmpty(filename, 3)" firstly and if the result is true,
@@ -70,5 +68,13 @@ namespace File
 
 	// Displays the file encoding as a string.
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc);
+
+#ifdef _WIN32
+	// Returns true if the file exists, false otherwise.
+	bool Exists(const wchar_t* filename);
+
+	// Returns file size, or -1 in case of failure.
+	filesize_t Size(const wchar_t* filename);
+#endif
 } 
 #endif // FILE_H
