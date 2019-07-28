@@ -1,5 +1,5 @@
 //---------- Implementation of class <CSVParser> (file CSVParser.cpp) 
-
+#ifdef totoro_666
 //---------------------------------------------------------------- INCLUDE
 
 //-------------------------------------------------------- System includes
@@ -217,3 +217,4 @@ namespace SystemIO
 		return str;
 	}
 }
+#endif

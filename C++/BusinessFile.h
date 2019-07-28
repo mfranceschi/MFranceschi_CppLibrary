@@ -1,4 +1,5 @@
 //---------- Interface of class <BusinessFile> (file BusinessFile.h) ----------------
+#define BUSINESSFILE_H
 #if ! defined ( BUSINESSFILE_H )
 #define BUSINESSFILE_H
 

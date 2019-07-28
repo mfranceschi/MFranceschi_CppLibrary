@@ -21,7 +21,6 @@ long long reteval;
 void timingTimethis()
 {
 	cout << "The duration of the execution of 'Timethis' itself, without anything to do, is: " << FUNC{
-		(void(0));
 	}) << endl;
 	cout << endl;
 }

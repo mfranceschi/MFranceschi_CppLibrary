@@ -1,5 +1,5 @@
 //---------- Implementation of class <BusinessFile> (file BusinessFile.cpp) 
-
+#ifdef totoro_666
 //---------------------------------------------------------------- INCLUDE
 
 //-------------------------------------------------------- System includes
@@ -67,3 +67,4 @@ namespace SystemIO
 
 //------------------------------------------------------ Protected methods
 }
+#endif

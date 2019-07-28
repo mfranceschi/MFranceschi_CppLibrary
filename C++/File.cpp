@@ -1,7 +1,7 @@
 //---------- Implementation of module <File> (file File.cpp) 
 
 //--------------------------------------------------------------- Includes
-#pragma warning( disable: 26444) // Disables a warn' that occurs when using imbue.
+#pragma warning( disable: 26444) // Warning that occurs when using imbue.
 
 #include <Windows.h>
 #include <algorithm>
@@ -17,8 +17,6 @@ using std::locale;
 using std::ifstream; 
 using std::ios_base;
 
-typedef int FileHandle;
-
 static const size_t NBR_BITS_TO_READ_ENCODING = 3;
 
 namespace File
@@ -27,13 +25,11 @@ namespace File
 
 //-------------------------------------------------------------- Constants
 
-	const locale locUTF8(
-		locale(), 
-		new std::codecvt_utf8<char>());
-	const locale locUTF16LE(
-		locale(),
-		new std::codecvt_utf16<char, 0x10ffff, std::little_endian>
-	); 
+	const static std::codecvt_utf8<char> CC_UTF8;
+	const static std::codecvt_utf16
+		<char, 0x10ffff, std::little_endian> CC_UTF16;
+	const locale locUTF8(locale(), &CC_UTF8);
+	const locale locUTF16LE(locale(), &CC_UTF16); 
 
 //------------------------------------------------------------------ Types
 
@@ -41,57 +37,127 @@ namespace File
 
 //------------------------------------------------------ Private functions
 
-//////////////////////////////////////////////////////////////////  PUBLIC
-//------------------------------------------------------- Public functions
+	/* FUNCTION DECLARATIONS */
+#ifdef _WIN32
+	static bool ExistsFromCharArrayWindows(const char* filename);
+	static filesize_t SizeFromCharArrayWindows(const char* filename);
+	#ifdef UNICODE // LPCWSTR
+	static bool ExistsFromWchar_tArrayWindows(const wchar_t* filename);
+	static filesize_t SizeFromWchar_tArrayWindows(const wchar_t* filename);
+	#endif
+#else // POSIX
+	static bool ExistsFromCharArrayPOSIX(const char* filename);
+	static filesize_t SizeFromCharArrayPOSIX(const char* filename);
+#endif
 
-	bool Exists(const string& filename)
+	/* FUNCTION DEFINITIONS */
+
+#ifdef _WIN32
+	static bool ExistsFromCharArrayWindows(const char* filename)
 	{
-		wchar_t* converted = Toolbox::ToWchar_t(filename.c_str());
-		auto result = Exists(converted);
+#ifdef UNICODE // LPCWSTR
+		wchar_t* converted = Toolbox::ToWchar_t(filename);
+		auto result = ExistsFromWchar_tArrayWindows(converted);
 		delete[] converted;
 		return result;
+#else // LPCSTR
+		DWORD attr = GetFileAttributes(filename);
+		return attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY);
+#endif
 	}
-	
-	bool Exists(const wchar_t* filename)
-	// Algorithm: https://stackoverflow.com/questions/3828835.
+
+	static filesize_t SizeFromCharArrayWindows(const char* filename)
+	{
+#ifdef UNICODE // LPCWSTR
+		wchar_t* converted = Toolbox::ToWchar_t(filename);
+		auto result = Size(converted);
+		delete[] converted;
+		return result;
+#else // LPCSTR
+		HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
+		if (file == INVALID_HANDLE_VALUE) return -1;
+		LARGE_INTEGER res;
+		GetFileSizeEx(file, &res);
+		CloseHandle(file);
+		return filesize_t(res.QuadPart);
+#endif
+	}
+
+#ifdef UNICODE
+	static filesize_t SizeFromWchar_tArrayWindows(const wchar_t* filename)
+	{
+		HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
+		if (file == INVALID_HANDLE_VALUE) return -1;
+		LARGE_INTEGER res;
+		GetFileSizeEx(file, &res);
+		CloseHandle(file);
+		return filesize_t(res.QuadPart);
+	}
+
+	static bool ExistsFromWchar_tArrayWindows(const wchar_t* filename)
 	{
 		DWORD attr = GetFileAttributes(filename);
 		return attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY);
 	}
+#endif
 
-	/*bool IsEmpty(const char* filename, size_t charsToRead)
+#else // POSIX
+	static bool ExistsFromCharArrayPOSIX(const char* filename)
 	{
-		bool forReturn;
-		FILE* f = nullptr;
+		struct stat t;
+		return !stat(filename, &t);
+	}
 
-		if (fopen_s(&f, filename, "r"))
-		{
-			forReturn = true;
-		}
-		else
-		{
-			for (size_t i = 0; i < charsToRead; ++i)
-			{
-				fgetc(f);
-			}
-			forReturn = feof(f) + ferror(f);
-			fclose(f);
-		}
+	static filesize_t SizeFromCharArrayPOSIX(const char* filename)
+	{
+		struct stat t;
+		if (!stat(filename, &t)) return -1;
+		return filesize_t(t.st_size);
+	}
+#endif
 
-		return forReturn;
-	}*/
+	/* LOW-LEVEL FILE HANDLING */
+#ifdef _WIN32 // Win32
+	#define _OPEN_FILE_(filename, fd) _sopen_s(fd, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD)
+#else // POSIX
+	#define _OPEN_FILE_(filename, fd) (fd = open(filename, O_RDONLY) == -1)
+	#define _read read /* POSIX form */
+	#define _close close /* POSIX form */
+#endif
+
+	
+
+//////////////////////////////////////////////////////////////////  PUBLIC
+//------------------------------------------------------- Public functions
+
+	bool Exists(const char* filename)
+	{
+#ifdef _WIN32 // Win32
+		return ExistsFromCharArrayWindows(filename);
+#else // Unix
+		return ExistsFromCharArrayPOSIX(filename);
+#endif
+	}
+	
+#if defined _WIN32 && defined UNICODE
+	bool Exists(const wchar_t* filename)
+	// Algorithm: https://stackoverflow.com/questions/3828835.
+	{
+		return ExistsFromWchar_tArrayWindows(filename);
+	}
+#endif
 
 	bool IsEmpty(const char* filename, size_t charsToRead)
 	{
-		FileHandle file;
+		int file;
 		bool forReturn;
 
-		if (_sopen_s(&file, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD))
+		if (_OPEN_FILE_(filename, &file))
 			forReturn = true;
 		else
 		{
 			char* content = new char[charsToRead];
-			forReturn = !(_read(file, content, charsToRead) != charsToRead || _eof(file));
+			forReturn = !(_read(file, content, charsToRead) != charsToRead);
 			delete[] content;
 			_close(file);
 		}
@@ -124,14 +190,16 @@ namespace File
 		}
 	}
 
-	filesize_t Size(const string& filename)
+	filesize_t Size(const char* filename)
 	{
-		wchar_t* converted = Toolbox::ToWchar_t(filename.c_str());
-		auto result = Size(converted);
-		delete[] converted;
-		return result;
+#ifdef _WIN32 // Win32
+		return SizeFromCharArrayWindows(filename);
+#else // Unix
+		return SizeFromCharArrayPOSIX(filename);
+#endif
 	}
 
+#if defined _WIN32 && defined UNICODE
 	filesize_t Size(const wchar_t* filename)
 	{
 		HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
@@ -141,40 +209,14 @@ namespace File
 		CloseHandle(file);
 		return filesize_t(res.QuadPart);
 	}
-
-	/*encoding_t Encoding(const char* filename)
-	{
-		encoding_t forReturn;
-		FILE* f = nullptr;
-		if (IsEmpty(filename, 3) || fopen_s(&f, filename, "r"))
-			forReturn = ENC_UNKNOWN;
-		else
-		{
-			fseek(f, 0L, SEEK_SET);
-
-			int char1 = fgetc(f);
-			int char2 = fgetc(f);
-			int char3 = fgetc(f);
-
-			
-			if (char1 == 0xff && char2 == 0xfe)
-				forReturn = ENC_UTF16LE;
-			else if (char1 == 0xef && char2 == 0xbb && char3 == 0xbf)
-				forReturn = ENC_UTF8;
-			else
-				forReturn = ENC_DEFAULT;
-
-			fclose(f);
-		}
-		return forReturn;
-	}*/
+#endif
 
 	encoding_t Encoding(const char* filename)
 	{
-		FileHandle file;
+		int file;
 		encoding_t forReturn;
 
-		if (_sopen_s(&file, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD))
+		if (_OPEN_FILE_(filename, &file))
 			forReturn = ENC_UNKNOWN;
 		else
 		{
