@@ -29,15 +29,21 @@ namespace File
 {
 /////////////////////////////////////////////////////////////////  PRIVATE
 
+//------------------------------------------------------------------ Types
+
+	static class codecvt_utf8_pers : public std::codecvt<char, wchar_t, std::mbstate_t>
+	{
+	public:
+		virtual ~codecvt_utf8_pers() noexcept {}
+	};
 //-------------------------------------------------------------- Constants
 
-	const static std::codecvt_utf8<char> CC_UTF8;
+	const static codecvt_utf8_pers CC_UTF8;
+	// const static std::codecvt_utf8<char> CC_UTF8;
 	const static std::codecvt_utf16
 		<char, 0x10ffff, std::little_endian> CC_UTF16;
-	const locale locUTF8(locale(), &CC_UTF8);
-	const locale locUTF16LE(locale(), &CC_UTF16); 
-
-//------------------------------------------------------------------ Types
+	const static locale locUTF8(locale(), &CC_UTF8);
+	const static locale locUTF16LE(locale(), &CC_UTF16); 
 
 //------------------------------------------------------- Static variables
 
