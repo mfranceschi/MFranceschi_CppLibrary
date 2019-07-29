@@ -31,39 +31,36 @@ namespace File
 
 //------------------------------------------------------------------ Types
 
-	static class codecvt_utf8_pers : public std::codecvt<char, wchar_t, std::mbstate_t>
-	{
-	public:
-		virtual ~codecvt_utf8_pers() noexcept {}
-	};
 //-------------------------------------------------------------- Constants
 
-	const static codecvt_utf8_pers CC_UTF8;
-	// const static std::codecvt_utf8<char> CC_UTF8;
-	const static std::codecvt_utf16
-		<char, 0x10ffff, std::little_endian> CC_UTF16;
-	const static locale locUTF8(locale(), &CC_UTF8);
-	const static locale locUTF16LE(locale(), &CC_UTF16); 
+	const static locale locUTF8("en_US.UTF-8");
+	const static locale locUTF16LE(
+		locale("en_US.UTF-8"), 
+		new std::codecvt_utf8_utf16<wchar_t, 0x10ffffUL, std::little_endian>()
+	); // I can call "new" because the locale's destructors deletes the facet.
 
 //------------------------------------------------------- Static variables
 
 //------------------------------------------------------ Private functions
 
-	/* FUNCTION DECLARATIONS */
-#ifdef _WIN32
-	static bool ExistsFromCharArrayWindows(const char* filename);
-	static filesize_t SizeFromCharArrayWindows(const char* filename);
-	#ifdef UNICODE // LPCWSTR
-	static bool ExistsFromWchar_tArrayWindows(const wchar_t* filename);
-	static filesize_t SizeFromWchar_tArrayWindows(const wchar_t* filename);
-	#endif
+		/* LOW-LEVEL FILE HANDLING */
+#ifdef _WIN32 // Win32
+	#define _OPEN_FILE_(filename, fd) _sopen_s(&fd, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD)
 #else // POSIX
-	static bool ExistsFromCharArrayPOSIX(const char* filename);
-	static filesize_t SizeFromCharArrayPOSIX(const char* filename);
+	#define _OPEN_FILE_(filename, fd) ((fd = open(filename, O_RDONLY)) == -1)
+	#define _read read /* POSIX form */
+	#define _close close /* POSIX form */
 #endif
 
-	/* FUNCTION DEFINITIONS */
+	/* FUNCTION DECLARATIONS */
+	static bool ExistsFromCharArrayWindows(const char* filename);
+	static filesize_t SizeFromCharArrayWindows(const char* filename);
+	static bool ExistsFromWchar_tArrayWindows(const wchar_t* filename);
+	static filesize_t SizeFromWchar_tArrayWindows(const wchar_t* filename);
+	static bool ExistsFromCharArrayPOSIX(const char* filename);
+	static filesize_t SizeFromCharArrayPOSIX(const char* filename);
 
+	/* FUNCTION DEFINITIONS */
 #ifdef _WIN32
 	static bool ExistsFromCharArrayWindows(const char* filename)
 	{
@@ -128,16 +125,6 @@ namespace File
 	}
 #endif
 
-	/* LOW-LEVEL FILE HANDLING */
-#ifdef _WIN32 // Win32
-	#define _OPEN_FILE_(filename, fd) _sopen_s(&fd, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD)
-#else // POSIX
-	#define _OPEN_FILE_(filename, fd) ((fd = open(filename, O_RDONLY)) == -1)
-	#define _read read /* POSIX form */
-	#define _close close /* POSIX form */
-#endif
-
-	
 
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
