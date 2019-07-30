@@ -26,15 +26,15 @@
 
 //------------------------------------------------------------------ Types
 
-// Error codes for this module.
+// Error codes for this module. Don't use integer values, they only help for debugging.
 enum DateError
 {
-	NO_PATTERN = 1,
-	WRONG_STRUCT_TM = 2,
-	WRONG_MS = 3,
-	WRONG_STRING = 4,
-	WRONG_TIME_T = 5,
-	WRONG_TIME_DATA = 6
+	NO_PATTERN = 1, // No pattern was available to perform the Date<->string conversion.
+	WRONG_STRUCT_TM = 2, // Struct tm was corrupted.
+	WRONG_MS = 3, // The number of milliseconds was not acceptable (too high?).
+	WRONG_STRING = 4, // String could not be retrieved as Date using the given pattern.
+	WRONG_TIME_T = 5, // The given time_t could not be converted as date (value too high?).
+	WRONG_TIME_DATA = 6 // Returned by setter functions if the parameter is not in the correct range.
 };
 
 #if DATE_MIC_ON == 1

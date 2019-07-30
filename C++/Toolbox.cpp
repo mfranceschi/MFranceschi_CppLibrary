@@ -37,13 +37,18 @@ namespace Toolbox
 		return (duration<double>(high_resolution_clock::now() - beggining).count()) / double(iter);
 	}
 
-#ifdef _WIN32
 	wchar_t* ToWchar_t(const char* source)
 	{
 		size_t length = strlen(source);
 		wchar_t* destination = new wchar_t[length + 1];
 		size_t retValue = 0;
+
+#if defined _WIN32 || (defined __STDC_LIB_EXT1__ && defined __STDC_WANT_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__ == 1)
 		mbstowcs_s(&retValue, destination, length + 1, source, length);
+#else
+		retValue = mbstowcs(destination, source, length) - length;
+#endif
+		
 		if (!retValue)
 		{
 			delete[] destination;
@@ -51,5 +56,4 @@ namespace Toolbox
 		}
 		return destination;
 	}
-#endif
 }
