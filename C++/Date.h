@@ -22,7 +22,12 @@
 #error "The macro DATE_MIC_ON must be defined and have the value 0 or 1."
 #endif
 
+#define totoro
 
+#ifdef _Import_Date_Please
+#undef _Import_Date_Please
+
+#endif
 
 //------------------------------------------------------------------ Types
 
@@ -39,9 +44,11 @@ enum DateError
 
 #if DATE_MIC_ON == 1
 typedef unsigned int MicroSeconds; // Type for representing microseconds.
+typedef double Interval; // Time distance between two dates, in seconds.
+#else
+typedef time_t Interval; // Time distance between two dates, in seconds.
 #endif
 
-typedef double Interval; // Time distance between two dates, in seconds.
 
 // Role of Date: 
 // Simple extension of C's struct tm with microseconds and operator 
@@ -105,10 +112,6 @@ public:
 	inline Interval operator% (const Date&) const;
 
 	// Arithmetics
-	///*Date operator+ (const Date&) const;
-	//Date operator- (const Date&) const;
-	//Date& operator+= (const Date&);
-	//Date& operator-= (const Date&);*/
 	Date operator+ (Interval seconds) const;
 	Date operator- (Interval seconds) const;
 	Date& operator+= (Interval seconds);
