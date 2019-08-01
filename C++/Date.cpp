@@ -1,11 +1,11 @@
 //---------- Implementation of class <Date> (file Date.cpp) 
 
 //---------------------------------------------------------------- INCLUDE
-#define _Import_Date_Please
+
+#include <cassert>
+#include <cmath>
 #include <iomanip>
 #include <sstream>
-#include <cmath>
-#include <cassert>
 #include "Date.h"
 #include "Toolbox.h"
 
@@ -23,6 +23,19 @@ const char* Date::pattern = nullptr;
 #if DATE_MIC_ON == 1
 MicroSeconds Date::tolerance = Date::MS_MAX;
 char Date::msSep = NO_MS;
+#define _MicroSeconds 1 /* Convenience solution for more readable code. */
+#endif
+
+#ifdef _MicroSeconds
+	#define _Inline_If_No_Microseconds /* Nothing */
+	#define _Constr_Param_Microseconds , MicroSeconds ms
+	#define _Constr_Init_List_Microseconds , microseconds(makeMS(ms))
+	#define _Constr_Init_List_Default_Microseconds , microseconds(0)
+#else
+	#define _Inline_If_No_Microseconds inline
+	#define _Constr_Param_Microseconds
+	#define _Constr_Init_List_Microseconds
+	#define _Constr_Init_List_Default_Microseconds
 #endif
 
 constexpr int JANUARY = 0;
@@ -38,19 +51,11 @@ constexpr int OCTOBER = 9;
 constexpr int NOVEMBER = 10;
 constexpr int DECEMBER = 11;
 
-const int DAYS_PER_MON [] = { 
-	31, // jan 
-	28, // feb
-	31, // mar
-	30, // apr
-	31, // may
-	30, // jun
-	31, // jul
-	31, // aug
-	30, // sep
-	31, // oct
-	30, // nov
-	31  // dec
+// First line = classic years. Second line = more rare years.
+const int DAYS_PER_MON [2][12] = 
+{
+	{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+	{31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
 
 constexpr auto NBR_SECONDS_IN_DAY = 24 * 60 * 60;
@@ -58,30 +63,26 @@ constexpr auto NBR_SECONDS_IN_DAY = 24 * 60 * 60;
 //----------------------------------------------------------------- PUBLIC
 
 //--------------------------------------------------------- Public methods
-#if DATE_MIC_ON == 1
-int Date::Compare(const Date& d, bool compareMS) const 
-{
-	int res;
-	double distance = Timedelta(d);
-	if (compareMS || abs(distance) >= 1)
-	{
-		res = Toolbox::Sign(0);
-	}
-	else
-		res = Toolbox::Sign(int(distance));
-	return res;
-} // TODO
-#else
-inline int Date::Compare(const Date& d) const
-{
-	return Toolbox::Sign(int(Timedelta(d)));
-}
-#endif
 
-inline Interval Date::Timedelta(const Date& param) const
+_Inline_If_No_Microseconds int Date::Compare(const Date& d) const
+{
+#ifdef _Microseconds
+	return Toolbox::Sign(Timedelta(d));
+#else
+	int res;
+	Interval distance = Timedelta(d);
+	if (abs(distance) <= 1)
+		res = Date::EQUAL;
+	else
+		res = Toolbox::Sign(distance);
+	return res;
+#endif
+}
+
+_Inline_If_No_Microseconds Interval Date::Timedelta(const Date& param) const
 {
 	return Interval(difftime(timet, param.timet)
-#if DATE_MIC_ON == 1
+#ifdef _Microseconds
 		+ double(microseconds - param.microseconds) / double(MS_MAX)
 #endif
 	);
@@ -223,50 +224,10 @@ inline bool Date::operator>= (const Date& d) const
 	return Compare(d) != INFERIOR;
 }
 
-////Date Date::operator+ (const Date& d) const
-////{
-////	Date newdate(*this);
-////	newdate += d;
-////	return newdate;
-////}
-////
-////Date Date::operator- (const Date& d) const
-////{
-////	Date newdate(*this);
-////	newdate -= d;
-////	return newdate;
-////}
-
 inline Interval Date::operator% (const Date& d) const
 {
 	return Timedelta(d);
 }
-
-////Date& Date::operator+= (const Date& d)
-////{
-////#if DATE_MIC_ON == 1
-////	microseconds += d.microseconds;
-////	int leapSeconds = microseconds / MS_MAX;
-////	timet += leapSeconds;
-////	microseconds %= MS_MAX;
-////#endif
-////	timet += d.timet;
-////	localtime_s(&time, &timet);
-////	return *this;
-////} // TODO
-////
-////Date& Date::operator-= (const Date& d)
-////{
-////#if DATE_MIC_ON == 1
-////	microseconds -= d.microseconds;
-////	int leapSeconds = microseconds / MS_MAX;
-////	timet -= leapSeconds;
-////	microseconds %= MS_MAX;
-////#endif
-////	timet += d.timet;
-////	localtime_s(&time, &timet);
-////	return *this;
-////} // TODO
 
 inline Date::operator struct tm() const
 {
@@ -286,7 +247,7 @@ Date::operator std::string() const
 	std::ostringstream oss;
 	oss << std::put_time(&time, pattern);
 
-#if DATE_MIC_ON == 1
+#ifdef _MicroSeconds
 	if (msSep != NO_MS)
 		oss << msSep << microseconds;
 #endif
@@ -296,73 +257,34 @@ Date::operator std::string() const
 
 
 //---------------------------------------------- Constructors - destructor
-#if DATE_MIC_ON == 1
-Date::Date() :
-	time({ 0 }),
-	microseconds(0),
-	timet(0)
-{
-}
 
-Date::Date(tm time_in, MicroSeconds ms) :
-	microseconds(makeMS(ms)),
-	timet(mktime(&time_in)),
-	time(time_in)
-{
-	if (timet == time_t(-1) || ms >= MS_MAX)
-		throw DateError::WRONG_STRUCT_TM;
-}
-
-Date::Date(time_t tmt, MicroSeconds ms) :
-	microseconds(makeMS(ms)),
-	timet(tmt)
-{
-	if (localtime_s(&time, &tmt))
-		throw DateError::WRONG_TIME_T;
-}
-
-Date::Date(const std::string& src, const char* pattern, MicroSeconds ms) :
-	microseconds(makeMS(ms))
-{
-	if (pattern == nullptr)
-	{
-		if (Date::pattern != nullptr)
-			pattern = Date::pattern;
-		else
-			throw DateError::NO_PATTERN;
-	}
-
-	std::istringstream iss(src);
-	Date ans;
-	iss >> std::get_time(&time, pattern);
-
-	if (timet = mktime(&time) == time_t(-1)) {
-		throw DateError::WRONG_STRING;
-	}
-}
-#else
 Date::Date() :
 	time({ 0 }),
 	timet(0)
+	_Constr_Init_List_Default_Microseconds
 {
 }
 
-Date::Date(tm time_in) :
+Date::Date(tm time_in _Constr_Param_Microseconds) :
 	timet(mktime(&time_in)),
 	time(time_in)
+	_Constr_Init_List_Microseconds
 {
 	if (timet == time_t(-1))
 		throw DateError::WRONG_STRUCT_TM;
 }
 
-Date::Date(time_t tmt) :
+Date::Date(time_t tmt _Constr_Param_Microseconds) :
 	timet(tmt)
+	_Constr_Init_List_Microseconds
 {
 	if (localtime_s(&time, &tmt))
 		throw DateError::WRONG_TIME_T;
 }
 
-Date::Date(const std::string& src, const char* pattern)
+Date::Date(const std::string& src, const char* pattern _Constr_Param_Microseconds) :
+	timet(0) /* sorry about that :) */
+	_Constr_Init_List_Microseconds
 {
 	if (pattern == nullptr)
 	{
@@ -380,7 +302,6 @@ Date::Date(const std::string& src, const char* pattern)
 		throw DateError::WRONG_STRING;
 	}
 }
-#endif
 	
 //---------------------------------------------------------------- PRIVATE
 
@@ -388,7 +309,7 @@ Date::Date(const std::string& src, const char* pattern)
 #if DATE_MIC_ON == 1
 MicroSeconds Date::makeMS(MicroSeconds ms)
 {
-	if (ms > MS_MAX)
+	if (ms >= MS_MAX)
 		throw DateError::WRONG_MS;
 	else
 		return ms;

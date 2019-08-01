@@ -3,10 +3,9 @@
 #define DATE_H
 
 //--------------------------------------------------------------- Includes
-#include <ctime>
-#include <string>
-#include <climits>
-#include <algorithm>
+#include <ctime> /* for tm and time_t */
+#include <string> /* for conversions with strings */
+#include <climits> /* for computing MAX_YEARS */
 #include "Toolbox.h"
 
 // Type for representing years
@@ -22,16 +21,9 @@
 #error "The macro DATE_MIC_ON must be defined and have the value 0 or 1."
 #endif
 
-#define totoro
-
-#ifdef _Import_Date_Please
-#undef _Import_Date_Please
-
-#endif
-
 //------------------------------------------------------------------ Types
 
-// Error codes for this module. Don't use integer values, they only help for debugging.
+// Error codes for this module. Don't use integer values directly.
 enum DateError
 {
 	NO_PATTERN = 1, // No pattern was available to perform the Date<->string conversion.
@@ -45,8 +37,10 @@ enum DateError
 #if DATE_MIC_ON == 1
 typedef unsigned int MicroSeconds; // Type for representing microseconds.
 typedef double Interval; // Time distance between two dates, in seconds.
+#define _Inline_ /* Inline only if no microseconds */
 #else
 typedef time_t Interval; // Time distance between two dates, in seconds.
+#define _Inline_ inline /* Inline only if no microseconds */
 #endif
 
 
@@ -60,17 +54,11 @@ class Date
 public:
 //--------------------------------------------------------- Public methods
 
-
 	// Compares the current date with the given one.
-	// Returns Dates::INFERIOR if (this) < (param),
+	// Returns Dates::INFERIOR if "this" is before "param",
 	// same idea for Dates::EQUAL and Dates::SUPERIOR.
-	// The parameter 'compareMS' indicates whether we compare microseconds 
-	// or not.
-	int Compare(const Date& 
-#if DATE_MIC_ON == 1
-		, bool compareMS = true
-#endif
-	) const;
+	// The "tolerance" variable is used here.
+	_Inline_ int Compare(const Date&) const;
 
 	// Returns (this) - (param) in seconds.
 	Interval Timedelta(const Date&) const;
@@ -127,13 +115,13 @@ public:
     Date(const Date&) = default;
 
 #if DATE_MIC_ON == 1
-	Date(tm, MicroSeconds = 0);
-	Date(time_t, MicroSeconds = 0);
-	Date(const std::string&, const char* pattern = nullptr, MicroSeconds = 0);
+	explicit Date(tm, MicroSeconds = 0);
+	explicit Date(time_t, MicroSeconds = 0);
+	explicit Date(const std::string&, const char* pattern, MicroSeconds = 0);
 #else
 	Date(tm);
 	Date(time_t);
-	Date(const std::string&, const char* pattern = nullptr);
+	Date(const std::string&, const char* pattern);
 #endif
 
 	Date();
