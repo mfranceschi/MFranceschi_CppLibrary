@@ -1,4 +1,4 @@
-/* Apokk - MyWorks package - File module.
+/* Martin Franceschi - MyWorks package - File module.
  * 
  * This module gives some basic informations about a given file.
  * You can check if it exists, check its size and encoding.
