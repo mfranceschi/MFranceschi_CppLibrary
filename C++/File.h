@@ -19,6 +19,7 @@
 
 //--------------------------------------------------------------- Includes
 #include <fstream>
+#include <sstream>
 #include <string>
 
 namespace File
@@ -35,6 +36,18 @@ namespace File
 	typedef encoding_e encoding_t;
 	// Type used to deal with file sizes of any weight (GBs are okay).
 	typedef unsigned long filesize_t;
+
+	// String stream for reading files using Load.
+	class Filestream : public std::stringstream
+	{
+	public:
+		explicit Filestream(int fd, char* file_zone);
+		// Cleans the mmap and the file descriptor.
+		virtual ~Filestream();
+	protected:
+		int file_fd; // File descriptor
+		char* file_zone; // Zone created by mmap
+	};
 
 
 

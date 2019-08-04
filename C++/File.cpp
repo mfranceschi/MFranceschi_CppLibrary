@@ -4,10 +4,10 @@
 #pragma warning( disable: 26444) // Warning that occurs when using imbue.
 
 #include <algorithm>
-#include <locale>
 #include <codecvt>
 #include "File.h"
 #include <fcntl.h>
+#include <locale>
 
 #ifdef _WIN32
 #include <io.h>
@@ -255,5 +255,11 @@ namespace File
 			break;
 		}
 		return os;
+	}
+
+	Filestream::~Filestream()
+	{
+		//munmap(file_zone);
+		_close(file_fd);
 	}
 } 
