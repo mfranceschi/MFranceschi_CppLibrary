@@ -37,19 +37,6 @@ namespace File
 	// Type used to deal with file sizes of any weight (GBs are okay).
 	typedef unsigned long filesize_t;
 
-	// String stream for reading files using Load.
-	class Filestream : public std::stringstream
-	{
-	public:
-		explicit Filestream(int fd, char* file_zone);
-		// Cleans the mmap and the file descriptor.
-		virtual ~Filestream();
-	protected:
-		int file_fd; // File descriptor
-		char* file_zone; // Zone created by mmap
-	};
-
-
 
 //-------------------------------------------------------------- Constants
 
@@ -71,6 +58,7 @@ namespace File
 	void Open(std::ifstream& ifs, const char* filename, 
 		encoding_t encoding = ENC_UNKNOWN);
 
+	// Returns the file size in bytes, or -1
 	filesize_t Size(const char* filename);
 
 	// Returns the encoding of the file as one of the strings declared above.
@@ -79,6 +67,16 @@ namespace File
 	// If no encoding is found, returns ENC_DEFAULT.
 	encoding_t Encoding(const char* filename);
 
+	// Returns the entire file as a const char*.
+	// Please note that it does not end with a '\0'.
+	// If file size is zero or if it fails, returns nullptr.
+	// For closing use Read_Close.
+	const char* Read(const char* filename);
+
+	// Closes a file opened using the Read function.
+	// If the given pointer is not a currently opened file, stay silent.
+	void Read_Close(const char* content);
+
 	// Displays the file encoding as a string.
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc);
 
@@ -86,8 +84,10 @@ namespace File
 	// Returns true if the file exists, false otherwise.
 	bool Exists(const wchar_t* filename);
 
-	// Returns file size, or -1 in case of failure.
+	// Returns the file size in bytes, or -1.
 	filesize_t Size(const wchar_t* filename);
+
+	const char* Read(const wchar_t* filename);
 #endif
 } 
 #endif // FILE_H

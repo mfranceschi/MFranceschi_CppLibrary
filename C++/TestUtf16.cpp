@@ -8,6 +8,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <ctime>
+#include <cassert>
 #include "Date.h"
 
 using namespace std;
@@ -177,12 +178,21 @@ void timingCtimeFunctions()
 
 int main()
 {
-	timingTimethis();
-	timingTheFileExistence();
-	timingTheFileSize();
-	timingWchar_tConversion();
-	timingFileReading();
-	timingCtimeFunctions();
+	//timingTimethis();
+	//timingTheFileExistence();
+	//timingTheFileSize();
+	//timingWchar_tConversion();
+	//timingFileReading();
+	//timingCtimeFunctions();
+	auto bigfile = LR"(C:\Program Files (x86)\Overwatch\data\casc\data\data.018)";
+	const char* content = File::Read(bigfile);
+	auto size = File::Size(bigfile)/10;
+	assert(content);
+	cout << Toolbox::Timethis(1, [&](void) mutable {
+		for (File::filesize_t i = 0;i < size;i++)
+			void(0);
+		}) << endl;
+	File::Read_Close(content);
 	
 	return EXIT_SUCCESS;
 }

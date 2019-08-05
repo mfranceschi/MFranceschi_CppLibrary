@@ -8,12 +8,14 @@
 #include "File.h"
 #include <fcntl.h>
 #include <locale>
+#include <map>
 
 #ifdef _WIN32
 #include <io.h>
 #include "Toolbox.h"
 #include <Windows.h>
 #else
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
@@ -31,6 +33,19 @@ namespace File
 
 //------------------------------------------------------------------ Types
 
+	// Data structure used to store informations about files opened with Open.
+	struct ReadFileData {
+		const char* memptr; // Holds the file data.
+
+#ifdef _WIN32
+		HANDLE fileHandle; // File HANDLE
+		HANDLE mappingHandle; // File Mapping HANDLE
+#else
+		int fd; // File descriptor
+		filesize_t size; // Size of the file = size of the mmap allocation.
+#endif
+	};
+
 //-------------------------------------------------------------- Constants
 
 	const static locale locUTF8("en_US.UTF-8");
@@ -39,11 +54,13 @@ namespace File
 		new std::codecvt_utf8_utf16<wchar_t, 0x10ffffUL, std::little_endian>()
 	); // I can call "new" because the locale's destructors deletes the facet.
 
+	static std::map<const char*, ReadFileData> openedFiles;
+
 //------------------------------------------------------- Static variables
 
 //------------------------------------------------------ Private functions
 
-		/* LOW-LEVEL FILE HANDLING */
+	/* LOW-LEVEL FILE HANDLING */
 #ifdef _WIN32 // Win32
 	#define _OPEN_FILE_(filename, fd) _sopen_s(&fd, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD)
 #else // POSIX
@@ -55,10 +72,14 @@ namespace File
 	/* FUNCTION DECLARATIONS */
 	static bool ExistsFromCharArrayWindows(const char* filename);
 	static filesize_t SizeFromCharArrayWindows(const char* filename);
+	static bool ReadWindows(ReadFileData& rfd);
+	static HANDLE OpenHandleFromCharArrayWindows(const char* filename);
 	static bool ExistsFromWchar_tArrayWindows(const wchar_t* filename);
 	static filesize_t SizeFromWchar_tArrayWindows(const wchar_t* filename);
+	static HANDLE OpenHandleFromWchar_tArrayWindows(const wchar_t* filename);
 	static bool ExistsFromCharArrayPOSIX(const char* filename);
 	static filesize_t SizeFromCharArrayPOSIX(const char* filename);
+	static bool ReadPOSIX(ReadFileData& rfd);
 
 	/* FUNCTION DEFINITIONS */
 #ifdef _WIN32
@@ -83,7 +104,7 @@ namespace File
 		delete[] converted;
 		return result;
 #else // LPCSTR
-		HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
+		HANDLE file = OpenHandleFromCharArrayWindows(filename);
 		if (file == INVALID_HANDLE_VALUE) return -1;
 		LARGE_INTEGER res;
 		GetFileSizeEx(file, &res);
@@ -92,10 +113,44 @@ namespace File
 #endif
 	}
 
+	static HANDLE OpenHandleFromCharArrayWindows(const char* filename)
+	{
+#ifdef UNICODE // LPCWSTR
+		wchar_t* converted = Toolbox::ToWchar_t(filename);
+		auto result = OpenHandleFromWchar_tArrayWindows(converted);
+		delete[] converted;
+		return result;
+#else // LPCSTR
+		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
+#endif
+	}
+
+	static bool ReadWindows(ReadFileData& rfd)
+	{
+		if (rfd.fileHandle == INVALID_HANDLE_VALUE)
+			return nullptr;
+
+		rfd.mappingHandle = CreateFileMapping(rfd.fileHandle, NULL, PAGE_READONLY, 0, 0, NULL);
+		if (rfd.mappingHandle == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
+		{
+			CloseHandle(rfd.fileHandle);
+			return false;
+		}
+
+		rfd.memptr = (const char*)MapViewOfFile(rfd.mappingHandle, FILE_MAP_READ, 0, 0, 0);
+		if (rfd.memptr == NULL)
+		{
+			CloseHandle(rfd.mappingHandle);
+			CloseHandle(rfd.fileHandle);
+			return false;
+		}
+		return true;
+	}
+
 #ifdef UNICODE
 	static filesize_t SizeFromWchar_tArrayWindows(const wchar_t* filename)
 	{
-		HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
+		HANDLE file = OpenHandleFromWchar_tArrayWindows(filename);
 		if (file == INVALID_HANDLE_VALUE) return -1;
 		LARGE_INTEGER res;
 		GetFileSizeEx(file, &res);
@@ -108,6 +163,12 @@ namespace File
 		DWORD attr = GetFileAttributes(filename);
 		return attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY);
 	}
+
+	static HANDLE OpenHandleFromWchar_tArrayWindows(const wchar_t* filename)
+	{
+		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
+	}
+
 #endif
 
 #else // POSIX
@@ -122,6 +183,24 @@ namespace File
 		struct stat t;
 		if (!stat(filename, &t)) return -1;
 		return filesize_t(t.st_size);
+	}
+
+	static const char* ReadPOSIX(ReadFileData& rfd)
+	{
+		rfd.size = Size(filename);
+		if (rfd.size == -1 || rfd.size == 0)
+			return false;
+
+		if (_OPEN_FILE_(filename, rfd.fd))
+			return false;
+
+		rfd.memptr = (const char*)mmap(NULL, rfd.size, PROT_READ, MAP_PRIVATE, rfd.fd, 0);
+		if (rfd.memptr == (void*)-1)
+		{
+			_close(rfd.fd);
+			return false;
+		}
+		return true;
 	}
 #endif
 
@@ -237,6 +316,78 @@ namespace File
 		return forReturn;
 	}
 
+	const char* Read(const char* filename)
+	{
+		ReadFileData rfd;
+		bool result;
+
+#ifdef _WIN32
+		rfd.fileHandle = OpenHandleFromCharArrayWindows(filename);
+		result = ReadWindows(rfd);
+#else
+		rfd.size = Size(filename);
+		if (rfd.size == -1 || rfd.size == 0)
+			result = false;
+		else
+		{
+			if (_OPEN_FILE_(filename, rfd.fd))
+				result = false;
+			else
+				result = ReadPOSIX(rfd);
+		}
+#endif
+
+		if (result)
+		{
+			openedFiles[rfd.memptr] = rfd;
+			return rfd.memptr;
+		}
+		else
+			return nullptr;
+		
+	}
+
+#if defined _WIN32 && defined UNICODE
+	const char* Read(const wchar_t* filename)
+	{
+		ReadFileData rfd;
+		bool result;
+
+		rfd.fileHandle = OpenHandleFromWchar_tArrayWindows(filename);
+		result = ReadWindows(rfd);
+
+		if (result)
+		{
+			openedFiles[rfd.memptr] = rfd;
+			return rfd.memptr;
+		}
+		else
+			return nullptr;
+	}
+#endif
+
+#if defined _WIN32 && defined UNICODE
+#endif
+	void Read_Close(const char* content)
+	{
+		auto iterToContent = openedFiles.find(content);
+		if (iterToContent != openedFiles.end())
+		{
+			// File is found, release its data.
+			ReadFileData& rfd = iterToContent->second;
+#ifdef _WIN32
+			UnmapViewOfFile(content);
+			CloseHandle(rfd.mappingHandle);
+			CloseHandle(rfd.fileHandle);
+#else
+			munmap(rfd.memptr, rfd.size);
+			_close(rfd.fd);
+#endif
+			openedFiles.erase(iterToContent);
+		}
+		return;
+	}
+
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc)
 	{
 		switch (enc)
@@ -255,11 +406,5 @@ namespace File
 			break;
 		}
 		return os;
-	}
-
-	Filestream::~Filestream()
-	{
-		//munmap(file_zone);
-		_close(file_fd);
 	}
 } 
