@@ -186,7 +186,7 @@ int main()
 	//timingCtimeFunctions();
 	auto bigfile = LR"(C:\Program Files (x86)\Overwatch\data\casc\data\data.018)";
 	const char* content = File::Read(bigfile);
-	auto size = File::Size(bigfile)/10;
+	auto size = File::Size(bigfile);
 	assert(content);
 	cout << Toolbox::Timethis(1, [&](void) mutable {
 		for (File::filesize_t i = 0;i < size;i++)

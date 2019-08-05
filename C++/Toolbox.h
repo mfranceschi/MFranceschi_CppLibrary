@@ -43,7 +43,7 @@ namespace Toolbox
 	// A constexpr function for computing a power of 2.
 	constexpr unsigned long long constexpr_pow2(unsigned int nbr)
 	{
-		return unsigned long long(1) << nbr;
+		return 1ull << nbr);
 	}
 
 	// A constexpr function for computing min or max of two integers.

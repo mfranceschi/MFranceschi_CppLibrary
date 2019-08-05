@@ -69,6 +69,10 @@ namespace File
 	#define _close close /* POSIX form */
 #endif
 
+#ifndef _WIN32
+	typedef int HANDLE;
+#endif
+
 	/* FUNCTION DECLARATIONS */
 	static bool ExistsFromCharArrayWindows(const char* filename);
 	static filesize_t SizeFromCharArrayWindows(const char* filename);
@@ -185,15 +189,8 @@ namespace File
 		return filesize_t(t.st_size);
 	}
 
-	static const char* ReadPOSIX(ReadFileData& rfd)
+	static bool ReadPOSIX(ReadFileData& rfd)
 	{
-		rfd.size = Size(filename);
-		if (rfd.size == -1 || rfd.size == 0)
-			return false;
-
-		if (_OPEN_FILE_(filename, rfd.fd))
-			return false;
-
 		rfd.memptr = (const char*)mmap(NULL, rfd.size, PROT_READ, MAP_PRIVATE, rfd.fd, 0);
 		if (rfd.memptr == (void*)-1)
 		{
@@ -380,7 +377,7 @@ namespace File
 			CloseHandle(rfd.mappingHandle);
 			CloseHandle(rfd.fileHandle);
 #else
-			munmap(rfd.memptr, rfd.size);
+			munmap((void*)rfd.memptr, rfd.size);
 			_close(rfd.fd);
 #endif
 			openedFiles.erase(iterToContent);
