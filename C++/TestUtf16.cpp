@@ -184,13 +184,18 @@ int main()
 	//timingWchar_tConversion();
 	//timingFileReading();
 	//timingCtimeFunctions();
-	auto bigfile = LR"(C:\Program Files (x86)\Overwatch\data\casc\data\data.018)";
-	const char* content = File::Read(bigfile);
+	auto bigfile = L"D:\\Downloads\\LaVagueDVDRipFR-zone-telechargement.ws.avi";
+	wcout << bigfile << endl;
 	auto size = File::Size(bigfile);
+	const char* content = File::Read(bigfile);
+	
+	cout << size << endl;
 	assert(content);
+	assert(size != (File::filesize_t(-1)));
+	char item;
 	cout << Toolbox::Timethis(1, [&](void) mutable {
 		for (File::filesize_t i = 0;i < size;i++)
-			void(0);
+			item = content[i];
 		}) << endl;
 	File::Read_Close(content);
 	

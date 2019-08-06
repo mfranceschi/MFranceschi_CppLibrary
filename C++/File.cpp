@@ -185,7 +185,7 @@ namespace File
 	static filesize_t SizeFromCharArrayPOSIX(const char* filename)
 	{
 		struct stat t;
-		if (!stat(filename, &t)) return -1;
+		if (stat(filename, &t)) return -1;
 		return filesize_t(t.st_size);
 	}
 
