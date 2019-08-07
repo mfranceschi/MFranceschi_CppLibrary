@@ -109,7 +109,7 @@ namespace File
 		return result;
 #else // LPCSTR
 		HANDLE file = OpenHandleFromCharArrayWindows(filename);
-		if (file == INVALID_HANDLE_VALUE) return -1;
+		if (file == INVALID_HANDLE_VALUE) return 0;
 		LARGE_INTEGER res;
 		GetFileSizeEx(file, &res);
 		CloseHandle(file);
@@ -155,7 +155,7 @@ namespace File
 	static filesize_t SizeFromWchar_tArrayWindows(const wchar_t* filename)
 	{
 		HANDLE file = OpenHandleFromWchar_tArrayWindows(filename);
-		if (file == INVALID_HANDLE_VALUE) return -1;
+		if (file == INVALID_HANDLE_VALUE) return 0;
 		LARGE_INTEGER res;
 		GetFileSizeEx(file, &res);
 		CloseHandle(file);
@@ -185,7 +185,7 @@ namespace File
 	static filesize_t SizeFromCharArrayPOSIX(const char* filename)
 	{
 		struct stat t;
-		if (stat(filename, &t)) return -1;
+		if (stat(filename, &t)) return 0;
 		return filesize_t(t.st_size);
 	}
 
@@ -277,12 +277,7 @@ namespace File
 #if defined _WIN32 && defined UNICODE
 	filesize_t Size(const wchar_t* filename)
 	{
-		HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
-		if (file == INVALID_HANDLE_VALUE) return -1;
-		LARGE_INTEGER res;
-		GetFileSizeEx(file, &res);
-		CloseHandle(file);
-		return filesize_t(res.QuadPart);
+		return SizeFromWchar_tArrayWindows(filename);
 	}
 #endif
 

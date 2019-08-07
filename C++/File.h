@@ -58,7 +58,7 @@ namespace File
 	void Open(std::ifstream& ifs, const char* filename, 
 		encoding_t encoding = ENC_UNKNOWN);
 
-	// Returns the file size in bytes, or -1
+	// Returns the file size in bytes, or 0.
 	filesize_t Size(const char* filename);
 
 	// Returns the encoding of the file as one of the strings declared above.
@@ -84,7 +84,7 @@ namespace File
 	// Returns true if the file exists, false otherwise.
 	bool Exists(const wchar_t* filename);
 
-	// Returns the file size in bytes, or -1.
+	// Returns the file size in bytes, or 0.
 	filesize_t Size(const wchar_t* filename);
 
 	const char* Read(const wchar_t* filename);
