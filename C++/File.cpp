@@ -62,7 +62,13 @@ namespace File
 
 	/* LOW-LEVEL FILE HANDLING */
 #ifdef _WIN32 // Win32
-	#define _OPEN_FILE_(filename, fd) _sopen_s(&fd, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD)
+	#ifdef UNICODE
+		#define WIN_OPEN_FCT _wsopen_s
+	#else
+		#define WIN_OPEN_FCT _sopen_s
+	#endif
+
+	#define _OPEN_FILE_(filename, fd) WIN_OPEN_FCT(&fd, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD)
 #else // POSIX
 	#define _OPEN_FILE_(filename, fd) ((fd = open(filename, O_RDONLY)) == -1)
 	#define _read read /* POSIX form */
@@ -77,13 +83,13 @@ namespace File
 	static bool ExistsFromCharArrayWindows(const char* filename);
 	static filesize_t SizeFromCharArrayWindows(const char* filename);
 	static bool ReadWindows(ReadFileData& rfd);
-	static HANDLE OpenHandleFromCharArrayWindows(const char* filename);
 	static bool ExistsFromWchar_tArrayWindows(const wchar_t* filename);
 	static filesize_t SizeFromWchar_tArrayWindows(const wchar_t* filename);
 	static HANDLE OpenHandleFromWchar_tArrayWindows(const wchar_t* filename);
 	static bool ExistsFromCharArrayPOSIX(const char* filename);
 	static filesize_t SizeFromCharArrayPOSIX(const char* filename);
 	static bool ReadPOSIX(ReadFileData& rfd);
+	static HANDLE OpenHandleWindows(filename_t filename);
 
 	/* FUNCTION DEFINITIONS */
 #ifdef _WIN32
@@ -96,7 +102,7 @@ namespace File
 		return result;
 #else // LPCSTR
 		DWORD attr = GetFileAttributes(filename);
-		return attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY);
+		return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
 #endif
 	}
 
@@ -117,16 +123,9 @@ namespace File
 #endif
 	}
 
-	static HANDLE OpenHandleFromCharArrayWindows(const char* filename)
+	static HANDLE OpenHandleWindows(filename_t filename)
 	{
-#ifdef UNICODE // LPCWSTR
-		wchar_t* converted = Toolbox::ToWchar_t(filename);
-		auto result = OpenHandleFromWchar_tArrayWindows(converted);
-		delete[] converted;
-		return result;
-#else // LPCSTR
 		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
-#endif
 	}
 
 	static bool ReadWindows(ReadFileData& rfd)
@@ -165,7 +164,7 @@ namespace File
 	static bool ExistsFromWchar_tArrayWindows(const wchar_t* filename)
 	{
 		DWORD attr = GetFileAttributes(filename);
-		return attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY);
+		return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
 	}
 
 	static HANDLE OpenHandleFromWchar_tArrayWindows(const wchar_t* filename)
@@ -205,24 +204,18 @@ namespace File
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
 
-	bool Exists(const char* filename)
+	bool Exists(filename_t filename)
 	{
 #ifdef _WIN32 // Win32
-		return ExistsFromCharArrayWindows(filename);
+		DWORD attr = GetFileAttributes(filename);
+		return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
 #else // POSIX
-		return ExistsFromCharArrayPOSIX(filename);
+		struct stat t;
+		return !stat(filename, &t);
 #endif
 	}
-	
-#if defined _WIN32 && defined UNICODE
-	bool Exists(const wchar_t* filename)
-	// Algorithm: https://stackoverflow.com/questions/3828835.
-	{
-		return ExistsFromWchar_tArrayWindows(filename);
-	}
-#endif
 
-	bool IsEmpty(const char* filename, size_t charsToRead)
+	bool IsEmpty(filename_t filename, size_t charsToRead)
 	{
 		int file;
 		bool forReturn;
@@ -265,21 +258,21 @@ namespace File
 		}
 	}
 
-	filesize_t Size(const char* filename)
+	filesize_t Size(filename_t filename)
 	{
 #ifdef _WIN32 // Win32
-		return SizeFromCharArrayWindows(filename);
+		HANDLE file = OpenHandleWindows(filename);
+		if (file == INVALID_HANDLE_VALUE) return 0;
+		LARGE_INTEGER res;
+		GetFileSizeEx(file, &res);
+		CloseHandle(file);
+		return filesize_t(res.QuadPart);
 #else // POSIX
-		return SizeFromCharArrayPOSIX(filename);
+		struct stat t;
+		if (stat(filename, &t)) return 0;
+		return filesize_t(t.st_size);
 #endif
 	}
-
-#if defined _WIN32 && defined UNICODE
-	filesize_t Size(const wchar_t* filename)
-	{
-		return SizeFromWchar_tArrayWindows(filename);
-	}
-#endif
 
 	encoding_t Encoding(const char* filename)
 	{
@@ -308,13 +301,13 @@ namespace File
 		return forReturn;
 	}
 
-	const char* Read(const char* filename)
+	const char* Read(filename_t filename)
 	{
 		ReadFileData rfd;
 		bool result;
 
 #ifdef _WIN32
-		rfd.fileHandle = OpenHandleFromCharArrayWindows(filename);
+		rfd.fileHandle = OpenHandleWindows(filename);
 		result = ReadWindows(rfd);
 #else
 		rfd.size = Size(filename);
@@ -339,27 +332,6 @@ namespace File
 		
 	}
 
-#if defined _WIN32 && defined UNICODE
-	const char* Read(const wchar_t* filename)
-	{
-		ReadFileData rfd;
-		bool result;
-
-		rfd.fileHandle = OpenHandleFromWchar_tArrayWindows(filename);
-		result = ReadWindows(rfd);
-
-		if (result)
-		{
-			openedFiles[rfd.memptr] = rfd;
-			return rfd.memptr;
-		}
-		else
-			return nullptr;
-	}
-#endif
-
-#if defined _WIN32 && defined UNICODE
-#endif
 	void Read_Close(const char* content)
 	{
 		auto iterToContent = openedFiles.find(content);

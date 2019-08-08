@@ -6,8 +6,7 @@
  * (UTF-8 and UTF-16LE only).
  * All method are made so that it is the fastest possible way to achieve
  * these results.
- * For optimization purposes, the filename argument does not always have 
- * the same type for different functions.
+ * You are in charge of providing the right C-string filename (wide or not).
  * 
  * In particular, the functions "Exists" and "Size" are as fast as possible.
  * 
@@ -34,8 +33,16 @@ namespace File
 
 	// Represents a file encoding. Please use this instead of "..._e".
 	typedef encoding_e encoding_t;
+	
 	// Type used to deal with file sizes of any weight (GBs are okay).
 	typedef unsigned long filesize_t;
+
+	// Type used for file names.
+#if defined _WIN32 && defined UNICODE
+	typedef const wchar_t* filename_t;
+#else
+	typedef const char* filename_t;
+#endif
 
 
 //-------------------------------------------------------------- Constants
@@ -44,10 +51,10 @@ namespace File
 //------------------------------------------------------- Public functions
 
 	// Returns true if the file exists, false otherwise.
-	bool Exists(const char* filename); 
+	bool Exists(filename_t filename); 
 
 	// Returns true if trying to read charsToRead characters from the file fails.
-	bool IsEmpty(const char* filename, size_t charsToRead = 0);
+	bool IsEmpty(filename_t filename, size_t charsToRead = 0);
 	
 	// Closes ifs and tries to open filename according to Encoding's result.
 	// Applies default locale if encoding is unknown.
@@ -59,7 +66,7 @@ namespace File
 		encoding_t encoding = ENC_UNKNOWN);
 
 	// Returns the file size in bytes, or 0.
-	filesize_t Size(const char* filename);
+	filesize_t Size(filename_t filename);
 
 	// Returns the encoding of the file as one of the strings declared above.
 	// It executes "IsEmpty(filename, 3)" firstly and if the result is true,
@@ -71,7 +78,7 @@ namespace File
 	// Please note that it does not end with a '\0'.
 	// If file size is zero or if it fails, returns nullptr.
 	// For closing use Read_Close.
-	const char* Read(const char* filename);
+	const char* Read(filename_t filename);
 
 	// Closes a file opened using the Read function.
 	// If the given pointer is not a currently opened file, stay silent.
