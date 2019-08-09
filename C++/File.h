@@ -62,7 +62,7 @@ namespace File
 	// If an encoding is given, applies the corresponding locale 
 	// (UTF-8 or UTF-16LE)
 	// The position of ifs is then after useless BOMs.
-	void Open(std::ifstream& ifs, const char* filename, 
+	void Open(std::ifstream& ifs, filename_t filename, 
 		encoding_t encoding = ENC_UNKNOWN);
 
 	// Returns the file size in bytes, or 0.
@@ -72,7 +72,7 @@ namespace File
 	// It executes "IsEmpty(filename, 3)" firstly and if the result is true,
 	// returns ENC_UNKNOWN.
 	// If no encoding is found, returns ENC_DEFAULT.
-	encoding_t Encoding(const char* filename);
+	encoding_t Encoding(filename_t filename);
 
 	// Returns the entire file as a const char*.
 	// Please note that it does not end with a '\0'.
@@ -81,20 +81,10 @@ namespace File
 	const char* Read(filename_t filename);
 
 	// Closes a file opened using the Read function.
-	// If the given pointer is not a currently opened file, stay silent.
-	void Read_Close(const char* content);
+	// Returns whether a file was closed successfully.
+	bool Read_Close(const char* content);
 
 	// Displays the file encoding as a string.
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc);
-
-#ifdef _WIN32
-	// Returns true if the file exists, false otherwise.
-	bool Exists(const wchar_t* filename);
-
-	// Returns the file size in bytes, or 0.
-	filesize_t Size(const wchar_t* filename);
-
-	const char* Read(const wchar_t* filename);
-#endif
 } 
 #endif // FILE_H

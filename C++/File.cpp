@@ -75,131 +75,12 @@ namespace File
 	#define _close close /* POSIX form */
 #endif
 
-#ifndef _WIN32
-	typedef int HANDLE;
-#endif
-
-	/* FUNCTION DECLARATIONS */
-	static bool ExistsFromCharArrayWindows(const char* filename);
-	static filesize_t SizeFromCharArrayWindows(const char* filename);
-	static bool ReadWindows(ReadFileData& rfd);
-	static bool ExistsFromWchar_tArrayWindows(const wchar_t* filename);
-	static filesize_t SizeFromWchar_tArrayWindows(const wchar_t* filename);
-	static HANDLE OpenHandleFromWchar_tArrayWindows(const wchar_t* filename);
-	static bool ExistsFromCharArrayPOSIX(const char* filename);
-	static filesize_t SizeFromCharArrayPOSIX(const char* filename);
-	static bool ReadPOSIX(ReadFileData& rfd);
-	static HANDLE OpenHandleWindows(filename_t filename);
-
-	/* FUNCTION DEFINITIONS */
 #ifdef _WIN32
-	static bool ExistsFromCharArrayWindows(const char* filename)
-	{
-#ifdef UNICODE // LPCWSTR
-		wchar_t* converted = Toolbox::ToWchar_t(filename);
-		auto result = ExistsFromWchar_tArrayWindows(converted);
-		delete[] converted;
-		return result;
-#else // LPCSTR
-		DWORD attr = GetFileAttributes(filename);
-		return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
-#endif
-	}
-
-	static filesize_t SizeFromCharArrayWindows(const char* filename)
-	{
-#ifdef UNICODE // LPCWSTR
-		wchar_t* converted = Toolbox::ToWchar_t(filename);
-		auto result = Size(converted);
-		delete[] converted;
-		return result;
-#else // LPCSTR
-		HANDLE file = OpenHandleFromCharArrayWindows(filename);
-		if (file == INVALID_HANDLE_VALUE) return 0;
-		LARGE_INTEGER res;
-		GetFileSizeEx(file, &res);
-		CloseHandle(file);
-		return filesize_t(res.QuadPart);
-#endif
-	}
-
 	static HANDLE OpenHandleWindows(filename_t filename)
 	{
 		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
 	}
-
-	static bool ReadWindows(ReadFileData& rfd)
-	{
-		if (rfd.fileHandle == INVALID_HANDLE_VALUE)
-			return nullptr;
-
-		rfd.mappingHandle = CreateFileMapping(rfd.fileHandle, NULL, PAGE_READONLY, 0, 0, NULL);
-		if (rfd.mappingHandle == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
-		{
-			CloseHandle(rfd.fileHandle);
-			return false;
-		}
-
-		rfd.memptr = (const char*)MapViewOfFile(rfd.mappingHandle, FILE_MAP_READ, 0, 0, 0);
-		if (rfd.memptr == NULL)
-		{
-			CloseHandle(rfd.mappingHandle);
-			CloseHandle(rfd.fileHandle);
-			return false;
-		}
-		return true;
-	}
-
-#ifdef UNICODE
-	static filesize_t SizeFromWchar_tArrayWindows(const wchar_t* filename)
-	{
-		HANDLE file = OpenHandleFromWchar_tArrayWindows(filename);
-		if (file == INVALID_HANDLE_VALUE) return 0;
-		LARGE_INTEGER res;
-		GetFileSizeEx(file, &res);
-		CloseHandle(file);
-		return filesize_t(res.QuadPart);
-	}
-
-	static bool ExistsFromWchar_tArrayWindows(const wchar_t* filename)
-	{
-		DWORD attr = GetFileAttributes(filename);
-		return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
-	}
-
-	static HANDLE OpenHandleFromWchar_tArrayWindows(const wchar_t* filename)
-	{
-		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
-	}
-
 #endif
-
-#else // POSIX
-	static bool ExistsFromCharArrayPOSIX(const char* filename)
-	{
-		struct stat t;
-		return !stat(filename, &t);
-	}
-
-	static filesize_t SizeFromCharArrayPOSIX(const char* filename)
-	{
-		struct stat t;
-		if (stat(filename, &t)) return 0;
-		return filesize_t(t.st_size);
-	}
-
-	static bool ReadPOSIX(ReadFileData& rfd)
-	{
-		rfd.memptr = (const char*)mmap(NULL, rfd.size, PROT_READ, MAP_PRIVATE, rfd.fd, 0);
-		if (rfd.memptr == (void*)-1)
-		{
-			_close(rfd.fd);
-			return false;
-		}
-		return true;
-	}
-#endif
-
 
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
@@ -233,7 +114,7 @@ namespace File
 		return forReturn;
 	}
 
-	void Open(ifstream& ifs, const char* filename,
+	void Open(ifstream& ifs, filename_t filename,
 		encoding_t encoding)
 	{
 		ifs.close();
@@ -274,7 +155,7 @@ namespace File
 #endif
 	}
 
-	encoding_t Encoding(const char* filename)
+	encoding_t Encoding(filename_t filename)
 	{
 		int file;
 		encoding_t forReturn;
@@ -304,35 +185,45 @@ namespace File
 	const char* Read(filename_t filename)
 	{
 		ReadFileData rfd;
-		bool result;
 
 #ifdef _WIN32
 		rfd.fileHandle = OpenHandleWindows(filename);
-		result = ReadWindows(rfd);
+		if (rfd.fileHandle == INVALID_HANDLE_VALUE)
+			return nullptr;
+
+		rfd.mappingHandle = CreateFileMapping(rfd.fileHandle, NULL, PAGE_READONLY, 0, 0, NULL);
+		if (rfd.mappingHandle == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
+		{
+			CloseHandle(rfd.fileHandle);
+			return nullptr;
+		}
+
+		rfd.memptr = (const char*)MapViewOfFile(rfd.mappingHandle, FILE_MAP_READ, 0, 0, 0);
+		if (rfd.memptr == NULL)
+		{
+			CloseHandle(rfd.mappingHandle);
+			CloseHandle(rfd.fileHandle);
+			return nullptr;
+		}
 #else
 		rfd.size = Size(filename);
 		if (rfd.size == -1 || rfd.size == 0)
-			result = false;
-		else
+			return nullptr;
+		if (_OPEN_FILE_(filename, rfd.fd))
+			return nullptr;
+		rfd.memptr = (const char*)mmap(NULL, rfd.size, PROT_READ, MAP_PRIVATE, rfd.fd, 0);
+		if (rfd.memptr == (void*)-1)
 		{
-			if (_OPEN_FILE_(filename, rfd.fd))
-				result = false;
-			else
-				result = ReadPOSIX(rfd);
+			_close(rfd.fd);
+			return nullptr;
 		}
 #endif
 
-		if (result)
-		{
-			openedFiles[rfd.memptr] = rfd;
-			return rfd.memptr;
-		}
-		else
-			return nullptr;
-		
+		openedFiles[rfd.memptr] = rfd;
+		return rfd.memptr;		
 	}
 
-	void Read_Close(const char* content)
+	bool Read_Close(const char* content)
 	{
 		auto iterToContent = openedFiles.find(content);
 		if (iterToContent != openedFiles.end())
@@ -348,8 +239,10 @@ namespace File
 			_close(rfd.fd);
 #endif
 			openedFiles.erase(iterToContent);
+			return true;
 		}
-		return;
+		else
+			return false;
 	}
 
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc)
