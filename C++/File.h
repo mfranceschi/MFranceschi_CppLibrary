@@ -44,6 +44,14 @@ namespace File
 	typedef const char* filename_t;
 #endif
 
+	// Stream buffer used by Open_Stream function.
+	class OpenFileStreamBuffer : public std::stringbuf
+	{
+	public:
+		OpenFileStreamBuffer(const char* content, filesize_t size);
+		virtual ~OpenFileStreamBuffer();
+	};
+
 
 //-------------------------------------------------------------- Constants
 
@@ -79,6 +87,8 @@ namespace File
 	// If file size is zero or if it fails, returns nullptr.
 	// For closing use Read_Close.
 	const char* Read(filename_t filename);
+
+	std::istringstream ReadStream(filename_t);
 
 	// Closes a file opened using the Read function.
 	// Returns whether a file was closed successfully.

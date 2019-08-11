@@ -36,13 +36,13 @@ namespace File
 	// Data structure used to store informations about files opened with Open.
 	struct ReadFileData {
 		const char* memptr; // Holds the file data.
+		filesize_t size; // Size of the file = size of the mmap allocation.
 
 #ifdef _WIN32
 		HANDLE fileHandle; // File HANDLE
 		HANDLE mappingHandle; // File Mapping HANDLE
 #else
 		int fd; // File descriptor
-		filesize_t size; // Size of the file = size of the mmap allocation.
 #endif
 	};
 
@@ -187,6 +187,10 @@ namespace File
 		ReadFileData rfd;
 
 #ifdef _WIN32
+		rfd.size = Size(filename);
+		if (rfd.size == 0)
+			return nullptr;
+
 		rfd.fileHandle = OpenHandleWindows(filename);
 		if (rfd.fileHandle == INVALID_HANDLE_VALUE)
 			return nullptr;
@@ -221,6 +225,14 @@ namespace File
 
 		openedFiles[rfd.memptr] = rfd;
 		return rfd.memptr;		
+	}
+
+	std::istringstream ReadStream(filename_t filename)
+	{
+		std::istringstream iss;
+		const char* content = Read(filename);
+		iss.set_rdbuf(new OpenFileStreamBuffer(content, openedFiles[content].size));
+		return iss;
 	}
 
 	bool Read_Close(const char* content)
@@ -263,5 +275,17 @@ namespace File
 			break;
 		}
 		return os;
+	}
+
+	OpenFileStreamBuffer::OpenFileStreamBuffer(const char* content, filesize_t size) :
+		std::stringbuf(std::ios::in)
+	{
+		char* p = const_cast<char*>(content);
+		setg(p, p, p + size);
+	}
+
+	OpenFileStreamBuffer::~OpenFileStreamBuffer()
+	{
+		File::Read_Close(pbase());
 	}
 } 
