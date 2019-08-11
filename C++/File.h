@@ -39,9 +39,9 @@ namespace File
 
 	// Type used for file names.
 #if defined _WIN32 && defined UNICODE
-	typedef const wchar_t* filename_t;
+	typedef const wchar_t* filename_t; // typedef for const wchar_t *
 #else
-	typedef const char* filename_t;
+	typedef const char* filename_t; // typedef for const char *
 #endif
 
 	// Stream buffer used by Open_Stream function.
