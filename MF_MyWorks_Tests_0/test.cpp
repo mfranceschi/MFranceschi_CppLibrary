@@ -6,7 +6,7 @@
 
 #ifdef UNICODE
 constexpr File::filename_t FNAME_MIDDLESIZE = L"D:\\Vikings.scx";
-constexpr File::filename_t FNAME_UNEXISTING = L"C:\\unexisting._tut";
+constexpr File::filename_t FNAME_UNEXISTING = L"C:\\unexisting._tut ";
 #else
 constexpr File::filename_t FNAME_MIDDLESIZE = "D:\\Vikings.scx";
 constexpr File::filename_t FNAME_UNEXISTING = "C:\\unexisting._tut";

@@ -36,7 +36,8 @@ namespace File
 	// Data structure used to store informations about files opened with Open.
 	struct ReadFileData {
 		const char* memptr; // Holds the file data.
-		filesize_t size; // Size of the file = size of the mmap allocation.
+		filesize_t size; // Size of the file.
+		std::istringstream* streamptr; // Pointer to stream.
 
 #ifdef _WIN32
 		HANDLE fileHandle; // File HANDLE
@@ -44,6 +45,15 @@ namespace File
 #else
 		int fd; // File descriptor
 #endif
+
+		ReadFileData() : memptr(nullptr), size(0ul), streamptr(nullptr)
+#ifdef _WIN32
+			, fileHandle(0), mappingHandle(0)
+#else
+			, fd(0)
+#endif
+		{}
+
 	};
 
 //-------------------------------------------------------------- Constants
@@ -227,12 +237,26 @@ namespace File
 		return rfd.memptr;		
 	}
 
-	std::istringstream ReadStream(filename_t filename)
+	std::istringstream ReadStream(const char* content)
 	{
-		std::istringstream iss;
-		const char* content = Read(filename);
-		iss.set_rdbuf(new OpenFileStreamBuffer(content, openedFiles[content].size));
-		return iss;
+		auto found = openedFiles.find(content);
+		if (found != openedFiles.cend())
+		{
+			return OpenFileStream(content, found->second.size);
+		}
+		else
+			throw nullptr;
+		ReadFileData& rfd = openedFiles[content];
+		auto* streamptr = new OpenFileStream(content, rfd.size);
+//		auto* bufptr = new OpenFileStreamBuffer(content, openedFiles[content].size);
+		openedFiles[content].streamptr = streamptr;
+
+//#ifdef _WIN32
+//		iss.set_rdbuf(bufptr);
+//#else
+//		iss.rdbuf(bufptr);
+//#endif
+		return streamptr;
 	}
 
 	bool Read_Close(const char* content)
@@ -287,5 +311,16 @@ namespace File
 	OpenFileStreamBuffer::~OpenFileStreamBuffer()
 	{
 		File::Read_Close(pbase());
+	}
+
+	OpenFileStream::OpenFileStream(const char* content, filesize_t size) :
+		std::istringstream(std::ios::in)
+	{
+		set_rdbuf(new OpenFileStreamBuffer(content, size));
+	}
+
+	OpenFileStream::~OpenFileStream() 
+	{
+		delete rdbuf();
 	}
 } 

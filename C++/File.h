@@ -52,6 +52,14 @@ namespace File
 		virtual ~OpenFileStreamBuffer();
 	};
 
+	// Extension of STL class for better buffer handling.
+	class OpenFileStream : public std::istringstream
+	{
+	public:
+		OpenFileStream(const char* content, filesize_t size);
+		virtual ~OpenFileStream();
+	};
+
 
 //-------------------------------------------------------------- Constants
 
@@ -88,7 +96,9 @@ namespace File
 	// For closing use Read_Close.
 	const char* Read(filename_t filename);
 
-	std::istringstream ReadStream(filename_t);
+	// Generates a new string after calling Read.
+	// Throws nullptr if content is unknown.
+	std::istringstream ReadStream(const char* content);
 
 	// Closes a file opened using the Read function.
 	// Returns whether a file was closed successfully.
