@@ -20,6 +20,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include "Toolbox.h"
 
 namespace File
 {
@@ -43,23 +44,6 @@ namespace File
 #else
 	typedef const char* filename_t; // typedef for const char *
 #endif
-
-	// Stream buffer used by Open_Stream function.
-	class OpenFileStreamBuffer : public std::stringbuf
-	{
-	public:
-		OpenFileStreamBuffer(const char* content, filesize_t size);
-		virtual ~OpenFileStreamBuffer();
-	};
-
-	// Extension of STL class for better buffer handling.
-	class OpenFileStream : public std::istringstream
-	{
-	public:
-		OpenFileStream(const char* content, filesize_t size);
-		virtual ~OpenFileStream();
-	};
-
 
 //-------------------------------------------------------------- Constants
 
@@ -93,12 +77,14 @@ namespace File
 	// Returns the entire file as a const char*.
 	// Please note that it does not end with a '\0'.
 	// If file size is zero or if it fails, returns nullptr.
-	// For closing use Read_Close.
+	// For closing always use Read_Close.
 	const char* Read(filename_t filename);
 
-	// Generates a new string after calling Read.
-	// Throws nullptr if content is unknown.
-	std::istringstream ReadStream(const char* content);
+	// Opens the stream using Read's.
+	// Throws nullptr if content is unknown or if file size is too big for type "size_t".
+	// Please do not re-use the same stream after usage.
+	void ReadStream(Toolbox::InCharArrayStream& str, const char* content);
+	// Toolbox::InCharArrayStream&& ReadStream(const char* content);
 
 	// Closes a file opened using the Read function.
 	// Returns whether a file was closed successfully.

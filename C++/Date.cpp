@@ -298,7 +298,7 @@ Date::Date(const std::string& src, const char* pattern _Constr_Param_Microsecond
 	Date ans;
 	iss >> std::get_time(&time, pattern);
 
-	if (timet = mktime(&time) == time_t(-1)) {
+	if ((timet = mktime(&time)) == time_t(-1)) {
 		throw DateError::WRONG_STRING;
 	}
 }

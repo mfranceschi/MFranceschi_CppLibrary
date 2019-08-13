@@ -1,3 +1,6 @@
+// MANUAL TEST FILE ONLY FOR WINDOWS
+#ifdef _WIN32
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <Windows.h>
 #include <iostream>
@@ -13,20 +16,20 @@
 
 using namespace std;
 
-const size_t NBR_ITER = 10*1000;
-const wchar_t* file_L = L"D:\\Vikings.scx";
-const char* file_s = "D:\\Vikings.scx";
+static const size_t NBR_ITER = 10*1000;
+static const wchar_t* file_L = L"D:\\Vikings.scx";
+static const char* file_s = "D:\\Vikings.scx";
 #define FUNC Toolbox::Timethis(NBR_ITER, [&](void) mutable
-long long reteval;
+static long long reteval;
 
-void timingTimethis()
+static void timingTimethis()
 {
 	cout << "The duration of the execution of 'Timethis' itself, without anything to do, is: " << FUNC{
 	}) << endl;
 	cout << endl;
 }
 
-void timingTheFileExistence()
+static void timingTheFileExistence()
 {
 	cout << "Timing the file existence functions !" << endl;
 	
@@ -48,7 +51,7 @@ void timingTheFileExistence()
 	cout << endl;
 }
 
-void timingTheFileSize()
+static void timingTheFileSize()
 {
 	cout << "Timing the file size functions !" << endl;
 
@@ -82,7 +85,7 @@ void timingTheFileSize()
 	cout << endl;
 }
 
-void timingWchar_tConversion()
+static void timingWchar_tConversion()
 {
 	cout << "Timing char to wchar_t conversion functions!" << endl;
 	const wchar_t* newptr = nullptr;
@@ -100,7 +103,7 @@ void timingWchar_tConversion()
 	cout << endl;
 }
 
-void timingFileReading()
+static void timingFileReading()
 {
 	cout << "Timing functions for reading 5 chars in a file!" << endl;
 	char* buffer = new char[6];
@@ -143,7 +146,7 @@ void timingFileReading()
 	cout << endl;
 }
 
-void timingCtimeFunctions()
+static void timingCtimeFunctions()
 {
 	cout << "Timing <ctime> conversion functions between tm and time_t !" << endl;
 	time_t timet = time(nullptr);
@@ -201,3 +204,6 @@ int main()
 	
 	return EXIT_SUCCESS;
 }
+
+#endif // _WIN32
+

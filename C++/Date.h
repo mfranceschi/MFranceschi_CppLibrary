@@ -176,10 +176,7 @@ protected:
 	
 	// According to system config, it is the number of possible years that 
 	// can be represented.
-	constexpr static int MAX_YEARS = int(Toolbox::constexpr_minmax(
-		Toolbox::constexpr_pow2(sizeof(time_t) * 8 - 1) /
-		unsigned long long(86400 * 365.2425),
-		unsigned long long(INT_MAX), true));
+	constexpr static int MAX_YEARS = Toolbox::constexpr_max_years();
 };
 
 //------------------------------------------------------ Other definitions

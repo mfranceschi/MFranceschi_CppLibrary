@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstring>
 #include "Toolbox.h"
+#include <sstream>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -55,5 +56,18 @@ namespace Toolbox
 			destination = nullptr;
 		}
 		return destination;
+	}
+
+	InCharArrayBuffer::InCharArrayBuffer(const char* content, size_t size) :
+		std::stringbuf(std::ios_base::in)
+	{
+		char* p = const_cast<char*>(content);
+		setg(p, p, p + size);
+	}
+
+	InCharArrayStream::InCharArrayStream(const char* content, size_t size) :
+		icab(content, size)
+	{
+		set_rdbuf(&icab);
 	}
 }

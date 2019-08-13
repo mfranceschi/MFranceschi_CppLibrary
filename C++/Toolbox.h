@@ -8,13 +8,34 @@
 #define TOOLBOX_H 
 
 //--------------------------------------------------------------- Includes
-#include <fstream>
-#include <string>
+#include <climits>
 #include <functional>
+#include <sstream>
+#include <string>
 
 namespace Toolbox
 {
-	
+	//------------------------------------------------------------------ Types
+
+	class InCharArrayBuffer : public std::stringbuf
+	{
+	public:
+		InCharArrayBuffer(const char* content, size_t size);
+	};
+
+	// Simple "istringstream" extension for reading C-string
+	// without copy and without end character.
+	class InCharArrayStream : public std::istringstream
+	{
+	public:
+		// InCharArrayStream() = default;
+		// The full string and the size.
+		// Reading content[size-1] is ok, reading content[size] is not.
+		InCharArrayStream(const char* content, size_t size);
+
+	protected:
+		InCharArrayBuffer icab;
+	};
 
 	//-------------------------------------------------------------- Constants
 
@@ -32,7 +53,7 @@ namespace Toolbox
 
 	// Returns the sign of the given number: -1, 0 or +1, as an int.
 	template <typename type = long long>
-	inline constexpr int Sign(type nbr)
+	constexpr int Sign(type nbr)
 	{
 		return !nbr ?
 			0 : nbr < type(0) ?
@@ -49,12 +70,26 @@ namespace Toolbox
 	// A constexpr function for computing min or max of two integers.
 	// Returns first parameter in case of equality.
 	template <typename Ta>
-	constexpr Ta constexpr_minmax(Ta a, Ta b, bool min)
+	constexpr Ta constexpr_minmax(Ta a, Ta b, bool min = true)
 	{
 		if (min)
 			return a <= b ? a : b;
 		else
 			return a >= b ? a : b;
 	}
+
+	// Returns the number of seconds allowed in this machine.
+	// It depends on "sizeof(time_t)".
+	constexpr int constexpr_max_years()
+	{
+		typedef unsigned long long ULL_t;
+		ULL_t seconds_in_year = ULL_t(86400.L * 365.2425L);
+		ULL_t possible_seconds = 1ull << ULL_t(sizeof(time_t) * 8ull - 1ull);
+
+		return int(Toolbox::constexpr_minmax(
+			possible_seconds / seconds_in_year,
+			ULL_t(INT_MAX), true));
+	}
+
 }
 #endif // TOOLBOX_H 

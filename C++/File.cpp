@@ -1,7 +1,6 @@
 //---------- Implementation of module <File> (file File.cpp) 
 
 //--------------------------------------------------------------- Includes
-#pragma warning( disable: 26444) // Warning that occurs when using imbue.
 
 #include <algorithm>
 #include <codecvt>
@@ -11,6 +10,7 @@
 #include <map>
 
 #ifdef _WIN32
+#pragma warning( disable: 26444) // Warning that occurs when using imbue.
 #include <io.h>
 #include "Toolbox.h"
 #include <Windows.h>
@@ -116,7 +116,7 @@ namespace File
 		else
 		{
 			char* content = new char[charsToRead];
-			forReturn = !(_read(file, content, charsToRead) != charsToRead);
+			forReturn = !(size_t(_read(file, content, charsToRead)) != charsToRead);
 			delete[] content;
 			_close(file);
 		}
@@ -180,9 +180,9 @@ namespace File
 			if (ret_read != NBR_BITS_TO_READ_ENCODING)
 				forReturn = ENC_UNKNOWN;
 
-			if (bits[0] == 0xff && bits[1] == 0xfe)
+			if (bits[0] == char(0xff) && bits[1] == char(0xfe))
 				forReturn = ENC_UTF16LE;
-			else if (ret_read == 3 && bits[0] == 0xef && bits[1] == 0xbb && bits[2] == 0xbf)
+			else if (ret_read == 3 && bits[0] == char(0xef) && bits[1] == char(0xbb) && bits[2] == char(0xbf))
 				forReturn = ENC_UTF8;
 			else
 				forReturn = ENC_DEFAULT;
@@ -195,12 +195,11 @@ namespace File
 	const char* Read(filename_t filename)
 	{
 		ReadFileData rfd;
-
-#ifdef _WIN32
 		rfd.size = Size(filename);
 		if (rfd.size == 0)
 			return nullptr;
 
+#ifdef _WIN32
 		rfd.fileHandle = OpenHandleWindows(filename);
 		if (rfd.fileHandle == INVALID_HANDLE_VALUE)
 			return nullptr;
@@ -220,9 +219,6 @@ namespace File
 			return nullptr;
 		}
 #else
-		rfd.size = Size(filename);
-		if (rfd.size == -1 || rfd.size == 0)
-			return nullptr;
 		if (_OPEN_FILE_(filename, rfd.fd))
 			return nullptr;
 		rfd.memptr = (const char*)mmap(NULL, rfd.size, PROT_READ, MAP_PRIVATE, rfd.fd, 0);
@@ -235,28 +231,6 @@ namespace File
 
 		openedFiles[rfd.memptr] = rfd;
 		return rfd.memptr;		
-	}
-
-	std::istringstream ReadStream(const char* content)
-	{
-		auto found = openedFiles.find(content);
-		if (found != openedFiles.cend())
-		{
-			return OpenFileStream(content, found->second.size);
-		}
-		else
-			throw nullptr;
-		ReadFileData& rfd = openedFiles[content];
-		auto* streamptr = new OpenFileStream(content, rfd.size);
-//		auto* bufptr = new OpenFileStreamBuffer(content, openedFiles[content].size);
-		openedFiles[content].streamptr = streamptr;
-
-//#ifdef _WIN32
-//		iss.set_rdbuf(bufptr);
-//#else
-//		iss.rdbuf(bufptr);
-//#endif
-		return streamptr;
 	}
 
 	bool Read_Close(const char* content)
@@ -299,28 +273,5 @@ namespace File
 			break;
 		}
 		return os;
-	}
-
-	OpenFileStreamBuffer::OpenFileStreamBuffer(const char* content, filesize_t size) :
-		std::stringbuf(std::ios::in)
-	{
-		char* p = const_cast<char*>(content);
-		setg(p, p, p + size);
-	}
-
-	OpenFileStreamBuffer::~OpenFileStreamBuffer()
-	{
-		File::Read_Close(pbase());
-	}
-
-	OpenFileStream::OpenFileStream(const char* content, filesize_t size) :
-		std::istringstream(std::ios::in)
-	{
-		set_rdbuf(new OpenFileStreamBuffer(content, size));
-	}
-
-	OpenFileStream::~OpenFileStream() 
-	{
-		delete rdbuf();
 	}
 } 
