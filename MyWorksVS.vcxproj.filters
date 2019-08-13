@@ -30,10 +30,13 @@
     <ClCompile Include="c++\File.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c++\TestUtf16.cpp">
+    <ClCompile Include="c++\Toolbox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c++\Toolbox.cpp">
+    <ClCompile Include="C++\TestUnix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C++\TestWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -54,6 +57,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="c++\Toolbox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C++\TestUnix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C++\TestWin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -113,7 +113,8 @@
     <ClCompile Include="c++\Date.cpp" />
     <ClCompile Include="c++\Dates.cpp" />
     <ClCompile Include="c++\File.cpp" />
-    <ClCompile Include="c++\TestUtf16.cpp" />
+    <ClCompile Include="C++\TestUnix.cpp" />
+    <ClCompile Include="C++\TestWin.cpp" />
     <ClCompile Include="c++\Toolbox.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -122,6 +123,8 @@
     <ClInclude Include="c++\Date.h" />
     <ClInclude Include="c++\Dates.h" />
     <ClInclude Include="c++\File.h" />
+    <ClInclude Include="C++\TestUnix.h" />
+    <ClInclude Include="C++\TestWin.h" />
     <ClInclude Include="c++\Toolbox.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
