@@ -76,7 +76,7 @@ namespace Toolbox
 	{
 		typedef unsigned long long ULL_t;
 		ULL_t seconds_in_year = ULL_t(86400.L * 365.2425L);
-		ULL_t possible_seconds = 1ull << ULL_t(sizeof(time_t) * 8ull - 1ull);
+		ULL_t possible_seconds = 1ull << ULL_t(ULL_t(sizeof(time_t)) * 8ull - 1ull);
 
 		return int(Toolbox::constexpr_minmax(
 			possible_seconds / seconds_in_year,

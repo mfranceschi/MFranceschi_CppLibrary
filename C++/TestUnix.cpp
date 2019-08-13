@@ -26,14 +26,15 @@ void myassert(bool condition, const char* str, int nbr = -1)
 
 int main()
 {
-	int iter = 999;
+	int iter = 99;
+	File::filename_t fname = "bonjour.txt";
+	int nbr_lignes = 1;
 
 	if (false)
 	{
 		for    (int j=0 ; j<iter ; ++j)
 			for(int i=0 ; i<iter ; ++i)
 			{
-				File::filename_t fname = "../Readme.md";
 				const char* content = File::Read(fname);
 				myassert(content != nullptr, "fichier pas ok");
 				Toolbox::InCharArrayStream icas(content, File::Size(fname));
@@ -44,7 +45,7 @@ int main()
 					getline(icas, buffer);
 					++linecpt;
 				}
-				myassert(linecpt == 10, "BaD LiNe CoUnT", linecpt);
+				myassert(linecpt == nbr_lignes, "BaD LiNe CoUnT", linecpt);
 				
 				File::Read_Close(content);
 			}
@@ -52,7 +53,6 @@ int main()
 
 	if(true) 
 	{
-		File::filename_t fname = "../Readme.md";
 		const char* content = File::Read(fname);
 		myassert(content != nullptr, "fichier pas ok");
 		Toolbox::InCharArrayStream icas(content, File::Size(fname));
@@ -64,7 +64,7 @@ int main()
 			++linecpt;
 			cout << buffer << endl;
 		}
-		myassert(linecpt == 10, "BaD LiNe CoUnT", linecpt);
+		myassert(linecpt == nbr_lignes, "BaD LiNe CoUnT", linecpt);
 
 		File::Read_Close(content);
 	}

@@ -12,75 +12,102 @@ constexpr File::filename_t FNAME_MIDDLESIZE = "D:\\Vikings.scx";
 constexpr File::filename_t FNAME_UNEXISTING = "C:\\unexisting._tut";
 #endif
 
+struct file_info_data
+{
+	File::filesize_t size;
+	File::filename_t name;
+	char firstByte, lastByte;
+	bool exists;
+	File::encoding_t encoding;
+
+	file_info_data(File::filesize_t fsize, File::filename_t fname, char fByte, char lByte, bool ex, File::encoding_t enc) :
+		size(fsize), name(fname), firstByte(fByte), lastByte(lByte), exists(ex), encoding(enc)
+	{}
+};
+
 class TestFile : public ::testing::Test {
 protected:
-	TestFile(File::filename_t fname, File::filesize_t fsize, char firstByte, char lastByte) :
-		filename(fname),
-		filesize(fsize),
-		firstByte(firstByte),
-		lastByte(lastByte)
+	TestFile(const file_info_data& fid) :
+		fid(fid)
 	{}
 
-	File::filename_t filename;
-	File::filesize_t filesize;
-	char firstByte;
-	char lastByte;
+	void CheckSize()
+	{
+		File::filesize_t size = File::Size(fid.name);
+		if (fid.size)
+			ASSERT_NE(size, 0);
+		EXPECT_EQ(size, fid.size);
+	}
+
+	void CheckExists()
+	{
+		bool result = File::Exists(fid.name);
+		if (fid.exists)
+			EXPECT_TRUE(result);
+		else
+			EXPECT_FALSE(result);
+	}
+
+	void CheckEncoding()
+	{
+		EXPECT_EQ(File::Encoding(fid.name), fid.encoding);
+	}
+
+	file_info_data fid;
 };
 
 class TestMiddleWeightFile : public TestFile {
 protected:
-	TestMiddleWeightFile() : TestFile(FNAME_MIDDLESIZE, 287815, 'l', char(239)) {}
+	TestMiddleWeightFile() : 
+		TestFile(file_info_data(287815, FNAME_MIDDLESIZE, 'l', char(239), true, File::ENC_DEFAULT))
+	{}
 };
 
 class TestUnexistingFile : public TestFile {
 protected:
-	TestUnexistingFile() : TestFile(FNAME_UNEXISTING, 0, 0, 0) {}
+	TestUnexistingFile() : 
+		TestFile(file_info_data(0, FNAME_MIDDLESIZE, 0, 0, false, File::ENC_UNKNOWN))
+	{}
 };
 
 TEST_F(TestMiddleWeightFile, VerifySize) {
-	File::filesize_t size = File::Size(filename);
-	if (filesize)
-		ASSERT_NE(size, 0);
-	EXPECT_EQ(size, filesize);
+	CheckSize();
 }
 
 TEST_F(TestMiddleWeightFile, VerifyExists) {
-	EXPECT_TRUE(File::Exists(filename));
+	CheckExists();
 }
 
 TEST_F(TestMiddleWeightFile, VerifyEncoding) {
-	EXPECT_EQ(File::Encoding(filename), File::ENC_DEFAULT);
+	CheckEncoding();
 }
 
 TEST_F(TestMiddleWeightFile, VerifyOpen) {
 	std::ifstream ifs;
-	File::Open(ifs, filename);
+	File::Open(ifs, fid.name);
 	ASSERT_TRUE(ifs.good());
 	EXPECT_EQ(ifs.tellg(), 0);
 	EXPECT_TRUE(ifs.good());
-	EXPECT_EQ((ifs.peek()), firstByte);
+	EXPECT_EQ((ifs.peek()), fid.firstByte);
 	ifs.seekg(-1, std::ios_base::end);
-	EXPECT_EQ(char(ifs.peek()), lastByte);
+	EXPECT_EQ(char(ifs.peek()), fid.lastByte);
 }
 
 TEST_F(TestUnexistingFile, VerifySize) {
-	File::filesize_t size = File::Size(filename);
-	if (filesize)
-		ASSERT_NE(size, 0);
-	EXPECT_EQ(size, filesize);
+	CheckSize();
 }
 
 TEST_F(TestUnexistingFile, VerifyExists) {
-	EXPECT_FALSE(File::Exists(filename));
+	CheckExists();
 }
 
 TEST_F(TestUnexistingFile, VerifyEncoding) {
-	EXPECT_EQ(File::Encoding(filename), File::ENC_UNKNOWN);
+	CheckEncoding();
 }
 
 TEST_F(TestUnexistingFile, VerifyOpen) {
 	std::ifstream ifs;
-	File::Open(ifs, filename);
+	File::Open(ifs, fid.name);
 	ASSERT_FALSE(ifs.good());
 }
 

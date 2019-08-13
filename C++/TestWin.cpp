@@ -1,6 +1,11 @@
 // MANUAL TEST FILE ONLY FOR WINDOWS
 #ifdef _WIN32
 
+/* Instructions for memory leak check */
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <Windows.h>
 #include <iostream>
@@ -187,21 +192,25 @@ int main()
 	//timingWchar_tConversion();
 	//timingFileReading();
 	//timingCtimeFunctions();
-	auto bigfile = L"D:\\Downloads\\LaVagueDVDRipFR-zone-telechargement.ws.avi";
-	wcout << bigfile << endl;
+	//auto bigfile = L"D:\\Downloads\\LaVagueDVDRipFR-zone-telechargement.ws.avi";
+	auto bigfile = L"C:\\Users\\mfran\\Desktop\\recette.pdf";
+	//wcout << bigfile << endl;
 	auto size = File::Size(bigfile);
 	const char* content = File::Read(bigfile);
 	
 	cout << size << endl;
 	assert(content);
 	assert(size != (File::filesize_t(-1)));
-	char item;
-	cout << Toolbox::Timethis(1, [&](void) mutable {
-		for (File::filesize_t i = 0;i < size;i++)
-			item = content[i];
+	{
+		Toolbox::InCharArrayStream isac(content, size);
+		std::string strbuf;
+		cout << Toolbox::Timethis(1, [&](void) mutable {
+			while (isac) getline(isac, strbuf);
 		}) << endl;
-	File::Read_Close(content);
+		File::Read_Close(content);
+	}
 	
+	_CrtDumpMemoryLeaks();
 	return EXIT_SUCCESS;
 }
 
