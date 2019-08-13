@@ -58,7 +58,7 @@ namespace Toolbox
 		return destination;
 	}
 
-	InCharArrayBuffer::InCharArrayBuffer(const char* content, size_t size) :
+	InCharArrayStream::InCharArrayBuffer::InCharArrayBuffer(const char* content, size_t size) :
 		std::stringbuf(std::ios_base::in)
 	{
 		char* p = const_cast<char*>(content);

@@ -17,12 +17,6 @@ namespace Toolbox
 {
 	//------------------------------------------------------------------ Types
 
-	class InCharArrayBuffer : public std::stringbuf
-	{
-	public:
-		InCharArrayBuffer(const char* content, size_t size);
-	};
-
 	// Simple "istringstream" extension for reading C-string
 	// without copy and without end character.
 	class InCharArrayStream : public std::istringstream
@@ -34,6 +28,10 @@ namespace Toolbox
 		InCharArrayStream(const char* content, size_t size);
 
 	protected:
+		struct InCharArrayBuffer : public std::stringbuf
+		{
+			InCharArrayBuffer(const char* content, size_t size);
+		};
 		InCharArrayBuffer icab;
 	};
 
