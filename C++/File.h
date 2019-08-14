@@ -25,6 +25,7 @@
 namespace File
 {
 	// Represents a file encoding.
+	// It is an implementation detail that may change. Please use "..._t" instead.
 	enum encoding_e {
 		ENC_UTF16LE, // Normal UTF-16LE
 		ENC_UTF8, // Normal UTF-8
@@ -32,7 +33,7 @@ namespace File
 		ENC_UNKNOWN // A problem occured while looking for the encoding.
 	};
 
-	// Represents a file encoding. Please use this instead of "..._e".
+	// Represents a file encoding.
 	typedef encoding_e encoding_t;
 	
 	// Type used to deal with file sizes of any weight (GBs are okay).
@@ -79,12 +80,6 @@ namespace File
 	// If file size is zero or if it fails, returns nullptr.
 	// For closing always use Read_Close.
 	const char* Read(filename_t filename);
-
-	// Opens the stream using Read's.
-	// Throws nullptr if content is unknown or if file size is too big for type "size_t".
-	// Please do not re-use the same stream after usage.
-	void ReadStream(Toolbox::InCharArrayStream& str, const char* content);
-	// Toolbox::InCharArrayStream&& ReadStream(const char* content);
 
 	// Closes a file opened using the Read function.
 	// Returns whether a file was closed successfully.
