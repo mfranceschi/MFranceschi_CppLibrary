@@ -20,6 +20,8 @@
 #include <unistd.h>
 #endif
 
+#include <cassert>
+
 using std::string; 
 using std::locale; 
 using std::ifstream; 
@@ -88,7 +90,7 @@ namespace File
 #ifdef _WIN32
 	static HANDLE OpenHandleWindows(filename_t filename)
 	{
-		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
+		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	}
 #endif
 
@@ -241,9 +243,9 @@ namespace File
 			// File is found, release its data.
 			ReadFileData& rfd = iterToContent->second;
 #ifdef _WIN32
-			UnmapViewOfFile(content);
-			CloseHandle(rfd.mappingHandle);
-			CloseHandle(rfd.fileHandle);
+			assert(UnmapViewOfFile(content));
+			assert(CloseHandle(rfd.mappingHandle));
+			assert(CloseHandle(rfd.fileHandle));
 #else
 			munmap((void*)rfd.memptr, rfd.size);
 			_close(rfd.fd);

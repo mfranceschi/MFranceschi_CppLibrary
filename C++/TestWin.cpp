@@ -2,9 +2,9 @@
 #ifdef _WIN32
 
 /* Instructions for memory leak check */
-//#define _CRTDBG_MAP_ALLOC
-//#include <stdlib.h>
-//#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <Windows.h>
@@ -184,6 +184,25 @@ static void timingCtimeFunctions()
 	cout << endl;
 }
 
+void CheckReadMemoryLeaks()
+{
+	_CrtMemState states[3];
+	_CrtMemCheckpoint(&states[0]);
+
+	for (int i = 0; i < 250; ++i)
+	{
+		auto size = File::Size(file_L);
+		const char* content = File::Read(file_L);
+		Toolbox::InCharArrayStream isac(content, size);
+		std::string strbuf;
+		while (isac) getline(isac, strbuf);
+		File::Read_Close(content);
+	}
+	_CrtMemCheckpoint(&states[1]);
+	if (_CrtMemDifference(&states[2], &states[0], &states[1]))
+		_CrtMemDumpStatistics(&states[2]);
+}
+
 int main()
 {
 	//timingTimethis();
@@ -193,24 +212,7 @@ int main()
 	//timingFileReading();
 	//timingCtimeFunctions();
 	//auto bigfile = L"D:\\Downloads\\LaVagueDVDRipFR-zone-telechargement.ws.avi";
-	auto bigfile = L"C:\\Users\\mfran\\Desktop\\recette.pdf";
-	//wcout << bigfile << endl;
-	auto size = File::Size(bigfile);
-	const char* content = File::Read(bigfile);
-	
-	cout << size << endl;
-	assert(content);
-	assert(size != (File::filesize_t(-1)));
-	{
-		Toolbox::InCharArrayStream isac(content, size);
-		std::string strbuf;
-		cout << Toolbox::Timethis(1, [&](void) mutable {
-			while (isac) getline(isac, strbuf);
-		}) << endl;
-		File::Read_Close(content);
-	}
-	
-	_CrtDumpMemoryLeaks();
+	CheckReadMemoryLeaks();
 	return EXIT_SUCCESS;
 }
 

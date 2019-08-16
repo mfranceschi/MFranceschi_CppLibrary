@@ -70,17 +70,17 @@ namespace Toolbox
 			return a >= b ? a : b;
 	}
 
-	// Returns the number of seconds allowed in this machine.
+	// Returns the number of years allowed to be represented on this machine.
 	// It depends on "sizeof(time_t)".
 	constexpr int constexpr_max_years()
 	{
 		typedef unsigned long long ULL_t;
 		ULL_t seconds_in_year = ULL_t(86400.L * 365.2425L);
-		ULL_t possible_seconds = 1ull << ULL_t(ULL_t(sizeof(time_t)) * 8ull - 1ull);
+		ULL_t possible_seconds = 0x1ull << ULL_t(ULL_t(sizeof(time_t)) * 0x8ull - 0x1ull);
 
 		return int(Toolbox::constexpr_minmax(
 			possible_seconds / seconds_in_year,
-			ULL_t(INT_MAX), true));
+			ULL_t(INT_MAX)));
 	}
 
 }
