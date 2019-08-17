@@ -1,15 +1,21 @@
+#include <gtest/gtest.h>
 #include "pch.h"
 #include "../C++/Toolbox.h"
 #include "../C++/Toolbox.cpp"
 #include "../C++/File.h"
 #include "../C++/File.cpp"
 
-#ifdef UNICODE
-constexpr File::filename_t FNAME_MIDDLESIZE = L"D:\\Vikings.scx";
-constexpr File::filename_t FNAME_UNEXISTING = L"C:\\unexisting._tut ";
-#else
-constexpr File::filename_t FNAME_MIDDLESIZE = "D:\\Vikings.scx";
-constexpr File::filename_t FNAME_UNEXISTING = "C:\\unexisting._tut";
+#ifdef _WIN32 // WIN32
+	#ifdef UNICODE
+		constexpr File::filename_t FNAME_MIDDLESIZE = L"D:\\Vikings.scx";
+		constexpr File::filename_t FNAME_UNEXISTING = L"C:\\unexisting._tut ";
+	#else
+		constexpr File::filename_t FNAME_MIDDLESIZE = "D:\\Vikings.scx";
+		constexpr File::filename_t FNAME_UNEXISTING = "C:\\unexisting._tut";
+	#endif
+#else // POSIX
+	constexpr File::filename_t FNAME_MIDDLESIZE = "/mnt/d/Vikings.scx";
+	constexpr File::filename_t FNAME_UNEXISTING = "/mnt/c/unexisting._tut";
 #endif
 
 struct file_info_data
@@ -130,8 +136,8 @@ TEST_F(TestUnexistingFile, VerifyOpen) {
 	CheckOpen();
 }
 
-TEST(TestFileSize, DotFile) {
-	const wchar_t* filename = L".";
-	File::filesize_t size = File::Size(filename);
-	ASSERT_EQ(size, 0);
+int main(int argc, char** argv)
+{
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }

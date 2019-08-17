@@ -189,7 +189,7 @@ void CheckReadMemoryLeaks()
 	_CrtMemState states[3];
 	_CrtMemCheckpoint(&states[0]);
 
-	for (int i = 0; i < 250; ++i)
+	for (int i = 0; i < 25; ++i)
 	{
 		auto size = File::Size(file_L);
 		const char* content = File::Read(file_L);
