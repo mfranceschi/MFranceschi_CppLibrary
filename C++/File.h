@@ -51,8 +51,22 @@ namespace File
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
 
+	// Deletes the file or the directory.
+	// If the "fileonly" parameter is true and the target is a directory then it fails.
+	// Returns true on success, false otherwise.
+	bool Delete(filename_t filename, bool fileonly = false);
+
+	// Returns the encoding of the file as one of the strings declared above.
+	// It executes "IsEmpty(filename, 3)" firstly and if the result is true,
+	// returns ENC_UNKNOWN.
+	// If no encoding is found, returns ENC_DEFAULT.
+	encoding_t Encoding(filename_t filename);
+
 	// Returns true if the file exists, false otherwise.
 	bool Exists(filename_t filename); 
+
+	// Returns true if the given path points to a directory, false otherwise.
+	bool IsDir(filename_t filename);
 
 	// Returns true if trying to read charsToRead characters from the file fails.
 	bool IsEmpty(filename_t filename, size_t charsToRead = 0);
@@ -66,15 +80,6 @@ namespace File
 	void Open(std::ifstream& ifs, filename_t filename, 
 		encoding_t encoding = ENC_UNKNOWN);
 
-	// Returns the file size in bytes, or 0.
-	filesize_t Size(filename_t filename);
-
-	// Returns the encoding of the file as one of the strings declared above.
-	// It executes "IsEmpty(filename, 3)" firstly and if the result is true,
-	// returns ENC_UNKNOWN.
-	// If no encoding is found, returns ENC_DEFAULT.
-	encoding_t Encoding(filename_t filename);
-
 	// Returns the entire file as a const char*.
 	// Please note that it does not end with a '\0'.
 	// If file size is zero or if it fails, returns nullptr.
@@ -84,6 +89,9 @@ namespace File
 	// Closes a file opened using the Read function.
 	// Returns whether a file was closed successfully.
 	bool Read_Close(const char* content);
+
+	// Returns the file size in bytes, or 0.
+	filesize_t Size(filename_t filename);
 
 	// Displays the file encoding as a string.
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc);

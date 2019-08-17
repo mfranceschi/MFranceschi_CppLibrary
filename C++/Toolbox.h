@@ -74,13 +74,15 @@ namespace Toolbox
 	// It depends on "sizeof(time_t)".
 	constexpr int constexpr_max_years()
 	{
+#pragma warning( disable: 4554)
 		typedef unsigned long long ULL_t;
 		ULL_t seconds_in_year = ULL_t(86400.L * 365.2425L);
-		ULL_t possible_seconds = 0x1ull << ULL_t(ULL_t(sizeof(time_t)) * 0x8ull - 0x1ull);
+		ULL_t possible_seconds = 0x1ull << ULL_t(sizeof(time_t) * 8 - 1);
 
-		return int(Toolbox::constexpr_minmax(
+		return int(Toolbox::constexpr_minmax <ULL_t>(
 			possible_seconds / seconds_in_year,
-			ULL_t(INT_MAX)));
+			INT_MAX));
+#pragma warning(default: 4554)
 	}
 
 }

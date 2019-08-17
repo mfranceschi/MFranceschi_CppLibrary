@@ -97,6 +97,21 @@ namespace File
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
 
+	bool Delete(filename_t filename, bool fileonly)
+	{
+#ifdef _WIN32 // Win32
+		if (fileonly)
+			return DeleteFile(filename);
+		else
+			return DeleteFile(filename) ? true : RemoveDirectory(filename);
+#else // POSIX
+		if (fileonly)
+			return !unlink(filename);
+		else
+			return !remove(filename);
+#endif
+	}
+
 	bool Exists(filename_t filename)
 	{
 #ifdef _WIN32 // Win32
@@ -105,6 +120,17 @@ namespace File
 #else // POSIX
 		struct stat t;
 		return !stat(filename, &t);
+#endif
+	}
+
+	bool IsDir(filename_t filename)
+	{
+#ifdef _WIN32 // Win32
+		DWORD attrs = GetFileAttributes(filename);
+		return attrs & FILE_ATTRIBUTE_DIRECTORY;
+#else // POSIX
+		struct stat s;
+		return !stat(filename, &s) && S_ISDIR(s.st_mode);
 #endif
 	}
 

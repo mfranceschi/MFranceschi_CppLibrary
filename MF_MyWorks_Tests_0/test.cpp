@@ -53,6 +53,23 @@ protected:
 		EXPECT_EQ(File::Encoding(fid.name), fid.encoding);
 	}
 
+	void CheckOpen()
+	{
+		std::ifstream ifs;
+		File::Open(ifs, fid.name);
+		if (fid.exists)
+		{
+			ASSERT_TRUE(ifs.good());
+			EXPECT_EQ(ifs.tellg(), 0);
+			EXPECT_TRUE(ifs.good());
+			EXPECT_EQ((ifs.peek()), fid.firstByte);
+			ifs.seekg(-1, std::ios_base::end);
+			EXPECT_EQ(char(ifs.peek()), fid.lastByte);
+		}
+		else
+			ASSERT_FALSE(ifs.good());
+	}
+
 	file_info_data fid;
 };
 
@@ -66,8 +83,19 @@ protected:
 class TestUnexistingFile : public TestFile {
 protected:
 	TestUnexistingFile() : 
-		TestFile(file_info_data(0, FNAME_MIDDLESIZE, 0, 0, false, File::ENC_UNKNOWN))
+		TestFile(file_info_data(0, FNAME_UNEXISTING, 0, 0, false, File::ENC_UNKNOWN))
 	{}
+
+	void SetUp() override 
+	{
+		if (File::Exists(fid.name))
+			File::Delete(fid.name);
+	}
+
+	void TearDown() override
+	{
+		ASSERT_FALSE(File::Exists(fid.name));
+	}
 };
 
 TEST_F(TestMiddleWeightFile, VerifySize) {
@@ -83,14 +111,7 @@ TEST_F(TestMiddleWeightFile, VerifyEncoding) {
 }
 
 TEST_F(TestMiddleWeightFile, VerifyOpen) {
-	std::ifstream ifs;
-	File::Open(ifs, fid.name);
-	ASSERT_TRUE(ifs.good());
-	EXPECT_EQ(ifs.tellg(), 0);
-	EXPECT_TRUE(ifs.good());
-	EXPECT_EQ((ifs.peek()), fid.firstByte);
-	ifs.seekg(-1, std::ios_base::end);
-	EXPECT_EQ(char(ifs.peek()), fid.lastByte);
+	CheckOpen();
 }
 
 TEST_F(TestUnexistingFile, VerifySize) {
@@ -106,9 +127,7 @@ TEST_F(TestUnexistingFile, VerifyEncoding) {
 }
 
 TEST_F(TestUnexistingFile, VerifyOpen) {
-	std::ifstream ifs;
-	File::Open(ifs, fid.name);
-	ASSERT_FALSE(ifs.good());
+	CheckOpen();
 }
 
 TEST(TestFileSize, DotFile) {
