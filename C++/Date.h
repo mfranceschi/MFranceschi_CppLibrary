@@ -89,15 +89,25 @@ public:
 	Date& operator= (const Date&) = default;
 
 	// Comparison operators.
-	inline bool operator== (const Date&) const;
-	inline bool operator!= (const Date&) const;
-	inline bool operator< (const Date&) const;
-	inline bool operator> (const Date&) const;
-	inline bool operator<= (const Date&) const;
-	inline bool operator>= (const Date&) const;
+	inline bool operator== (const Date& b) const {
+#if DATE_MS_ON == 1
+		if (timet == b.timet)
+			return abs(b.microseconds - microseconds) <= tolerance;
+		else
+			return false;
+#else
+		return timet == b.timet;
+#endif
+	}
+
+	inline bool operator!= (const Date& b) const { return !(*this == b); }
+	inline bool operator<  (const Date& b) const { return Compare(b) == INFERIOR; }
+	inline bool operator>  (const Date& b) const { return Compare(b) == SUPERIOR; }
+	inline bool operator<= (const Date& b) const { return Compare(b) != SUPERIOR; }
+	inline bool operator>= (const Date& b) const { return Compare(b) != INFERIOR; }
 
 	// Same as Timedelta.
-	inline Interval operator% (const Date&) const;
+	inline Interval operator% (const Date& b) const { return Timedelta(b); }
 
 	// Arithmetics
 	Date operator+ (Interval seconds) const;
@@ -106,8 +116,8 @@ public:
 	Date& operator-= (Interval seconds);
 
 	// Conversions
-	inline operator struct tm() const;
-	inline operator time_t () const;
+	inline operator struct tm() const { return time; }
+	inline operator time_t () const { return timet; }
 	operator std::string() const;
 
 //---------------------------------------------- Constructors - destructor
@@ -132,12 +142,6 @@ public:
 protected:
 //------------------------------------------------------ Protected methods
 	
-#if DATE_MIC_ON == 1
-	// If value is correct, return it.
-	// Else throw WRONG_MS.
-	static MicroSeconds makeMS(MicroSeconds);
-#endif
-
 	// If newvalue < max: sets field then returns it.
 	// If newvalue == -1: returns field.
 	// Else throw DateError::WRONG_TIME_DATA.
@@ -174,7 +178,7 @@ protected:
 	constexpr static char NO_MS = 0x00; // Do not represent microseconds in string.
 #endif
 	
-	// According to system config, it is the number of possible years that 
+	// According to system config, this is the number of possible years that 
 	// can be represented.
 	constexpr static int MAX_YEARS = Toolbox::constexpr_max_years();
 };

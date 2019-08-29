@@ -33,9 +33,9 @@ char Date::msSep = NO_MS;
 	#define _Constr_Init_List_Default_Microseconds , microseconds(0)
 #else
 	#define _Inline_If_No_Microseconds inline
-	#define _Constr_Param_Microseconds
-	#define _Constr_Init_List_Microseconds
-	#define _Constr_Init_List_Default_Microseconds
+	#define _Constr_Param_Microseconds /* Nothing */
+	#define _Constr_Init_List_Microseconds /* Nothing */
+	#define _Constr_Init_List_Default_Microseconds /* Nothing */
 #endif
 
 constexpr int JANUARY = 0;
@@ -117,9 +117,7 @@ int Date::monthday(__uv newvalue)
 	else if (time.tm_mon == FEBRUARY)
 	{
 		int year = time.tm_year - 1900;
-		// Code snippet from 
-		// https://www.tutorialspoint.com/cplusplus-program-to-check-leap-year
-		if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0))
+		if ((!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0))
 			daysInMonth = 29;
 		else
 			daysInMonth = 28;
@@ -184,61 +182,6 @@ int Date::dst(int newvalue)
 }
 
 //-------------------------------------------------- Operator overloadings
-#if DATE_MS_ON == 1
-inline bool Date::operator== (const Date& b) const
-{
-	if (timet == b.timet)
-		return abs(b.microseconds - microseconds) <= tolerance;
-	else 
-		return false;
-}
-#else
-inline bool Date::operator== (const Date& b) const
-{
-	return timet == b.timet;
-}
-#endif
-
-inline bool Date::operator!= (const Date& d) const
-{
-	return !(*this == d);
-}
-
-inline bool Date::operator< (const Date& d) const
-{
-	return Compare(d) == INFERIOR;
-}
-
-inline bool Date::operator> (const Date& d) const
-{
-	return Compare(d) == SUPERIOR;
-}
-
-inline bool Date::operator<= (const Date& d) const
-{
-	return Compare(d) != SUPERIOR;
-}
-
-inline bool Date::operator>= (const Date& d) const
-{
-	return Compare(d) != INFERIOR;
-}
-
-inline Interval Date::operator% (const Date& d) const
-{
-	return Timedelta(d);
-}
-
-inline Date::operator struct tm() const
-{
-	return time;
-}
-
-inline Date::operator time_t () const
-{
-	return timet;
-}
-
 Date::operator std::string() const
 {
 	if (pattern == nullptr) 

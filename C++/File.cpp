@@ -208,9 +208,9 @@ namespace File
 			if (ret_read != NBR_BITS_TO_READ_ENCODING)
 				forReturn = ENC_UNKNOWN;
 
-			if (bits[0] == char(0xff) && bits[1] == char(0xfe))
+			if (bits[0] == '\0xff' && bits[1] == '\0xfe')
 				forReturn = ENC_UTF16LE;
-			else if (ret_read == 3 && bits[0] == char(0xef) && bits[1] == char(0xbb) && bits[2] == char(0xbf))
+			else if (ret_read == 3 && bits[0] == '\0xef' && bits[1] == '\0xbb' && bits[2] == '\0xbf')
 				forReturn = ENC_UTF8;
 			else
 				forReturn = ENC_DEFAULT;

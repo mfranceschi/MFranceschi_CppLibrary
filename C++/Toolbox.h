@@ -8,10 +8,14 @@
 #define TOOLBOX_H 
 
 //--------------------------------------------------------------- Includes
-#include <climits>
+#include <limits>
 #include <functional>
 #include <sstream>
-#include <string>
+
+/* Safety check (see https://stackoverflow.com/a/6884102). */
+#ifdef max
+#undef max
+#endif // max
 
 namespace Toolbox
 {
@@ -22,9 +26,8 @@ namespace Toolbox
 	class InCharArrayStream : public std::istringstream
 	{
 	public:
-		// InCharArrayStream() = default;
 		// The full string and the size.
-		// Reading content[size-1] is ok, reading content[size] is not.
+		// Reading content[size-1] is ok, reading content[size] is undefined behavior.
 		InCharArrayStream(const char* content, size_t size);
 
 	protected:
@@ -59,29 +62,21 @@ namespace Toolbox
 			+1;
 	}
 
-	// A constexpr function for computing min or max of two integers.
-	// Returns first parameter in case of equality.
-	template <typename Ta>
-	constexpr Ta constexpr_minmax(Ta a, Ta b, bool min = true)
-	{
-		if (min)
-			return a <= b ? a : b;
-		else
-			return a >= b ? a : b;
-	}
-
 	// Returns the number of years allowed to be represented on this machine.
 	// It depends on "sizeof(time_t)".
 	constexpr int constexpr_max_years()
 	{
 #pragma warning( disable: 4554)
 		typedef unsigned long long ULL_t;
-		ULL_t seconds_in_year = ULL_t(86400.L * 365.2425L);
-		ULL_t possible_seconds = 0x1ull << ULL_t(sizeof(time_t) * 8 - 1);
+		constexpr ULL_t seconds_in_year = ULL_t(60.0L * 60.0L * 24.0L * 365.2425L);
+		constexpr ULL_t possible_seconds = std::numeric_limits<time_t>::max();
+		constexpr ULL_t possible_years_with_big_int = possible_seconds / seconds_in_year;
+		constexpr int max_year_with_struct_tm = std::numeric_limits<int>::max();
 
-		return int(Toolbox::constexpr_minmax <ULL_t>(
-			possible_seconds / seconds_in_year,
-			INT_MAX));
+		if (possible_years_with_big_int > max_year_with_struct_tm)
+			return max_year_with_struct_tm;
+		else
+			return int(possible_years_with_big_int);
 #pragma warning(default: 4554)
 	}
 
