@@ -28,12 +28,10 @@ char Date::msSep = NO_MS;
 #endif
 
 #ifdef _MicroSeconds
-	#define _Inline_If_No_Microseconds /* Nothing */
 	#define _Constr_Param_Microseconds , MicroSeconds ms
 	#define _Constr_Init_List_Microseconds , microseconds(MakeMS(ms))
 	#define _Constr_Init_List_Default_Microseconds , microseconds(0)
 #else
-	#define _Inline_If_No_Microseconds inline
 	#define _Constr_Param_Microseconds /* Nothing */
 	#define _Constr_Init_List_Microseconds /* Nothing */
 	#define _Constr_Init_List_Default_Microseconds /* Nothing */
@@ -52,63 +50,60 @@ constexpr static int OCTOBER = 9;
 constexpr static int NOVEMBER = 10;
 constexpr static int DECEMBER = 11;
 
-// First line = classic years. Second line = more rare years.
-constexpr static int DAYS_PER_MON [2][12] =
-{
-	{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
-	{31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
-};
-
 constexpr static auto NBR_SECONDS_IN_DAY = 24 * 60 * 60;
 
-constexpr static int MaxYears()
+constexpr static int MaxYear()
 {
 	typedef unsigned long long ULL_t;
-	constexpr ULL_t seconds_in_year = ULL_t(60.0L * 60.0L * 24.0L * 365.2425L);
-	constexpr ULL_t possible_seconds(std::numeric_limits<time_t>::max() - std::numeric_limits<time_t>::min() + ULL_t(1));
-	constexpr ULL_t possible_years_with_big_int(possible_seconds / seconds_in_year);
-	constexpr int max_year_with_struct_tm(std::numeric_limits<int>::max() - std::numeric_limits<int>::min() + ULL_t(1));
+	constexpr ULL_t seconds_in_year = ULL_t(NBR_SECONDS_IN_DAY * 365.2425L);
+	constexpr ULL_t possible_seconds(std::numeric_limits<time_t>::max());
+	constexpr ULL_t max_year_with_time_t(possible_seconds / seconds_in_year);
+	constexpr int max_year_with_struct_tm(std::numeric_limits<int>::max());
 
-	if (possible_years_with_big_int > max_year_with_struct_tm)
+	if (max_year_with_time_t> max_year_with_struct_tm)
 		return max_year_with_struct_tm;
 	else
-		return int(possible_years_with_big_int);
+		return int(max_year_with_time_t);
 }
-const int Date::MAX_YEARS = MaxYears();
+constexpr int Date::MAX_YEARS = MaxYear();
+
+#define ASSERT_OK assert((timet = mktime(&time)) != -1); /* Ensures the instance is in a valid state or fail assertion. */
 
 //----------------------------------------------------------------- PUBLIC
 
 //--------------------------------------------------------- Public methods
 
-_Inline_If_No_Microseconds int Date::Compare(const Date& d) const
+int Date::Compare(const Date& d) const
 {
 #ifdef _Microseconds
 	return Toolbox::Sign(Timedelta(d));
 #else
+	return Toolbox::Sign(trunc(Timedelta(d)));
+	/*
 	int res;
 	Interval distance = Timedelta(d);
-	if (abs(distance) <= 1)
+	if (fabs(distance) < Interval(1))
 		res = Date::EQUAL;
 	else
 		res = Toolbox::Sign(distance);
-	return res;
+	return res;*/
 #endif
 }
 
-_Inline_If_No_Microseconds Interval Date::Timedelta(const Date& param) const
+Interval Date::Timedelta(const Date& param) const
 {
-	return Interval(difftime(timet, param.timet)
+	Interval result = static_cast<Interval>(difftime(timet, param.timet));
 #ifdef _Microseconds
-		+ double(microseconds - param.microseconds) / double(MS_MAX)
+	result += (double(microseconds - param.microseconds) / double(MS_MAX));
 #endif
-	);
+	return result;
 }
 
 // Getters and setters.
 
 int Date::seconds(int newvalue)
 {
-	return quickSetter(newvalue, 60, time.tm_sec);
+	return quickSetter(newvalue, 60+1, time.tm_sec);
 }
 
 int Date::minutes(int newvalue)
@@ -121,34 +116,30 @@ int Date::hours(int newvalue)
 	return quickSetter(newvalue, 24, time.tm_hour);
 }
 
-int Date::monthday(int newvalue)
+int Date::day_month(int newvalue)
 {
-	int daysInMonth;
-	if (time.tm_mon == APRIL || 
-		time.tm_mon == JUNE || 
-		time.tm_mon == SEPTEMBER || 
-		time.tm_mon == NOVEMBER
-	)
-		daysInMonth = 30;
-	else if (time.tm_mon == FEBRUARY)
-	{
-		int year = time.tm_year - 1900;
-		if (IsLeapYear(year))
-			daysInMonth = 29;
-		else
-			daysInMonth = 28;
-	}
-	else
-		daysInMonth = 31;
-
 	if (newvalue >= 1)
 	{
+		int daysInMonth = 31;
+		if (time.tm_mon == APRIL ||
+			time.tm_mon == JUNE ||
+			time.tm_mon == SEPTEMBER ||
+			time.tm_mon == NOVEMBER
+		)
+			daysInMonth = 30;
+		else if (time.tm_mon == FEBRUARY)
+		{
+			if (IsLeapYear(time.tm_year - 1900))
+				daysInMonth = 29;
+			else
+				daysInMonth = 28;
+		}
 
 		time.tm_mday = newvalue;
-		assert(timet = mktime(&time) != -1);
+		ASSERT_OK;
 		return time.tm_mday;
 	}
-	else if (newvalue == int(-1))
+	else if (newvalue == -1)
 		return time.tm_mday;
 	else
 		throw DateError::WRONG_TIME_DATA;
@@ -159,45 +150,52 @@ int Date::month(int newvalue)
 	return quickSetter(newvalue, 12, time.tm_mon);
 }
 
-int Date::weekday(int newvalue)
+int Date::day_week(int newvalue)
 {
 	return -1;
 } // TODO
 
-int Date::yearday(int newvalue)
+int Date::day_year(int newvalue)
 {
 	return -1;
 } // TODO
 
 int Date::year(int newvalue)
 {
-	if (newvalue < MAX_YEARS/2 && newvalue > -MAX_YEARS/2)
+	if (newvalue < MAX_YEARS && newvalue > -MAX_YEARS-1)
 	{
 		time.tm_year = newvalue;
-		assert(timet = mktime(&time) != -1);
+		ASSERT_OK;
 		return time.tm_year;
 	}
-	else if (newvalue == int(-1))
-		return time.tm_year;
 	else
 		throw DateError::WRONG_TIME_DATA;
-}
+} // TODO
 
 int Date::dst(int newvalue)
 {
 	if (newvalue == -1 || newvalue == 0 || newvalue == 1)
 	{
 		time.tm_isdst = newvalue;
-		assert(timet = mktime(&time) != -1);
+		ASSERT_OK;
 		return time.tm_isdst;
 	}
-	else if (newvalue == -2)
-		return time.tm_isdst;
 	else
 		throw DateError::WRONG_TIME_DATA;
 }
 
 //-------------------------------------------------- Operator overloadings
+bool Date::operator== (const Date& b) const {
+#ifdef _MicroSeconds
+	if (timet == b.timet)
+		return abs(static_cast<int>(b.microseconds) - static_cast<int>(microseconds)) <= static_cast<int>(tolerance);
+	else
+		return false;
+#else
+	return timet == b.timet;
+#endif
+}
+
 Date::operator std::string() const
 {
 	if (pattern == nullptr) 
@@ -271,7 +269,7 @@ int& Date::quickSetter(int newvalue, int max, int& field)
 	if (newvalue < max)
 	{
 		field = newvalue;
-		assert(timet = mktime(&time) != -1);
+		ASSERT_OK;
 		return field;
 	}
 	else if (newvalue == int(-1))

@@ -7,14 +7,10 @@
 #include <string> /* for conversions with strings */
 #include "Toolbox.hpp"
 
-// Type for representing years
-
-//------------------------------------------------------- Public constants
-
 // YOU CAN CHANGE THIS VALUE HERE.
 // THIS IS A FLAG FOR ENABLING MICROSECONDS MANAGEMENT.
 // Accepted values: 0 for disabling, 1 for enabling.
-#define DATE_MIC_ON 1
+#define DATE_MIC_ON 0
 
 #if !(DATE_MIC_ON == 1 || DATE_MIC_ON == 0)
 #error "The macro DATE_MIC_ON must be defined and have the value 0 or 1."
@@ -35,24 +31,26 @@ enum DateError
 
 #if DATE_MIC_ON == 1
 typedef unsigned int MicroSeconds; // Type for representing microseconds.
-typedef long double Interval; // Time distance between two dates, in seconds.
+typedef double Interval; // Time distance between two dates, in seconds.
 #else
 typedef time_t Interval; // Time distance between two dates, in seconds.
 #endif
 
 
 // Role of Date: 
-// Simple extension of C's struct tm with microseconds and operator 
-// overloadings. 
+// Simple extension of the C struct tm with microseconds and operators overloading. 
 class Date
 {
-//----------------------------------------------------------------- PUBLIC
+	//----------------------------------------------------------------- PUBLIC
 
 public:
-//--------------------------------------------------------- Public methods
+	//--------------------------------------------------------- Public methods
 
-	constexpr static bool IsLeapYear(int year) 
-	{ return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0); }
+		// Returns true if the given year is a leap year.
+	constexpr static bool IsLeapYear(int year) noexcept
+	{
+		return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0);
+	}
 
 	// Compares the current date with the given one.
 	// Returns Dates::INFERIOR if "this" is before "param",
@@ -69,42 +67,37 @@ public:
 	// Return value: always the final value.
 	// Throws an DateError::WRONG_TIME_DATA if data is invalid.
 	// With declarations, you can find the accepted bounds of values.
-	
-	int seconds(int newvalue = -1); // 0-59
+
+	int seconds(int newvalue = -1); // 0-60, seconds elapsed (#60 for exceptional leap second)
 	int minutes(int newvalue = -1); // 0-59
 	int hours(int newvalue = -1); // 0-23
-	int monthday(int newvalue = -1); // 1-31
+	int day_month(int newvalue = -1); // 1-31
 	int month(int newvalue = -1); // 0-11
-	int weekday(int newvalue = -1); // 0-6, days since Sunday
-	int yearday(int newvalue = -1); // 0-365
-	int year(int newvalue = INT_MIN); // Years since 1900,
-										// between +/- ]MAX_YEARS/2[.
-	int dst(int i = -1); // Please refer to tm.is_dst documentation.
+	int day_week(int newvalue = -1); // 0-6, days since Sunday
+	int day_year(int newvalue = -1); // 0-365, days since January 1st.
+
+	// Years since 1900.
+	int year(int); inline int year() const { return time.tm_year; }
+
+	// Daylight Saving Time flag.
+	int dst(int); inline int dst() const { return time.tm_isdst; }
 
 #if DATE_MIC_ON == 1
-	// Returns MicroSecond or throws WRONG_MS.
+	// Returns the microsecond value or throws WRONG_MS.
 	constexpr static MicroSeconds MakeMS(int val)
-	{	return val < MS_MAX ? val : throw DateError::WRONG_MS; }
+	{
+		return val < MS_MAX ? val : throw DateError::WRONG_MS;
+	}
 #endif
 
 
-//-------------------------------------------------- Operator overloadings
+	//-------------------------------------------------- Operator overloadings
 
-	// Classic assignment operator.
+		// Classic assignment operator.
 	Date& operator= (const Date&) = default;
 
 	// Comparison operators.
-	inline bool operator== (const Date& b) const {
-#if DATE_MS_ON == 1
-		if (timet == b.timet)
-			return abs(b.microseconds - microseconds) <= tolerance;
-		else
-			return false;
-#else
-		return timet == b.timet;
-#endif
-	}
-
+	bool operator== (const Date& b) const;
 	inline bool operator!= (const Date& b) const { return !(*this == b); }
 	inline bool operator<  (const Date& b) const { return Compare(b) == INFERIOR; }
 	inline bool operator>  (const Date& b) const { return Compare(b) == SUPERIOR; }
@@ -119,6 +112,8 @@ public:
 	Date operator- (Interval seconds) const;
 	Date& operator+= (Interval seconds);
 	Date& operator-= (Interval seconds);
+	inline Date& operator++() { seconds(seconds() + 1); return *this; } // +1 second
+	inline Date operator++(int) { Date tmp(*this); operator++(); return tmp; } // +1 second
 
 	// Conversions
 	inline operator struct tm() const { return time; }

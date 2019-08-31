@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include "pch.h"
-#include "../C++/Toolbox.h"
+#include "../C++/Toolbox.hpp"
 #include "../C++/Toolbox.cpp"
-#include "../C++/File.h"
+#include "../C++/File.hpp"
 #include "../C++/File.cpp"
 
 #ifdef _WIN32 // WIN32
