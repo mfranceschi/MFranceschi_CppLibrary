@@ -150,16 +150,6 @@ int Date::month(int newvalue)
 	return quickSetter(newvalue, 12, time.tm_mon);
 }
 
-int Date::day_week(int newvalue)
-{
-	return -1;
-} // TODO
-
-int Date::day_year(int newvalue)
-{
-	return -1;
-} // TODO
-
 int Date::year(int newvalue)
 {
 	if (newvalue < MAX_YEARS && newvalue > -MAX_YEARS-1)

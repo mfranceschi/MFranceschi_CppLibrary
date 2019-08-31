@@ -66,21 +66,24 @@ public:
 	// To set, call with a positive integer.
 	// Return value: always the final value.
 	// Throws an DateError::WRONG_TIME_DATA if data is invalid.
-	// With declarations, you can find the accepted bounds of values.
 
-	int seconds(int newvalue = -1); // 0-60, seconds elapsed (#60 for exceptional leap second)
+	int seconds(int newvalue = -1); // 0-60
 	int minutes(int newvalue = -1); // 0-59
 	int hours(int newvalue = -1); // 0-23
 	int day_month(int newvalue = -1); // 1-31
 	int month(int newvalue = -1); // 0-11
-	int day_week(int newvalue = -1); // 0-6, days since Sunday
-	int day_year(int newvalue = -1); // 0-365, days since January 1st.
+
+	// Day of week (since Sunday), 0-6. Cannot be set.
+	inline int day_week() const;
+
+	// Day since January 1st, 0-365. Cannot be set.
+	inline int day_year() const; 
 
 	// Years since 1900.
-	int year(int); inline int year() const { return time.tm_year; }
+	int year(int); inline int year() const;
 
 	// Daylight Saving Time flag.
-	int dst(int); inline int dst() const { return time.tm_isdst; }
+	int dst(int); inline int dst() const;
 
 #if DATE_MIC_ON == 1
 	// Returns the microsecond value or throws WRONG_MS.
@@ -98,26 +101,26 @@ public:
 
 	// Comparison operators.
 	bool operator== (const Date& b) const;
-	inline bool operator!= (const Date& b) const { return !(*this == b); }
-	inline bool operator<  (const Date& b) const { return Compare(b) == INFERIOR; }
-	inline bool operator>  (const Date& b) const { return Compare(b) == SUPERIOR; }
-	inline bool operator<= (const Date& b) const { return Compare(b) != SUPERIOR; }
-	inline bool operator>= (const Date& b) const { return Compare(b) != INFERIOR; }
+	inline bool operator!= (const Date& b) const;
+	inline bool operator<  (const Date& b) const;
+	inline bool operator>  (const Date& b) const;
+	inline bool operator<= (const Date& b) const;
+	inline bool operator>= (const Date& b) const;
 
 	// Returns interval.
-	inline Interval operator% (const Date& b) const { return Timedelta(b); }
+	inline Interval operator% (const Date& b) const;
 
 	// Arithmetics
 	Date operator+ (Interval seconds) const;
 	Date operator- (Interval seconds) const;
 	Date& operator+= (Interval seconds);
 	Date& operator-= (Interval seconds);
-	inline Date& operator++() { seconds(seconds() + 1); return *this; } // +1 second
-	inline Date operator++(int) { Date tmp(*this); operator++(); return tmp; } // +1 second
+	inline Date& operator++(); // +1 second
+	inline Date operator++(int); // +1 second
 
 	// Conversions
-	inline operator struct tm() const { return time; }
-	inline operator time_t () const { return timet; }
+	inline operator struct tm() const;
+	inline operator time_t () const;
 	operator std::string() const;
 
 //---------------------------------------------- Constructors - destructor
@@ -180,5 +183,47 @@ protected:
 };
 
 //------------------------------------------------------ Other definitions
+
+inline int Date::day_week() const 
+{	return time.tm_wday; }
+
+inline int Date::day_year() const
+{	return time.tm_yday; }
+
+inline int Date::year() const 
+{	return time.tm_year; }
+
+inline int Date::dst() const 
+{	return time.tm_isdst; }
+
+inline bool Date::operator!= (const Date& b) const 
+{	return !(*this == b); }
+
+inline bool Date::operator< (const Date& b) const 
+{	return Compare(b) == INFERIOR; }
+
+inline bool Date::operator>  (const Date& b) const 
+{	return Compare(b) == SUPERIOR; }
+
+inline bool Date::operator<= (const Date& b) const 
+{	return Compare(b) != SUPERIOR; }
+
+inline bool Date::operator>= (const Date& b) const 
+{	return Compare(b) != INFERIOR; }
+
+inline Interval Date::operator% (const Date& b) const 
+{	return Timedelta(b); }
+
+inline Date& Date::operator++() 
+{	seconds(seconds() + 1); return *this; } 
+
+inline Date Date::operator++(int) 
+{	Date tmp(*this); operator++(); return tmp; } 
+
+inline Date::operator struct tm() const 
+{	return time; }
+
+inline Date::operator time_t () const 
+{	return timet; }
 
 #endif // DATE_H
