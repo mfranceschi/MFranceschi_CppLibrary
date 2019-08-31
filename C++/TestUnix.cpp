@@ -3,12 +3,12 @@
 
 #include <climits>
 #include <cstdlib>
-#include "File.h"
+#include "File.hpp"
 #include <iostream>
 #include <streambuf>
 #include <sstream>
 #include <string>
-#include "Toolbox.h"
+#include "Toolbox.hpp"
 
 using namespace std;
 

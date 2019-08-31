@@ -41,28 +41,28 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="c++\BusinessFile.h">
+    <ClInclude Include="c++\Toolbox.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c++\CSVParser.h">
+    <ClInclude Include="C++\TestWin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c++\Date.h">
+    <ClInclude Include="C++\TestUnix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c++\Dates.h">
+    <ClInclude Include="c++\File.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c++\File.h">
+    <ClInclude Include="c++\Dates.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c++\Toolbox.h">
+    <ClInclude Include="c++\Date.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C++\TestUnix.h">
+    <ClInclude Include="c++\CSVParser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C++\TestWin.h">
+    <ClInclude Include="c++\BusinessFile.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

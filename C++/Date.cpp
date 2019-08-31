@@ -7,8 +7,8 @@
 #include <limits>
 #include <iomanip>
 #include <sstream>
-#include "Date.h"
-#include "Toolbox.h"
+#include "Date.hpp"
+#include "Toolbox.hpp"
 
 //-------------------------------------------------------------- Constants
 

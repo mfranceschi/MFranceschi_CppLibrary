@@ -5,7 +5,7 @@
 //--------------------------------------------------------------- Includes
 #include <ctime> /* for tm and time_t */
 #include <string> /* for conversions with strings */
-#include "Toolbox.h"
+#include "Toolbox.hpp"
 
 // Type for representing years
 

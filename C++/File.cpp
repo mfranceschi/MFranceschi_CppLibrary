@@ -4,7 +4,7 @@
 
 #include <algorithm>
 #include <codecvt>
-#include "File.h"
+#include "File.hpp"
 #include <fcntl.h>
 #include <locale>
 #include <map>
@@ -12,7 +12,7 @@
 #ifdef _WIN32
 #pragma warning( disable: 26444) // Warning that occurs when using imbue.
 #include <io.h>
-#include "Toolbox.h"
+#include "Toolbox.hpp"
 #include <Windows.h>
 #else
 #include <sys/mman.h>

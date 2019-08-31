@@ -1,5 +1,5 @@
 //---------- Implementation of module <Dates> (file Dates.cpp) 
-
+#ifdef skhfskjlvhfeofv
 //--------------------------------------------------------------- Includes
 #define _CRT_SECURE_NO_WARNINGS
 #include <sstream>
@@ -134,3 +134,4 @@ bool operator< (const Date& a, const Date& b)
 {
 	return Business::Dates::Compare(a, b, 0) == Business::Dates::INFERIOR;
 }
+#endif

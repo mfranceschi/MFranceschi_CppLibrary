@@ -10,13 +10,13 @@
 #include <iostream>
 #include <string>
 #include "Shlwapi.h"
-#include "Toolbox.h"
-#include "File.h"
+#include "Toolbox.hpp"
+#include "File.hpp"
 #include <io.h>
 #include <fcntl.h>
 #include <ctime>
 #include <cassert>
-#include "Date.h"
+#include "Date.hpp"
 
 using namespace std;
 

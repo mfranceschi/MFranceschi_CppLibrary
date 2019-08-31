@@ -118,14 +118,14 @@
     <ClCompile Include="c++\Toolbox.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="c++\BusinessFile.h" />
-    <ClInclude Include="c++\CSVParser.h" />
-    <ClInclude Include="c++\Date.h" />
-    <ClInclude Include="c++\Dates.h" />
-    <ClInclude Include="c++\File.h" />
-    <ClInclude Include="C++\TestUnix.h" />
-    <ClInclude Include="C++\TestWin.h" />
-    <ClInclude Include="c++\Toolbox.h" />
+    <ClInclude Include="c++\BusinessFile.hpp" />
+    <ClInclude Include="c++\CSVParser.hpp" />
+    <ClInclude Include="c++\Date.hpp" />
+    <ClInclude Include="c++\Dates.hpp" />
+    <ClInclude Include="c++\File.hpp" />
+    <ClInclude Include="C++\TestUnix.hpp" />
+    <ClInclude Include="C++\TestWin.hpp" />
+    <ClInclude Include="c++\Toolbox.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
