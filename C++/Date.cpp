@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <limits>
 #include <iomanip>
 #include <sstream>
 #include "Date.h"
@@ -29,7 +30,7 @@ char Date::msSep = NO_MS;
 #ifdef _MicroSeconds
 	#define _Inline_If_No_Microseconds /* Nothing */
 	#define _Constr_Param_Microseconds , MicroSeconds ms
-	#define _Constr_Init_List_Microseconds , microseconds(makeMS(ms))
+	#define _Constr_Init_List_Microseconds , microseconds(MakeMS(ms))
 	#define _Constr_Init_List_Default_Microseconds , microseconds(0)
 #else
 	#define _Inline_If_No_Microseconds inline
@@ -38,27 +39,42 @@ char Date::msSep = NO_MS;
 	#define _Constr_Init_List_Default_Microseconds /* Nothing */
 #endif
 
-constexpr int JANUARY = 0;
-constexpr int FEBRUARY = 1;
-constexpr int MARCH = 2;
-constexpr int APRIL = 3;
-constexpr int MAY = 4;
-constexpr int JUNE = 5;
-constexpr int JULY = 6;
-constexpr int AUGUST = 7;
-constexpr int SEPTEMBER = 8;
-constexpr int OCTOBER = 9;
-constexpr int NOVEMBER = 10;
-constexpr int DECEMBER = 11;
+constexpr static int JANUARY = 0;
+constexpr static int FEBRUARY = 1;
+constexpr static int MARCH = 2;
+constexpr static int APRIL = 3;
+constexpr static int MAY = 4;
+constexpr static int JUNE = 5;
+constexpr static int JULY = 6;
+constexpr static int AUGUST = 7;
+constexpr static int SEPTEMBER = 8;
+constexpr static int OCTOBER = 9;
+constexpr static int NOVEMBER = 10;
+constexpr static int DECEMBER = 11;
 
 // First line = classic years. Second line = more rare years.
-const int DAYS_PER_MON [2][12] = 
+constexpr static int DAYS_PER_MON [2][12] =
 {
 	{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
 	{31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
 
-constexpr auto NBR_SECONDS_IN_DAY = 24 * 60 * 60;
+constexpr static auto NBR_SECONDS_IN_DAY = 24 * 60 * 60;
+
+constexpr static int MaxYears()
+{
+	typedef unsigned long long ULL_t;
+	constexpr ULL_t seconds_in_year = ULL_t(60.0L * 60.0L * 24.0L * 365.2425L);
+	constexpr ULL_t possible_seconds(std::numeric_limits<time_t>::max() - std::numeric_limits<time_t>::min() + ULL_t(1));
+	constexpr ULL_t possible_years_with_big_int(possible_seconds / seconds_in_year);
+	constexpr int max_year_with_struct_tm(std::numeric_limits<int>::max() - std::numeric_limits<int>::min() + ULL_t(1));
+
+	if (possible_years_with_big_int > max_year_with_struct_tm)
+		return max_year_with_struct_tm;
+	else
+		return int(possible_years_with_big_int);
+}
+const int Date::MAX_YEARS = MaxYears();
 
 //----------------------------------------------------------------- PUBLIC
 
@@ -90,22 +106,22 @@ _Inline_If_No_Microseconds Interval Date::Timedelta(const Date& param) const
 
 // Getters and setters.
 
-int Date::seconds(__uv newvalue)
+int Date::seconds(int newvalue)
 {
 	return quickSetter(newvalue, 60, time.tm_sec);
 }
 
-int Date::minutes(__uv newvalue)
+int Date::minutes(int newvalue)
 {
 	return quickSetter(newvalue, 60, time.tm_min);
 }
 
-int Date::hours(__uv newvalue)
+int Date::hours(int newvalue)
 {
 	return quickSetter(newvalue, 24, time.tm_hour);
 }
 
-int Date::monthday(__uv newvalue)
+int Date::monthday(int newvalue)
 {
 	int daysInMonth;
 	if (time.tm_mon == APRIL || 
@@ -117,7 +133,7 @@ int Date::monthday(__uv newvalue)
 	else if (time.tm_mon == FEBRUARY)
 	{
 		int year = time.tm_year - 1900;
-		if ((!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0))
+		if (IsLeapYear(year))
 			daysInMonth = 29;
 		else
 			daysInMonth = 28;
@@ -132,23 +148,23 @@ int Date::monthday(__uv newvalue)
 		assert(timet = mktime(&time) != -1);
 		return time.tm_mday;
 	}
-	else if (newvalue == __uv(-1))
+	else if (newvalue == int(-1))
 		return time.tm_mday;
 	else
 		throw DateError::WRONG_TIME_DATA;
 }
 
-int Date::month(__uv newvalue)
+int Date::month(int newvalue)
 {
 	return quickSetter(newvalue, 12, time.tm_mon);
 }
 
-int Date::weekday(__uv newvalue)
+int Date::weekday(int newvalue)
 {
 	return -1;
 } // TODO
 
-int Date::yearday(__uv newvalue)
+int Date::yearday(int newvalue)
 {
 	return -1;
 } // TODO
@@ -161,7 +177,7 @@ int Date::year(int newvalue)
 		assert(timet = mktime(&time) != -1);
 		return time.tm_year;
 	}
-	else if (newvalue == __uv(-1))
+	else if (newvalue == int(-1))
 		return time.tm_year;
 	else
 		throw DateError::WRONG_TIME_DATA;
@@ -249,17 +265,8 @@ Date::Date(const std::string& src, const char* pattern _Constr_Param_Microsecond
 //---------------------------------------------------------------- PRIVATE
 
 //------------------------------------------------------ Protected methods
-#if DATE_MIC_ON == 1
-MicroSeconds Date::makeMS(MicroSeconds ms)
-{
-	if (ms >= MS_MAX)
-		throw DateError::WRONG_MS;
-	else
-		return ms;
-}
-#endif
 
-int& Date::quickSetter(__uv newvalue, __uv max, int& field)
+int& Date::quickSetter(int newvalue, int max, int& field)
 {
 	if (newvalue < max)
 	{
@@ -267,7 +274,7 @@ int& Date::quickSetter(__uv newvalue, __uv max, int& field)
 		assert(timet = mktime(&time) != -1);
 		return field;
 	}
-	else if (newvalue == __uv(-1))
+	else if (newvalue == int(-1))
 		return field;
 	else
 		throw DateError::WRONG_TIME_DATA;

@@ -5,7 +5,6 @@
 //--------------------------------------------------------------- Includes
 #include <ctime> /* for tm and time_t */
 #include <string> /* for conversions with strings */
-#include <climits> /* for computing MAX_YEARS */
 #include "Toolbox.h"
 
 // Type for representing years
@@ -15,7 +14,7 @@
 // YOU CAN CHANGE THIS VALUE HERE.
 // THIS IS A FLAG FOR ENABLING MICROSECONDS MANAGEMENT.
 // Accepted values: 0 for disabling, 1 for enabling.
-#define DATE_MIC_ON 0
+#define DATE_MIC_ON 1
 
 #if !(DATE_MIC_ON == 1 || DATE_MIC_ON == 0)
 #error "The macro DATE_MIC_ON must be defined and have the value 0 or 1."
@@ -36,11 +35,9 @@ enum DateError
 
 #if DATE_MIC_ON == 1
 typedef unsigned int MicroSeconds; // Type for representing microseconds.
-typedef double Interval; // Time distance between two dates, in seconds.
-#define _Inline_ /* Inline only if no microseconds */
+typedef long double Interval; // Time distance between two dates, in seconds.
 #else
 typedef time_t Interval; // Time distance between two dates, in seconds.
-#define _Inline_ inline /* Inline only if no microseconds */
 #endif
 
 
@@ -54,11 +51,14 @@ class Date
 public:
 //--------------------------------------------------------- Public methods
 
+	constexpr static bool IsLeapYear(int year) 
+	{ return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0); }
+
 	// Compares the current date with the given one.
 	// Returns Dates::INFERIOR if "this" is before "param",
 	// same idea for Dates::EQUAL and Dates::SUPERIOR.
 	// The "tolerance" variable is used here.
-	_Inline_ int Compare(const Date&) const;
+	int Compare(const Date&) const;
 
 	// Returns (this) - (param) in seconds.
 	Interval Timedelta(const Date&) const;
@@ -70,17 +70,22 @@ public:
 	// Throws an DateError::WRONG_TIME_DATA if data is invalid.
 	// With declarations, you can find the accepted bounds of values.
 	
-	typedef unsigned short __uv; // Shortcut for clarity.
-	int seconds(__uv newvalue = -1); // 0-59
-	int minutes(__uv newvalue = -1); // 0-59
-	int hours(__uv newvalue = -1); // 0-23
-	int monthday(__uv newvalue = -1); // 1-31
-	int month(__uv newvalue = -1); // 0-11
-	int weekday(__uv newvalue = -1); // 0-6, days since Sunday
-	int yearday(__uv newvalue = -1); // 0-365
-	int year(int newvalue = MAX_YEARS); // Years since 1900,
+	int seconds(int newvalue = -1); // 0-59
+	int minutes(int newvalue = -1); // 0-59
+	int hours(int newvalue = -1); // 0-23
+	int monthday(int newvalue = -1); // 1-31
+	int month(int newvalue = -1); // 0-11
+	int weekday(int newvalue = -1); // 0-6, days since Sunday
+	int yearday(int newvalue = -1); // 0-365
+	int year(int newvalue = INT_MIN); // Years since 1900,
 										// between +/- ]MAX_YEARS/2[.
 	int dst(int i = -1); // Please refer to tm.is_dst documentation.
+
+#if DATE_MIC_ON == 1
+	// Returns MicroSecond or throws WRONG_MS.
+	constexpr static MicroSeconds MakeMS(int val)
+	{	return val < MS_MAX ? val : throw DateError::WRONG_MS; }
+#endif
 
 
 //-------------------------------------------------- Operator overloadings
@@ -106,7 +111,7 @@ public:
 	inline bool operator<= (const Date& b) const { return Compare(b) != SUPERIOR; }
 	inline bool operator>= (const Date& b) const { return Compare(b) != INFERIOR; }
 
-	// Same as Timedelta.
+	// Returns interval.
 	inline Interval operator% (const Date& b) const { return Timedelta(b); }
 
 	// Arithmetics
@@ -145,7 +150,7 @@ protected:
 	// If newvalue < max: sets field then returns it.
 	// If newvalue == -1: returns field.
 	// Else throw DateError::WRONG_TIME_DATA.
-	int& quickSetter(__uv newvalue, __uv max, int& field);
+	int& quickSetter(int newvalue, int max, int& field);
 //--------------------------------------------------- Protected attributes
 
 	tm time; // tm struct that holds the current date.
@@ -158,6 +163,8 @@ protected:
 	
 	// Constants for comparison results.
 	static const int INFERIOR, SUPERIOR, EQUAL; 
+
+	const static int MAX_YEARS;
 	
 #if DATE_MIC_ON == 1
 	// Field that holds microseconds.
@@ -166,9 +173,7 @@ protected:
 	// Tolerance in microseconds. Initial value of MS_MAX.
 	static MicroSeconds tolerance; 
 	
-	constexpr static MicroSeconds MS_MAX // Max microseconds = 1M.
-		= MicroSeconds(1e6); 
-
+	constexpr static MicroSeconds MS_MAX = MicroSeconds(1e6); 
 
 	// Character used to separate the datetime to the microseconds
 	// in the string representations.
@@ -177,10 +182,6 @@ protected:
 
 	constexpr static char NO_MS = 0x00; // Do not represent microseconds in string.
 #endif
-	
-	// According to system config, this is the number of possible years that 
-	// can be represented.
-	constexpr static int MAX_YEARS = Toolbox::constexpr_max_years();
 };
 
 //------------------------------------------------------ Other definitions

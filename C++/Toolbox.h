@@ -8,14 +8,8 @@
 #define TOOLBOX_H 
 
 //--------------------------------------------------------------- Includes
-#include <limits>
 #include <functional>
 #include <sstream>
-
-/* Safety check (see https://stackoverflow.com/a/6884102). */
-#ifdef max
-#undef max
-#endif // max
 
 namespace Toolbox
 {
@@ -60,24 +54,6 @@ namespace Toolbox
 			0 : nbr < type(0) ?
 			-1 :
 			+1;
-	}
-
-	// Returns the number of years allowed to be represented on this machine.
-	// It depends on "sizeof(time_t)".
-	constexpr int constexpr_max_years()
-	{
-#pragma warning( disable: 4554)
-		typedef unsigned long long ULL_t;
-		constexpr ULL_t seconds_in_year = ULL_t(60.0L * 60.0L * 24.0L * 365.2425L);
-		constexpr ULL_t possible_seconds = std::numeric_limits<time_t>::max();
-		constexpr ULL_t possible_years_with_big_int = possible_seconds / seconds_in_year;
-		constexpr int max_year_with_struct_tm = std::numeric_limits<int>::max();
-
-		if (possible_years_with_big_int > max_year_with_struct_tm)
-			return max_year_with_struct_tm;
-		else
-			return int(possible_years_with_big_int);
-#pragma warning(default: 4554)
 	}
 
 }
