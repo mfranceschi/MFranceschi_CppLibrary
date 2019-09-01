@@ -3,6 +3,7 @@
 //---------------------------------------------------------------- INCLUDE
 
 #include <cassert>
+#include <chrono>
 #include <cmath>
 #include <limits>
 #include <iomanip>
@@ -30,11 +31,9 @@ char Date::msSep = NO_MS;
 #ifdef _MicroSeconds
 	#define _Constr_Param_Microseconds , MicroSeconds ms
 	#define _Constr_Init_List_Microseconds , microseconds(MakeMS(ms))
-	#define _Constr_Init_List_Default_Microseconds , microseconds(0)
 #else
 	#define _Constr_Param_Microseconds /* Nothing */
 	#define _Constr_Init_List_Microseconds /* Nothing */
-	#define _Constr_Init_List_Default_Microseconds /* Nothing */
 #endif
 
 constexpr static int JANUARY = 0;
@@ -205,11 +204,18 @@ Date::operator std::string() const
 
 //---------------------------------------------- Constructors - destructor
 
-Date::Date() :
-	time({ 0 }),
-	timet(0)
-	_Constr_Init_List_Default_Microseconds
+Date::Date()
 {
+	using namespace std::chrono;
+	using clock = system_clock;
+	clock::time_point now_point = clock::now();
+	timet = clock::to_time_t(now_point);
+	ASSERT_OK; /* Also sets this->time. */
+#ifdef _MicroSeconds
+	using mics = std::chrono::microseconds;
+	mics::rep current_microseconds_count = duration_cast<mics>(now_point.time_since_epoch()).count();
+	microseconds = static_cast<MicroSeconds>(current_microseconds_count - 1000000 * timet);
+#endif
 }
 
 Date::Date(tm time_in _Constr_Param_Microseconds) :

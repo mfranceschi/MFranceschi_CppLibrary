@@ -10,7 +10,7 @@
 // YOU CAN CHANGE THIS VALUE HERE.
 // THIS IS A FLAG FOR ENABLING MICROSECONDS MANAGEMENT.
 // Accepted values: 0 for disabling, 1 for enabling.
-#define DATE_MIC_ON 0
+#define DATE_MIC_ON 1
 
 #if !(DATE_MIC_ON == 1 || DATE_MIC_ON == 0)
 #error "The macro DATE_MIC_ON must be defined and have the value 0 or 1."
@@ -46,11 +46,11 @@ class Date
 public:
 	//--------------------------------------------------------- Public methods
 
-		// Returns true if the given year is a leap year.
-	constexpr static bool IsLeapYear(int year) noexcept
-	{
-		return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0);
-	}
+	// Returns true if the given year is a leap year.
+	constexpr static bool IsLeapYear(int year) noexcept;
+
+	// Returns now as UTC timestamp.
+	inline static time_t Now_Timestamp();
 
 	// Compares the current date with the given one.
 	// Returns Dates::INFERIOR if "this" is before "param",
@@ -73,16 +73,16 @@ public:
 	int day_month(int newvalue = -1); // 1-31
 	int month(int newvalue = -1); // 0-11
 
-	// Day of week (since Sunday), 0-6. Cannot be set.
+	// Day of week (since Sunday), 0-6. Read-only.
 	inline int day_week() const;
 
-	// Day since January 1st, 0-365. Cannot be set.
+	// Day since January 1st, 0-365. Read-only.
 	inline int day_year() const; 
 
 	// Years since 1900.
 	int year(int); inline int year() const;
 
-	// Daylight Saving Time flag.
+	// Daylight Saving Time flag. Values: -1, 0, 1.
 	int dst(int); inline int dst() const;
 
 #if DATE_MIC_ON == 1
@@ -95,10 +95,7 @@ public:
 
 
 	//-------------------------------------------------- Operator overloadings
-
-		// Classic assignment operator.
-	Date& operator= (const Date&) = default;
-
+	
 	// Comparison operators.
 	bool operator== (const Date& b) const;
 	inline bool operator!= (const Date& b) const;
@@ -132,12 +129,12 @@ public:
 	explicit Date(time_t, MicroSeconds = 0);
 	explicit Date(const std::string&, const char* pattern, MicroSeconds = 0);
 #else
-	Date(tm);
-	Date(time_t);
-	Date(const std::string&, const char* pattern);
+	explicit Date(tm);
+	explicit Date(time_t);
+	explicit Date(const std::string&, const char* pattern);
 #endif
 
-	Date();
+	explicit Date(); // Initialized to current time.
 	virtual ~Date() = default;
 
 //---------------------------------------------------------------- PRIVATE
@@ -184,6 +181,14 @@ protected:
 
 //------------------------------------------------------ Other definitions
 
+constexpr bool Date::IsLeapYear(int year) noexcept
+{	return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0); }
+
+inline time_t Date::Now_Timestamp()
+{
+	return std::time(nullptr);
+}
+
 inline int Date::day_week() const 
 {	return time.tm_wday; }
 
@@ -215,10 +220,17 @@ inline Interval Date::operator% (const Date& b) const
 {	return Timedelta(b); }
 
 inline Date& Date::operator++() 
-{	seconds(seconds() + 1); return *this; } 
+{	
+	seconds(seconds() + 1); 
+	return *this; 
+} 
 
 inline Date Date::operator++(int) 
-{	Date tmp(*this); operator++(); return tmp; } 
+{	
+	Date tmp(*this); 
+	operator++(); 
+	return tmp; 
+}
 
 inline Date::operator struct tm() const 
 {	return time; }
