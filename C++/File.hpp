@@ -54,7 +54,7 @@ namespace File
 	// Deletes the file or the directory.
 	// If the "fileonly" parameter is true and the target is a directory then it fails.
 	// Returns true on success, false otherwise.
-	bool Delete(filename_t filename, bool fileonly = false);
+	bool Delete(filename_t filename, bool fileonly = true);
 
 	// Returns the encoding of the file as one of the strings declared above.
 	// It executes "IsEmpty(filename, 3)" firstly and if the result is true,
@@ -71,12 +71,10 @@ namespace File
 	// Returns true if trying to read charsToRead characters from the file fails.
 	bool IsEmpty(filename_t filename, size_t charsToRead = 0);
 	
-	// Closes ifs and tries to open filename according to Encoding's result.
-	// Applies default locale if encoding is unknown.
-	// To verify success, try ifs.is_open().
+	// Closes "ifs" and tries to open the file "filename".
 	// If an encoding is given, applies the corresponding locale 
-	// (UTF-8 or UTF-16LE)
-	// The position of ifs is then after useless BOMs.
+	// (UTF-8 or UTF-16LE) ; else applies default locale.
+	// The ifs.tellg() is after BOMs.
 	void Open(std::ifstream& ifs, filename_t filename, 
 		encoding_t encoding = ENC_UNKNOWN);
 
@@ -84,10 +82,12 @@ namespace File
 	// Please note that it does not end with a '\0'.
 	// If file size is zero or if it fails, returns nullptr.
 	// For closing always use Read_Close.
+	// Uses mutexes for thread-safety.
 	const char* Read(filename_t filename);
 
 	// Closes a file opened using the Read function.
 	// Returns whether a file was closed successfully.
+	// Uses mutexes for thread-safety.
 	bool Read_Close(const char* content);
 
 	// Returns the file size in bytes, or 0.

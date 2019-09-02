@@ -204,13 +204,12 @@ void CheckReadMemoryLeaks()
 
 int main()
 {
-	//timingTimethis();
-	//timingTheFileExistence();
-	//timingTheFileSize();
-	//timingWchar_tConversion();
-	//timingFileReading();
-	//timingCtimeFunctions();
-	//auto bigfile = L"D:\\Downloads\\LaVagueDVDRipFR-zone-telechargement.ws.avi";
+	timingTimethis();
+	timingTheFileExistence();
+	timingTheFileSize();
+	timingWchar_tConversion();
+	timingFileReading();
+	timingCtimeFunctions();
 	CheckReadMemoryLeaks();
 	return EXIT_SUCCESS;
 }

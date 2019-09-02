@@ -13,9 +13,17 @@
 		constexpr File::filename_t FNAME_MIDDLESIZE = "D:\\Vikings.scx";
 		constexpr File::filename_t FNAME_UNEXISTING = "C:\\unexisting._tut";
 	#endif
+	
+	#define I_Want_Mem_Leaks
 #else // POSIX
 	constexpr File::filename_t FNAME_MIDDLESIZE = "/mnt/d/Vikings.scx";
 	constexpr File::filename_t FNAME_UNEXISTING = "/mnt/c/unexisting._tut";
+#endif
+
+#ifdef I_Want_Mem_Leaks
+	#define _CRTDBG_MAP_ALLOC
+	#include <stdlib.h>
+	#include <crtdbg.h>
 #endif
 
 struct file_info_data
@@ -138,6 +146,18 @@ TEST_F(TestUnexistingFile, VerifyOpen) {
 
 int main(int argc, char** argv)
 {
+#ifdef I_Want_Mem_Leaks
+	_CrtMemState states[3];
+	_CrtMemCheckpoint(&states[0]);
+#endif
+
 	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+	auto res = RUN_ALL_TESTS();
+
+#ifdef I_Want_Mem_Leaks
+	_CrtMemCheckpoint(&states[1]);
+	if (_CrtMemDifference(&states[2], &states[0], &states[1]))
+		_CrtMemDumpStatistics(&states[2]);
+#endif
+	return res;
 }

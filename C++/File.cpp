@@ -4,10 +4,12 @@
 
 #include <algorithm>
 #include <codecvt>
-#include "File.hpp"
 #include <fcntl.h>
 #include <locale>
 #include <map>
+#include <mutex>
+
+#include "File.hpp"
 
 #ifdef _WIN32
 #pragma warning( disable: 26444) // Warning that occurs when using imbue.
@@ -37,9 +39,10 @@ namespace File
 
 	// Data structure used to store informations about files opened with Open.
 	struct ReadFileData {
+	public:
+		/* Data members. */
 		const char* memptr; // Holds the file data.
 		filesize_t size; // Size of the file.
-		std::istringstream* streamptr; // Pointer to stream.
 
 #ifdef _WIN32
 		HANDLE fileHandle; // File HANDLE
@@ -48,7 +51,8 @@ namespace File
 		int fd; // File descriptor
 #endif
 
-		ReadFileData() : memptr(nullptr), size(0ul), streamptr(nullptr)
+		/* Default constructor. */
+		ReadFileData() : memptr(nullptr), size(0ul)
 #ifdef _WIN32
 			, fileHandle(0), mappingHandle(0)
 #else
@@ -66,7 +70,8 @@ namespace File
 		new std::codecvt_utf8_utf16<wchar_t, 0x10ffffUL, std::little_endian>()
 	); // I can call "new" because the locale's destructors deletes the facet.
 
-	static std::map<const char*, ReadFileData> openedFiles;
+	static std::map<const char*, ReadFileData>openedFiles;
+	static std::mutex openedFilesMutex;
 
 //------------------------------------------------------- Static variables
 
@@ -227,15 +232,20 @@ namespace File
 		if (rfd.size == 0)
 			return nullptr;
 
+		openedFilesMutex.lock();
 #ifdef _WIN32
 		rfd.fileHandle = OpenHandleWindows(filename);
 		if (rfd.fileHandle == INVALID_HANDLE_VALUE)
+		{
+			openedFilesMutex.unlock();
 			return nullptr;
+		}
 
 		rfd.mappingHandle = CreateFileMapping(rfd.fileHandle, NULL, PAGE_READONLY, 0, 0, NULL);
 		if (rfd.mappingHandle == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
 		{
 			CloseHandle(rfd.fileHandle);
+			openedFilesMutex.unlock();
 			return nullptr;
 		}
 
@@ -244,6 +254,7 @@ namespace File
 		{
 			CloseHandle(rfd.mappingHandle);
 			CloseHandle(rfd.fileHandle);
+			openedFilesMutex.unlock();
 			return nullptr;
 		}
 #else
@@ -257,15 +268,20 @@ namespace File
 		}
 #endif
 
-		openedFiles[rfd.memptr] = rfd;
+		openedFiles [rfd.memptr] = rfd;
+		openedFilesMutex.unlock();
 		return rfd.memptr;		
 	}
 
 	bool Read_Close(const char* content)
 	{
+		openedFilesMutex.lock();
+		bool found = false;
+
 		auto iterToContent = openedFiles.find(content);
 		if (iterToContent != openedFiles.end())
 		{
+			found = true;
 			// File is found, release its data.
 			ReadFileData& rfd = iterToContent->second;
 #ifdef _WIN32
@@ -277,10 +293,10 @@ namespace File
 			_close(rfd.fd);
 #endif
 			openedFiles.erase(iterToContent);
-			return true;
 		}
-		else
-			return false;
+
+		openedFilesMutex.unlock();
+		return found;
 	}
 
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc)
