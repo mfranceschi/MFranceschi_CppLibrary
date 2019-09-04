@@ -13,9 +13,6 @@
 
 //-------------------------------------------------------------- Constants
 
-const int Date::SUPERIOR = 1;
-const int Date::INFERIOR = -1;
-const int Date::EQUAL = 0;
 const char* Date::pattern = nullptr;
 
 #if ! defined DATE_MIC_ON || !(DATE_MIC_ON == 1 || DATE_MIC_ON == 0)
@@ -30,31 +27,16 @@ char Date::msSep = NO_MS;
 
 #ifdef _MicroSeconds
 	#define _Constr_Param_Microseconds , MicroSeconds ms
-	#define _Constr_Init_List_Microseconds , microseconds(MakeMS(ms))
+	#define _Constr_Init_List_Microseconds , microseconds_in(MakeMS(ms))
 #else
 	#define _Constr_Param_Microseconds /* Nothing */
 	#define _Constr_Init_List_Microseconds /* Nothing */
 #endif
 
-constexpr static int JANUARY = 0;
-constexpr static int FEBRUARY = 1;
-constexpr static int MARCH = 2;
-constexpr static int APRIL = 3;
-constexpr static int MAY = 4;
-constexpr static int JUNE = 5;
-constexpr static int JULY = 6;
-constexpr static int AUGUST = 7;
-constexpr static int SEPTEMBER = 8;
-constexpr static int OCTOBER = 9;
-constexpr static int NOVEMBER = 10;
-constexpr static int DECEMBER = 11;
-
-constexpr static auto NBR_SECONDS_IN_DAY = 24 * 60 * 60;
-
 constexpr static int MaxYear()
 {
 	typedef unsigned long long ULL_t;
-	constexpr ULL_t seconds_in_year = ULL_t(NBR_SECONDS_IN_DAY * 365.2425L);
+	constexpr ULL_t seconds_in_year = ULL_t(Date::NBR_SECONDS_IN_DAY * 365.2425L);
 	constexpr ULL_t possible_seconds(std::numeric_limits<time_t>::max());
 	constexpr ULL_t max_year_with_time_t(possible_seconds / seconds_in_year);
 	constexpr int max_year_with_struct_tm(std::numeric_limits<int>::max());
@@ -64,7 +46,29 @@ constexpr static int MaxYear()
 	else
 		return int(max_year_with_time_t);
 }
-constexpr int Date::MAX_YEARS = MaxYear();
+
+const int Date::MAX_YEAR = MaxYear();
+
+// Executes the localtime function and returns true if success.
+inline bool Localtime_Func(const time_t& source, struct tm& result)
+{
+#ifdef _WIN32
+	/* Win32-style Localtime_S is available. */
+	return !localtime_s(&result, &source);
+
+#elif defined __STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__ == 1
+	/* Classic Localtime_S is available. */
+	return localtime_s(&source, &result);
+#else
+	/* Use POSIX-style Localtime_R. */
+	return localtime_r(&source, &result);
+
+	/* 
+	 * To use basic "localtime", we should use mutexes to ensure there are no conflicts. 
+	 * I am not implementing it here. 
+	 */
+#endif
+}
 
 #define ASSERT_OK assert((timet = mktime(&time)) != -1); /* Ensures the instance is in a valid state or fail assertion. */
 
@@ -72,28 +76,30 @@ constexpr int Date::MAX_YEARS = MaxYear();
 
 //--------------------------------------------------------- Public methods
 
+const char* Date::str_pattern(const char* pattern)
+{
+	if (pattern == nullptr || strlen(pattern) != 0)
+	{
+		return Date::pattern = pattern;
+	}
+	else
+		return Date::pattern;
+}
+
 int Date::Compare(const Date& d) const
 {
-#ifdef _Microseconds
+#ifdef _MicroSeconds
 	return Toolbox::Sign(Timedelta(d));
 #else
 	return Toolbox::Sign(trunc(Timedelta(d)));
-	/*
-	int res;
-	Interval distance = Timedelta(d);
-	if (fabs(distance) < Interval(1))
-		res = Date::EQUAL;
-	else
-		res = Toolbox::Sign(distance);
-	return res;*/
 #endif
 }
 
 Interval Date::Timedelta(const Date& param) const
 {
 	Interval result = static_cast<Interval>(difftime(timet, param.timet));
-#ifdef _Microseconds
-	result += (double(microseconds - param.microseconds) / double(MS_MAX));
+#ifdef _MicroSeconds
+	result += static_cast<Interval>(double(microseconds_in - param.microseconds_in) / double(MS_MAX));
 #endif
 	return result;
 }
@@ -151,7 +157,7 @@ int Date::month(int newvalue)
 
 int Date::year(int newvalue)
 {
-	if (newvalue < MAX_YEARS && newvalue > -MAX_YEARS-1)
+	if (newvalue < MAX_YEAR && newvalue > -MAX_YEAR-1)
 	{
 		time.tm_year = newvalue;
 		ASSERT_OK;
@@ -173,11 +179,29 @@ int Date::dst(int newvalue)
 		throw DateError::WRONG_TIME_DATA;
 }
 
+#ifdef _MicroSeconds
+MicroSeconds Date::microseconds(MicroSeconds newms)
+{
+	if (newms == -1)
+		return microseconds_in;
+	else
+		return microseconds_in = MakeMS(newms);
+}
+
+MicroSeconds Date::ms_tolerance(MicroSeconds newms)
+{
+	if (newms == -1)
+		return tolerance;
+	else
+		return tolerance = MakeMS(newms);
+}
+#endif
+
 //-------------------------------------------------- Operator overloadings
 bool Date::operator== (const Date& b) const {
 #ifdef _MicroSeconds
 	if (timet == b.timet)
-		return abs(static_cast<int>(b.microseconds) - static_cast<int>(microseconds)) <= static_cast<int>(tolerance);
+		return abs(static_cast<int>(b.microseconds_in) - static_cast<int>(microseconds_in)) <= static_cast<int>(tolerance);
 	else
 		return false;
 #else
@@ -195,7 +219,7 @@ Date::operator std::string() const
 
 #ifdef _MicroSeconds
 	if (msSep != NO_MS)
-		oss << msSep << microseconds;
+		oss << msSep << microseconds_in;
 #endif
 
 	return oss.str();
@@ -214,7 +238,7 @@ Date::Date()
 #ifdef _MicroSeconds
 	using mics = std::chrono::microseconds;
 	mics::rep current_microseconds_count = duration_cast<mics>(now_point.time_since_epoch()).count();
-	microseconds = static_cast<MicroSeconds>(current_microseconds_count - 1000000 * timet);
+	microseconds_in = static_cast<MicroSeconds>(current_microseconds_count - 1000000 * timet);
 #endif
 }
 
@@ -231,7 +255,7 @@ Date::Date(time_t tmt _Constr_Param_Microseconds) :
 	timet(tmt)
 	_Constr_Init_List_Microseconds
 {
-	if (localtime_s(&time, &tmt))
+	if (!Localtime_Func(timet, time))
 		throw DateError::WRONG_TIME_T;
 }
 

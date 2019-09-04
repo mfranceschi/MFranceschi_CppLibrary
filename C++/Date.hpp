@@ -5,6 +5,7 @@
 //--------------------------------------------------------------- Includes
 #include <ctime> /* for tm and time_t */
 #include <string> /* for conversions with strings */
+#include <type_traits> /* for type checking in template MakeMS */
 #include "Toolbox.hpp"
 
 // YOU CAN CHANGE THIS VALUE HERE.
@@ -18,7 +19,7 @@
 
 //------------------------------------------------------------------ Types
 
-// Error codes for this module. Don't use integer values directly.
+// Error codes for this module. Don't use the integer values directly.
 enum DateError
 {
 	NO_PATTERN = 1, // No pattern was available to perform the Date<->string conversion.
@@ -30,10 +31,11 @@ enum DateError
 };
 
 #if DATE_MIC_ON == 1
-typedef unsigned int MicroSeconds; // Type for representing microseconds.
-typedef double Interval; // Time distance between two dates, in seconds.
+	typedef unsigned int MicroSeconds; // Type for representing microseconds.
+	typedef double Interval; // Time distance between two dates, in seconds.
+	#define _MicroSeconds
 #else
-typedef time_t Interval; // Time distance between two dates, in seconds.
+	typedef time_t Interval; // Time distance between two dates, in seconds.
 #endif
 
 
@@ -44,13 +46,41 @@ class Date
 	//----------------------------------------------------------------- PUBLIC
 
 public:
-	//--------------------------------------------------------- Public methods
+	//------------------------------------------------------- Static utilities
 
 	// Returns true if the given year is a leap year.
 	constexpr static bool IsLeapYear(int year) noexcept;
 
+	// Returns 28 or 29 or 30 or 31.
+	// Returns 0 if month is not valid (0-11).
+	constexpr static int DaysInMonth(int month, int year) noexcept;
+
 	// Returns now as UTC timestamp.
 	inline static time_t Now_Timestamp();
+
+	// Months (to be used with the Month getter and/or setter.)
+	constexpr static int 
+		JANUARY = 0,    FEBRUARY = 1,
+		MARCH = 2,		APRIL = 3,
+		MAY = 4,		JUNE = 5,
+		JULY = 6,		AUGUST = 7,
+		SEPTEMBER = 8,	OCTOBER = 9,
+		NOVEMBER = 10,	DECEMBER = 11;
+
+	constexpr static int NBR_SECONDS_IN_DAY = 24 * 60 * 60; // Number of seconds in a day.
+
+	const static int MAX_YEAR; // Max possible year on this computer.
+
+	// Constants for comparison results.
+	static constexpr int 
+		INFERIOR = -1, SUPERIOR = 1, EQUAL = 0;
+
+#ifdef _MicroSeconds
+	constexpr static MicroSeconds MS_MAX = 1000000; // No more than 1M microseconds to be stored!
+	constexpr static char NO_MS = 0x00; // Use this in ms_sep if you don't want to represent microseconds in string.
+#endif
+
+	//--------------------------------------------------------- Public methods
 
 	// Compares the current date with the given one.
 	// Returns Dates::INFERIOR if "this" is before "param",
@@ -85,12 +115,13 @@ public:
 	// Daylight Saving Time flag. Values: -1, 0, 1.
 	int dst(int); inline int dst() const;
 
-#if DATE_MIC_ON == 1
-	// Returns the microsecond value or throws WRONG_MS.
-	constexpr static MicroSeconds MakeMS(int val)
-	{
-		return val < MS_MAX ? val : throw DateError::WRONG_MS;
-	}
+	static const char* str_pattern(const char* pattern = ""); // Refers to Date::pattern. Empty string = getter.
+
+#ifdef _MicroSeconds
+	// Validates the MicroSeconds value by returning it or throwing WRONG_MS (if not in right range).
+	template <typename T> constexpr static MicroSeconds MakeMS(T val);
+	MicroSeconds microseconds(MicroSeconds = -1);
+	static MicroSeconds ms_tolerance(MicroSeconds = -1); // Refers to Date::tolerance.
 #endif
 
 
@@ -124,7 +155,7 @@ public:
     
     Date(const Date&) = default;
 
-#if DATE_MIC_ON == 1
+#ifdef _MicroSeconds
 	explicit Date(tm, MicroSeconds = 0);
 	explicit Date(time_t, MicroSeconds = 0);
 	explicit Date(const std::string&, const char* pattern, MicroSeconds = 0);
@@ -156,38 +187,57 @@ protected:
 	// Don't include microseconds here.
 	static const char* pattern; 
 	
-	// Constants for comparison results.
-	static const int INFERIOR, SUPERIOR, EQUAL; 
+#ifdef _MicroSeconds
+	MicroSeconds microseconds_in; // Instance field that holds microseconds.
 
-	const static int MAX_YEARS;
+	static MicroSeconds tolerance; // Tolerance in microseconds. Initial value of MS_MAX.
 	
-#if DATE_MIC_ON == 1
-	// Field that holds microseconds.
-	MicroSeconds microseconds;
-
-	// Tolerance in microseconds. Initial value of MS_MAX.
-	static MicroSeconds tolerance; 
-	
-	constexpr static MicroSeconds MS_MAX = MicroSeconds(1e6); 
-
-	// Character used to separate the datetime to the microseconds
-	// in the string representations.
-	// NO_MS is default value.
+	// Character used to separate the datetime to the microseconds in the string representations.
+	// Initial value of NO_MS ( =no microseconds in string).
 	static char msSep;
-
-	constexpr static char NO_MS = 0x00; // Do not represent microseconds in string.
 #endif
 };
 
 //------------------------------------------------------ Other definitions
 
+#ifdef _MicroSeconds
+template <typename T>
+constexpr MicroSeconds Date::MakeMS(T val)
+{
+	static_assert(std::is_arithmetic<T>::value, "Argument must be an arithmeric value for comparison!");
+	MicroSeconds valMS = static_cast<MicroSeconds>(val);
+	return valMS < MS_MAX ? valMS : throw DateError::WRONG_MS;
+}
+#endif
+
 constexpr bool Date::IsLeapYear(int year) noexcept
 {	return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0); }
 
-inline time_t Date::Now_Timestamp()
+constexpr int Date::DaysInMonth(int month, int year) noexcept
 {
-	return std::time(nullptr);
+	if (month >= 0 && month < 12)
+	{
+		int daysInMonth = 31;
+		if (month == APRIL ||
+			month == JUNE ||
+			month == SEPTEMBER ||
+			month == NOVEMBER
+			)
+			daysInMonth = 30;
+		else if (month == FEBRUARY)
+		{
+			if (IsLeapYear(year - 1900))
+				daysInMonth = 29;
+			else
+				daysInMonth = 28;
+		}
+		return daysInMonth;
+	}
+	else return 0;
 }
+
+inline time_t Date::Now_Timestamp()
+{ 	return std::time(nullptr); }
 
 inline int Date::day_week() const 
 {	return time.tm_wday; }
@@ -237,5 +287,9 @@ inline Date::operator struct tm() const
 
 inline Date::operator time_t () const 
 {	return timet; }
+
+#ifdef _MicroSeconds
+#undef _MicroSeconds
+#endif
 
 #endif // DATE_H
