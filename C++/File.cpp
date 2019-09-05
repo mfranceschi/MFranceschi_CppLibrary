@@ -139,7 +139,7 @@ namespace File
 #endif
 	}
 
-	bool IsEmpty(filename_t filename, size_t charsToRead)
+	bool IsEmpty(filename_t filename, unsigned int charsToRead)
 	{
 		int file;
 		bool forReturn;
@@ -149,7 +149,7 @@ namespace File
 		else
 		{
 			char* content = new char[charsToRead];
-			forReturn = !(size_t(_read(file, content, charsToRead)) != charsToRead);
+			forReturn = unsigned int(_read(file, content, charsToRead)) == charsToRead;
 			delete[] content;
 			_close(file);
 		}
@@ -213,9 +213,9 @@ namespace File
 			if (ret_read != NBR_BITS_TO_READ_ENCODING)
 				forReturn = ENC_UNKNOWN;
 
-			if (bits[0] == '\0xff' && bits[1] == '\0xfe')
+			if (bits[0] == '\xff' && bits[1] == '\xfe')
 				forReturn = ENC_UTF16LE;
-			else if (ret_read == 3 && bits[0] == '\0xef' && bits[1] == '\0xbb' && bits[2] == '\0xbf')
+			else if (ret_read == 3 && bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf')
 				forReturn = ENC_UTF8;
 			else
 				forReturn = ENC_DEFAULT;

@@ -178,7 +178,7 @@ protected:
 	// If newvalue < max: sets field then returns it.
 	// If newvalue == -1: returns field.
 	// Else throw DateError::WRONG_TIME_DATA.
-	int& quickSetter(int newvalue, int max, int& field);
+	int quickSetter(int newvalue, int max, int& field);
 //--------------------------------------------------- Protected attributes
 
 	tm time; // tm struct that holds the current date.

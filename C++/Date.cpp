@@ -5,6 +5,7 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
+#include <cstring>
 #include <functional>
 #include <iomanip>
 #include <limits>
@@ -36,6 +37,7 @@ char Date::msSepChar = NO_MS;
 #endif
 
 constexpr static int MaxYear()
+#pragma warning(disable: 4127 4309 4365)
 {
 	typedef unsigned long long ULL_t;
 	constexpr ULL_t seconds_in_year = ULL_t(Date::NBR_SECONDS_IN_DAY * 365.2425L);
@@ -43,13 +45,14 @@ constexpr static int MaxYear()
 	constexpr ULL_t max_year_with_time_t(possible_seconds / seconds_in_year);
 	constexpr int max_year_with_struct_tm(std::numeric_limits<int>::max());
 
-	if (max_year_with_time_t> max_year_with_struct_tm)
-		return max_year_with_struct_tm;
+	if (max_year_with_time_t > max_year_with_struct_tm)
+		return static_cast<int>(max_year_with_struct_tm);
 	else
-		return int(max_year_with_time_t);
+		return static_cast<int>(max_year_with_time_t);
 }
 
 const int Date::MAX_YEAR = MaxYear();
+#pragma warning(default: 4127 4309 4365)
 
 // Executes the localtime function and returns true if success.
 inline bool Localtime_Func(const time_t& source, struct tm& result)
@@ -91,10 +94,10 @@ static T set_static_value(T newvalue, std::mutex& mutex_i, T& stored_value, std:
 
 //--------------------------------------------------------- Public methods
 
-const char* Date::str_pattern(const char* pattern)
+const char* Date::str_pattern(const char* npattern)
 {
-	return set_static_value<decltype(Date::pattern)>(pattern, pattern_mutex, Date::pattern, [](const char* newp) {
-		return Date::pattern != nullptr && strlen(Date::pattern) == 0;
+	return set_static_value<decltype(Date::pattern)>(npattern, pattern_mutex, Date::pattern, [](const char* newp) {
+		return newp != nullptr && strlen(newp) == 0;
 		});
 }
 
@@ -165,18 +168,9 @@ int Date::hours(int newvalue)
 
 int Date::day_month(int newvalue)
 {
-	if (newvalue >= 1)
-	{
-		int daysInMonth = Date::DaysInMonth(newvalue, time.tm_year - 1900);
-
-		time.tm_mday = newvalue;
-		ASSERT_OK;
-		return time.tm_mday;
-	}
-	else if (newvalue == -1)
-		return time.tm_mday;
-	else
-		throw DateError::WRONG_TIME_DATA;
+	if (!newvalue) 
+		newvalue = -2;
+	return quickSetter(newvalue, Date::DaysInMonth(newvalue, time.tm_year - 1900) + 1, time.tm_mday);
 }
 
 int Date::month(int newvalue)
@@ -211,7 +205,7 @@ int Date::dst(int newvalue)
 #ifdef _MicroSeconds
 MicroSeconds Date::microseconds(MicroSeconds newms)
 {
-	if (newms == -1)
+	if (newms == MicroSeconds(-1))
 		return microseconds_in;
 	else
 		return microseconds_in = MakeMS(newms);
@@ -220,7 +214,7 @@ MicroSeconds Date::microseconds(MicroSeconds newms)
 MicroSeconds Date::ms_tolerance(MicroSeconds newms)
 {
 	return set_static_value<MicroSeconds>(newms, tolerance_mutex, Date::tolerance, [](MicroSeconds ms) {
-		return ms == -1;
+		return ms == MicroSeconds(-1);
 		});
 }
 #endif
@@ -228,11 +222,10 @@ MicroSeconds Date::ms_tolerance(MicroSeconds newms)
 //-------------------------------------------------- Operator overloadings
 bool Date::operator== (const Date& b) const {
 #ifdef _MicroSeconds
-	// WRONG
-	if (timet == b.timet)
-		return abs(static_cast<int>(b.microseconds_in) - static_cast<int>(microseconds_in)) <= static_cast<int>(tolerance);
-	else
-		return false;
+	using temp_type = long long int;
+	temp_type current = temp_type(timet) * MS_MAX + microseconds_in;
+	temp_type other = temp_type(b.timet) * MS_MAX + microseconds_in;
+	return abs(current - other) <= temp_type(tolerance);
 #else
 	return timet == b.timet;
 #endif
@@ -272,8 +265,9 @@ Date::Date()
 }
 
 Date::Date(tm time_in _Constr_Param_Microseconds) :
-	timet(mktime(&time_in)),
-	time(time_in)
+	time(time_in),
+	timet(mktime(&time))
+
 	_Constr_Init_List_Microseconds
 {
 	if (timet == time_t(-1))
@@ -288,21 +282,21 @@ Date::Date(time_t tmt _Constr_Param_Microseconds) :
 		throw DateError::WRONG_TIME_T;
 }
 
-Date::Date(const std::string& src, const char* pattern _Constr_Param_Microseconds) :
+Date::Date(const std::string& src, const char* npattern _Constr_Param_Microseconds) :
 	timet(0) /* sorry about that :) */
 	_Constr_Init_List_Microseconds
 {
-	if (pattern == nullptr)
+	if (npattern == nullptr)
 	{
 		if (Date::pattern != nullptr)
-			pattern = Date::pattern;
+			npattern = Date::pattern;
 		else
 			throw DateError::NO_PATTERN;
 	}
 
 	std::istringstream iss(src);
 	Date ans;
-	iss >> std::get_time(&time, pattern);
+	iss >> std::get_time(&time, npattern);
 
 	if ((timet = mktime(&time)) == time_t(-1)) {
 		throw DateError::WRONG_STRING;
@@ -313,9 +307,9 @@ Date::Date(const std::string& src, const char* pattern _Constr_Param_Microsecond
 
 //------------------------------------------------------ Protected methods
 
-int& Date::quickSetter(int newvalue, int max, int& field)
+int Date::quickSetter(int newvalue, int max, int& field)
 {
-	if (newvalue < max)
+	if (newvalue < max && newvalue >= 0)
 	{
 		field = newvalue;
 		ASSERT_OK;

@@ -69,7 +69,7 @@ namespace File
 	bool IsDir(filename_t filename);
 
 	// Returns true if trying to read charsToRead characters from the file fails.
-	bool IsEmpty(filename_t filename, size_t charsToRead = 0);
+	bool IsEmpty(filename_t filename, unsigned int charsToRead = 0);
 	
 	// Closes "ifs" and tries to open the file "filename".
 	// If an encoding is given, applies the corresponding locale 
