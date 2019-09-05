@@ -5,8 +5,10 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
-#include <limits>
+#include <functional>
 #include <iomanip>
+#include <limits>
+#include <mutex>
 #include <sstream>
 #include "Date.hpp"
 #include "Toolbox.hpp"
@@ -21,7 +23,7 @@ const char* Date::pattern = nullptr;
 
 #if DATE_MIC_ON == 1
 MicroSeconds Date::tolerance = Date::MS_MAX;
-char Date::msSep = NO_MS;
+char Date::msSepChar = NO_MS;
 #define _MicroSeconds 1 /* Convenience solution for more readable code. */
 #endif
 
@@ -70,6 +72,19 @@ inline bool Localtime_Func(const time_t& source, struct tm& result)
 #endif
 }
 
+// Mutexes for static variables access.
+static std::mutex tolerance_mutex, pattern_mutex, msSep_mutex;
+
+// Template function for getter and setter of static variables access.
+template <typename T>
+static T set_static_value(T newvalue, std::mutex& mutex_i, T& stored_value, std::function<bool(T)> isReadOnly)
+{
+	mutex_i.lock();
+	T returnValue = isReadOnly(newvalue) ? stored_value : (stored_value = newvalue);
+	mutex_i.unlock();
+	return returnValue;
+}
+
 #define ASSERT_OK assert((timet = mktime(&time)) != -1); /* Ensures the instance is in a valid state or fail assertion. */
 
 //----------------------------------------------------------------- PUBLIC
@@ -78,12 +93,39 @@ inline bool Localtime_Func(const time_t& source, struct tm& result)
 
 const char* Date::str_pattern(const char* pattern)
 {
-	if (pattern == nullptr || strlen(pattern) != 0)
+	return set_static_value<decltype(Date::pattern)>(pattern, pattern_mutex, Date::pattern, [](const char* newp) {
+		return Date::pattern != nullptr && strlen(Date::pattern) == 0;
+		});
+}
+
+char Date::ms_CharSep(char newsep)
+{
+	return set_static_value<char>(newsep, msSep_mutex, Date::msSepChar, [](char newc) {
+		return newc == '\r';
+		});
+}
+
+int Date::DaysInMonth(int month, int year) noexcept
+{
+	if (month >= 0 && month < 12)
 	{
-		return Date::pattern = pattern;
+		int daysInMonth = 31;
+		if (month == APRIL ||
+			month == JUNE ||
+			month == SEPTEMBER ||
+			month == NOVEMBER
+			)
+			daysInMonth = 30;
+		else if (month == FEBRUARY)
+		{
+			if (IsLeapYear(year))
+				daysInMonth = 29;
+			else
+				daysInMonth = 28;
+		}
+		return daysInMonth;
 	}
-	else
-		return Date::pattern;
+	else return 0;
 }
 
 int Date::Compare(const Date& d) const
@@ -125,20 +167,7 @@ int Date::day_month(int newvalue)
 {
 	if (newvalue >= 1)
 	{
-		int daysInMonth = 31;
-		if (time.tm_mon == APRIL ||
-			time.tm_mon == JUNE ||
-			time.tm_mon == SEPTEMBER ||
-			time.tm_mon == NOVEMBER
-		)
-			daysInMonth = 30;
-		else if (time.tm_mon == FEBRUARY)
-		{
-			if (IsLeapYear(time.tm_year - 1900))
-				daysInMonth = 29;
-			else
-				daysInMonth = 28;
-		}
+		int daysInMonth = Date::DaysInMonth(newvalue, time.tm_year - 1900);
 
 		time.tm_mday = newvalue;
 		ASSERT_OK;
@@ -190,16 +219,16 @@ MicroSeconds Date::microseconds(MicroSeconds newms)
 
 MicroSeconds Date::ms_tolerance(MicroSeconds newms)
 {
-	if (newms == -1)
-		return tolerance;
-	else
-		return tolerance = MakeMS(newms);
+	return set_static_value<MicroSeconds>(newms, tolerance_mutex, Date::tolerance, [](MicroSeconds ms) {
+		return ms == -1;
+		});
 }
 #endif
 
 //-------------------------------------------------- Operator overloadings
 bool Date::operator== (const Date& b) const {
 #ifdef _MicroSeconds
+	// WRONG
 	if (timet == b.timet)
 		return abs(static_cast<int>(b.microseconds_in) - static_cast<int>(microseconds_in)) <= static_cast<int>(tolerance);
 	else
@@ -218,8 +247,8 @@ Date::operator std::string() const
 	oss << std::put_time(&time, pattern);
 
 #ifdef _MicroSeconds
-	if (msSep != NO_MS)
-		oss << msSep << microseconds_in;
+	if (msSepChar != NO_MS)
+		oss << msSepChar << microseconds_in;
 #endif
 
 	return oss.str();

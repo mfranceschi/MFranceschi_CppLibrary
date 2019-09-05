@@ -53,7 +53,8 @@ public:
 
 	// Returns 28 or 29 or 30 or 31.
 	// Returns 0 if month is not valid (0-11).
-	constexpr static int DaysInMonth(int month, int year) noexcept;
+	// "year" is for leap years, with 0==0!=1900.
+	static int DaysInMonth(int month, int year = 0) noexcept;
 
 	// Returns now as UTC timestamp.
 	inline static time_t Now_Timestamp();
@@ -67,7 +68,7 @@ public:
 		SEPTEMBER = 8,	OCTOBER = 9,
 		NOVEMBER = 10,	DECEMBER = 11;
 
-	constexpr static int NBR_SECONDS_IN_DAY = 24 * 60 * 60; // Number of seconds in a day.
+	constexpr static int NBR_SECONDS_IN_DAY = 24 * 60 * 60; // Number of seconds in a single day.
 
 	const static int MAX_YEAR; // Max possible year on this computer.
 
@@ -78,6 +79,10 @@ public:
 #ifdef _MicroSeconds
 	constexpr static MicroSeconds MS_MAX = 1000000; // No more than 1M microseconds to be stored!
 	constexpr static char NO_MS = 0x00; // Use this in ms_sep if you don't want to represent microseconds in string.
+
+	template <typename T> constexpr static MicroSeconds MakeMS(T val); // Throws WRONG_MS if not in right range.
+	static MicroSeconds ms_tolerance(MicroSeconds = -1); // Refers to Date::tolerance.
+	static char ms_CharSep(char = '\r'); // Sets the msCharSep.
 #endif
 
 	//--------------------------------------------------------- Public methods
@@ -118,10 +123,7 @@ public:
 	static const char* str_pattern(const char* pattern = ""); // Refers to Date::pattern. Empty string = getter.
 
 #ifdef _MicroSeconds
-	// Validates the MicroSeconds value by returning it or throwing WRONG_MS (if not in right range).
-	template <typename T> constexpr static MicroSeconds MakeMS(T val);
 	MicroSeconds microseconds(MicroSeconds = -1);
-	static MicroSeconds ms_tolerance(MicroSeconds = -1); // Refers to Date::tolerance.
 #endif
 
 
@@ -194,7 +196,7 @@ protected:
 	
 	// Character used to separate the datetime to the microseconds in the string representations.
 	// Initial value of NO_MS ( =no microseconds in string).
-	static char msSep;
+	static char msSepChar;
 #endif
 };
 
@@ -212,29 +214,6 @@ constexpr MicroSeconds Date::MakeMS(T val)
 
 constexpr bool Date::IsLeapYear(int year) noexcept
 {	return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0); }
-
-constexpr int Date::DaysInMonth(int month, int year) noexcept
-{
-	if (month >= 0 && month < 12)
-	{
-		int daysInMonth = 31;
-		if (month == APRIL ||
-			month == JUNE ||
-			month == SEPTEMBER ||
-			month == NOVEMBER
-			)
-			daysInMonth = 30;
-		else if (month == FEBRUARY)
-		{
-			if (IsLeapYear(year - 1900))
-				daysInMonth = 29;
-			else
-				daysInMonth = 28;
-		}
-		return daysInMonth;
-	}
-	else return 0;
-}
 
 inline time_t Date::Now_Timestamp()
 { 	return std::time(nullptr); }
