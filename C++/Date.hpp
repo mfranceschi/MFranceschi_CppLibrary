@@ -4,6 +4,7 @@
 
 //--------------------------------------------------------------- Includes
 #include <ctime> /* for tm and time_t */
+#include <ostream> /* for operator << */
 #include <string> /* for conversions with strings */
 #include <type_traits> /* for type checking in template MakeMS */
 #include "Toolbox.hpp"
@@ -148,10 +149,11 @@ public:
 	inline Date& operator++(); // +1 second
 	inline Date operator++(int); // +1 second
 
-	// Conversions
+	// Conversions and stream
 	inline operator struct tm() const;
 	inline operator time_t () const;
 	operator std::string() const;
+	inline friend std::ostream& operator<<(std::ostream&, const Date&);
 
 //---------------------------------------------- Constructors - destructor
     
@@ -258,6 +260,11 @@ inline Date::operator struct tm() const
 
 inline Date::operator time_t () const 
 {	return timet; }
+
+inline std::ostream& operator<<(std::ostream& os, const Date& d)
+{
+	return os << std::string(d);
+}
 
 #ifdef _MicroSeconds
 #undef _MicroSeconds
