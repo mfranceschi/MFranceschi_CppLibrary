@@ -14,6 +14,10 @@
 #include "Date.hpp"
 #include "Toolbox.hpp"
 
+#ifdef max
+#undef max
+#endif // max
+
 //-------------------------------------------------------------- Constants
 
 const char* Date::pattern = nullptr;

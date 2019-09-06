@@ -4,6 +4,8 @@
 #include "../C++/Toolbox.cpp"
 #include "../C++/File.hpp"
 #include "../C++/File.cpp"
+#include "../C++/Date.hpp"
+#include "../C++/Date.cpp"
 
 #ifdef _WIN32 // WIN32
 	#ifdef UNICODE

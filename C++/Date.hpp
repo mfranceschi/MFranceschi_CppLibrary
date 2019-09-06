@@ -183,20 +183,12 @@ protected:
 
 	tm time; // tm struct that holds the current date.
 	time_t timet; // time_t that holds the current date.
-	
-	// Use it when converting with string fields.
-	// It will be used the way strftime does.
-	// Don't include microseconds here.
-	static const char* pattern; 
+	static const char* pattern; // String pattern based on strftime. No microseconds here.
 	
 #ifdef _MicroSeconds
 	MicroSeconds microseconds_in; // Instance field that holds microseconds.
-
 	static MicroSeconds tolerance; // Tolerance in microseconds. Initial value of MS_MAX.
-	
-	// Character used to separate the datetime to the microseconds in the string representations.
-	// Initial value of NO_MS ( =no microseconds in string).
-	static char msSepChar;
+	static char msSepChar; // Separator for normal datetime and mics in strings. Initial value of NO_MS.
 #endif
 };
 
@@ -206,7 +198,7 @@ protected:
 template <typename T>
 constexpr MicroSeconds Date::MakeMS(T val)
 {
-	static_assert(std::is_arithmetic<T>::value, "Argument must be an arithmeric value for comparison!");
+	static_assert(std::is_arithmetic<T>::value, "Argument must be an arithmeric value.");
 	MicroSeconds valMS = static_cast<MicroSeconds>(val);
 	return valMS < MS_MAX ? valMS : throw DateError::WRONG_MS;
 }
