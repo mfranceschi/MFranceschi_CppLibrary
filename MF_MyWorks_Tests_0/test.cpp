@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <direct.h>
 #include "pch.h"
 #include "../C++/Toolbox.hpp"
 #include "../C++/Toolbox.cpp"
@@ -7,13 +8,21 @@
 #include "../C++/Date.hpp"
 #include "../C++/Date.cpp"
 
+// ////////////////////////////////////////////////////////////////////////////////////////////// //
+//                             ALL TESTS FOR THE File MODULE                                      //
+// ////////////////////////////////////////////////////////////////////////////////////////////// //
+
+
+// File name constants
 #ifdef _WIN32 // WIN32
 	#ifdef UNICODE
-		constexpr File::filename_t FNAME_MIDDLESIZE = L"D:\\Vikings.scx";
-		constexpr File::filename_t FNAME_UNEXISTING = L"C:\\unexisting._tut ";
+		constexpr File::filename_t FNAME_MIDDLESIZE = L"files\\Vikings.scx";
+		constexpr File::filename_t FNAME_UNEXISTING = L"files\\unexisting._tut ";
+		constexpr File::filename_t FNAME_SMALL_UTF16LE = L"files\\Small_utf16le.txt";
 	#else
-		constexpr File::filename_t FNAME_MIDDLESIZE = "D:\\Vikings.scx";
-		constexpr File::filename_t FNAME_UNEXISTING = "C:\\unexisting._tut";
+		constexpr File::filename_t FNAME_MIDDLESIZE = "files\\Vikings.scx";
+		constexpr File::filename_t FNAME_UNEXISTING = "files\\unexisting._tut ";
+		constexpr File::filename_t FNAME_SMALL_UTF16LE = "files\\Small_utf16le.txt";
 	#endif
 	
 	#define I_Want_Mem_Leaks
@@ -22,12 +31,14 @@
 	constexpr File::filename_t FNAME_UNEXISTING = "/mnt/c/unexisting._tut";
 #endif
 
+// Turn on Memory Leaks detection (Win32 only)
 #ifdef I_Want_Mem_Leaks
 	#define _CRTDBG_MAP_ALLOC
 	#include <stdlib.h>
 	#include <crtdbg.h>
 #endif
 
+// Structure that holds file information.
 struct file_info_data
 {
 	File::filesize_t size;
@@ -35,12 +46,18 @@ struct file_info_data
 	char firstByte, lastByte;
 	bool exists;
 	File::encoding_t encoding;
+	size_t offset;
 
-	file_info_data(File::filesize_t fsize, File::filename_t fname, char fByte, char lByte, bool ex, File::encoding_t enc) :
-		size(fsize), name(fname), firstByte(fByte), lastByte(lByte), exists(ex), encoding(enc)
+	file_info_data(File::filesize_t fsize, File::filename_t fname, char fByte, char lByte, bool ex, File::encoding_t enc, size_t offset=0) :
+		size(fsize), name(fname), firstByte(fByte), lastByte(lByte), exists(ex), encoding(enc), offset(offset)
 	{}
 };
 
+static file_info_data fid_middlesize(287815, FNAME_MIDDLESIZE, 'l', '\xEF', true, File::ENC_DEFAULT);
+static file_info_data fid_unexisting(0, FNAME_UNEXISTING, 0, 0, false, File::ENC_UNKNOWN);
+static file_info_data fid_smallfile_utf16le(38, FNAME_SMALL_UTF16LE, '\xFF', '\x00', true, File::ENC_UTF16LE, 2);
+
+// Motherclass for File:: test cases.
 class TestFile : public ::testing::Test {
 protected:
 	TestFile(const file_info_data& fid) :
@@ -76,44 +93,49 @@ protected:
 		if (fid.exists)
 		{
 			ASSERT_TRUE(ifs.good());
-			EXPECT_EQ(ifs.tellg(), 0);
+			EXPECT_EQ(ifs.tellg(), fid.offset);
+			ifs.seekg(0, std::ios_base::beg);
 			EXPECT_TRUE(ifs.good());
-			EXPECT_EQ((ifs.peek()), fid.firstByte);
+			EXPECT_EQ(static_cast<char>(ifs.peek()), fid.firstByte);
 			ifs.seekg(-1, std::ios_base::end);
-			EXPECT_EQ(char(ifs.peek()), fid.lastByte);
+			EXPECT_EQ(static_cast<char>(ifs.peek()), fid.lastByte);
 		}
 		else
 			ASSERT_FALSE(ifs.good());
 	}
 
-	file_info_data fid;
-};
-
-class TestMiddleWeightFile : public TestFile {
-protected:
-	TestMiddleWeightFile() : 
-		TestFile(file_info_data(287815, FNAME_MIDDLESIZE, 'l', char(239), true, File::ENC_DEFAULT))
-	{}
-};
-
-class TestUnexistingFile : public TestFile {
-protected:
-	TestUnexistingFile() : 
-		TestFile(file_info_data(0, FNAME_UNEXISTING, 0, 0, false, File::ENC_UNKNOWN))
-	{}
-
-	void SetUp() override 
+	void SetUp() override
 	{
-		if (File::Exists(fid.name))
-			File::Delete(fid.name);
+		char buf[256];
+		if (fid.exists)
+			ASSERT_TRUE(File::Exists(fid.name)) << _getcwd(buf, 256);
+		else
+			if (File::Exists(fid.name))
+				File::Delete(fid.name, true);
 	}
 
 	void TearDown() override
 	{
-		ASSERT_FALSE(File::Exists(fid.name));
+		if (fid.exists)
+			ASSERT_TRUE(File::Exists(fid.name));
+		else
+			ASSERT_FALSE(File::Exists(fid.name));
 	}
+
+	file_info_data fid;
 };
 
+#define CLASS_TEST_FILE(classname, fidname) class classname : public TestFile {\
+protected: \
+	classname () : TestFile( fidname ) {} \
+}
+
+CLASS_TEST_FILE(TestUnexistingFile, fid_unexisting);
+CLASS_TEST_FILE(TestMiddleWeightFile, fid_middlesize);
+CLASS_TEST_FILE(TestSmallFileUTF16LE, fid_smallfile_utf16le);
+
+// Test fixtures
+#if 1
 TEST_F(TestMiddleWeightFile, VerifySize) {
 	CheckSize();
 }
@@ -146,6 +168,24 @@ TEST_F(TestUnexistingFile, VerifyOpen) {
 	CheckOpen();
 }
 
+TEST_F(TestSmallFileUTF16LE, VerifySize) {
+	CheckSize();
+}
+
+TEST_F(TestSmallFileUTF16LE, VerifyExists) {
+	CheckExists();
+}
+
+TEST_F(TestSmallFileUTF16LE, VerifyEncoding) {
+	CheckEncoding();
+}
+
+TEST_F(TestSmallFileUTF16LE, VerifyOpen) {
+	CheckOpen();
+}
+#endif
+
+// Main function
 int main(int argc, char** argv)
 {
 #ifdef I_Want_Mem_Leaks
