@@ -22,6 +22,7 @@
 			constexpr File::filename_t FNAME_MIDDLESIZE = FNAME_PREFIX "Vikings.scx";
 			constexpr File::filename_t FNAME_UNEXISTING = FNAME_PREFIX "unexisting._tut ";
 			constexpr File::filename_t FNAME_SMALL_UTF16LE = FNAME_PREFIX "Small_utf16le.txt";
+			constexpr File::filename_t FNAME_TEMP = FNAME_PREFIX "I_AM_TEMP";
 		#else
 			#define FNAME_PREFIX R"path(..\TestFiles\)path"
 			constexpr File::filename_t FNAME_MIDDLESIZE = FNAME_PREFIX "Vikings.scx";
@@ -190,12 +191,25 @@ TEST_F(TestSmallFileUTF16LE, VerifyOpen) {
 	CheckOpen();
 }
 
-TEST(TestDir, FullTest)
-{
-	EXPECT_TRUE(File::IsDir(FNAME_PREFIX));
-	EXPECT_FALSE(File::IsDir(FNAME_SMALL_UTF16LE));
-	EXPECT_FALSE(File::IsDir(FNAME_UNEXISTING));
+TEST(TestIsDir, ActualFolder)
+{	ASSERT_TRUE(File::IsDir(FNAME_PREFIX)); }
+
+TEST(TestIsDir, IsAFile)
+{	ASSERT_FALSE(File::IsDir(FNAME_SMALL_UTF16LE));}
+
+TEST(TestIsDir, Unexisting)
+{	ASSERT_FALSE(File::IsDir(FNAME_UNEXISTING)); }
+
+TEST(TestIsDir, NewFolder) {
+	const File::filename_t& filename = FNAME_TEMP;
+	ASSERT_TRUE(File::CreateFolder(filename));
+	EXPECT_TRUE(File::IsDir(filename));
+	ASSERT_TRUE(File::Delete(filename, false));
 }
+
+TEST(TestDelete, Unexisting)
+{	ASSERT_FALSE(File::Delete(FNAME_UNEXISTING)); }
+
 #endif
 
 // Main function

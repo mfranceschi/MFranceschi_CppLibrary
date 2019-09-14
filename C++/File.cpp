@@ -132,7 +132,7 @@ namespace File
 	{
 #ifdef _WIN32 // Win32
 		DWORD attrs = GetFileAttributes(filename);
-		return attrs & FILE_ATTRIBUTE_DIRECTORY;
+		return (attrs == INVALID_FILE_ATTRIBUTES) ? false : attrs & FILE_ATTRIBUTE_DIRECTORY;
 #else // POSIX
 		struct stat s;
 		return !stat(filename, &s) && S_ISDIR(s.st_mode);
@@ -223,6 +223,15 @@ namespace File
 			_close(file);
 		}
 		return forReturn;
+	}
+
+	bool CreateFolder(filename_t filename)
+	{
+#ifdef _WIN32
+		return CreateDirectory(filename, NULL);
+#else
+		return !mkdir(filename, S_IRWXU | S_IRWXG | S_IRWXO);
+#endif
 	}
 
 	const char* Read(filename_t filename)

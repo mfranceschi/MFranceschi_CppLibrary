@@ -95,5 +95,10 @@ namespace File
 
 	// Displays the file encoding as a string.
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc);
+
+	// Creates a folder.
+	// On Windows, new folder's access rights are the ones of the parent's dir.
+	// Otherwise it is 0777.
+	bool CreateFolder(filename_t filename);
 } 
 #endif // FILE_H
