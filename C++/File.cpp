@@ -149,7 +149,7 @@ namespace File
 		else
 		{
 			char* content = new char[charsToRead];
-			forReturn = unsigned int(_read(file, content, charsToRead)) == charsToRead;
+			forReturn = static_cast<unsigned int>(_read(file, content, charsToRead)) == charsToRead;
 			delete[] content;
 			_close(file);
 		}

@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <direct.h>
 #include "pch.h"
 #include "../C++/Toolbox.hpp"
 #include "../C++/Toolbox.cpp"
@@ -13,29 +12,36 @@
 // ////////////////////////////////////////////////////////////////////////////////////////////// //
 
 
-// File name constants
-#ifdef _WIN32 // WIN32
-	#ifdef UNICODE
-		constexpr File::filename_t FNAME_MIDDLESIZE = L"files\\Vikings.scx";
-		constexpr File::filename_t FNAME_UNEXISTING = L"files\\unexisting._tut ";
-		constexpr File::filename_t FNAME_SMALL_UTF16LE = L"files\\Small_utf16le.txt";
-	#else
-		constexpr File::filename_t FNAME_MIDDLESIZE = "files\\Vikings.scx";
-		constexpr File::filename_t FNAME_UNEXISTING = "files\\unexisting._tut ";
-		constexpr File::filename_t FNAME_SMALL_UTF16LE = "files\\Small_utf16le.txt";
-	#endif
-	
-	#define I_Want_Mem_Leaks
-#else // POSIX
-	constexpr File::filename_t FNAME_MIDDLESIZE = "/mnt/d/Vikings.scx";
-	constexpr File::filename_t FNAME_UNEXISTING = "/mnt/c/unexisting._tut";
-#endif
+// First settings : file names, (Win) memory leaks check.
+#if 1
 
-// Turn on Memory Leaks detection (Win32 only)
-#ifdef I_Want_Mem_Leaks
-	#define _CRTDBG_MAP_ALLOC
-	#include <stdlib.h>
-	#include <crtdbg.h>
+	// File name constants
+	#ifdef _WIN32 // WIN32
+		#ifdef UNICODE
+			#define FNAME_PREFIX LR"path(..\TestFiles\)path"
+			constexpr File::filename_t FNAME_MIDDLESIZE = FNAME_PREFIX "Vikings.scx";
+			constexpr File::filename_t FNAME_UNEXISTING = FNAME_PREFIX "unexisting._tut ";
+			constexpr File::filename_t FNAME_SMALL_UTF16LE = FNAME_PREFIX "Small_utf16le.txt";
+		#else
+			#define FNAME_PREFIX R"path(..\TestFiles\)path"
+			constexpr File::filename_t FNAME_MIDDLESIZE = FNAME_PREFIX "Vikings.scx";
+			constexpr File::filename_t FNAME_UNEXISTING = FNAME_PREFIX "unexisting._tut ";
+			constexpr File::filename_t FNAME_SMALL_UTF16LE = FNAME_PREFIX "Small_utf16le.txt";
+		#endif
+	
+		#define I_Want_Mem_Leaks
+	#else // POSIX
+		constexpr File::filename_t FNAME_MIDDLESIZE = "/mnt/d/Vikings.scx";
+		constexpr File::filename_t FNAME_UNEXISTING = "/mnt/c/unexisting._tut";
+	#endif
+
+	// Turn on Memory Leaks detection (Win32 only)
+	#ifdef I_Want_Mem_Leaks
+		#define _CRTDBG_MAP_ALLOC
+		#include <stdlib.h>
+		#include <crtdbg.h>
+	#endif
+
 #endif
 
 // Structure that holds file information.
@@ -106,9 +112,8 @@ protected:
 
 	void SetUp() override
 	{
-		char buf[256];
 		if (fid.exists)
-			ASSERT_TRUE(File::Exists(fid.name)) << _getcwd(buf, 256);
+			ASSERT_TRUE(File::Exists(fid.name));
 		else
 			if (File::Exists(fid.name))
 				File::Delete(fid.name, true);
@@ -125,7 +130,8 @@ protected:
 	file_info_data fid;
 };
 
-#define CLASS_TEST_FILE(classname, fidname) class classname : public TestFile {\
+#define CLASS_TEST_FILE(classname, fidname) \
+class classname : public TestFile {\
 protected: \
 	classname () : TestFile( fidname ) {} \
 }
@@ -182,6 +188,13 @@ TEST_F(TestSmallFileUTF16LE, VerifyEncoding) {
 
 TEST_F(TestSmallFileUTF16LE, VerifyOpen) {
 	CheckOpen();
+}
+
+TEST(TestDir, FullTest)
+{
+	EXPECT_TRUE(File::IsDir(FNAME_PREFIX));
+	EXPECT_FALSE(File::IsDir(FNAME_SMALL_UTF16LE));
+	EXPECT_FALSE(File::IsDir(FNAME_UNEXISTING));
 }
 #endif
 
