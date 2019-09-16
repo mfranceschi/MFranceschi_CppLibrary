@@ -82,6 +82,8 @@ inline bool Localtime_Func(const time_t& source, struct tm& result)
 #endif
 }
 
+const static Date first_date_of_program = Date::Now();
+
 // Mutexes for static variables access.
 static std::mutex tolerance_mutex, pattern_mutex, msSep_mutex;
 
@@ -95,7 +97,7 @@ static T set_static_value(T newvalue, std::mutex& mutex_i, T& stored_value, std:
 	return returnValue;
 }
 
-#define ASSERT_OK assert((timet = mktime(&time)) != -1); /* Ensures the instance is in a valid state or fail assertion. */
+#define ASSERT_OK assert((timet = mktime(&time)) != static_cast<time_t>(-1)); /* Ensures the instance is in a valid state or fail assertion. */
 
 //----------------------------------------------------------------- PUBLIC
 
@@ -105,13 +107,6 @@ const char* Date::str_pattern(const char* npattern)
 {
 	return set_static_value<decltype(Date::pattern)>(npattern, pattern_mutex, Date::pattern, [](const char* newp) {
 		return newp != nullptr && strlen(newp) == 0;
-		});
-}
-
-char Date::ms_CharSep(char newsep)
-{
-	return set_static_value<char>(newsep, msSep_mutex, Date::msSepChar, [](char newc) {
-		return newc == '\r';
 		});
 }
 
@@ -136,6 +131,20 @@ int Date::DaysInMonth(int month, int year) noexcept
 		return daysInMonth;
 	}
 	else return 0;
+}
+
+Date Date::Now()
+{
+	using namespace std::chrono;
+	using clock = system_clock;
+	clock::time_point now_point = clock::now();
+	Date newdate(clock::to_time_t(now_point));
+#ifdef _MicroSeconds
+	using mics = std::chrono::microseconds;
+	mics::rep current_microseconds_count = duration_cast<mics>(now_point.time_since_epoch()).count();
+	newdate.microseconds(static_cast<MicroSeconds>(current_microseconds_count - 1000000 * time_t(newdate)));
+#endif
+	return newdate;
 }
 
 int Date::Compare(const Date& d) const
@@ -199,7 +208,7 @@ int Date::year(int newvalue)
 
 int Date::dst(int newvalue)
 {
-	if (newvalue == -1 || newvalue == 0 || newvalue == 1)
+	if (newvalue == DST_UNKNOWN || newvalue == DST_OFF || newvalue == DST_ON)
 	{
 		time.tm_isdst = newvalue;
 		ASSERT_OK;
@@ -222,6 +231,13 @@ MicroSeconds Date::ms_tolerance(MicroSeconds newms)
 {
 	return set_static_value<MicroSeconds>(newms, tolerance_mutex, Date::tolerance, [](MicroSeconds ms) {
 		return ms == MicroSeconds(-1);
+		});
+}
+
+char Date::ms_CharSep(char newsep)
+{
+	return set_static_value<char>(newsep, msSep_mutex, Date::msSepChar, [](char newc) {
+		return newc == '\r';
 		});
 }
 #endif
@@ -257,18 +273,9 @@ Date::operator std::string() const
 
 //---------------------------------------------- Constructors - destructor
 
-Date::Date()
+Date::Date() :
+	Date(Now())
 {
-	using namespace std::chrono;
-	using clock = system_clock;
-	clock::time_point now_point = clock::now();
-	timet = clock::to_time_t(now_point);
-	ASSERT_OK; /* Also sets this->time. */
-#ifdef _MicroSeconds
-	using mics = std::chrono::microseconds;
-	mics::rep current_microseconds_count = duration_cast<mics>(now_point.time_since_epoch()).count();
-	microseconds_in = static_cast<MicroSeconds>(current_microseconds_count - 1000000 * timet);
-#endif
 }
 
 Date::Date(tm time_in _Constr_Param_Microseconds) :
@@ -309,7 +316,20 @@ Date::Date(const std::string& src, const char* npattern _Constr_Param_Microsecon
 		throw DateError::WRONG_STRING;
 	}
 }
-	
+
+Date::Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag _Constr_Param_Microseconds) :
+	time({ 0 }), timet() _Constr_Init_List_Microseconds
+{
+	time.tm_year = year;
+	time.tm_mon = month;
+	time.tm_mday = monthday;
+	time.tm_hour = hour;
+	time.tm_min = minutes;
+	time.tm_sec = seconds;
+	time.tm_isdst = dst_flag;
+	ASSERT_OK;
+}
+
 //---------------------------------------------------------------- PRIVATE
 
 //------------------------------------------------------ Protected methods

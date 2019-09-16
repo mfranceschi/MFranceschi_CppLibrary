@@ -12,7 +12,7 @@
 // YOU CAN CHANGE THIS VALUE HERE.
 // THIS IS A FLAG FOR ENABLING MICROSECONDS MANAGEMENT.
 // Accepted values: 0 for disabling, 1 for enabling.
-#define DATE_MIC_ON 1
+#define DATE_MIC_ON 0
 
 #if !(DATE_MIC_ON == 1 || DATE_MIC_ON == 0)
 #error "The macro DATE_MIC_ON must be defined and have the value 0 or 1."
@@ -57,6 +57,9 @@ public:
 	// "year" is for leap years, with 0==0!=1900.
 	static int DaysInMonth(int month, int year = 0) noexcept;
 
+	// Returns the current time as a date (makes a syscall).
+	static Date Now();
+
 	// Returns now as UTC timestamp.
 	inline static time_t Now_Timestamp();
 
@@ -70,6 +73,8 @@ public:
 		NOVEMBER = 10,	DECEMBER = 11;
 
 	constexpr static int NBR_SECONDS_IN_DAY = 24 * 60 * 60; // Number of seconds in a single day.
+
+	constexpr static int DST_UNKNOWN = -1, DST_OFF = 0, DST_ON = 1; // Values for the DST flag.
 
 	const static int MAX_YEAR; // Max possible year on this computer.
 
@@ -124,6 +129,7 @@ public:
 	static const char* str_pattern(const char* pattern = ""); // Refers to Date::pattern. Empty string = getter.
 
 #ifdef _MicroSeconds
+	static char Date::ms_CharSep(char newsep);
 	MicroSeconds microseconds(MicroSeconds = -1);
 #endif
 
@@ -163,13 +169,15 @@ public:
 	explicit Date(tm, MicroSeconds = 0);
 	explicit Date(time_t, MicroSeconds = 0);
 	explicit Date(const std::string&, const char* pattern, MicroSeconds = 0);
+	explicit Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag, MicroSeconds ms = 0);
 #else
 	explicit Date(tm);
 	explicit Date(time_t);
 	explicit Date(const std::string&, const char* pattern);
+	explicit Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag);
 #endif
 
-	explicit Date(); // Initialized to current time.
+	explicit Date(); // Holds time from app launch.
 	virtual ~Date() = default;
 
 //---------------------------------------------------------------- PRIVATE
