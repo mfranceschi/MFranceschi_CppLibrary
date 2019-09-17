@@ -169,29 +169,29 @@ Interval Date::Timedelta(const Date& param) const
 
 int Date::seconds(int newvalue)
 {
-	return quickSetter(newvalue, 60+1, time.tm_sec);
+	return quickSetter(newvalue, 0, 60, time.tm_sec);
 }
 
 int Date::minutes(int newvalue)
 {
-	return quickSetter(newvalue, 60, time.tm_min);
+	return quickSetter(newvalue, 0, 59, time.tm_min);
 }
 
 int Date::hours(int newvalue)
 {
-	return quickSetter(newvalue, 24, time.tm_hour);
+	return quickSetter(newvalue, 0, 23, time.tm_hour);
 }
 
 int Date::day_month(int newvalue)
 {
 	if (!newvalue) 
 		newvalue = -2;
-	return quickSetter(newvalue, Date::DaysInMonth(newvalue, time.tm_year - 1900) + 1, time.tm_mday);
+	return quickSetter(newvalue, 1, Date::DaysInMonth(newvalue, time.tm_year - 1900), time.tm_mday);
 }
 
 int Date::month(int newvalue)
 {
-	return quickSetter(newvalue, 12, time.tm_mon);
+	return quickSetter(newvalue, 0, 11, time.tm_mon);
 }
 
 int Date::year(int newvalue)
@@ -334,16 +334,14 @@ Date::Date(int year, int month, int monthday, int hour, int minutes, int seconds
 
 //------------------------------------------------------ Protected methods
 
-int Date::quickSetter(int newvalue, int max, int& field)
+int Date::quickSetter(int newvalue, int min, int max, int& field)
 {
-	if (newvalue < max && newvalue >= 0)
+	if (newvalue == -1)
+		return field;
+	else
 	{
-		field = newvalue;
+		field = Toolbox::Validate(newvalue, DateError::WRONG_TIME_DATA, min, max);
 		ASSERT_OK;
 		return field;
 	}
-	else if (newvalue == int(-1))
-		return field;
-	else
-		throw DateError::WRONG_TIME_DATA;
 }

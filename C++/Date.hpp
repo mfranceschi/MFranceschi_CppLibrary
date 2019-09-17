@@ -20,15 +20,15 @@
 
 //------------------------------------------------------------------ Types
 
-// Error codes for this module. Don't use the integer values directly.
+// Errors for this module. Don't use the integer values directly.
 enum DateError
 {
-	NO_PATTERN = 1, // No pattern was available to perform the Date<->string conversion.
-	WRONG_STRUCT_TM = 2, // Struct tm was corrupted.
-	WRONG_MS = 3, // The number of milliseconds was not acceptable (too high?).
-	WRONG_STRING = 4, // String could not be retrieved as Date using the given pattern.
-	WRONG_TIME_T = 5, // The given time_t could not be converted as date (value too high?).
-	WRONG_TIME_DATA = 6 // Returned by setter functions if the parameter is not in the correct range.
+	NO_PATTERN,			// No pattern was available to perform the Date<->string conversion.
+	WRONG_STRUCT_TM,	// Struct tm was corrupted.
+	WRONG_MS,			// The number of milliseconds was not acceptable (too high?).
+	WRONG_STRING,		// String could not be retrieved as Date using the given pattern.
+	WRONG_TIME_T,		// The given time_t could not be converted as date (value too high?).
+	WRONG_TIME_DATA		// Returned by setter functions if the parameter is not in the correct range.
 };
 
 #if DATE_MIC_ON == 1
@@ -188,7 +188,7 @@ protected:
 	// If newvalue < max: sets field then returns it.
 	// If newvalue == -1: returns field.
 	// Else throw DateError::WRONG_TIME_DATA.
-	int quickSetter(int newvalue, int max, int& field);
+	int quickSetter(int newvalue, int min, int max, int& field);
 //--------------------------------------------------- Protected attributes
 
 	tm time; // tm struct that holds the current date.

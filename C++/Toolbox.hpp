@@ -50,13 +50,49 @@ namespace Toolbox
 
 	// Returns the sign of the given number: -1, 0 or +1, as an int.
 	template <typename type = long long>
-	constexpr int Sign(type nbr)
-	{
-		return !nbr ?
-			0 : nbr < type(0) ?
-			-1 :
-			+1;
-	}
+	constexpr int Sign(type nbr);
+
+	// Returns the value if it is valid or throws given object.
+	template <typename value_type, typename exception_class>
+	constexpr value_type Validate(value_type new_value, const exception_class& value_to_throw, const std::function<bool(value_type)> validator);
+
+	// Overloading of "Validate" for checking "new_value" is in the right range [min,max].
+	template <typename value_type, typename exception_class>
+	constexpr value_type Validate(value_type new_value, const exception_class& value_to_throw, value_type min, value_type max);
 
 }
+
+//------------------------------------------------------ Other definitions
+template <typename type>
+constexpr int Toolbox::Sign(type nbr)
+{
+	return !nbr ?
+		0 : nbr < static_cast<type>(0) ?
+		-1 :
+		+1;
+}
+
+template <typename value_type, typename exception_class>
+constexpr value_type Toolbox::Validate(value_type new_value, const exception_class& value_to_throw, const std::function<bool(value_type)> validator)
+{
+	if (validator(new_value))
+		return new_value;
+	else
+		throw value_to_throw;
+}
+
+template <typename value_type, typename exception_class>
+constexpr value_type Toolbox::Validate(value_type new_value, const exception_class& value_to_throw, value_type min, value_type max)
+{
+	std::function<bool(value_type)> func = [&min, &max](value_type newvalue) -> bool {
+		return !(newvalue < min || newvalue > max);
+	};
+
+	return Toolbox::Validate(
+		new_value, 
+		value_to_throw, 
+		func
+	);
+}
+
 #endif // TOOLBOX_H 
