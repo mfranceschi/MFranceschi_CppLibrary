@@ -5,6 +5,10 @@
 #include "../C++/File.hpp"
 #include "../C++/File.cpp"
 
+#ifdef _WIN32
+#include <direct.h>
+#endif
+
 // ////////////////////////////////////////////////////////////////////////////////////////////// //
 //                             ALL TESTS FOR THE File MODULE                                      //
 // ////////////////////////////////////////////////////////////////////////////////////////////// //
@@ -13,6 +17,9 @@
 static file_info_data fid_middlesize(287815, FNAME_MIDDLESIZE, 'l', '\xEF', true, File::ENC_DEFAULT);
 static file_info_data fid_unexisting(0, FNAME_UNEXISTING, 0, 0, false, File::ENC_UNKNOWN);
 static file_info_data fid_smallfile_utf16le(38, FNAME_SMALL_UTF16LE, '\xFF', '\x00', true, File::ENC_UTF16LE, 2);
+
+static constexpr int LEN_WORKDIR = 511;
+static char buffer_workdir[LEN_WORKDIR];
 
 // Motherclass for File:: test cases.
 class TestFile : public ::testing::Test {
@@ -142,7 +149,13 @@ TEST_F(TestSmallFileUTF16LE, VerifyOpen) {
 }
 
 TEST(TestIsDir, ActualFolder)
-{	ASSERT_TRUE(File::IsDir(FNAME_PREFIX)); }
+{	
+	ASSERT_TRUE(File::IsDir(FNAME_PREFIX))
+#ifdef _WIN32
+		<< _getcwd(buffer_workdir, LEN_WORKDIR)
+#endif
+		; 
+}
 
 TEST(TestIsDir, IsAFile)
 {	ASSERT_FALSE(File::IsDir(FNAME_SMALL_UTF16LE));}

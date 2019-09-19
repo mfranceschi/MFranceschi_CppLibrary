@@ -66,6 +66,15 @@ namespace StaticMethodsTesting
 		if (distance < 0) distance *= -1;
 		EXPECT_TRUE(distance <= 1);
 	}
+
+	TEST(Now, FullTest)
+	{
+		std::time_t now_to_check = static_cast<time_t>(Date::Now());
+		time_t now_from_chrono = clock::to_time_t(clock::now());
+		time_t distance = now_from_chrono - now_to_check;
+		if (distance < 0) distance *= -1;
+		EXPECT_TRUE(distance <= 1);
+	}
 }
 
 TEST_F(GetterSetterTests, TestGetters)

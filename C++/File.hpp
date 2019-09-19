@@ -100,5 +100,9 @@ namespace File
 	// On Windows, new folder's access rights are the ones of the parent's dir.
 	// Otherwise it is 0777.
 	bool CreateFolder(filename_t filename);
+
+	// Returns Current Working Directory.
+	// Array created using new --> please use delete[].
+	filename_t GetCWD();
 } 
 #endif // FILE_H

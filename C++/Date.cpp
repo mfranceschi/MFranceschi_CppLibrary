@@ -166,6 +166,18 @@ bool Date::Gmtime(const time_t& src, struct tm& dest)
 #endif
 }
 
+long Date::Timezone()
+{
+#ifdef _WIN32
+	long result;
+	_get_timezone(&result);
+	return result;
+#else
+	extern long timezone;
+	return timezone;
+#endif
+}
+
 int Date::Compare(const Date& d) const
 {
 #ifdef _MicroSeconds

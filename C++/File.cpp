@@ -327,4 +327,21 @@ namespace File
 		}
 		return os;
 	}
+
+	filename_t GetCWD()
+	{
+		constexpr auto max_len = FILENAME_MAX;
+		using strtype = std::remove_const<std::remove_pointer<filename_t>::type>::type;
+		strtype*  buffer = new strtype [FILENAME_MAX];
+#ifdef _WIN32
+#ifdef UNICODE
+		_wgetcwd(buffer, max_len);
+#else
+		_getcwd(buffer, max_len);
+#endif
+#else
+		getcwd(buffer, max_len);
+#endif
+		return buffer;
+	}
 } 

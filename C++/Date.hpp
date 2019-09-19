@@ -55,6 +55,7 @@ public:
 	static inline time_t Now_Timestamp(); // Returns now as UTC timestamp.
 	static bool Localtime(const time_t& src, struct tm& dest); // Thread-safe version of Localtime.
 	static bool Gmtime(const time_t& src, struct tm& dest); // Thread-safe version of Gmtime.
+	static long Timezone(); // Returns the difference in seconds between UTC and local time.
 
 	// Input checking utilities.
 	/*static constexpr bool ValidateSeconds(int) noexcept;
