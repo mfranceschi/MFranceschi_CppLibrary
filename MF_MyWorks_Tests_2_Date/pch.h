@@ -12,6 +12,7 @@ class GetterSetterTests : public ::testing::Test
 {
 protected:
 	Date d1;
+	Date d1_original;
 	const static int year = 2019 - 1900;
 	const static int month = Date::SEPTEMBER;
 	const static int monthday = 16;
@@ -25,4 +26,5 @@ protected:
 
 void GetterSetterTests::SetUp() {
 	d1 = Date(year, month, monthday, hour, minutes, seconds, dst_flag);
+	d1_original = d1;
 }

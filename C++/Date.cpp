@@ -61,28 +61,7 @@ constexpr static int MaxYear()
 const int Date::MAX_YEAR = MaxYear();
 #pragma warning(default: 4127 4309 4365)
 
-// Executes the localtime function and returns true if success.
-inline bool Localtime_Func(const time_t& source, struct tm& result)
-{
-#ifdef _WIN32
-	/* Win32-style Localtime_S is available. */
-	return !localtime_s(&result, &source);
-
-#elif defined __STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__ == 1
-	/* Classic Localtime_S is available. */
-	return localtime_s(&source, &result);
-#else
-	/* Use POSIX-style Localtime_R. */
-	return localtime_r(&source, &result);
-
-	/* 
-	 * To use basic "localtime", we should use mutexes to ensure there are no conflicts. 
-	 * I am not implementing it here. 
-	 */
-#endif
-}
-
-const static Date first_date_of_program = Date::Now();
+Date Date::lastCallToNow = Date::Now();
 
 // Mutexes for static variables access.
 static std::mutex tolerance_mutex, pattern_mutex, msSep_mutex;
@@ -145,6 +124,46 @@ Date Date::Now()
 	newdate.microseconds(static_cast<MicroSeconds>(current_microseconds_count - 1000000 * time_t(newdate)));
 #endif
 	return newdate;
+}
+
+bool Date::Localtime(const time_t& src, struct tm& dest)
+{
+#ifdef _WIN32
+	/* Win32-style Localtime_S is available. */
+	return !localtime_s(&dest, &src);
+
+#elif defined __STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__ == 1
+	/* Classic Localtime_S is available. */
+	return localtime_s(&src, &dest);
+#else
+	/* Use POSIX-style Localtime_R. */
+	return localtime_r(&src, &dest);
+
+	/*
+	 * To use basic "localtime", we should use mutexes to ensure there are no conflicts.
+	 * I am not implementing it here.
+	 */
+#endif
+}
+
+bool Date::Gmtime(const time_t& src, struct tm& dest)
+{
+#ifdef _WIN32
+	/* Win32-style Gmtime_S is available. */
+	return !gmtime_s(&dest, &src);
+
+#elif defined __STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__ == 1
+	/* Classic Gmtime_S is available. */
+	return gmtime_s(&src, &dest);
+#else
+	/* Use POSIX-style Gmtime_R. */
+	return gmtime_r(&src, &dest);
+
+	/*
+	 * To use basic "gmtime", we should use mutexes to ensure there are no conflicts.
+	 * I am not implementing it here.
+	 */
+#endif
 }
 
 int Date::Compare(const Date& d) const
@@ -292,7 +311,7 @@ Date::Date(time_t tmt _Constr_Param_Microseconds) :
 	timet(tmt)
 	_Constr_Init_List_Microseconds
 {
-	if (!Localtime_Func(timet, time))
+	if (!Localtime(timet, time))
 		throw DateError::WRONG_TIME_T;
 }
 

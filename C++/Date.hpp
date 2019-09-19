@@ -48,20 +48,21 @@ class Date
 
 public:
 	//------------------------------------------------------- Static utilities
+	
+	static constexpr bool IsLeapYear(int year) noexcept; // Returns true if the given year is a leap year.
+	static int DaysInMonth(int month, int year = 0) noexcept; // Returns [28 - 31] or 0 if month is not valid.
+	static Date Now(); // Returns the current time as a date (makes a syscall).
+	static inline time_t Now_Timestamp(); // Returns now as UTC timestamp.
+	static bool Localtime(const time_t& src, struct tm& dest); // Thread-safe version of Localtime.
+	static bool Gmtime(const time_t& src, struct tm& dest); // Thread-safe version of Gmtime.
 
-	// Returns true if the given year is a leap year.
-	constexpr static bool IsLeapYear(int year) noexcept;
-
-	// Returns 28 or 29 or 30 or 31.
-	// Returns 0 if month is not valid (0-11).
-	// "year" is for leap years, with 0==0!=1900.
-	static int DaysInMonth(int month, int year = 0) noexcept;
-
-	// Returns the current time as a date (makes a syscall).
-	static Date Now();
-
-	// Returns now as UTC timestamp.
-	inline static time_t Now_Timestamp();
+	// Input checking utilities.
+	/*static constexpr bool ValidateSeconds(int) noexcept;
+	static constexpr bool ValidateMinutes(int) noexcept;
+	static constexpr bool ValidateHours(int) noexcept;
+	static constexpr bool ValidateDays(int days, int month = -1) noexcept;
+	static constexpr bool ValidateMonths(int) noexcept;
+	*/
 
 	// Months (to be used with the Month getter and/or setter.)
 	constexpr static int 
@@ -72,15 +73,20 @@ public:
 		SEPTEMBER = 8,	OCTOBER = 9,
 		NOVEMBER = 10,	DECEMBER = 11;
 
+	// Days of week.
+	constexpr static int
+		SUNDAY = 0,		MONDAY = 1, 
+		TUESDAY = 2,	WEDNESDAY = 3, 
+		THURSDAY = 4,	FRIDAY = 5, 
+		SATURDAY = 6;
+
 	constexpr static int NBR_SECONDS_IN_DAY = 24 * 60 * 60; // Number of seconds in a single day.
 
 	constexpr static int DST_UNKNOWN = -1, DST_OFF = 0, DST_ON = 1; // Values for the DST flag.
 
 	const static int MAX_YEAR; // Max possible year on this computer.
 
-	// Constants for comparison results.
-	static constexpr int 
-		INFERIOR = -1, SUPERIOR = 1, EQUAL = 0;
+
 
 #ifdef _MicroSeconds
 	constexpr static MicroSeconds MS_MAX = 1000000; // No more than 1M microseconds to be stored!
@@ -194,6 +200,7 @@ protected:
 	tm time; // tm struct that holds the current date.
 	time_t timet; // time_t that holds the current date.
 	static const char* pattern; // String pattern based on strftime. No microseconds here.
+	static Date lastCallToNow; // All default-constructed Date instances will have this value. Updated on each call to Now.
 	
 #ifdef _MicroSeconds
 	MicroSeconds microseconds_in; // Instance field that holds microseconds.
@@ -217,6 +224,23 @@ constexpr MicroSeconds Date::MakeMS(T val)
 constexpr bool Date::IsLeapYear(int year) noexcept
 {	return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0); }
 
+/*
+constexpr bool Date::ValidateSeconds(int d) noexcept
+{	return d >= 0 && d <= 60; }
+
+constexpr bool Date::ValidateMinutes(int d) noexcept
+{	return d >= 0 && d < 60; }
+
+constexpr bool Date::ValidateHours(int d) noexcept
+{	return d >= 0 && d < 24; }
+
+constexpr bool Date::ValidateDays(int d, int m) noexcept
+{	return d >= 1 && d <= (Date::ValidateMonths(m) ? d <= Date::DaysInMonth(m) : 31); }
+
+constexpr bool Date::ValidateMonths(int d) noexcept
+{	return d >= 0 && d < 12; }
+*/
+
 inline time_t Date::Now_Timestamp()
 { 	return std::time(nullptr); }
 
@@ -236,16 +260,16 @@ inline bool Date::operator!= (const Date& b) const
 {	return !(*this == b); }
 
 inline bool Date::operator< (const Date& b) const 
-{	return Compare(b) == INFERIOR; }
+{	return Compare(b) == Toolbox::INFERIOR; }
 
 inline bool Date::operator>  (const Date& b) const 
-{	return Compare(b) == SUPERIOR; }
+{	return Compare(b) == Toolbox::SUPERIOR; }
 
 inline bool Date::operator<= (const Date& b) const 
-{	return Compare(b) != SUPERIOR; }
+{	return Compare(b) != Toolbox::SUPERIOR; }
 
 inline bool Date::operator>= (const Date& b) const 
-{	return Compare(b) != INFERIOR; }
+{	return Compare(b) != Toolbox::INFERIOR; }
 
 inline Interval Date::operator% (const Date& b) const 
 {	return Timedelta(b); }
