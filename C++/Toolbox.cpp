@@ -5,11 +5,6 @@
 #include <chrono>
 #include <cstring>
 #include "Toolbox.hpp"
-#include <sstream>
-
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 
 namespace Toolbox
 {
@@ -50,8 +45,7 @@ namespace Toolbox
 		retValue = mbstowcs(destination, source, length) - length;
 #endif
 		
-		if (!retValue)
-		{
+		if (!retValue) {
 			delete[] destination;
 			destination = nullptr;
 		}

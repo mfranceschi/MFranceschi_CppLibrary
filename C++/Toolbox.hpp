@@ -45,7 +45,7 @@ namespace Toolbox
 	wchar_t* ToWchar_t(const char* source);
 
 	// Returns the execution time for the given function.
-	// It executes iter times and returns (total_time/iter).
+	// It runs "iter" times and returns (total_time/iter).
 	double Timethis(size_t iter, const std::function<void(void)>&);
 
 	// Returns the sign of the given number: -1, 0 or +1, as an int.

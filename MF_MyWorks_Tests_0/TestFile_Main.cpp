@@ -5,39 +5,41 @@
 #include "../C++/File.hpp"
 #include "../C++/File.cpp"
 
-#ifdef _WIN32
-#include <direct.h>
-#endif
+#ifdef max
+#undef max
+#endif // max
+#ifdef min
+#undef min
+#endif // min
 
 // ////////////////////////////////////////////////////////////////////////////////////////////// //
 //                             ALL TESTS FOR THE File MODULE                                      //
 // ////////////////////////////////////////////////////////////////////////////////////////////// //
 
-// All informations for all files being used.
+// All informations for files being used.
 static file_info_data fid_middlesize(287815, FNAME_MIDDLESIZE, 'l', '\xEF', true, File::ENC_DEFAULT);
-static file_info_data fid_unexisting(0, FNAME_UNEXISTING, 0, 0, false, File::ENC_UNKNOWN);
+static file_info_data fid_unexisting(0, FNAME_UNEXISTING, 0, 0, false, File::ENC_ERROR);
 static file_info_data fid_smallfile_utf16le(38, FNAME_SMALL_UTF16LE, '\xFF', '\x00', true, File::ENC_UTF16LE, 2);
 
-static constexpr int LEN_WORKDIR = 511;
-static char buffer_workdir[LEN_WORKDIR];
+static const char* smallfilecontent = "";
 
-// Motherclass for File:: test cases.
+// Motherclass for test fixtures.
 class TestFile : public ::testing::Test {
 protected:
-	TestFile(const file_info_data& fid) :
+	file_info_data fid;
+
+	explicit TestFile(const file_info_data& fid) :
 		fid(fid)
 	{}
 
-	void CheckSize()
-	{
+	void CheckSize() {
 		File::filesize_t size = File::Size(fid.name);
 		if (fid.size)
 			ASSERT_NE(size, 0);
 		EXPECT_EQ(size, fid.size);
 	}
 
-	void CheckExists()
-	{
+	void CheckExists() {
 		bool result = File::Exists(fid.name);
 		if (fid.exists)
 			EXPECT_TRUE(result);
@@ -45,17 +47,15 @@ protected:
 			EXPECT_FALSE(result);
 	}
 
-	void CheckEncoding()
-	{
+	void CheckEncoding() {
 		EXPECT_EQ(File::Encoding(fid.name), fid.encoding);
 	}
 
-	void CheckOpen()
-	{
+	void CheckOpen() {
 		std::ifstream ifs;
-		File::Open(ifs, fid.name);
-		if (fid.exists)
-		{
+		bool was_opened = File::Open(ifs, fid.name);
+		if (fid.exists) {
+			ASSERT_TRUE(was_opened);
 			ASSERT_TRUE(ifs.good());
 			EXPECT_EQ(ifs.tellg(), fid.offset);
 			ifs.seekg(0, std::ios_base::beg);
@@ -64,115 +64,183 @@ protected:
 			ifs.seekg(-1, std::ios_base::end);
 			EXPECT_EQ(static_cast<char>(ifs.peek()), fid.lastByte);
 		}
-		else
+		else {
+			ASSERT_FALSE(was_opened);
 			ASSERT_FALSE(ifs.good());
+		}
 	}
 
-	void SetUp() override
-	{
-		if (fid.exists)
+	void CheckIsEmpty() {
+		if (!fid.exists) {
+			ASSERT_TRUE(File::IsEmpty(fid.name, 1));
+			ASSERT_TRUE(File::IsEmpty(fid.name));
+		}
+		else {
+			// Max nbr of chars that will be readed.
+			unsigned int chars_max = std::min(static_cast<File::filesize_t>(5), fid.size / 10);
+
+			// Try to read an invalid number of chars.
+			try {
+				auto tmp = File::IsEmpty(fid.name, 0);
+				FAIL() << tmp;
+			} catch (void*) {}
+			try {
+				auto tmp = File::IsEmpty(fid.name, -1);
+				FAIL() << tmp;
+			}
+			catch (void*) {}
+
+			// Read a few times.
+			for (unsigned int i = 1; i < chars_max; ++i) {
+				EXPECT_FALSE(File::IsEmpty(fid.name, i)) << i;
+			}
+			if (fid.size <= 3 /* Value of default param. */)
+				EXPECT_TRUE(File::IsEmpty(fid.name));
+			else
+				EXPECT_FALSE(File::IsEmpty(fid.name));
+		}
+	}
+
+	void SetUp() override {
+		if (fid.exists) {
 			ASSERT_TRUE(File::Exists(fid.name));
-		else
-			if (File::Exists(fid.name))
+		} 
+		else {
+			if (File::Exists(fid.name)) {
 				File::Delete(fid.name, true);
+			}
+		}
 	}
 
-	void TearDown() override
-	{
+	void TearDown() override {
 		if (fid.exists)
 			ASSERT_TRUE(File::Exists(fid.name));
 		else
 			ASSERT_FALSE(File::Exists(fid.name));
 	}
 
-	file_info_data fid;
 };
 
-#define CLASS_TEST_FILE(classname, fidname) \
-class classname : public TestFile {\
-protected: \
-	classname () : TestFile( fidname ) {} \
-}
+// Test classes for test fixtures
+#if 1
+class UnexistingFile : public TestFile {
+protected:
+	UnexistingFile() : TestFile(fid_unexisting) {}
+};
 
-CLASS_TEST_FILE(TestUnexistingFile, fid_unexisting);
-CLASS_TEST_FILE(TestMiddleWeightFile, fid_middlesize);
-CLASS_TEST_FILE(TestSmallFileUTF16LE, fid_smallfile_utf16le);
+class MiddleWeightFile : public TestFile {
+protected:
+	MiddleWeightFile() : TestFile(fid_middlesize) {}
+};
+
+class SmallFileUTF16LE : public TestFile {
+protected:
+	SmallFileUTF16LE() : TestFile(fid_smallfile_utf16le) {}
+};
+#endif
 
 // Test fixtures
 #if 1
-TEST_F(TestMiddleWeightFile, VerifySize) {
+TEST_F(MiddleWeightFile, VerifySize) {
 	CheckSize();
 }
 
-TEST_F(TestMiddleWeightFile, VerifyExists) {
+TEST_F(MiddleWeightFile, VerifyExists) {
 	CheckExists();
 }
 
-TEST_F(TestMiddleWeightFile, VerifyEncoding) {
+TEST_F(MiddleWeightFile, VerifyEncoding) {
 	CheckEncoding();
 }
 
-TEST_F(TestMiddleWeightFile, VerifyOpen) {
+TEST_F(MiddleWeightFile, VerifyOpen) {
 	CheckOpen();
 }
 
-TEST_F(TestUnexistingFile, VerifySize) {
+TEST_F(MiddleWeightFile, VerifyIsEmpty) {
+	CheckIsEmpty();
+}
+
+TEST_F(UnexistingFile, VerifySize) {
 	CheckSize();
 }
 
-TEST_F(TestUnexistingFile, VerifyExists) {
+TEST_F(UnexistingFile, VerifyExists) {
 	CheckExists();
 }
 
-TEST_F(TestUnexistingFile, VerifyEncoding) {
+TEST_F(UnexistingFile, VerifyEncoding) {
 	CheckEncoding();
 }
 
-TEST_F(TestUnexistingFile, VerifyOpen) {
+TEST_F(UnexistingFile, VerifyOpen) {
 	CheckOpen();
 }
 
-TEST_F(TestSmallFileUTF16LE, VerifySize) {
+TEST_F(UnexistingFile, VerifyIsEmpty) {
+	CheckIsEmpty();
+}
+
+TEST_F(SmallFileUTF16LE, VerifySize) {
 	CheckSize();
 }
 
-TEST_F(TestSmallFileUTF16LE, VerifyExists) {
+TEST_F(SmallFileUTF16LE, VerifyExists) {
 	CheckExists();
 }
 
-TEST_F(TestSmallFileUTF16LE, VerifyEncoding) {
+TEST_F(SmallFileUTF16LE, VerifyEncoding) {
 	CheckEncoding();
 }
 
-TEST_F(TestSmallFileUTF16LE, VerifyOpen) {
+TEST_F(SmallFileUTF16LE, VerifyOpen) {
 	CheckOpen();
 }
 
-TEST(TestIsDir, ActualFolder)
-{	
-	ASSERT_TRUE(File::IsDir(FNAME_PREFIX))
-#ifdef _WIN32
-		<< _getcwd(buffer_workdir, LEN_WORKDIR)
+TEST_F(SmallFileUTF16LE, VerifyIsEmpty) {
+	CheckIsEmpty();
+}
 #endif
-		; 
+
+// Individual test cases
+#if 1
+TEST(IsDir, ActualFolder)
+{
+	ASSERT_TRUE(File::IsDir(FNAME_PREFIX));
 }
 
-TEST(TestIsDir, IsAFile)
-{	ASSERT_FALSE(File::IsDir(FNAME_SMALL_UTF16LE));}
+TEST(IsDir, IsAFile)
+{
+	ASSERT_FALSE(File::IsDir(FNAME_SMALL_UTF16LE));
+}
 
-TEST(TestIsDir, Unexisting)
-{	ASSERT_FALSE(File::IsDir(FNAME_UNEXISTING)); }
+TEST(IsDir, Unexisting)
+{
+	ASSERT_FALSE(File::IsDir(FNAME_UNEXISTING));
+}
 
-TEST(TestIsDir, NewFolder) {
+TEST(IsDir, NewFolder) {
 	const File::filename_t& filename = FNAME_TEMP;
 	ASSERT_TRUE(File::CreateFolder(filename));
 	EXPECT_TRUE(File::IsDir(filename));
 	ASSERT_TRUE(File::Delete(filename, false));
 }
 
-TEST(TestDelete, Unexisting)
-{	ASSERT_FALSE(File::Delete(FNAME_UNEXISTING)); }
+TEST(Delete, Unexisting)
+{
+	ASSERT_FALSE(File::Delete(FNAME_UNEXISTING));
+}
 
+TEST(Read, ThousandsOfRead) {
+	File::filename_t file = fid_middlesize.name;
+	long iterations = static_cast<long>(1e3); /* A thousand times (100ms approx). */
+	const char* file_contents;
+	for (long i = 0; i < iterations; ++i) {
+		file_contents = File::Read(file);
+		ASSERT_NE(file_contents, nullptr) << "Failed to OPEN at iteration " << i;
+		ASSERT_TRUE(File::Read_Close(file_contents)) << "Failed to CLOSE at iteration " << i;
+	}
+}
 #endif
 
 // Main function

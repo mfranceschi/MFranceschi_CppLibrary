@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <codecvt>
+#include <cstring>
 #include <fcntl.h>
 #include <locale>
 #include <map>
@@ -76,27 +77,29 @@ namespace File
 //------------------------------------------------------- Static variables
 
 //------------------------------------------------------ Private functions
+	static inline bool open_file(File::filename_t filename, int& fd) { 
+	#ifdef _WIN32
+			#ifdef UNICODE
+				#define WIN_OPEN_FCT _wsopen_s
+			#else
+				#define WIN_OPEN_FCT _sopen_s
+			#endif
+			return WIN_OPEN_FCT(&fd, filename, _O_RDONLY | O_BINARY, _SH_DENYWR, _S_IREAD);
+			#undef WIN_OPEN_FCT
+		#else
+			fd = open(filename, O_RDONLY);
+			return fd == -1;
+		#endif
+	}
 
 	/* LOW-LEVEL FILE HANDLING */
-#ifdef _WIN32 // Win32
-	#ifdef UNICODE
-		#define WIN_OPEN_FCT _wsopen_s
-	#else
-		#define WIN_OPEN_FCT _sopen_s
-	#endif
-
-	#define _OPEN_FILE_(filename, fd) WIN_OPEN_FCT(&fd, filename, _O_RDONLY | _O_BINARY, _SH_DENYWR, _S_IREAD)
-#else // POSIX
-	#define _OPEN_FILE_(filename, fd) ((fd = open(filename, O_RDONLY)) == -1)
-	#define _read read /* POSIX form */
-	#define _close close /* POSIX form */
-#endif
-
-#ifdef _WIN32
-	static HANDLE OpenHandleWindows(filename_t filename)
-	{
+#ifdef _WIN32 // Windows
+	static inline HANDLE OpenHandleWindows(filename_t filename) {
 		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	}
+#else
+	#define _read read /* POSIX form */
+	#define _close close /* POSIX form */
 #endif
 
 //////////////////////////////////////////////////////////////////  PUBLIC
@@ -139,17 +142,19 @@ namespace File
 #endif
 	}
 
-	bool IsEmpty(filename_t filename, unsigned int charsToRead)
+	bool IsEmpty(filename_t filename, int charsToRead)
 	{
+		if (charsToRead < 1) throw (void*)0;
 		int file;
 		bool forReturn;
 
-		if (_OPEN_FILE_(filename, file))
+		if (open_file(filename, file))
 			forReturn = true;
 		else
 		{
 			char* content = new char[charsToRead];
-			forReturn = static_cast<unsigned int>(_read(file, content, charsToRead)) == charsToRead;
+			int chars_just_read = _read(file, content, charsToRead);
+			forReturn = chars_just_read != charsToRead;
 			delete[] content;
 			_close(file);
 		}
@@ -157,11 +162,11 @@ namespace File
 		return forReturn;
 	}
 
-	void Open(ifstream& ifs, filename_t filename,
+	bool Open(ifstream& ifs, filename_t filename,
 		encoding_t encoding)
 	{
 		ifs.close();
-		if (encoding == ENC_UNKNOWN)
+		if (encoding == ENC_ERROR)
 			encoding = File::Encoding(filename);
 
 		if (encoding == ENC_UTF8)
@@ -169,17 +174,22 @@ namespace File
 			ifs.open(filename);
 			ifs.imbue(locUTF8);
 			ifs.seekg(3);
+			return true;
 		}
 		else if (encoding == ENC_UTF16LE)
 		{
 			ifs.open(filename, ios_base::binary);
 			ifs.imbue(locUTF16LE);
 			ifs.seekg(2, ios_base::beg);
+			return true;
 		}
 		else if (encoding == ENC_DEFAULT)
 		{
 			ifs.open(filename, ios_base::binary);
+			return true;
 		}
+		else // Encoding is unknown
+			return false;
 	}
 
 	filesize_t Size(filename_t filename)
@@ -203,15 +213,15 @@ namespace File
 		int file;
 		encoding_t forReturn;
 
-		if (_OPEN_FILE_(filename, file))
-			forReturn = ENC_UNKNOWN;
+		if (open_file(filename, file))
+			forReturn = ENC_ERROR;
 		else
 		{
 			char bits[NBR_BITS_TO_READ_ENCODING];
 			int ret_read = _read(file, bits, NBR_BITS_TO_READ_ENCODING);
 			
 			if (ret_read != NBR_BITS_TO_READ_ENCODING)
-				forReturn = ENC_UNKNOWN;
+				forReturn = ENC_ERROR;
 
 			if (bits[0] == '\xff' && bits[1] == '\xfe')
 				forReturn = ENC_UTF16LE;
@@ -318,7 +328,7 @@ namespace File
 		case ENC_UTF8:
 			os << "UTF-8";
 			break;
-		case ENC_UNKNOWN:
+		case ENC_ERROR:
 			os << "<encoding-error>";
 			break;
 		case ENC_DEFAULT:
@@ -330,18 +340,14 @@ namespace File
 
 	filename_t GetCWD()
 	{
-		constexpr auto max_len = FILENAME_MAX;
-		using strtype = std::remove_const<std::remove_pointer<filename_t>::type>::type;
-		strtype*  buffer = new strtype [FILENAME_MAX];
 #ifdef _WIN32
 #ifdef UNICODE
-		_wgetcwd(buffer, max_len);
+		return _wgetcwd(NULL, 0);
 #else
-		_getcwd(buffer, max_len);
+		return _getcwd(NULL, 0);
 #endif
 #else
-		getcwd(buffer, max_len);
+		return get_current_dir_name();
 #endif
-		return buffer;
 	}
 } 
