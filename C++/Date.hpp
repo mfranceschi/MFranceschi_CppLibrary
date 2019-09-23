@@ -55,7 +55,7 @@ public:
 	static constexpr bool ValidateSeconds(int) noexcept;
 	static constexpr bool ValidateMinutes(int) noexcept;
 	static constexpr bool ValidateHours(int) noexcept;
-	static constexpr bool ValidateDays(int days, int month = -1) noexcept;
+	static constexpr bool ValidateDays(int days, int month) noexcept;
 	static constexpr bool ValidateMonths(int) noexcept;
 
 	// Months (to be used with the Month getter and/or setter.)
@@ -83,8 +83,8 @@ public:
 
 
 #ifdef DATE_MIC_ON
-	constexpr static MicroSeconds MS_MAX = 1000000; // No more than 1M microseconds to be stored!
-	constexpr static char NO_MS = 0x00; // Use this in ms_sep if you don't want to represent microseconds in string.
+	constexpr static MicroSeconds MS_MAX = static_cast<MicroSeconds>(1e6); // No more than 1M microseconds to be stored!
+	constexpr static char NO_MS = 0; // Use this in ms_sep if you don't want to represent microseconds in string.
 
 	template <typename T> constexpr static MicroSeconds MakeMS(T val); // Throws WRONG_MS if not in right range.
 	static MicroSeconds ms_tolerance(MicroSeconds = -1); // Refers to Date::tolerance.
