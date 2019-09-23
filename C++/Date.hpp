@@ -52,12 +52,11 @@ public:
 	static long Timezone(); // Returns the difference in seconds between UTC and local time.
 
 	// Input checking utilities.
-	/*static constexpr bool ValidateSeconds(int) noexcept;
+	static constexpr bool ValidateSeconds(int) noexcept;
 	static constexpr bool ValidateMinutes(int) noexcept;
 	static constexpr bool ValidateHours(int) noexcept;
 	static constexpr bool ValidateDays(int days, int month = -1) noexcept;
 	static constexpr bool ValidateMonths(int) noexcept;
-	*/
 
 	// Months (to be used with the Month getter and/or setter.)
 	constexpr static int 
@@ -130,7 +129,6 @@ public:
 	static const char* str_pattern(const char* pattern = ""); // Refers to Date::pattern. Empty string = getter.
 
 #ifdef DATE_MIC_ON
-	static char Date::ms_CharSep(char newsep);
 	MicroSeconds microseconds(MicroSeconds = -1);
 #endif
 
@@ -220,7 +218,6 @@ constexpr MicroSeconds Date::MakeMS(T val)
 constexpr bool Date::IsLeapYear(int year) noexcept
 {	return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0); }
 
-/*
 constexpr bool Date::ValidateSeconds(int d) noexcept
 {	return d >= 0 && d <= 60; }
 
@@ -234,8 +231,7 @@ constexpr bool Date::ValidateDays(int d, int m) noexcept
 {	return d >= 1 && d <= (Date::ValidateMonths(m) ? d <= Date::DaysInMonth(m) : 31); }
 
 constexpr bool Date::ValidateMonths(int d) noexcept
-{	return d >= 0 && d < 12; }
-*/
+{	return d >= JANUARY && d <= DECEMBER; }
 
 inline time_t Date::Now_Timestamp()
 { 	return std::time(nullptr); }

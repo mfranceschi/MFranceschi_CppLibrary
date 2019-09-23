@@ -18,6 +18,7 @@
 #include "Toolbox.hpp"
 #include <Windows.h>
 #else
+#include <glob.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -350,4 +351,46 @@ namespace File
 		return get_current_dir_name();
 #endif
 	}
+
+	std::vector<File::sfilename_t> MatchPattern(const std::vector<File::sfilename_t>& patterns)
+	{
+		// Declarations
+		std::vector<File::sfilename_t> result;
+		File::filename_t pattern;
+#ifdef _WIN32
+		WIN32_FIND_DATA wfd;
+		HANDLE hFind;
+#else
+		glob_t glob_buf;
+#endif
+
+		// For each item in "patterns", add all results to "result".
+		for (size_t i=0; i<patterns.size(); ++i)
+		{
+			pattern = patterns[i].c_str();
+#ifdef _WIN32
+			hFind = FindFirstFile(pattern, &wfd);
+			if (hFind != INVALID_HANDLE_VALUE) {
+				do {
+					result.push_back(wfd.cFileName);
+				} while (FindNextFile(hFind, &wfd) != 0);
+				FindClose(hFind);
+			}
+#else
+			glob(
+				pattern, /* C-String of pattern. */
+				GLOB_MARK, /* Flag: mark folders with ending "/". */
+				NULL, /* Error function, not used here. */
+				&glob_buf /* Pointer to glob_t struct. */
+			);
+			for (int i = 0; i < glob_buf.gl_pathc; ++i) {
+				result.push_back(glob_buf.gl_pathv[i]);
+			}
+			globfree(&glob_buf);
+#endif
+		}
+		
+		return result;
+	}
+
 } 

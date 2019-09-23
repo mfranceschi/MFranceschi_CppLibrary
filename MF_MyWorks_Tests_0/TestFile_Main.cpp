@@ -233,7 +233,7 @@ TEST(Delete, Unexisting)
 
 TEST(Read, ThousandsOfRead) {
 	File::filename_t file = fid_middlesize.name;
-	long iterations = static_cast<long>(1e3); /* A thousand times (100ms approx). */
+	constexpr long iterations = static_cast<long>(1e3); /* A thousand times (100ms approx). */
 	const char* file_contents;
 	for (long i = 0; i < iterations; ++i) {
 		file_contents = File::Read(file);
