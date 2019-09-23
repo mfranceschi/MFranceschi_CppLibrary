@@ -25,17 +25,12 @@
 
 const char* Date::pattern = nullptr;
 
-#if ! defined DATE_MIC_ON || !(DATE_MIC_ON == 1 || DATE_MIC_ON == 0)
-#error "The macro DATE_MIC_ON must be defined !"
-#endif
-
-#if DATE_MIC_ON == 1
+#ifdef DATE_MIC_ON
 MicroSeconds Date::tolerance = Date::MS_MAX;
 char Date::msSepChar = NO_MS;
-#define _MicroSeconds 1 /* Convenience solution for more readable code. */
 #endif
 
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 	#define _Constr_Param_Microseconds , MicroSeconds ms
 	#define _Constr_Init_List_Microseconds , microseconds_in(MakeMS(ms))
 #else
@@ -118,7 +113,7 @@ Date Date::Now()
 	using clock = system_clock;
 	clock::time_point now_point = clock::now();
 	Date newdate(clock::to_time_t(now_point));
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 	using mics = std::chrono::microseconds;
 	mics::rep current_microseconds_count = duration_cast<mics>(now_point.time_since_epoch()).count();
 	newdate.microseconds(static_cast<MicroSeconds>(current_microseconds_count - 1000000 * time_t(newdate)));
@@ -180,7 +175,7 @@ long Date::Timezone()
 
 int Date::Compare(const Date& d) const
 {
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 	return Toolbox::Sign(Timedelta(d));
 #else
 	return Toolbox::Sign(trunc(Timedelta(d)));
@@ -190,7 +185,7 @@ int Date::Compare(const Date& d) const
 Interval Date::Timedelta(const Date& param) const
 {
 	Interval result = static_cast<Interval>(difftime(timet, param.timet));
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 	result += static_cast<Interval>(double(microseconds_in - param.microseconds_in) / double(MS_MAX));
 #endif
 	return result;
@@ -249,7 +244,7 @@ int Date::dst(int newvalue)
 		throw DateError::WRONG_TIME_DATA;
 }
 
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 MicroSeconds Date::microseconds(MicroSeconds newms)
 {
 	if (newms == MicroSeconds(-1))
@@ -275,7 +270,7 @@ char Date::ms_CharSep(char newsep)
 
 //-------------------------------------------------- Operator overloadings
 bool Date::operator== (const Date& b) const {
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 	using temp_type = long long int;
 	temp_type current = temp_type(timet) * MS_MAX + microseconds_in;
 	temp_type other = temp_type(b.timet) * MS_MAX + microseconds_in;
@@ -293,7 +288,7 @@ Date::operator std::string() const
 	std::ostringstream oss;
 	oss << std::put_time(&time, pattern);
 
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 	if (msSepChar != NO_MS)
 		oss << msSepChar << microseconds_in;
 #endif

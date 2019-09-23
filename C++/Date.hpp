@@ -9,14 +9,9 @@
 #include <type_traits> /* for type checking in template MakeMS */
 #include "Toolbox.hpp"
 
-// YOU CAN CHANGE THIS VALUE HERE.
 // THIS IS A FLAG FOR ENABLING MICROSECONDS MANAGEMENT.
-// Accepted values: 0 for disabling, 1 for enabling.
-#define DATE_MIC_ON 0
-
-#if !(DATE_MIC_ON == 1 || DATE_MIC_ON == 0)
-#error "The macro DATE_MIC_ON must be defined and have the value 0 or 1."
-#endif
+// Remove the following flag (e.g. by commenting or deleting the line) to disable.
+#define DATE_MIC_ON
 
 //------------------------------------------------------------------ Types
 
@@ -31,10 +26,9 @@ enum DateError
 	WRONG_TIME_DATA		// Returned by setter functions if the parameter is not in the correct range.
 };
 
-#if DATE_MIC_ON == 1
+#ifdef DATE_MIC_ON 
 	typedef unsigned int MicroSeconds; // Type for representing microseconds.
 	typedef double Interval; // Time distance between two dates, in seconds.
-	#define _MicroSeconds
 #else
 	typedef time_t Interval; // Time distance between two dates, in seconds.
 #endif
@@ -58,12 +52,11 @@ public:
 	static long Timezone(); // Returns the difference in seconds between UTC and local time.
 
 	// Input checking utilities.
-	/*static constexpr bool ValidateSeconds(int) noexcept;
+	static constexpr bool ValidateSeconds(int) noexcept;
 	static constexpr bool ValidateMinutes(int) noexcept;
 	static constexpr bool ValidateHours(int) noexcept;
 	static constexpr bool ValidateDays(int days, int month = -1) noexcept;
 	static constexpr bool ValidateMonths(int) noexcept;
-	*/
 
 	// Months (to be used with the Month getter and/or setter.)
 	constexpr static int 
@@ -89,7 +82,7 @@ public:
 
 
 
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 	constexpr static MicroSeconds MS_MAX = 1000000; // No more than 1M microseconds to be stored!
 	constexpr static char NO_MS = 0x00; // Use this in ms_sep if you don't want to represent microseconds in string.
 
@@ -135,8 +128,7 @@ public:
 
 	static const char* str_pattern(const char* pattern = ""); // Refers to Date::pattern. Empty string = getter.
 
-#ifdef _MicroSeconds
-	static char Date::ms_CharSep(char newsep);
+#ifdef DATE_MIC_ON
 	MicroSeconds microseconds(MicroSeconds = -1);
 #endif
 
@@ -153,6 +145,7 @@ public:
 
 	// Returns interval.
 	inline Interval operator% (const Date& b) const;
+	inline Interval operator- (const Date& b) const;
 
 	// Arithmetics
 	Date operator+ (Interval seconds) const;
@@ -172,7 +165,7 @@ public:
     
     Date(const Date&) = default;
 
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 	explicit Date(tm, MicroSeconds = 0);
 	explicit Date(time_t, MicroSeconds = 0);
 	explicit Date(const std::string&, const char* pattern, MicroSeconds = 0);
@@ -184,7 +177,7 @@ public:
 	explicit Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag);
 #endif
 
-	explicit Date(); // Holds time from app launch.
+	explicit Date();
 	virtual ~Date() = default;
 
 //---------------------------------------------------------------- PRIVATE
@@ -203,7 +196,7 @@ protected:
 	static const char* pattern; // String pattern based on strftime. No microseconds here.
 	static Date lastCallToNow; // All default-constructed Date instances will have this value. Updated on each call to Now.
 	
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 	MicroSeconds microseconds_in; // Instance field that holds microseconds.
 	static MicroSeconds tolerance; // Tolerance in microseconds. Initial value of MS_MAX.
 	static char msSepChar; // Separator for normal datetime and mics in strings. Initial value of NO_MS.
@@ -212,7 +205,7 @@ protected:
 
 //------------------------------------------------------ Other definitions
 
-#ifdef _MicroSeconds
+#ifdef DATE_MIC_ON
 template <typename T>
 constexpr MicroSeconds Date::MakeMS(T val)
 {
@@ -225,7 +218,6 @@ constexpr MicroSeconds Date::MakeMS(T val)
 constexpr bool Date::IsLeapYear(int year) noexcept
 {	return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0); }
 
-/*
 constexpr bool Date::ValidateSeconds(int d) noexcept
 {	return d >= 0 && d <= 60; }
 
@@ -239,8 +231,7 @@ constexpr bool Date::ValidateDays(int d, int m) noexcept
 {	return d >= 1 && d <= (Date::ValidateMonths(m) ? d <= Date::DaysInMonth(m) : 31); }
 
 constexpr bool Date::ValidateMonths(int d) noexcept
-{	return d >= 0 && d < 12; }
-*/
+{	return d >= JANUARY && d <= DECEMBER; }
 
 inline time_t Date::Now_Timestamp()
 { 	return std::time(nullptr); }
@@ -295,12 +286,6 @@ inline Date::operator time_t () const
 {	return timet; }
 
 inline std::ostream& operator<<(std::ostream& os, const Date& d)
-{
-	return os << std::string(d);
-}
-
-#ifdef _MicroSeconds
-#undef _MicroSeconds
-#endif
+{	return os << std::string(d); }
 
 #endif // DATE_H
