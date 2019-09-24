@@ -54,7 +54,7 @@ public:
 	static constexpr bool ValidateSeconds(int) noexcept;
 	static constexpr bool ValidateMinutes(int) noexcept;
 	static constexpr bool ValidateHours(int) noexcept;
-	static constexpr bool ValidateDays(int days, int month = -1) noexcept;
+	static constexpr bool ValidateDays(int days, int month) noexcept;
 	static constexpr bool ValidateMonths(int) noexcept;
 #ifdef DATE_MIC_ON
 	static constexpr bool ValidateMicroseconds(int) noexcept;
@@ -83,8 +83,8 @@ public:
 	const static int MAX_YEAR; // Max possible year on this computer.
 
 #ifdef DATE_MIC_ON
-	constexpr static int MS_MAX = 1000000; // No more than 1M microseconds to be stored!
-	constexpr static char NO_MS = '\x00'; // Use this in ms_sep if you don't want to represent microseconds in string.
+	constexpr static MicroSeconds MS_MAX = 1000000; // No more than 1M microseconds to be stored!
+	constexpr static char NO_MS = 0x00; // Use this in ms_sep if you don't want to represent microseconds in string.
 
 	static int ms_tolerance() noexcept;
 	static int ms_tolerance(int); 
