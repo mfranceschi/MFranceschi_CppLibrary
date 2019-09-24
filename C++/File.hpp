@@ -100,7 +100,7 @@ namespace File
 
 	// Creates a folder.
 	// On Windows, new folder's access rights are the ones of the parent's dir.
-	// Otherwise it is 0777.
+	// Otherwise it is 777.
 	bool CreateFolder(filename_t filename);
 
 	// Returns Current Working Directory.
