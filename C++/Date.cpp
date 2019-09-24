@@ -26,12 +26,12 @@
 const char* Date::pattern = nullptr;
 
 #ifdef DATE_MIC_ON
-MicroSeconds Date::tolerance = Date::MS_MAX;
+int Date::tolerance = Date::MS_MAX;
 char Date::msSepChar = NO_MS;
 #endif
 
 #ifdef DATE_MIC_ON
-	#define _Constr_Param_Microseconds , MicroSeconds ms
+	#define _Constr_Param_Microseconds , int ms
 	#define _Constr_Init_List_Microseconds , microseconds_in(MakeMS(ms))
 #else
 	#define _Constr_Param_Microseconds /* Nothing */
@@ -116,7 +116,7 @@ Date Date::Now()
 #ifdef DATE_MIC_ON
 	using mics = std::chrono::microseconds;
 	mics::rep current_microseconds_count = duration_cast<mics>(now_point.time_since_epoch()).count();
-	newdate.microseconds(static_cast<MicroSeconds>(current_microseconds_count - 1000000 * time_t(newdate)));
+	newdate.microseconds(static_cast<int>(current_microseconds_count - 1000000 * time_t(newdate)));
 #endif
 	return newdate;
 }
@@ -245,18 +245,18 @@ int Date::dst(int newvalue)
 }
 
 #ifdef DATE_MIC_ON
-MicroSeconds Date::microseconds(MicroSeconds newms)
+int Date::microseconds(int newms)
 {
-	if (newms == MicroSeconds(-1))
+	if (newms == -1)
 		return microseconds_in;
 	else
 		return microseconds_in = MakeMS(newms);
 }
 
-MicroSeconds Date::ms_tolerance(MicroSeconds newms)
+int Date::ms_tolerance(int newms)
 {
-	return set_static_value<MicroSeconds>(newms, tolerance_mutex, Date::tolerance, [](MicroSeconds ms) {
-		return ms == MicroSeconds(-1);
+	return set_static_value<int>(newms, tolerance_mutex, Date::tolerance, [](int ms) -> bool{
+		return ms == -1;
 		});
 }
 
@@ -271,9 +271,9 @@ char Date::ms_CharSep(char newsep)
 //-------------------------------------------------- Operator overloadings
 bool Date::operator== (const Date& b) const {
 #ifdef DATE_MIC_ON
-	using temp_type = long long int;
+	using temp_type = long;
 	temp_type current = temp_type(timet) * MS_MAX + microseconds_in;
-	temp_type other = temp_type(b.timet) * MS_MAX + microseconds_in;
+	temp_type other = temp_type(b.timet) * MS_MAX + b.microseconds_in;
 	return abs(current - other) <= temp_type(tolerance);
 #else
 	return timet == b.timet;

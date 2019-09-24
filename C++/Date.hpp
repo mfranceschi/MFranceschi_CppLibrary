@@ -27,7 +27,6 @@ enum DateError
 };
 
 #ifdef DATE_MIC_ON 
-	typedef unsigned int MicroSeconds; // Type for representing microseconds.
 	typedef double Interval; // Time distance between two dates, in seconds.
 #else
 	typedef time_t Interval; // Time distance between two dates, in seconds.
@@ -57,6 +56,9 @@ public:
 	static constexpr bool ValidateHours(int) noexcept;
 	static constexpr bool ValidateDays(int days, int month = -1) noexcept;
 	static constexpr bool ValidateMonths(int) noexcept;
+#ifdef DATE_MIC_ON
+	static constexpr bool ValidateMicroseconds(int) noexcept;
+#endif
 
 	// Months (to be used with the Month getter and/or setter.)
 	constexpr static int 
@@ -74,21 +76,20 @@ public:
 		THURSDAY = 4,	FRIDAY = 5, 
 		SATURDAY = 6;
 
-	constexpr static int NBR_SECONDS_IN_DAY = 24 * 60 * 60; // Number of seconds in a single day.
-
 	constexpr static int DST_UNKNOWN = -1, DST_OFF = 0, DST_ON = 1; // Values for the DST flag.
+	
+	constexpr static int NBR_SECONDS_IN_DAY = 24 * 60 * 60; // Number of seconds in a single day.
 
 	const static int MAX_YEAR; // Max possible year on this computer.
 
-
-
 #ifdef DATE_MIC_ON
-	constexpr static MicroSeconds MS_MAX = 1000000; // No more than 1M microseconds to be stored!
-	constexpr static char NO_MS = 0x00; // Use this in ms_sep if you don't want to represent microseconds in string.
+	constexpr static int MS_MAX = 1000000; // No more than 1M microseconds to be stored!
+	constexpr static char NO_MS = '\x00'; // Use this in ms_sep if you don't want to represent microseconds in string.
 
-	template <typename T> constexpr static MicroSeconds MakeMS(T val); // Throws WRONG_MS if not in right range.
-	static MicroSeconds ms_tolerance(MicroSeconds = -1); // Refers to Date::tolerance.
-	static char ms_CharSep(char = '\r'); // Sets the msCharSep.
+	static int ms_tolerance() noexcept;
+	static int ms_tolerance(int); 
+	static char ms_CharSep() noexcept;
+	static char ms_CharSep(char); 
 #endif
 
 	//--------------------------------------------------------- Public methods
@@ -108,11 +109,14 @@ public:
 	// Return value: always the final value.
 	// Throws an DateError::WRONG_TIME_DATA if data is invalid.
 
-	int seconds(int newvalue = -1); // 0-60
-	int minutes(int newvalue = -1); // 0-59
-	int hours(int newvalue = -1); // 0-23
-	int day_month(int newvalue = -1); // 1-31
-	int month(int newvalue = -1); // 0-11
+#ifdef DATE_MIC_ON
+	inline int microseconds() const; int microseconds(int);
+#endif
+	inline int seconds() const; int seconds(int);
+	inline int minutes() const; int minutes(int);
+	inline int hours() const; int hours(int);
+	inline int day_month() const; int day_month(int);
+	inline int month() const; int month(int);
 
 	// Day of week (since Sunday), 0-6. Read-only.
 	inline int day_week() const;
@@ -121,17 +125,12 @@ public:
 	inline int day_year() const; 
 
 	// Years since 1900.
-	int year(int); inline int year() const;
+	inline int year() const; int year(int);
 
 	// Daylight Saving Time flag. Values: -1, 0, 1.
-	int dst(int); inline int dst() const;
+	inline int dst() const; int dst(int);
 
 	static const char* str_pattern(const char* pattern = ""); // Refers to Date::pattern. Empty string = getter.
-
-#ifdef DATE_MIC_ON
-	MicroSeconds microseconds(MicroSeconds = -1);
-#endif
-
 
 	//-------------------------------------------------- Operator overloadings
 	
@@ -166,10 +165,10 @@ public:
     Date(const Date&) = default;
 
 #ifdef DATE_MIC_ON
-	explicit Date(tm, MicroSeconds = 0);
-	explicit Date(time_t, MicroSeconds = 0);
-	explicit Date(const std::string&, const char* pattern, MicroSeconds = 0);
-	explicit Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag, MicroSeconds ms = 0);
+	explicit Date(tm, int microseconds = 0);
+	explicit Date(time_t, int microseconds = 0);
+	explicit Date(const std::string&, const char* pattern, int microseconds = 0);
+	explicit Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag, int microseconds = 0);
 #else
 	explicit Date(tm);
 	explicit Date(time_t);
@@ -197,26 +196,21 @@ protected:
 	static Date lastCallToNow; // All default-constructed Date instances will have this value. Updated on each call to Now.
 	
 #ifdef DATE_MIC_ON
-	MicroSeconds microseconds_in; // Instance field that holds microseconds.
-	static MicroSeconds tolerance; // Tolerance in microseconds. Initial value of MS_MAX.
+	int microseconds_in; // Instance field that holds microseconds.
+	static int tolerance; // Tolerance in microseconds. Initial value of MS_MAX.
 	static char msSepChar; // Separator for normal datetime and mics in strings. Initial value of NO_MS.
 #endif
 };
 
 //------------------------------------------------------ Other definitions
 
-#ifdef DATE_MIC_ON
-template <typename T>
-constexpr MicroSeconds Date::MakeMS(T val)
-{
-	static_assert(std::is_arithmetic<T>::value, "Argument must be an arithmeric value.");
-	MicroSeconds valMS = static_cast<MicroSeconds>(val);
-	return valMS < MS_MAX ? valMS : throw DateError::WRONG_MS;
-}
-#endif
-
 constexpr bool Date::IsLeapYear(int year) noexcept
 {	return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0); }
+
+#ifdef DATE_MIC_ON
+constexpr bool Date::ValidateMicroseconds(int d) noexcept
+{	return d >= 0 && d < MS_MAX; }
+#endif
 
 constexpr bool Date::ValidateSeconds(int d) noexcept
 {	return d >= 0 && d <= 60; }
