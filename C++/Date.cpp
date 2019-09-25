@@ -1,7 +1,7 @@
 //---------- Implementation of class <Date> (file Date.cpp) 
 
 //---------------------------------------------------------------- INCLUDE
-
+#ifdef nocompil
 #include <cassert>
 #include <chrono>
 #include <cmath>
@@ -371,3 +371,4 @@ int Date::quickSetter(int newvalue, int min, int max, int& field)
 		return field;
 	}
 }
+#endif // nocompil

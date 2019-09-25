@@ -202,8 +202,7 @@ void CheckReadMemoryLeaks()
 		_CrtMemDumpStatistics(&states[2]);
 }
 
-int main()
-{
+void DoAllTimings() {
 	timingTimethis();
 	timingTheFileExistence();
 	timingTheFileSize();
@@ -211,6 +210,13 @@ int main()
 	timingFileReading();
 	timingCtimeFunctions();
 	CheckReadMemoryLeaks();
+}
+
+int main()
+{
+	int x;
+	DoAllTimings();
+	cin >> x;
 	return EXIT_SUCCESS;
 }
 
