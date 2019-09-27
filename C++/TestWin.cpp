@@ -60,6 +60,7 @@ static void timingTheFileSize()
 	cout << "Timing the file size functions !" << endl;
 
 	cout << "Time for fseek : " << FUNC {
+#pragma warning(suppress : 4996)
 		FILE* f = fopen(file_s, "r");
 		fseek(f, 0, SEEK_END);
 		reteval = ftell(f);
@@ -109,6 +110,7 @@ static void timingWchar_tConversion()
 
 static void timingFileReading()
 {
+#pragma warning(disable : 4996)
 	cout << "Timing functions for reading 5 chars in a file!" << endl;
 	char* buffer = new char[6];
 
@@ -148,10 +150,12 @@ static void timingFileReading()
 	}) << endl;
 
 	cout << endl;
+#pragma warning(default : 4996)
 }
 
 static void timingCtimeFunctions()
 {
+#pragma warning(disable : 4996)
 	cout << "Timing <ctime> conversion functions between tm and time_t !" << endl;
 	time_t timet = time(nullptr);
 	tm tmt;
@@ -181,6 +185,7 @@ static void timingCtimeFunctions()
 	}) << endl;
 
 	cout << endl;
+#pragma warning(default: 4996)
 }
 
 void CheckReadMemoryLeaks()
@@ -214,6 +219,7 @@ void DoAllTimings() {
 
 int main()
 {
+	wcout << File::GetCWD() << endl;
 	int x;
 	DoAllTimings();
 	cin >> x;
