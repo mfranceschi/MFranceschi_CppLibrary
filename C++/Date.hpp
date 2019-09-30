@@ -84,7 +84,7 @@ public:
 
 #ifdef DATE_MIC_ON
 	constexpr static int MS_MAX = 1000000; // No more than 1M microseconds to be stored!
-	constexpr static char NO_MS = '0x00'; // Use this in ms_sep if you don't want to represent microseconds in string.
+	constexpr static char NO_MS = '\x00'; // Use this in ms_sep if you don't want to represent microseconds in string.
 
 	static int ms_tolerance() noexcept;
 	static int ms_tolerance(int); 

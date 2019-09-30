@@ -8,7 +8,9 @@
 #define TOOLBOX_H 
 
 //--------------------------------------------------------------- Includes
+#include <algorithm>
 #include <functional>
+#include <vector>
 #include <sstream>
 
 namespace Toolbox
@@ -60,6 +62,9 @@ namespace Toolbox
 	template <typename value_type, typename exception_class>
 	constexpr value_type Validate(value_type new_value, const exception_class& value_to_throw, value_type min, value_type max);
 
+	template <typename content_type>
+	bool SwapAndRemove(std::vector<content_type>&, size_t index);
+
 }
 
 //------------------------------------------------------ Other definitions
@@ -93,6 +98,22 @@ constexpr value_type Toolbox::Validate(value_type new_value, const exception_cla
 		value_to_throw, 
 		func
 	);
+}
+
+template <typename content_type>
+bool Toolbox::SwapAndRemove(std::vector<content_type>& vec, size_t index)
+{
+	if (vec.empty() || index >= vec.size()) return false;
+	if (index - 1 == vec.size()) {
+		vec.pop_back();
+		return true;
+	}
+
+	auto item = vec.begin() + index;
+	auto end = vec.end();
+	std::iter_swap(item, end);
+	vec.pop_back();
+	return true;
 }
 
 #endif // TOOLBOX_H 
