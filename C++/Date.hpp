@@ -11,12 +11,12 @@
 
 // THIS IS A FLAG FOR ENABLING MICROSECONDS MANAGEMENT.
 // Remove the following flag (e.g. by commenting or deleting the line) to disable.
-#define DATE_MIC_ON
+//#define DATE_MIC_ON
 
 //------------------------------------------------------------------ Types
 
 // Errors for this module. Don't use the integer values directly.
-enum DateError
+enum class DateError
 {
 	NO_PATTERN,			// No pattern was available to perform the Date<->string conversion.
 	WRONG_STRUCT_TM,	// Struct tm was corrupted.
@@ -205,7 +205,7 @@ protected:
 //------------------------------------------------------ Other definitions
 
 constexpr bool Date::IsLeapYear(int year) noexcept
-{	return (!(year & 0b11) && (year % 100 != 0)) || (year % 400 == 0); }
+{	return (!(year & 0b11) && (year % 100)) || !(year % 400); }
 
 #ifdef DATE_MIC_ON
 constexpr bool Date::ValidateMicroseconds(int d) noexcept
@@ -229,6 +229,21 @@ constexpr bool Date::ValidateMonths(int d) noexcept
 
 inline time_t Date::Now_Timestamp()
 { 	return std::time(nullptr); }
+
+inline int Date::seconds() const 
+{ return time.tm_sec; }
+
+inline int Date::minutes() const 
+{ return time.tm_min; }
+
+inline int Date::hours() const 
+{ return time.tm_hour; }
+
+inline int Date::day_month() const 
+{ return time.tm_mday; }
+
+inline int Date::month() const 
+{ return time.tm_mon; }
 
 inline int Date::day_week() const 
 {	return time.tm_wday; }

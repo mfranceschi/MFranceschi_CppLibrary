@@ -23,7 +23,7 @@ namespace File
 {
 	// Represents a file encoding.
 	// It is an implementation detail that may change. Please use "..._t" instead.
-	enum encoding_e {
+	enum class encoding_e {
 		ENC_UTF16LE, // Normal UTF-16LE
 		ENC_UTF8, // Normal UTF-8
 		ENC_DEFAULT, // If no encoding is false, we assume the default locale.
@@ -78,7 +78,7 @@ namespace File
 	// The ifs.tellg() is after BOMs.
 	// Returns true on success, false otherwise.
 	bool Open(std::ifstream& ifs, filename_t filename, 
-		encoding_t encoding = ENC_ERROR);
+		encoding_t encoding = encoding_t::ENC_ERROR);
 
 	// Returns the entire file as a const char*.
 	// Please note that it does not end with a '\0'.

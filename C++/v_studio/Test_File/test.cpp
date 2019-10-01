@@ -1,4 +1,3 @@
-#include <gtest/gtest.h>
 #include "pch.h"
 #include "../../Toolbox.hpp"
 #include "../../Toolbox.cpp"
@@ -17,9 +16,9 @@
 // ////////////////////////////////////////////////////////////////////////////////////////////// //
 
 // All informations for files being used.
-static file_info_data fid_middlesize(287815, FNAME_MIDDLESIZE, 'l', '\xEF', true, File::ENC_DEFAULT);
-static file_info_data fid_unexisting(0, FNAME_UNEXISTING, 0, 0, false, File::ENC_ERROR);
-static file_info_data fid_smallfile_utf16le(38, FNAME_SMALL_UTF16LE, '\xFF', '\x00', true, File::ENC_UTF16LE, 2);
+static file_info_data fid_middlesize(287815, FNAME_MIDDLESIZE, 'l', '\xEF', true, File::encoding_t::ENC_DEFAULT);
+static file_info_data fid_unexisting(0, FNAME_UNEXISTING, 0, 0, false, File::encoding_t::ENC_ERROR);
+static file_info_data fid_smallfile_utf16le(38, FNAME_SMALL_UTF16LE, '\xFF', '\x00', true, File::encoding_t::ENC_UTF16LE, 2);
 
 static const char* smallfilecontent = "";
 
@@ -247,7 +246,7 @@ TEST(Read, ThousandsOfRead) {
 
 TEST(MatchPattern, UsualTest) {
 	auto ret = File::MatchPattern({ FNAME_PREFIX "*" });
-	ASSERT_EQ(3, ret.size());
+	//ASSERT_EQ(3, ret.size());
 
 
 
@@ -255,6 +254,10 @@ TEST(MatchPattern, UsualTest) {
 	for (auto x : ret) foo << x << std::endl;
 	EXPECT_TRUE(false) << foo;
 	EXPECT_TRUE(0) << File::GetCWD();
+}
+
+TEST(x, y) {
+	ASSERT_TRUE(false) << File::GetCWD();
 }
 #endif
 

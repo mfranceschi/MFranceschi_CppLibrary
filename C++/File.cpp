@@ -167,24 +167,24 @@ namespace File
 		encoding_t encoding)
 	{
 		ifs.close();
-		if (encoding == ENC_ERROR)
+		if (encoding == encoding_t::ENC_ERROR)
 			encoding = File::Encoding(filename);
 
-		if (encoding == ENC_UTF8)
+		if (encoding == encoding_t::ENC_UTF8)
 		{
 			ifs.open(filename);
 			ifs.imbue(locUTF8);
 			ifs.seekg(3);
 			return true;
 		}
-		else if (encoding == ENC_UTF16LE)
+		else if (encoding == encoding_t::ENC_UTF16LE)
 		{
 			ifs.open(filename, ios_base::binary);
 			ifs.imbue(locUTF16LE);
 			ifs.seekg(2, ios_base::beg);
 			return true;
 		}
-		else if (encoding == ENC_DEFAULT)
+		else if (encoding == encoding_t::ENC_DEFAULT)
 		{
 			ifs.open(filename, ios_base::binary);
 			return true;
@@ -215,21 +215,21 @@ namespace File
 		encoding_t forReturn;
 
 		if (open_file(filename, file))
-			forReturn = ENC_ERROR;
+			forReturn = encoding_t::ENC_ERROR;
 		else
 		{
 			char bits[NBR_BITS_TO_READ_ENCODING];
 			int ret_read = _read(file, bits, NBR_BITS_TO_READ_ENCODING);
 			
 			if (ret_read != NBR_BITS_TO_READ_ENCODING)
-				forReturn = ENC_ERROR;
+				forReturn = encoding_t::ENC_ERROR;
 
 			if (bits[0] == '\xff' && bits[1] == '\xfe')
-				forReturn = ENC_UTF16LE;
+				forReturn = encoding_t::ENC_UTF16LE;
 			else if (ret_read == 3 && bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf')
-				forReturn = ENC_UTF8;
+				forReturn = encoding_t::ENC_UTF8;
 			else
-				forReturn = ENC_DEFAULT;
+				forReturn = encoding_t::ENC_DEFAULT;
 
 			_close(file);
 		}
@@ -323,16 +323,16 @@ namespace File
 	{
 		switch (enc)
 		{
-		case ENC_UTF16LE:
+		case encoding_t::ENC_UTF16LE:
 			os << "UTF-16LE";
 			break;
-		case ENC_UTF8:
+		case encoding_t::ENC_UTF8:
 			os << "UTF-8";
 			break;
-		case ENC_ERROR:
+		case encoding_t::ENC_ERROR:
 			os << "<encoding-error>";
 			break;
-		case ENC_DEFAULT:
+		case encoding_t::ENC_DEFAULT:
 			os << "<encoding-unknown>";
 			break;
 		}
@@ -360,6 +360,17 @@ namespace File
 #ifdef _WIN32
 		WIN32_FIND_DATA wfd;
 		HANDLE hFind;
+		static File::filename_t SLASH_FOR_DIR, CUR_FOLDER, PARENT_FOLDER;
+		File::sfilename_t temp_fname;
+#ifdef UNICODE
+		SLASH_FOR_DIR = LR"slash(\)slash";
+		CUR_FOLDER = L".";
+		PARENT_FOLDER = L"..";
+#else
+		SLASH_FOR_DIR = R"slash(\)slash";
+		CUR_FOLDER = ".";
+		PARENT_FOLDER = "..";
+#endif
 #else
 		glob_t glob_buf;
 #endif
@@ -372,7 +383,21 @@ namespace File
 			hFind = FindFirstFile(pattern, &wfd);
 			if (hFind != INVALID_HANDLE_VALUE) {
 				do {
-					result.push_back(wfd.cFileName);
+					// If it is a directory, then remove "." and ".." or append an ending backslash.
+					if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+						temp_fname = wfd.cFileName;
+						if (!temp_fname.compare(CUR_FOLDER) || !temp_fname.compare(PARENT_FOLDER)) {
+							continue;
+						}
+						else {
+							temp_fname.append(SLASH_FOR_DIR);
+						}
+						result.push_back(temp_fname);
+					}
+
+					else {
+						result.push_back(wfd.cFileName);
+					}
 				} while (FindNextFile(hFind, &wfd) != 0);
 				FindClose(hFind);
 			}

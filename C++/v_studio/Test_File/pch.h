@@ -13,10 +13,10 @@
 
 	// File name constants
 
-#define MIDDLESIZE_RAW Vikings.scx
-#define UNEXISTING_RAW unexisting._tut
-#define SMALL_UTF16LE_RAW Small_utf16le.txt
-#define TEMP_RAW I_AM_TEMP
+#define MIDDLESIZE_RAW      Vikings.scx
+#define UNEXISTING_RAW      unexisting._tut
+#define SMALL_UTF16LE_RAW   Small_utf16le.txt
+#define TEMP_RAW            I_AM_TEMP
 #define _Make_Fname(raw) FNAME_PREFIX #raw
 
 #ifdef _WIN32 // WIN32

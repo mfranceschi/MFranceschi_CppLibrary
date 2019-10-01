@@ -1,7 +1,7 @@
 //---------- Implementation of class <Date> (file Date.cpp) 
 
 //---------------------------------------------------------------- INCLUDE
-#ifdef nocompil
+#ifndef nocompil
 #include <cassert>
 #include <chrono>
 #include <cmath>
@@ -28,14 +28,6 @@ const char* Date::pattern = nullptr;
 #ifdef DATE_MIC_ON
 int Date::tolerance = Date::MS_MAX;
 char Date::msSepChar = NO_MS;
-#endif
-
-#ifdef DATE_MIC_ON
-	#define _Constr_Param_Microseconds , int ms
-	#define _Constr_Init_List_Microseconds , microseconds_in(MakeMS(ms))
-#else
-	#define _Constr_Param_Microseconds /* Nothing */
-	#define _Constr_Init_List_Microseconds /* Nothing */
 #endif
 
 constexpr static int MaxYear()
@@ -304,27 +296,22 @@ Date::Date() :
 {
 }
 
-Date::Date(tm time_in _Constr_Param_Microseconds) :
+Date::Date(tm time_in) :
 	time(time_in),
 	timet(mktime(&time))
-
-	_Constr_Init_List_Microseconds
 {
 	if (timet == time_t(-1))
 		throw DateError::WRONG_STRUCT_TM;
 }
 
-Date::Date(time_t tmt _Constr_Param_Microseconds) :
+Date::Date(time_t tmt) :
 	timet(tmt)
-	_Constr_Init_List_Microseconds
 {
 	if (!Localtime(timet, time))
 		throw DateError::WRONG_TIME_T;
 }
 
-Date::Date(const std::string& src, const char* npattern _Constr_Param_Microseconds) :
-	timet(0) /* sorry about that :) */
-	_Constr_Init_List_Microseconds
+Date::Date(const std::string& src, const char* npattern) 
 {
 	if (npattern == nullptr)
 	{
@@ -343,8 +330,7 @@ Date::Date(const std::string& src, const char* npattern _Constr_Param_Microsecon
 	}
 }
 
-Date::Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag _Constr_Param_Microseconds) :
-	time({ 0 }), timet() _Constr_Init_List_Microseconds
+Date::Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag)
 {
 	time.tm_year = year;
 	time.tm_mon = month;

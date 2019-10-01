@@ -21,5 +21,6 @@
     <None Include="TestFiles\Vikings.scx">
       <Filter>files_for_testing</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
