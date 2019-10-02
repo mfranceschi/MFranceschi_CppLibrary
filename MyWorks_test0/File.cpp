@@ -24,8 +24,6 @@
 #include <unistd.h>
 #endif
 
-#include <cassert>
-
 using std::string; 
 using std::locale; 
 using std::ifstream; 
@@ -78,6 +76,8 @@ namespace File
 //------------------------------------------------------- Static variables
 
 //------------------------------------------------------ Private functions
+
+    // Returns true on success.
 	static inline bool open_file(File::filename_t filename, int& fd) { 
 	#ifdef _WIN32
 			#ifdef UNICODE
@@ -85,11 +85,11 @@ namespace File
 			#else
 				#define WIN_OPEN_FCT _sopen_s
 			#endif
-			return WIN_OPEN_FCT(&fd, filename, _O_RDONLY | O_BINARY, _SH_DENYWR, _S_IREAD);
+			return !WIN_OPEN_FCT(&fd, filename, _O_RDONLY | O_BINARY, _SH_DENYWR, _S_IREAD);
 			#undef WIN_OPEN_FCT
 		#else
 			fd = open(filename, O_RDONLY);
-			return fd == -1;
+			return fd != -1;
 		#endif
 	}
 
@@ -127,7 +127,7 @@ namespace File
 		DWORD attr = GetFileAttributes(filename);
 		return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
 #else // POSIX
-		struct stat t;
+		struct stat t{};
 		return !stat(filename, &t);
 #endif
 	}
@@ -138,25 +138,26 @@ namespace File
 		DWORD attrs = GetFileAttributes(filename);
 		return (attrs == INVALID_FILE_ATTRIBUTES) ? false : attrs & FILE_ATTRIBUTE_DIRECTORY;
 #else // POSIX
-		struct stat s;
-		return !stat(filename, &s) && S_ISDIR(s.st_mode);
+		struct stat s{};
+		return !stat(filename, &s) & S_ISDIR(s.st_mode);
 #endif
 	}
 
 	bool IsEmpty(filename_t filename, int charsToRead)
 	{
-		if (charsToRead < 1) throw (void*)0;
 		int file;
-		bool forReturn;
+		bool forReturn = false;
 
-		if (open_file(filename, file))
+		if (!open_file(filename, file))
 			forReturn = true;
 		else
 		{
-			char* content = new char[charsToRead];
-			int chars_just_read = _read(file, content, charsToRead);
-			forReturn = chars_just_read != charsToRead;
-			delete[] content;
+		    if (charsToRead >= 0) {
+                char* content = new char[charsToRead];
+                int chars_just_read = _read(file, content, charsToRead);
+                forReturn = chars_just_read != charsToRead;
+                delete[] content;
+		    }
 			_close(file);
 		}
 
@@ -203,7 +204,7 @@ namespace File
 		CloseHandle(file);
 		return filesize_t(res.QuadPart);
 #else // POSIX
-		struct stat t;
+		struct stat t{};
 		if (stat(filename, &t)) return 0;
 		return filesize_t(t.st_size);
 #endif
@@ -214,7 +215,7 @@ namespace File
 		int file;
 		encoding_t forReturn;
 
-		if (open_file(filename, file))
+		if (!open_file(filename, file))
 			forReturn = encoding_t::ENC_ERROR;
 		else
 		{
@@ -278,9 +279,9 @@ namespace File
 			return nullptr;
 		}
 #else
-		if (open_file(filename, rfd.fd))
+		if (!open_file(filename, rfd.fd))
 			return nullptr;
-		rfd.memptr = (const char*)mmap(NULL, rfd.size, PROT_READ, MAP_PRIVATE, rfd.fd, 0);
+		rfd.memptr = (const char*)mmap(nullptr, rfd.size, PROT_READ, MAP_PRIVATE, rfd.fd, 0);
 		if (rfd.memptr == (void*)-1)
 		{
 			_close(rfd.fd);
@@ -348,7 +349,7 @@ namespace File
 		return _getcwd(NULL, 0);
 #endif
 #else
-		return getcwd(NULL, 0);
+		return getcwd(nullptr, 0);
 #endif
 	}
 
@@ -376,9 +377,9 @@ namespace File
 #endif
 
 		// For each item in "patterns", add all results to "result".
-		for (size_t i=0; i<patterns.size(); ++i)
+		for (size_t item=0; item<patterns.size(); ++item)
 		{
-			pattern = patterns[i].c_str();
+			pattern = patterns[item].c_str();
 #ifdef _WIN32
 			hFind = FindFirstFile(pattern, &wfd);
 			if (hFind != INVALID_HANDLE_VALUE) {
@@ -405,11 +406,11 @@ namespace File
 			glob(
 				pattern, /* C-String of pattern. */
 				GLOB_MARK, /* Flag: mark folders with ending "/". */
-				NULL, /* Error function, not used here. */
+				nullptr, /* Error function, not used here. */
 				&glob_buf /* Pointer to glob_t struct. */
 			);
-			for (int i = 0; i < glob_buf.gl_pathc; ++i) {
-				result.push_back(glob_buf.gl_pathv[i]);
+			for (decltype(glob_buf.gl_pathc) i = 0; i < glob_buf.gl_pathc; ++i) {
+				result.emplace_back(glob_buf.gl_pathv[i]);
 			}
 			globfree(&glob_buf);
 #endif

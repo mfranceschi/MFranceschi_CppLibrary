@@ -2,39 +2,11 @@
 // Created by mfran on 01/10/2019.
 //
 
-#include "gtest/gtest.h"
-#include "../File.hpp"
-#include "../Toolbox.hpp"
-
-#ifdef max
-#undef max
-#endif // max
-#ifdef min
-#undef min
-#endif // min
-
+#include "tests_datas.hpp"
 
 // First settings : file names, (Win) memory leaks check.
 #if 1
 
-	// File name constants
-
-#define MIDDLESIZE_RAW      aom_v.scx
-#define UNEXISTING_RAW      unexisting._tut
-#define SMALL_UTF16LE_RAW   Small_utf16le.txt
-#define TEMP_RAW            I_AM_TEMP
-#define _Make_Fname(raw)    FNAME_PREFIX #raw
-
-#ifdef _WIN32 // WIN32
-    #ifdef UNICODE
-        #define FNAME_PREFIX LR"path(..\..\..\Test_File\TestFiles\)path"
-    #else
-        #define FNAME_PREFIX R"path(..\TestFiles\)path"
-    #endif
-    #define I_Want_Mem_Leaks
-#else // POSIX
-    #define FNAME_PREFIX "./files_to_test/"
-#endif
 constexpr File::filename_t FNAME_MIDDLESIZE = _Make_Fname(MIDDLESIZE_RAW);
 constexpr File::filename_t FNAME_UNEXISTING = _Make_Fname(UNEXISTING_RAW);
 constexpr File::filename_t FNAME_SMALL_UTF16LE = _Make_Fname(SMALL_UTF16LE_RAW);
@@ -130,16 +102,8 @@ protected:
 			unsigned int chars_max = std::min(static_cast<File::filesize_t>(5), fid.size / 10);
 
 			// Try to read an invalid number of chars.
-			try {
-				auto tmp = File::IsEmpty(fid.name, 0);
-				FAIL() << tmp;
-			}
-			catch (void*) {}
-			try {
-				auto tmp = File::IsEmpty(fid.name, -1);
-				FAIL() << tmp;
-			}
-			catch (void*) {}
+			ASSERT_FALSE(File::IsEmpty(fid.name, 0));
+			ASSERT_FALSE(File::IsEmpty(fid.name, -1));
 
 			// Read a few times.
 			for (unsigned int i = 1; i < chars_max; ++i) {
@@ -154,7 +118,7 @@ protected:
 
 	void SetUp() override {
 		if (fid.exists) {
-			ASSERT_TRUE(File::Exists(fid.name)) << File::GetCWD();
+			ASSERT_TRUE(File::Exists(fid.name)) << File::GetCWD() << std::endl << fid.name;
 		}
 		else {
 			if (File::Exists(fid.name)) {
@@ -297,18 +261,14 @@ TEST(Read, ThousandsOfRead) {
 
 TEST(MatchPattern, UsualTest) {
 	auto ret = File::MatchPattern({ FNAME_PREFIX "*" });
-	//ASSERT_EQ(3, ret.size());
+	ASSERT_EQ(3, ret.size());
 
 
 
-	::testing::Message foo;
+	/*::testing::Message foo;
 	for (auto x : ret) foo << x << std::endl;
 	EXPECT_TRUE(false) << foo;
-	EXPECT_TRUE(0) << File::GetCWD();
-}
-
-TEST(x, y) {
-	ASSERT_TRUE(false) << File::GetCWD();
+	EXPECT_TRUE(0) << File::GetCWD();*/
 }
 #endif
 

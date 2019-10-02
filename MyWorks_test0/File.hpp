@@ -69,7 +69,7 @@ namespace File
 	bool IsDir(filename_t filename);
 
 	// Returns true if trying to read "charsToRead" characters from the file fails.
-	// "charsToRead" must be > 0 (otherwise it throws "(void*)0").
+	// If "charsToRead" <= 0 then it is ignored and the function only checks if the file can be opened.
 	bool IsEmpty(filename_t filename, int charsToRead = 3);
 	
 	// Closes "ifs" and tries to open the file "filename".

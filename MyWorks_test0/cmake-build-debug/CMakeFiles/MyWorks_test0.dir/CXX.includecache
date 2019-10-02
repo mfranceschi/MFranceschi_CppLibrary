@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.cpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Date.cpp
 cassert
 -
 chrono
@@ -26,11 +26,11 @@ mutex
 sstream
 -
 Date.hpp
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Date.hpp
 Toolbox.hpp
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.hpp
 
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Date.hpp
 ctime
 -
 ostream
@@ -40,9 +40,41 @@ string
 type_traits
 -
 Toolbox.hpp
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.hpp
 
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/File.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/File.cpp
+algorithm
+-
+codecvt
+-
+cstring
+-
+fcntl.h
+-
+locale
+-
+map
+-
+mutex
+-
+File.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/File.hpp
+io.h
+-
+Toolbox.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.hpp
+Windows.h
+-
+glob.h
+-
+sys/mman.h
+-
+sys/stat.h
+-
+unistd.h
+-
+
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/File.hpp
 fstream
 -
 initializer_list
@@ -52,9 +84,27 @@ string
 vector
 -
 Toolbox.hpp
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.hpp
 
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/TestWin.cpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/TestUnix.cpp
+climits
+-
+cstdlib
+-
+File.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/File.hpp
+iostream
+-
+streambuf
+-
+sstream
+-
+string
+-
+Toolbox.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.hpp
+
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/TestWin.cpp
 stdlib.h
 -
 crtdbg.h
@@ -66,11 +116,11 @@ iostream
 string
 -
 Shlwapi.h
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Shlwapi.h
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Shlwapi.h
 Toolbox.hpp
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.hpp
 File.hpp
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/File.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/File.hpp
 io.h
 -
 fcntl.h
@@ -80,9 +130,17 @@ ctime
 cassert
 -
 Date.hpp
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Date.hpp
 
-/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.cpp
+chrono
+-
+cstring
+-
+Toolbox.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.hpp
+
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.hpp
 algorithm
 -
 functional
@@ -91,4 +149,12 @@ vector
 -
 sstream
 -
+
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/main.cpp
+iostream
+-
+Toolbox.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.hpp
+File.hpp
+/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/File.hpp
 

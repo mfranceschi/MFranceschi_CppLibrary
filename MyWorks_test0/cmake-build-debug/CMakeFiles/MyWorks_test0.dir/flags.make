@@ -6,5 +6,5 @@ CXX_FLAGS = -g   -std=gnu++14
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/. 
+CXX_INCLUDES = -I/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/. 
 

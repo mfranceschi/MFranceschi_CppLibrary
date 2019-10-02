@@ -4,12 +4,12 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/Date.cpp.o"
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/File.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/File.cpp.o"
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/TestUnix.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o"
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/TestWin.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o"
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o"
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/main.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/main.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Date.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/Date.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/File.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/File.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/TestUnix.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/TestWin.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/main.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

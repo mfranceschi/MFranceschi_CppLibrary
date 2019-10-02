@@ -4,11 +4,11 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/__/Date.cpp.o"
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/File.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/__/File.cpp.o"
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.o"
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/date_tests.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o"
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/file_tests.cpp" "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/file_tests.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Date.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/__/Date.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/File.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/__/File.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Google_tests/date_tests.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Google_tests/file_tests.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/file_tests.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -21,8 +21,8 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/lib/googletest/CMakeFiles/gtest.dir/DependInfo.cmake"
-  "/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/lib/googletest/CMakeFiles/gtest_main.dir/DependInfo.cmake"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/lib/googletest/CMakeFiles/gtest.dir/DependInfo.cmake"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/lib/googletest/CMakeFiles/gtest_main.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

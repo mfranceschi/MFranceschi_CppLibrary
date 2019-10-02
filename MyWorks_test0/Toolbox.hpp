@@ -13,6 +13,13 @@
 #include <vector>
 #include <sstream>
 
+#ifdef max
+#undef max
+#endif // max
+#ifdef min
+#undef min
+#endif // min
+
 namespace Toolbox
 {
 	//------------------------------------------------------------------ Types

@@ -6,5 +6,5 @@ CXX_FLAGS = -g   -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTH
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/. -I/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/lib/googlemock/include -I/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/lib/googlemock -isystem /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/lib/googletest/include -isystem /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/lib/googletest 
+CXX_INCLUDES = -I/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/. -I/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Google_tests/lib/googlemock/include -I/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Google_tests/lib/googlemock -isystem /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Google_tests/lib/googletest/include -isystem /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Google_tests/lib/googletest 
 
