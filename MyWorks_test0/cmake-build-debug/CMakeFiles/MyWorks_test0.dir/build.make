@@ -34,19 +34,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /cygdrive/c/Users/mfran/.CLion2019.2/system/cygwin_cmake/bin/cmake.exe
+CMAKE_COMMAND = /cygdrive/c/Users/Martin/.CLion2019.2/system/cygwin_cmake/bin/cmake.exe
 
 # The command to remove a file.
-RM = /cygdrive/c/Users/mfran/.CLion2019.2/system/cygwin_cmake/bin/cmake.exe -E remove -f
+RM = /cygdrive/c/Users/Martin/.CLion2019.2/system/cygwin_cmake/bin/cmake.exe -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0
+CMAKE_SOURCE_DIR = /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug
+CMAKE_BINARY_DIR = /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug
 
 # Include any dependencies generated for this target.
 include CMakeFiles/MyWorks_test0.dir/depend.make
@@ -59,81 +59,81 @@ include CMakeFiles/MyWorks_test0.dir/flags.make
 
 CMakeFiles/MyWorks_test0.dir/main.cpp.o: CMakeFiles/MyWorks_test0.dir/flags.make
 CMakeFiles/MyWorks_test0.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/MyWorks_test0.dir/main.cpp.o"
-	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/main.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/MyWorks_test0.dir/main.cpp.o"
+	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/main.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/main.cpp
 
 CMakeFiles/MyWorks_test0.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyWorks_test0.dir/main.cpp.i"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/main.cpp > CMakeFiles/MyWorks_test0.dir/main.cpp.i
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/main.cpp > CMakeFiles/MyWorks_test0.dir/main.cpp.i
 
 CMakeFiles/MyWorks_test0.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyWorks_test0.dir/main.cpp.s"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/main.cpp -o CMakeFiles/MyWorks_test0.dir/main.cpp.s
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/main.cpp -o CMakeFiles/MyWorks_test0.dir/main.cpp.s
 
 CMakeFiles/MyWorks_test0.dir/Date.cpp.o: CMakeFiles/MyWorks_test0.dir/flags.make
 CMakeFiles/MyWorks_test0.dir/Date.cpp.o: ../Date.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/MyWorks_test0.dir/Date.cpp.o"
-	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/Date.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Date.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/MyWorks_test0.dir/Date.cpp.o"
+	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/Date.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.cpp
 
 CMakeFiles/MyWorks_test0.dir/Date.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyWorks_test0.dir/Date.cpp.i"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Date.cpp > CMakeFiles/MyWorks_test0.dir/Date.cpp.i
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.cpp > CMakeFiles/MyWorks_test0.dir/Date.cpp.i
 
 CMakeFiles/MyWorks_test0.dir/Date.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyWorks_test0.dir/Date.cpp.s"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Date.cpp -o CMakeFiles/MyWorks_test0.dir/Date.cpp.s
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.cpp -o CMakeFiles/MyWorks_test0.dir/Date.cpp.s
 
 CMakeFiles/MyWorks_test0.dir/File.cpp.o: CMakeFiles/MyWorks_test0.dir/flags.make
 CMakeFiles/MyWorks_test0.dir/File.cpp.o: ../File.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/MyWorks_test0.dir/File.cpp.o"
-	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/File.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/File.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/MyWorks_test0.dir/File.cpp.o"
+	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/File.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/File.cpp
 
 CMakeFiles/MyWorks_test0.dir/File.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyWorks_test0.dir/File.cpp.i"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/File.cpp > CMakeFiles/MyWorks_test0.dir/File.cpp.i
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/File.cpp > CMakeFiles/MyWorks_test0.dir/File.cpp.i
 
 CMakeFiles/MyWorks_test0.dir/File.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyWorks_test0.dir/File.cpp.s"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/File.cpp -o CMakeFiles/MyWorks_test0.dir/File.cpp.s
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/File.cpp -o CMakeFiles/MyWorks_test0.dir/File.cpp.s
 
 CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o: CMakeFiles/MyWorks_test0.dir/flags.make
 CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o: ../TestUnix.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o"
-	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/TestUnix.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o"
+	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/TestUnix.cpp
 
 CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.i"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/TestUnix.cpp > CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.i
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/TestUnix.cpp > CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.i
 
 CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.s"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/TestUnix.cpp -o CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.s
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/TestUnix.cpp -o CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.s
 
 CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o: CMakeFiles/MyWorks_test0.dir/flags.make
 CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o: ../TestWin.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o"
-	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/TestWin.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o"
+	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/TestWin.cpp
 
 CMakeFiles/MyWorks_test0.dir/TestWin.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyWorks_test0.dir/TestWin.cpp.i"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/TestWin.cpp > CMakeFiles/MyWorks_test0.dir/TestWin.cpp.i
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/TestWin.cpp > CMakeFiles/MyWorks_test0.dir/TestWin.cpp.i
 
 CMakeFiles/MyWorks_test0.dir/TestWin.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyWorks_test0.dir/TestWin.cpp.s"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/TestWin.cpp -o CMakeFiles/MyWorks_test0.dir/TestWin.cpp.s
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/TestWin.cpp -o CMakeFiles/MyWorks_test0.dir/TestWin.cpp.s
 
 CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o: CMakeFiles/MyWorks_test0.dir/flags.make
 CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o: ../Toolbox.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o"
-	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Toolbox.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o"
+	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.cpp
 
 CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.i"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Toolbox.cpp > CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.i
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.cpp > CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.i
 
 CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.s"
-	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Toolbox.cpp -o CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.s
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.cpp -o CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.s
 
 # Object files for target MyWorks_test0
 MyWorks_test0_OBJECTS = \
@@ -155,7 +155,7 @@ MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/build.make
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable MyWorks_test0.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable MyWorks_test0.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/MyWorks_test0.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -168,6 +168,6 @@ CMakeFiles/MyWorks_test0.dir/clean:
 .PHONY : CMakeFiles/MyWorks_test0.dir/clean
 
 CMakeFiles/MyWorks_test0.dir/depend:
-	cd /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0 /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0 /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/DependInfo.cmake --color=$(COLOR)
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0 /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0 /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/MyWorks_test0.dir/depend
 

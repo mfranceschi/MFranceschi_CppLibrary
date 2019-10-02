@@ -2,6 +2,8 @@
 // Created by mfran on 01/10/2019.
 //
 
+#if 0
+
 #include "gtest/gtest.h"
 #include "../Date.hpp"
 #include <chrono>
@@ -153,3 +155,5 @@ TEST_F(GetterSetterTests, TestSetterSeconds) {
     }
     EXPECT_EQ(d1.seconds(), 0); // ensure stable state
 }
+
+#endif // bool of whether to consider this file or not

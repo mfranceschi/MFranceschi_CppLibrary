@@ -1,4 +1,4 @@
-# Install script for directory: /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Google_tests
+# Install script for directory: /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,6 +34,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests/lib/cmake_install.cmake")
+  include("/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/lib/cmake_install.cmake")
 endif()
 

@@ -34,19 +34,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /cygdrive/c/Users/mfran/.CLion2019.2/system/cygwin_cmake/bin/cmake.exe
+CMAKE_COMMAND = /cygdrive/c/Users/Martin/.CLion2019.2/system/cygwin_cmake/bin/cmake.exe
 
 # The command to remove a file.
-RM = /cygdrive/c/Users/mfran/.CLion2019.2/system/cygwin_cmake/bin/cmake.exe -E remove -f
+RM = /cygdrive/c/Users/Martin/.CLion2019.2/system/cygwin_cmake/bin/cmake.exe -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0
+CMAKE_SOURCE_DIR = /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug
+CMAKE_BINARY_DIR = /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug
 
 # Include any dependencies generated for this target.
 include Google_tests/CMakeFiles/Google_Tests_run.dir/depend.make
@@ -59,47 +59,92 @@ include Google_tests/CMakeFiles/Google_Tests_run.dir/flags.make
 
 Google_tests/CMakeFiles/Google_Tests_run.dir/file_tests.cpp.o: Google_tests/CMakeFiles/Google_Tests_run.dir/flags.make
 Google_tests/CMakeFiles/Google_Tests_run.dir/file_tests.cpp.o: ../Google_tests/file_tests.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object Google_tests/CMakeFiles/Google_Tests_run.dir/file_tests.cpp.o"
-	cd /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/Google_Tests_run.dir/file_tests.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Google_tests/file_tests.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object Google_tests/CMakeFiles/Google_Tests_run.dir/file_tests.cpp.o"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/Google_Tests_run.dir/file_tests.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/file_tests.cpp
 
 Google_tests/CMakeFiles/Google_Tests_run.dir/file_tests.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Google_Tests_run.dir/file_tests.cpp.i"
-	cd /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Google_tests/file_tests.cpp > CMakeFiles/Google_Tests_run.dir/file_tests.cpp.i
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/file_tests.cpp > CMakeFiles/Google_Tests_run.dir/file_tests.cpp.i
 
 Google_tests/CMakeFiles/Google_Tests_run.dir/file_tests.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Google_Tests_run.dir/file_tests.cpp.s"
-	cd /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Google_tests/file_tests.cpp -o CMakeFiles/Google_Tests_run.dir/file_tests.cpp.s
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/file_tests.cpp -o CMakeFiles/Google_Tests_run.dir/file_tests.cpp.s
 
 Google_tests/CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o: Google_tests/CMakeFiles/Google_Tests_run.dir/flags.make
 Google_tests/CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o: ../Google_tests/date_tests.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object Google_tests/CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o"
-	cd /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Google_tests/date_tests.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object Google_tests/CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/date_tests.cpp
 
 Google_tests/CMakeFiles/Google_Tests_run.dir/date_tests.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Google_Tests_run.dir/date_tests.cpp.i"
-	cd /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Google_tests/date_tests.cpp > CMakeFiles/Google_Tests_run.dir/date_tests.cpp.i
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/date_tests.cpp > CMakeFiles/Google_Tests_run.dir/date_tests.cpp.i
 
 Google_tests/CMakeFiles/Google_Tests_run.dir/date_tests.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Google_Tests_run.dir/date_tests.cpp.s"
-	cd /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Google_tests/date_tests.cpp -o CMakeFiles/Google_Tests_run.dir/date_tests.cpp.s
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests/date_tests.cpp -o CMakeFiles/Google_Tests_run.dir/date_tests.cpp.s
+
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/Date.cpp.o: Google_tests/CMakeFiles/Google_Tests_run.dir/flags.make
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/Date.cpp.o: ../Date.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object Google_tests/CMakeFiles/Google_Tests_run.dir/__/Date.cpp.o"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/Google_Tests_run.dir/__/Date.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.cpp
+
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/Date.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Google_Tests_run.dir/__/Date.cpp.i"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.cpp > CMakeFiles/Google_Tests_run.dir/__/Date.cpp.i
+
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/Date.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Google_Tests_run.dir/__/Date.cpp.s"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Date.cpp -o CMakeFiles/Google_Tests_run.dir/__/Date.cpp.s
+
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/File.cpp.o: Google_tests/CMakeFiles/Google_Tests_run.dir/flags.make
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/File.cpp.o: ../File.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object Google_tests/CMakeFiles/Google_Tests_run.dir/__/File.cpp.o"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/Google_Tests_run.dir/__/File.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/File.cpp
+
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/File.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Google_Tests_run.dir/__/File.cpp.i"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/File.cpp > CMakeFiles/Google_Tests_run.dir/__/File.cpp.i
+
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/File.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Google_Tests_run.dir/__/File.cpp.s"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/File.cpp -o CMakeFiles/Google_Tests_run.dir/__/File.cpp.s
+
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.o: Google_tests/CMakeFiles/Google_Tests_run.dir/flags.make
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.o: ../Toolbox.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object Google_tests/CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.o"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.o -c /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.cpp
+
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.i"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.cpp > CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.i
+
+Google_tests/CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.s"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && /usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Toolbox.cpp -o CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.s
 
 # Object files for target Google_Tests_run
 Google_Tests_run_OBJECTS = \
 "CMakeFiles/Google_Tests_run.dir/file_tests.cpp.o" \
-"CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o"
+"CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o" \
+"CMakeFiles/Google_Tests_run.dir/__/Date.cpp.o" \
+"CMakeFiles/Google_Tests_run.dir/__/File.cpp.o" \
+"CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.o"
 
 # External object files for target Google_Tests_run
 Google_Tests_run_EXTERNAL_OBJECTS =
 
 Google_tests/Google_Tests_run.exe: Google_tests/CMakeFiles/Google_Tests_run.dir/file_tests.cpp.o
 Google_tests/Google_Tests_run.exe: Google_tests/CMakeFiles/Google_Tests_run.dir/date_tests.cpp.o
+Google_tests/Google_Tests_run.exe: Google_tests/CMakeFiles/Google_Tests_run.dir/__/Date.cpp.o
+Google_tests/Google_Tests_run.exe: Google_tests/CMakeFiles/Google_Tests_run.dir/__/File.cpp.o
+Google_tests/Google_Tests_run.exe: Google_tests/CMakeFiles/Google_Tests_run.dir/__/Toolbox.cpp.o
 Google_tests/Google_Tests_run.exe: Google_tests/CMakeFiles/Google_Tests_run.dir/build.make
 Google_tests/Google_Tests_run.exe: lib/libgtestd.a
 Google_tests/Google_Tests_run.exe: lib/libgtest_maind.a
 Google_tests/Google_Tests_run.exe: lib/libgtestd.a
 Google_tests/Google_Tests_run.exe: Google_tests/CMakeFiles/Google_Tests_run.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable Google_Tests_run.exe"
-	cd /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Google_Tests_run.dir/link.txt --verbose=$(VERBOSE)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable Google_Tests_run.exe"
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Google_Tests_run.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
 Google_tests/CMakeFiles/Google_Tests_run.dir/build: Google_tests/Google_Tests_run.exe
@@ -107,10 +152,10 @@ Google_tests/CMakeFiles/Google_Tests_run.dir/build: Google_tests/Google_Tests_ru
 .PHONY : Google_tests/CMakeFiles/Google_Tests_run.dir/build
 
 Google_tests/CMakeFiles/Google_Tests_run.dir/clean:
-	cd /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests && $(CMAKE_COMMAND) -P CMakeFiles/Google_Tests_run.dir/cmake_clean.cmake
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests && $(CMAKE_COMMAND) -P CMakeFiles/Google_Tests_run.dir/cmake_clean.cmake
 .PHONY : Google_tests/CMakeFiles/Google_Tests_run.dir/clean
 
 Google_tests/CMakeFiles/Google_Tests_run.dir/depend:
-	cd /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0 /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/Google_tests /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests /cygdrive/c/Users/mfran/CLionProjects/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/DependInfo.cmake --color=$(COLOR)
+	cd /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0 /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/Google_tests /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests /cygdrive/c/Users/Martin/source/repos/mfranceschi/MyWorks/MyWorks_test0/cmake-build-debug/Google_tests/CMakeFiles/Google_Tests_run.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : Google_tests/CMakeFiles/Google_Tests_run.dir/depend
 
