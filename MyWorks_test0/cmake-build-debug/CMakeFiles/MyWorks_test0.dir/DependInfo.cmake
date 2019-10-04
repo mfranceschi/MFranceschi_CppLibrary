@@ -6,6 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_CXX
   "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Date.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/Date.cpp.o"
   "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/File.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/File.cpp.o"
+  "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/GeoCoord.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o"
   "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/TestUnix.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o"
   "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/TestWin.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o"
   "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.cpp" "/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o"

@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/MyWorks_test0.dir/Date.cpp.o"
   "CMakeFiles/MyWorks_test0.dir/File.cpp.o"
+  "CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o"
   "CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o"
   "CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o"
   "CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o"

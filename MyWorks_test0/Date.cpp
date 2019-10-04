@@ -30,8 +30,11 @@ int Date::tolerance = Date::MS_MAX;
 char Date::msSepChar = NO_MS;
 #endif
 
-constexpr static int MaxYear()
+#ifdef _WIN32
 #pragma warning(disable: 4127 4309 4365)
+#endif
+constexpr static int MaxYear()
+
 {
 	typedef unsigned long long ULL_t;
 	constexpr ULL_t seconds_in_year = ULL_t(Date::NBR_SECONDS_IN_DAY * 365.2425L);
@@ -46,7 +49,9 @@ constexpr static int MaxYear()
 }
 
 const int Date::MAX_YEAR = MaxYear();
+#ifdef _WIN32
 #pragma warning(default: 4127 4309 4365)
+#endif
 
 Date Date::lastCallToNow = Date::Now();
 

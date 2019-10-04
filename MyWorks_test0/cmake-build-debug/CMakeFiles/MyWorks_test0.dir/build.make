@@ -96,9 +96,22 @@ CMakeFiles/MyWorks_test0.dir/File.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyWorks_test0.dir/File.cpp.s"
 	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/File.cpp -o CMakeFiles/MyWorks_test0.dir/File.cpp.s
 
+CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o: CMakeFiles/MyWorks_test0.dir/flags.make
+CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o: ../GeoCoord.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o"
+	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/GeoCoord.cpp
+
+CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.i"
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/GeoCoord.cpp > CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.i
+
+CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.s"
+	/usr/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/GeoCoord.cpp -o CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.s
+
 CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o: CMakeFiles/MyWorks_test0.dir/flags.make
 CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o: ../TestUnix.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o"
 	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/TestUnix.cpp
 
 CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.i: cmake_force
@@ -111,7 +124,7 @@ CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.s: cmake_force
 
 CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o: CMakeFiles/MyWorks_test0.dir/flags.make
 CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o: ../TestWin.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o"
 	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/TestWin.cpp
 
 CMakeFiles/MyWorks_test0.dir/TestWin.cpp.i: cmake_force
@@ -124,7 +137,7 @@ CMakeFiles/MyWorks_test0.dir/TestWin.cpp.s: cmake_force
 
 CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o: CMakeFiles/MyWorks_test0.dir/flags.make
 CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o: ../Toolbox.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o"
 	/usr/bin/c++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o -c /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Toolbox.cpp
 
 CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.i: cmake_force
@@ -140,6 +153,7 @@ MyWorks_test0_OBJECTS = \
 "CMakeFiles/MyWorks_test0.dir/main.cpp.o" \
 "CMakeFiles/MyWorks_test0.dir/Date.cpp.o" \
 "CMakeFiles/MyWorks_test0.dir/File.cpp.o" \
+"CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o" \
 "CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o" \
 "CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o" \
 "CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o"
@@ -150,12 +164,13 @@ MyWorks_test0_EXTERNAL_OBJECTS =
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/main.cpp.o
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/Date.cpp.o
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/File.cpp.o
+MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/TestWin.cpp.o
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/Toolbox.cpp.o
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/build.make
 MyWorks_test0.exe: CMakeFiles/MyWorks_test0.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable MyWorks_test0.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable MyWorks_test0.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/MyWorks_test0.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

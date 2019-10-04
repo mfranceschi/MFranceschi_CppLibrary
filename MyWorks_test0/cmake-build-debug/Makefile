@@ -288,6 +288,33 @@ File.cpp.s:
 	$(MAKE) -f CMakeFiles/MyWorks_test0.dir/build.make CMakeFiles/MyWorks_test0.dir/File.cpp.s
 .PHONY : File.cpp.s
 
+GeoCoord.o: GeoCoord.cpp.o
+
+.PHONY : GeoCoord.o
+
+# target to build an object file
+GeoCoord.cpp.o:
+	$(MAKE) -f CMakeFiles/MyWorks_test0.dir/build.make CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o
+.PHONY : GeoCoord.cpp.o
+
+GeoCoord.i: GeoCoord.cpp.i
+
+.PHONY : GeoCoord.i
+
+# target to preprocess a source file
+GeoCoord.cpp.i:
+	$(MAKE) -f CMakeFiles/MyWorks_test0.dir/build.make CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.i
+.PHONY : GeoCoord.cpp.i
+
+GeoCoord.s: GeoCoord.cpp.s
+
+.PHONY : GeoCoord.s
+
+# target to generate assembly for a file
+GeoCoord.cpp.s:
+	$(MAKE) -f CMakeFiles/MyWorks_test0.dir/build.make CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.s
+.PHONY : GeoCoord.cpp.s
+
 TestUnix.o: TestUnix.cpp.o
 
 .PHONY : TestUnix.o
@@ -420,6 +447,9 @@ help:
 	@echo "... File.o"
 	@echo "... File.i"
 	@echo "... File.s"
+	@echo "... GeoCoord.o"
+	@echo "... GeoCoord.i"
+	@echo "... GeoCoord.s"
 	@echo "... TestUnix.o"
 	@echo "... TestUnix.i"
 	@echo "... TestUnix.s"

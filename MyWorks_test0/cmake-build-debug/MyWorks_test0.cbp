@@ -386,6 +386,12 @@
 			<Option target="MyWorks_test0"/>
 			<Option target="Google_Tests_run"/>
 		</Unit>
+		<Unit filename="/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/GeoCoord.cpp">
+			<Option target="MyWorks_test0"/>
+		</Unit>
+		<Unit filename="/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/GeoCoord.h">
+			<Option target="MyWorks_test0"/>
+		</Unit>
 		<Unit filename="/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/Google_tests/date_tests.cpp">
 			<Option target="Google_Tests_run"/>
 		</Unit>

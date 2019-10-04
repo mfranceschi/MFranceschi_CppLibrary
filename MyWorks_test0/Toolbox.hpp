@@ -69,6 +69,9 @@ namespace Toolbox
 	template <typename value_type, typename exception_class>
 	constexpr value_type Validate(value_type new_value, const exception_class& value_to_throw, value_type min, value_type max);
 
+    template <typename value_type, typename exception_class>
+    constexpr value_type Validate(value_type new_value, const exception_class& value_to_throw, bool result);
+
 	template <typename content_type>
 	bool SwapAndRemove(std::vector<content_type>&, size_t index);
 
@@ -105,6 +108,15 @@ constexpr value_type Toolbox::Validate(value_type new_value, const exception_cla
 		value_to_throw, 
 		func
 	);
+}
+
+template <typename value_type, typename exception_class>
+constexpr value_type Toolbox::Validate(value_type new_value, const exception_class& value_to_throw, bool result)
+{
+    if (result)
+        return new_value;
+    else
+        throw value_to_throw;
 }
 
 template <typename content_type>

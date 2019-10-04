@@ -76,12 +76,12 @@ preinstall: Google_tests/preinstall
 CMakeFiles/MyWorks_test0.dir/all:
 	$(MAKE) -f CMakeFiles/MyWorks_test0.dir/build.make CMakeFiles/MyWorks_test0.dir/depend
 	$(MAKE) -f CMakeFiles/MyWorks_test0.dir/build.make CMakeFiles/MyWorks_test0.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=7,8,9,10,11,12,13 "Built target MyWorks_test0"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=7,8,9,10,11,12,13,14 "Built target MyWorks_test0"
 .PHONY : CMakeFiles/MyWorks_test0.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/MyWorks_test0.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles 8
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/MyWorks_test0.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles 0
 .PHONY : CMakeFiles/MyWorks_test0.dir/rule
@@ -192,7 +192,7 @@ Google_tests/lib/googlemock/CMakeFiles/gmock_main.dir/all: Google_tests/lib/goog
 Google_tests/lib/googlemock/CMakeFiles/gmock_main.dir/all: Google_tests/lib/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) -f Google_tests/lib/googlemock/CMakeFiles/gmock_main.dir/build.make Google_tests/lib/googlemock/CMakeFiles/gmock_main.dir/depend
 	$(MAKE) -f Google_tests/lib/googlemock/CMakeFiles/gmock_main.dir/build.make Google_tests/lib/googlemock/CMakeFiles/gmock_main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=16,17 "Built target gmock_main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=17,18 "Built target gmock_main"
 .PHONY : Google_tests/lib/googlemock/CMakeFiles/gmock_main.dir/all
 
 # Build rule for subdir invocation for target.
@@ -219,7 +219,7 @@ Google_tests/lib/googlemock/CMakeFiles/gmock_main.dir/clean:
 Google_tests/lib/googlemock/CMakeFiles/gmock.dir/all: Google_tests/lib/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) -f Google_tests/lib/googlemock/CMakeFiles/gmock.dir/build.make Google_tests/lib/googlemock/CMakeFiles/gmock.dir/depend
 	$(MAKE) -f Google_tests/lib/googlemock/CMakeFiles/gmock.dir/build.make Google_tests/lib/googlemock/CMakeFiles/gmock.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=14,15 "Built target gmock"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=15,16 "Built target gmock"
 .PHONY : Google_tests/lib/googlemock/CMakeFiles/gmock.dir/all
 
 # Build rule for subdir invocation for target.
@@ -266,7 +266,7 @@ Google_tests/lib/googletest/preinstall:
 Google_tests/lib/googletest/CMakeFiles/gtest_main.dir/all: Google_tests/lib/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) -f Google_tests/lib/googletest/CMakeFiles/gtest_main.dir/build.make Google_tests/lib/googletest/CMakeFiles/gtest_main.dir/depend
 	$(MAKE) -f Google_tests/lib/googletest/CMakeFiles/gtest_main.dir/build.make Google_tests/lib/googletest/CMakeFiles/gtest_main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=20,21 "Built target gtest_main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=21,22 "Built target gtest_main"
 .PHONY : Google_tests/lib/googletest/CMakeFiles/gtest_main.dir/all
 
 # Build rule for subdir invocation for target.
@@ -293,7 +293,7 @@ Google_tests/lib/googletest/CMakeFiles/gtest_main.dir/clean:
 Google_tests/lib/googletest/CMakeFiles/gtest.dir/all:
 	$(MAKE) -f Google_tests/lib/googletest/CMakeFiles/gtest.dir/build.make Google_tests/lib/googletest/CMakeFiles/gtest.dir/depend
 	$(MAKE) -f Google_tests/lib/googletest/CMakeFiles/gtest.dir/build.make Google_tests/lib/googletest/CMakeFiles/gtest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=18,19 "Built target gtest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug/CMakeFiles --progress-num=19,20 "Built target gtest"
 .PHONY : Google_tests/lib/googletest/CMakeFiles/gtest.dir/all
 
 # Build rule for subdir invocation for target.
