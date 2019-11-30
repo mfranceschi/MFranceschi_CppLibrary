@@ -9,6 +9,10 @@ CMakeFiles/MyWorks_test0.dir/File.cpp.o: ../File.cpp
 CMakeFiles/MyWorks_test0.dir/File.cpp.o: ../File.hpp
 CMakeFiles/MyWorks_test0.dir/File.cpp.o: ../Toolbox.hpp
 
+CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o: ../GeoCoord.cpp
+CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o: ../GeoCoord.h
+CMakeFiles/MyWorks_test0.dir/GeoCoord.cpp.o: ../Toolbox.hpp
+
 CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o: ../File.hpp
 CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o: ../TestUnix.cpp
 CMakeFiles/MyWorks_test0.dir/TestUnix.cpp.o: ../Toolbox.hpp
