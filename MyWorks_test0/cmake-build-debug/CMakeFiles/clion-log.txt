@@ -1,4 +1,1 @@
-C:\Users\mfran\.CLion2019.3\system\cygwin_cmake\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0
--- Configuring done
--- Generating done
--- Build files have been written to: /cygdrive/c/Users/mfran/CLionProjects/MyWorks/MyWorks_test0/cmake-build-debug
+CMakeLists.txt not found in C:\Users\mfran\CLionProjects\MyWorks\MyWorks_test0 Select CMakeLists.txt file...
