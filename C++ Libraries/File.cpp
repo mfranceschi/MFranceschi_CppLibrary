@@ -3,8 +3,8 @@
 //--------------------------------------------------------------- Includes
 
 #include <algorithm>
+#include <cassert>
 #include <codecvt>
-#include <cstring>
 #include <fcntl.h>
 #include <locale>
 #include <map>
@@ -14,6 +14,7 @@
 
 #ifdef _WIN32
 #pragma warning( disable: 26444) // Warning that occurs when using imbue.
+#include <direct.h>
 #include <io.h>
 #include "Toolbox.hpp"
 #include <Windows.h>
@@ -37,11 +38,10 @@ namespace File
 
 //------------------------------------------------------------------ Types
 
-	// Data structure used to store informations about files opened with Open.
+	// Data structure used to store information about files opened with Open.
 	struct ReadFileData {
-	public:
 		/* Data members. */
-		const char* memptr; // Holds the file data.
+		const char* memoryPointer; // Holds the file data.
 		filesize_t size; // Size of the file.
 
 #ifdef _WIN32
@@ -52,9 +52,9 @@ namespace File
 #endif
 
 		/* Default constructor. */
-		ReadFileData() : memptr(nullptr), size(0ul)
+		ReadFileData() : memoryPointer(nullptr), size(0ul)
 #ifdef _WIN32
-			, fileHandle(0), mappingHandle(0)
+			, fileHandle(nullptr), mappingHandle(nullptr)
 #else
 			, fd(0)
 #endif
@@ -64,8 +64,8 @@ namespace File
 
 //-------------------------------------------------------------- Constants
 
-	const static locale locUTF8("");
-	const static locale locUTF16LE(
+	const static locale LOCALE_UTF8("");
+	const static locale LOCALE_UTF16LE(
 		locale(""),
 		new std::codecvt_utf8_utf16<wchar_t, 0x10ffffUL, std::little_endian>()
 	); // I can call "new" because the locale's destructors deletes the facet.
@@ -96,7 +96,7 @@ namespace File
 	/* LOW-LEVEL FILE HANDLING */
 #ifdef _WIN32 // Windows
 	static inline HANDLE OpenHandleWindows(filename_t filename) {
-		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	}
 #else
 	#define _read read /* POSIX form */
@@ -106,15 +106,15 @@ namespace File
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
 
-	bool Delete(filename_t filename, bool fileonly)
+	bool Delete(filename_t filename, bool fileOnly)
 	{
 #ifdef _WIN32 // Win32
-		if (fileonly)
+		if (fileOnly)
 			return DeleteFile(filename);
 		else
 			return DeleteFile(filename) ? true : RemoveDirectory(filename);
 #else // POSIX
-		if (fileonly)
+		if (fileOnly)
 			return !unlink(filename);
 		else
 			return !remove(filename);
@@ -174,14 +174,14 @@ namespace File
 		if (encoding == encoding_t::ENC_UTF8)
 		{
 			ifs.open(filename);
-			ifs.imbue(locUTF8);
+			ifs.imbue(LOCALE_UTF8);
 			ifs.seekg(3);
 			return true;
 		}
 		else if (encoding == encoding_t::ENC_UTF16LE)
 		{
 			ifs.open(filename, ios_base::binary);
-			ifs.imbue(locUTF16LE);
+			ifs.imbue(LOCALE_UTF16LE);
 			ifs.seekg(2, ios_base::beg);
 			return true;
 		}
@@ -224,10 +224,9 @@ namespace File
 			
 			if (ret_read != NBR_BITS_TO_READ_ENCODING)
 				forReturn = encoding_t::ENC_ERROR;
-
-			if (bits[0] == '\xff' && bits[1] == '\xfe')
+			else if (bits[0] == '\xff' && bits[1] == '\xfe')
 				forReturn = encoding_t::ENC_UTF16LE;
-			else if (ret_read == 3 && bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf')
+			else if (bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf')
 				forReturn = encoding_t::ENC_UTF8;
 			else
 				forReturn = encoding_t::ENC_DEFAULT;
@@ -240,7 +239,7 @@ namespace File
 	bool CreateFolder(filename_t filename)
 	{
 #ifdef _WIN32
-		return CreateDirectory(filename, NULL);
+		return CreateDirectory(filename, nullptr);
 #else
 		return !mkdir(filename, S_IRWXU | S_IRWXG | S_IRWXO);
 #endif
@@ -262,16 +261,16 @@ namespace File
 			return nullptr;
 		}
 
-		rfd.mappingHandle = CreateFileMapping(rfd.fileHandle, NULL, PAGE_READONLY, 0, 0, NULL);
-		if (rfd.mappingHandle == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
+		rfd.mappingHandle = CreateFileMapping(rfd.fileHandle, nullptr, PAGE_READONLY, 0, 0, nullptr);
+		if (rfd.mappingHandle == nullptr || GetLastError() == ERROR_ALREADY_EXISTS)
 		{
 			CloseHandle(rfd.fileHandle);
 			openedFilesMutex.unlock();
 			return nullptr;
 		}
 
-		rfd.memptr = (const char*)MapViewOfFile(rfd.mappingHandle, FILE_MAP_READ, 0, 0, 0);
-		if (rfd.memptr == NULL)
+		rfd.memoryPointer = (const char*)MapViewOfFile(rfd.mappingHandle, FILE_MAP_READ, 0, 0, 0);
+		if (rfd.memoryPointer == nullptr)
 		{
 			CloseHandle(rfd.mappingHandle);
 			CloseHandle(rfd.fileHandle);
@@ -281,17 +280,17 @@ namespace File
 #else
 		if (!open_file(filename, rfd.fd))
 			return nullptr;
-		rfd.memptr = (const char*)mmap(nullptr, rfd.size, PROT_READ, MAP_PRIVATE, rfd.fd, 0);
-		if (rfd.memptr == (void*)-1)
+		rfd.memoryPointer = (const char*)mmap(nullptr, rfd.size, PROT_READ, MAP_PRIVATE, rfd.fd, 0);
+		if (rfd.memoryPointer == (void*)-1)
 		{
 			_close(rfd.fd);
 			return nullptr;
 		}
 #endif
 
-		openedFiles [rfd.memptr] = rfd;
+		openedFiles [rfd.memoryPointer] = rfd;
 		openedFilesMutex.unlock();
-		return rfd.memptr;		
+		return rfd.memoryPointer;
 	}
 
 	bool Read_Close(const char* content)
@@ -310,7 +309,7 @@ namespace File
 			assert(CloseHandle(rfd.mappingHandle));
 			assert(CloseHandle(rfd.fileHandle));
 #else
-			munmap((void*)rfd.memptr, rfd.size);
+			munmap((void*)rfd.memoryPointer, rfd.size);
 			_close(rfd.fd);
 #endif
 			openedFiles.erase(iterToContent);
@@ -344,7 +343,7 @@ namespace File
 	{
 #ifdef _WIN32
 #ifdef UNICODE
-		return _wgetcwd(NULL, 0);
+		return _wgetcwd(nullptr, 0);
 #else
 		return _getcwd(NULL, 0);
 #endif
@@ -361,15 +360,13 @@ namespace File
 #ifdef _WIN32
 		WIN32_FIND_DATA wfd;
 		HANDLE hFind;
-		static File::filename_t SLASH_FOR_DIR, CUR_FOLDER, PARENT_FOLDER;
-		File::sfilename_t temp_fname;
+		static File::filename_t CUR_FOLDER, PARENT_FOLDER;
+		File::sfilename_t tempFilename;
 #ifdef UNICODE
-		SLASH_FOR_DIR = LR"slash(\)slash";
 		CUR_FOLDER = L".";
 		PARENT_FOLDER = L"..";
 #else
-		SLASH_FOR_DIR = R"slash(\)slash";
-		CUR_FOLDER = ".";
+        CUR_FOLDER = ".";
 		PARENT_FOLDER = "..";
 #endif
 #else
@@ -377,27 +374,27 @@ namespace File
 #endif
 
 		// For each item in "patterns", add all results to "result".
-		for (size_t item=0; item<patterns.size(); ++item)
+		for (const auto & item : patterns)
 		{
-			pattern = patterns[item].c_str();
+			pattern = item.c_str();
 #ifdef _WIN32
 			hFind = FindFirstFile(pattern, &wfd);
 			if (hFind != INVALID_HANDLE_VALUE) {
 				do {
 					// If it is a directory, then remove "." and ".." or append an ending backslash.
 					if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-						temp_fname = wfd.cFileName;
-						if (!temp_fname.compare(CUR_FOLDER) || !temp_fname.compare(PARENT_FOLDER)) {
+                        tempFilename = wfd.cFileName;
+						if (tempFilename == CUR_FOLDER || tempFilename == PARENT_FOLDER) {
 							continue;
 						}
 						else {
-							temp_fname.append(SLASH_FOR_DIR);
+							tempFilename.append(FILE_SEPARATOR);
 						}
-						result.push_back(temp_fname);
+						result.push_back(tempFilename);
 					}
 
 					else {
-						result.push_back(wfd.cFileName);
+						result.emplace_back(wfd.cFileName);
 					}
 				} while (FindNextFile(hFind, &wfd) != 0);
 				FindClose(hFind);

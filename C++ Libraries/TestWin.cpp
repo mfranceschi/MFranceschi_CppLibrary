@@ -3,7 +3,7 @@
 
 /* Instructions for memory leak check */
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
+#include <cstdlib>
 #include <crtdbg.h>
 
 #include <Windows.h>
@@ -15,20 +15,17 @@
 #include <io.h>
 #include <fcntl.h>
 #include <ctime>
-#include <cassert>
-#include "Date.hpp"
-
+#define _CRT_SECURE_NO_WARNINGS
 using namespace std;
 
 static const size_t NBR_ITER = 10*1000;
-static const wchar_t* file_L = L"D:\\Vikings.scx";
-static const char* file_s = "D:\\Vikings.scx";
-#define FUNC Toolbox::Timethis(NBR_ITER, [&](void) mutable
-static long long reteval;
+static const wchar_t* file_L = LR"(..\..\Google_tests\files\aom_v.scx)";
+static const char* file_s = R"(..\Google_tests\files\aom_v.scx)";
+#define FUNC Toolbox::Timethis(NBR_ITER, [&]() mutable
 
-static void timingTimethis()
+static void timingTimeThis()
 {
-	cout << "The duration of the execution of 'Timethis' itself, without anything to do, is: " << FUNC{
+	cout << "The duration of the execution of 'TimeThis' itself, without anything to do, is: " << FUNC{
 	}) << endl;
 	cout << endl;
 }
@@ -36,20 +33,18 @@ static void timingTimethis()
 static void timingTheFileExistence()
 {
 	cout << "Timing the file existence functions !" << endl;
-	
 
 	cout << "Time for PathFileExists: " << FUNC {
-		reteval = PathFileExists(file_L);
+		PathFileExists(file_L);
 	}) << endl;
 
 	cout << "Time for stat: " << FUNC{
-		struct stat d;
-		reteval = !stat(file_s, &d);
+		struct stat d{};
+		stat(file_s, &d);
 	}) << endl;
 
 	cout << "Time for GetFileAttributes: " << FUNC{
 		DWORD attr = GetFileAttributes(file_L);
-		reteval = (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
 	}) << endl;
 
 	cout << endl;
@@ -63,27 +58,24 @@ static void timingTheFileSize()
 #pragma warning(suppress : 4996)
 		FILE* f = fopen(file_s, "r");
 		fseek(f, 0, SEEK_END);
-		reteval = ftell(f);
+		ftell(f);
 		fclose(f);
 	}) << endl;
 
 	cout << "Time for stat: " << FUNC{
-		struct stat st;
+		struct stat st{};
 		stat(file_s, &st);
-		reteval = st.st_size;
 	}) << endl;
 
 	cout << "Time for GetFileAttributesEx: " << FUNC{
 		WIN32_FILE_ATTRIBUTE_DATA fileInfo;
 		GetFileAttributesEx(file_L, GetFileExInfoStandard, (void*)& fileInfo);
-		reteval = fileInfo.nFileSizeLow;
 	}) << endl;
 
 	cout << "Time for GetFileSizeEx: " << FUNC {
-		HANDLE file = CreateFile(file_L, GENERIC_READ, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
+		HANDLE file = CreateFile(file_L, GENERIC_READ, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr);
 		LARGE_INTEGER res;
 		GetFileSizeEx(file, &res);
-		reteval = res.QuadPart;
 		CloseHandle(file);
 	}) << endl;
 
@@ -158,7 +150,7 @@ static void timingCtimeFunctions()
 #pragma warning(disable : 4996)
 	cout << "Timing <ctime> conversion functions between tm and time_t !" << endl;
 	time_t timet = time(nullptr);
-	tm tmt;
+	tm tmt{};
 	
 	cout << "Time for localtime: " << FUNC{
 		tmt = *localtime(&timet);
@@ -180,8 +172,8 @@ static void timingCtimeFunctions()
 		gmtime_s(&tmt, &timet);
 	}) << endl;
 
-	cout << "Time for mktime (with GMT time tm): " << FUNC{
-		timet = mktime(&tmt);
+	cout << "Time for mktime (with GMT time tm): " << FUNC {
+	    timet = mktime(&tmt);
 	}) << endl;
 
 	cout << endl;
@@ -203,12 +195,13 @@ void CheckReadMemoryLeaks()
 		File::Read_Close(content);
 	}
 	_CrtMemCheckpoint(&states[1]);
-	if (_CrtMemDifference(&states[2], &states[0], &states[1]))
-		_CrtMemDumpStatistics(&states[2]);
+	if (_CrtMemDifference(&states[2], &states[0], &states[1])) {
+        _CrtMemDumpStatistics(&states[2]);
+    }
 }
 
 void DoAllTimings() {
-	timingTimethis();
+    timingTimeThis();
 	timingTheFileExistence();
 	timingTheFileSize();
 	timingWchar_tConversion();
@@ -219,10 +212,9 @@ void DoAllTimings() {
 
 int main()
 {
-	wcout << File::GetCWD() << endl;
-	int x;
+	wcout << L"Current working dir: " << File::GetCWD() << endl;
 	DoAllTimings();
-	cin >> x;
+	Toolbox::PressAnyKeyToContinue();
 	return EXIT_SUCCESS;
 }
 

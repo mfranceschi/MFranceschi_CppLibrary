@@ -27,7 +27,7 @@ namespace File
 		ENC_UTF16LE, // Normal UTF-16LE
 		ENC_UTF8, // Normal UTF-8
 		ENC_DEFAULT, // If no encoding is false, we assume the default locale.
-		ENC_ERROR // A problem occured while looking for the encoding.
+		ENC_ERROR // A problem occurred while looking for the encoding.
 	};
 
 	// Represents a file encoding.
@@ -47,14 +47,23 @@ namespace File
 	
 
 //-------------------------------------------------------------- Constants
+#if defined _WIN32
+    #if defined UNICODE
+        #define FILE_SEPARATOR LR"slash(\)slash"
+    #else
+        #define FILE_SEPARATOR R"slash(\)slash"
+    #endif
+#else
+    #define FILE_SEPARATOR "/"
+#endif
 
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
 
 	// Deletes the file or the directory.
-	// If the "fileonly" parameter is true and the target is a directory then it fails.
+	// If the "fileOnly" parameter is true and the target is a directory then it fails.
 	// Returns true on success, false otherwise.
-	bool Delete(filename_t filename, bool fileonly = true);
+	bool Delete(filename_t filename, bool fileOnly = true);
 
 	// Returns the encoding of the file as one of the strings declared above.
 	// It executes "IsEmpty(filename, 3)" firstly and if the result is true,

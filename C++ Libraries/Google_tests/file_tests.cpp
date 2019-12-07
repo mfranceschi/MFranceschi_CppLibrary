@@ -7,15 +7,14 @@
 // First settings : file names, (Win) memory leaks check.
 #if 1
 
-constexpr File::filename_t FNAME_MIDDLESIZE = _Make_Fname(MIDDLESIZE_RAW);
-constexpr File::filename_t FNAME_UNEXISTING = _Make_Fname(UNEXISTING_RAW);
-constexpr File::filename_t FNAME_SMALL_UTF16LE = _Make_Fname(SMALL_UTF16LE_RAW);
-constexpr File::filename_t FNAME_TEMP = _Make_Fname(TEMP_RAW);
+constexpr File::filename_t FILENAME_MIDDLE_SIZE = _Make_Fname(MIDDLESIZE_RAW);
+constexpr File::filename_t FILENAME_NOT_EXISTING = _Make_Fname(UNEXISTING_RAW);
+constexpr File::filename_t FILENAME_SMALL_UTF16LE = _Make_Fname(SMALL_UTF16LE_RAW);
+constexpr File::filename_t FILENAME_TEMP = _Make_Fname(TEMP_RAW);
 
 // Turn on Memory Leaks detection (Win32 only)
 #ifdef I_Want_Mem_Leaks
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
 #include <crtdbg.h>
 #endif
 
@@ -29,23 +28,19 @@ struct file_info_data
 	char firstByte, lastByte;
 	bool exists;
 	File::encoding_t encoding;
-	size_t offset;
-
-	file_info_data(File::filesize_t fsize, File::filename_t fname, char fByte, char lByte, bool ex, File::encoding_t enc, size_t offset = 0) :
-		size(fsize), name(fname), firstByte(fByte), lastByte(lByte), exists(ex), encoding(enc), offset(offset)
-	{}
+	size_t offset = 0;
 };
 
 // ////////////////////////////////////////////////////////////////////////////////////////////// //
 //                             ALL TESTS FOR THE File MODULE                                      //
 // ////////////////////////////////////////////////////////////////////////////////////////////// //
 
-// All informations for files being used.
-static file_info_data fid_middlesize(287815, FNAME_MIDDLESIZE, 'l', '\xEF', true, File::encoding_t::ENC_DEFAULT);
-static file_info_data fid_unexisting(0, FNAME_UNEXISTING, 0, 0, false, File::encoding_t::ENC_ERROR);
-static file_info_data fid_smallfile_utf16le(38, FNAME_SMALL_UTF16LE, '\xFF', '\x00', true, File::encoding_t::ENC_UTF16LE, 2);
+// All information for files being used.
+static file_info_data fid_middle_size{287815, FILENAME_MIDDLE_SIZE, 'l', '\xEF', true, File::encoding_t::ENC_DEFAULT};
+static file_info_data fid_not_existing{0, FILENAME_NOT_EXISTING, 0, 0, false, File::encoding_t::ENC_ERROR};
+static file_info_data fid_smallfile_utf16le{38, FILENAME_SMALL_UTF16LE, '\xFF', '\x00', true, File::encoding_t::ENC_UTF16LE, 2};
 
-// Motherclass for test fixtures.
+// Mother class for test fixtures.
 class TestFile : public ::testing::Test {
 protected:
 	file_info_data fid;
@@ -138,14 +133,14 @@ protected:
 
 // Test classes for test fixtures
 #if 1
-class UnexistingFile : public TestFile {
+class NotExistingFile : public TestFile {
 protected:
-	UnexistingFile() : TestFile(fid_unexisting) {}
+	NotExistingFile() : TestFile(fid_not_existing) {}
 };
 
 class MiddleWeightFile : public TestFile {
 protected:
-	MiddleWeightFile() : TestFile(fid_middlesize) {}
+	MiddleWeightFile() : TestFile(fid_middle_size) {}
 };
 
 class SmallFileUTF16LE : public TestFile {
@@ -176,23 +171,23 @@ TEST_F(MiddleWeightFile, VerifyIsEmpty) {
 	CheckIsEmpty();
 }
 
-TEST_F(UnexistingFile, VerifySize) {
+TEST_F(NotExistingFile, VerifySize) {
 	CheckSize();
 }
 
-TEST_F(UnexistingFile, VerifyExists) {
+TEST_F(NotExistingFile, VerifyExists) {
 	CheckExists();
 }
 
-TEST_F(UnexistingFile, VerifyEncoding) {
+TEST_F(NotExistingFile, VerifyEncoding) {
 	CheckEncoding();
 }
 
-TEST_F(UnexistingFile, VerifyOpen) {
+TEST_F(NotExistingFile, VerifyOpen) {
 	CheckOpen();
 }
 
-TEST_F(UnexistingFile, VerifyIsEmpty) {
+TEST_F(NotExistingFile, VerifyIsEmpty) {
 	CheckIsEmpty();
 }
 
@@ -226,18 +221,18 @@ TEST(IsDir, ActualFolder)
 
 TEST(IsDir, IsAFile)
 {
-	File::filename_t fname = FNAME_SMALL_UTF16LE;
+	File::filename_t fname = FILENAME_SMALL_UTF16LE;
 	ASSERT_TRUE(File::Exists(fname));
 	ASSERT_FALSE(File::IsDir(fname));
 }
 
 TEST(IsDir, Unexisting)
 {
-	ASSERT_FALSE(File::IsDir(FNAME_UNEXISTING));
+	ASSERT_FALSE(File::IsDir(FILENAME_NOT_EXISTING));
 }
 
 TEST(IsDir, NewFolder) {
-	const File::filename_t& filename = FNAME_TEMP;
+	const File::filename_t& filename = FILENAME_TEMP;
 	ASSERT_TRUE(File::CreateFolder(filename));
 	EXPECT_TRUE(File::IsDir(filename));
 	ASSERT_TRUE(File::Delete(filename, false));
@@ -245,11 +240,11 @@ TEST(IsDir, NewFolder) {
 
 TEST(Delete, Unexisting)
 {
-	ASSERT_FALSE(File::Delete(FNAME_UNEXISTING));
+	ASSERT_FALSE(File::Delete(FILENAME_NOT_EXISTING));
 }
 
 TEST(Read, ThousandsOfRead) {
-	File::filename_t file = fid_middlesize.name;
+	File::filename_t file = fid_middle_size.name;
 	constexpr long iterations = static_cast<long>(1e3); /* A thousand times (100ms approx). */
 	const char* file_contents;
 	for (long i = 0; i < iterations; ++i) {
@@ -260,15 +255,23 @@ TEST(Read, ThousandsOfRead) {
 }
 
 TEST(MatchPattern, UsualTest) {
-	auto ret = File::MatchPattern({ FNAME_PREFIX "*" });
-	ASSERT_EQ(3, ret.size());
+	std::vector<File::sfilename_t> ret = File::MatchPattern({ FNAME_PREFIX "*" });
 
+#if defined _WIN32 && defined UNICODE
+    std::vector<File::sfilename_t> expected = {L"Small_utf16le.txt", L"aom_v.scx", L"EmptyFolder" FILE_SEPARATOR};
+#else
+    std::vector<File::sfilename_t> expected = {"Small_utf16le.txt", "aom_v.scx", "EmptyFolder" FILE_SEPARATOR};
+#endif
 
-
-	/*::testing::Message foo;
-	for (auto x : ret) foo << x << std::endl;
-	EXPECT_TRUE(false) << foo;
-	EXPECT_TRUE(0) << File::GetCWD();*/
+    ASSERT_EQ(expected.size(), ret.size());
+    for (const File::sfilename_t& expectedItem : expected) {
+        ASSERT_TRUE(std::any_of(
+                ret.cbegin(),
+                ret.cend(),
+                [&] (const File::sfilename_t& item) -> bool
+                {   return item == expectedItem; }
+                ));
+    }
 }
 #endif
 
@@ -281,7 +284,7 @@ int main(int argc, char** argv)
 #endif
 
 	::testing::InitGoogleTest(&argc, argv);
-	auto res = RUN_ALL_TESTS();
+	int res = RUN_ALL_TESTS();
 
 #ifdef I_Want_Mem_Leaks
 	_CrtMemCheckpoint(&states[1]);

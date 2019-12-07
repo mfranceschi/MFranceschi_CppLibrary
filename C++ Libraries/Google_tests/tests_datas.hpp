@@ -17,9 +17,9 @@
 
 #ifdef _WIN32 // WIN32
     #ifdef UNICODE
-        #define FNAME_PREFIX LR"path(..\..\..\Test_File\TestFiles\)path"
+        #define FNAME_PREFIX LR"path(..\..\Google_tests\files\)path"
     #else
-        #define FNAME_PREFIX R"path(..\TestFiles\)path"
+        #define FNAME_PREFIX R"path(..\..\Google_tests\files\)path"
     #endif
     #define I_Want_Mem_Leaks
 #else // POSIX

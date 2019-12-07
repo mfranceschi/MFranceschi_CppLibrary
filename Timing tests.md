@@ -14,9 +14,9 @@ In this document, I will present the code I used and the results I obtained. Ple
 You can find the whole source code on this repo but here are the main parts.
 
 ## Timing function
-I have created a simple tool (called `Timethis`) for measuring the time a function takes to execute. `Timethis` accepts as arguments the number of iterations of the function and the function itself, which should take no argument and return nothing. You can find the source code below.
+I have created a simple tool (called `TimeThis`) for measuring the time a function takes to execute. `TimeThis` accepts as arguments the number of iterations of the function and the function itself, which should take no argument and return nothing. You can find the source code below.
 ```c++
-double Timethis(size_t iter, const std::function<void(void)>& func)
+double TimeThis(size_t iter, const std::function<void(void)>& func)
 {
   using namespace std::chrono;
   high_resolution_clock::time_point beggining = high_resolution_clock::now();
@@ -27,7 +27,7 @@ double Timethis(size_t iter, const std::function<void(void)>& func)
   return (duration<double>(high_resolution_clock::now() - beggining).count()) / double(iter);
 }
 ```
-It makes two syscalls (both calls to `now()`) so I had to ensure that it would have a minimal impact on the measures. Thus, each time I run my tests, I also call `Timethis` without any function in order to have an average offset to take into account for the next measures.
+It makes two syscalls (both calls to `now()`) so I had to ensure that it would have a minimal impact on the measures. Thus, each time I run my tests, I also call `TimeThis` without any function in order to have an average offset to take into account for the next measures.
 
 Here is today's value: `3.3187e-07` seconds.
 
@@ -44,7 +44,7 @@ For a request as simple as checking a file existence, where no other information
 ---
 UNPOLISHED
 ```
-The duration of the execution of 'Timethis' itself, without anything to do, is: 3.3187e-07
+The duration of the execution of 'TimeThis' itself, without anything to do, is: 3.3187e-07
 
 Timing the file existence functions !
 Time for PathFileExists: 2.06946e-05

@@ -63,7 +63,7 @@ namespace Toolbox
 
 	// Returns the value if it is valid or throws given object.
 	template <typename value_type, typename exception_class>
-	constexpr value_type Validate(value_type new_value, const exception_class& value_to_throw, const std::function<bool(value_type)> validator);
+	constexpr value_type Validate(value_type new_value, const exception_class& value_to_throw, std::function<bool(value_type)> validator);
 
 	// Overloading of "Validate" for checking "new_value" is in the right range [min,max].
 	template <typename value_type, typename exception_class>
@@ -73,8 +73,11 @@ namespace Toolbox
     constexpr value_type Validate(value_type new_value, const exception_class& value_to_throw, bool result);
 
 	template <typename content_type>
-	bool SwapAndRemove(std::vector<content_type>&, size_t index);
+	inline bool SwapAndRemove(std::vector<content_type>&, size_t index);
 
+	// Uses the system tool to display "Press any key to continue..." on the console and wait for any user input.
+	// This is obviously a blocking call.
+	inline void PressAnyKeyToContinue();
 }
 
 //------------------------------------------------------ Other definitions
@@ -133,6 +136,15 @@ bool Toolbox::SwapAndRemove(std::vector<content_type>& vec, size_t index)
 	std::iter_swap(item, end);
 	vec.pop_back();
 	return true;
+}
+
+inline void Toolbox::PressAnyKeyToContinue()
+{
+#ifdef _WIN32
+    system("pause");
+#else
+    system("read");
+#endif
 }
 
 #endif // TOOLBOX_H 
