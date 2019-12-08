@@ -96,7 +96,7 @@ int Date::DaysInMonth(int month, int year) noexcept
 	else return 0;
 }
 
-Date Date::Now()
+Date Date::Now() noexcept
 {
 	using namespace std::chrono;
 	using clock = system_clock;

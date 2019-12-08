@@ -44,7 +44,7 @@ public:
 	
 	static constexpr bool IsLeapYear(int year) noexcept; // Returns true if the given year is a leap year.
 	static int DaysInMonth(int month, int year = 0) noexcept; // Returns [28 - 31] or 0 if month is not valid.
-	static Date Now(); // Returns the current time as a date (makes a syscall).
+	static Date Now() noexcept ; // Returns the current time as a date (makes a syscall).
 	static inline time_t Now_Timestamp(); // Returns now as UTC timestamp.
 	static bool Localtime(const time_t& src, struct tm& dest); // Thread-safe version of Localtime.
 	static bool Gmtime(const time_t& src, struct tm& dest); // Thread-safe version of Gmtime.
@@ -155,9 +155,9 @@ public:
 	inline Date operator++(int); // +1 second
 
 	// Conversions and stream
-	inline operator struct tm() const;
-	inline operator time_t () const;
-	operator std::string() const;
+	inline explicit operator struct tm() const;
+	inline explicit operator time_t () const;
+	explicit operator std::string() const;
 	inline friend std::ostream& operator<<(std::ostream&, const Date&);
 
 //---------------------------------------------- Constructors - destructor
