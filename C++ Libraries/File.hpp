@@ -50,11 +50,14 @@ namespace File
 #if defined _WIN32
     #if defined UNICODE
         #define FILE_SEPARATOR LR"slash(\)slash"
+        #define MAKE_FILE_NAME L""
     #else
         #define FILE_SEPARATOR R"slash(\)slash"
+        #define MAKE_FILE_NAME ""
     #endif
 #else
     #define FILE_SEPARATOR "/"
+    #define MAKE_FILE_NAME ""
 #endif
 
 //////////////////////////////////////////////////////////////////  PUBLIC

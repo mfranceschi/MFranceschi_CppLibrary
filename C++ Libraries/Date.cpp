@@ -6,20 +6,12 @@
 #include <chrono>
 #include <cmath>
 #include <cstring>
+#include "Date.hpp"
 #include <functional>
 #include <iomanip>
 #include <limits>
 #include <mutex>
-#include <sstream>
-#include "Date.hpp"
 #include "Toolbox.hpp"
-
-#ifdef max
-#undef max
-#endif // max
-#ifdef min
-#undef min
-#endif // min
 
 //-------------------------------------------------------------- Constants
 
@@ -33,11 +25,11 @@ char Date::msSepChar = NO_MS;
 #ifdef _WIN32
 #pragma warning(disable: 4127 4309 4365)
 #endif
-constexpr static int MaxYear()
+constexpr static int MaxYear() noexcept
 
 {
-	typedef unsigned long long ULL_t;
-	constexpr ULL_t seconds_in_year = ULL_t(Date::NBR_SECONDS_IN_DAY * 365.2425L);
+	using ULL_t = unsigned long long;
+	constexpr ULL_t seconds_in_year(Date::NBR_SECONDS_IN_DAY * 365.2425L);
 	constexpr ULL_t possible_seconds(std::numeric_limits<time_t>::max());
 	constexpr ULL_t max_year_with_time_t(possible_seconds / seconds_in_year);
 	constexpr int max_year_with_struct_tm(std::numeric_limits<int>::max());
@@ -60,10 +52,10 @@ static std::mutex tolerance_mutex, pattern_mutex, msSep_mutex;
 
 // Template function for getter and setter of static variables access.
 template <typename T>
-static T set_static_value(T newvalue, std::mutex& mutex_i, T& stored_value, std::function<bool(T)> isReadOnly)
+static T set_static_value(T newValue, std::mutex& mutex_i, T& stored_value, std::function<bool(T)> isReadOnly)
 {
 	mutex_i.lock();
-	T returnValue = isReadOnly(newvalue) ? stored_value : (stored_value = newvalue);
+	T returnValue = isReadOnly(newValue) ? stored_value : (stored_value = newValue);
 	mutex_i.unlock();
 	return returnValue;
 }
@@ -109,13 +101,13 @@ Date Date::Now()
 	using namespace std::chrono;
 	using clock = system_clock;
 	clock::time_point now_point = clock::now();
-	Date newdate(clock::to_time_t(now_point));
+	Date newDate(clock::to_time_t(now_point));
 #ifdef DATE_MIC_ON
 	using mics = std::chrono::microseconds;
 	mics::rep current_microseconds_count = duration_cast<mics>(now_point.time_since_epoch()).count();
-	newdate.microseconds(static_cast<int>(current_microseconds_count - 1000000 * time_t(newdate)));
+	newDate.microseconds(static_cast<int>(current_microseconds_count - 1000000 * time_t(newDate)));
 #endif
-	return newdate;
+	return newDate;
 }
 
 bool Date::Localtime(const time_t& src, struct tm& dest)
@@ -165,7 +157,6 @@ long Date::Timezone()
 	_get_timezone(&result);
 	return result;
 #else
-	extern long timezone;
 	return timezone;
 #endif
 }
@@ -310,6 +301,7 @@ Date::Date(tm time_in) :
 }
 
 Date::Date(time_t tmt) :
+    time{},
 	timet(tmt)
 {
 	if (!Localtime(timet, time))

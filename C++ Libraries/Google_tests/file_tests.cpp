@@ -216,7 +216,7 @@ TEST_F(SmallFileUTF16LE, VerifyIsEmpty) {
 #if 1
 TEST(IsDir, ActualFolder)
 {
-	ASSERT_TRUE(File::IsDir(FNAME_PREFIX));
+	ASSERT_TRUE(File::IsDir(TEST_FILES_DIR_PREFIX));
 }
 
 TEST(IsDir, IsAFile)
@@ -255,22 +255,15 @@ TEST(Read, ThousandsOfRead) {
 }
 
 TEST(MatchPattern, UsualTest) {
-	std::vector<File::sfilename_t> ret = File::MatchPattern({ FNAME_PREFIX "*" });
-
-#if defined _WIN32 && defined UNICODE
-    std::vector<File::sfilename_t> expected = {L"Small_utf16le.txt", L"aom_v.scx", L"EmptyFolder" FILE_SEPARATOR};
-#else
-    std::vector<File::sfilename_t> expected = {"Small_utf16le.txt", "aom_v.scx", "EmptyFolder" FILE_SEPARATOR};
-#endif
+	std::vector<File::sfilename_t> ret = File::MatchPattern({TEST_FILES_DIR_PREFIX "*" });
+    std::vector<File::sfilename_t> expected = {
+            MAKE_FILE_NAME "Small_utf16le.txt",
+            MAKE_FILE_NAME "aom_v.scx",
+            MAKE_FILE_NAME "EmptyFolder" FILE_SEPARATOR};
 
     ASSERT_EQ(expected.size(), ret.size());
     for (const File::sfilename_t& expectedItem : expected) {
-        ASSERT_TRUE(std::any_of(
-                ret.cbegin(),
-                ret.cend(),
-                [&] (const File::sfilename_t& item) -> bool
-                {   return item == expectedItem; }
-                ));
+        ASSERT_LIST_CONTAINS(ret, expectedItem) << ret[0];
     }
 }
 #endif

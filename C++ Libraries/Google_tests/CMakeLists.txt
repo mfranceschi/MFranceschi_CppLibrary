@@ -10,4 +10,5 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 set(MY_SOURCES ../Date.cpp ../File.cpp ../Toolbox.cpp)
 add_executable(Google_Tests_run file_tests.cpp date_tests.cpp ${MY_SOURCES})
+add_compile_definitions(UNICODE)
 target_link_libraries(Google_Tests_run gtest gtest_main)

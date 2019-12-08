@@ -190,7 +190,7 @@ protected:
 	int quickSetter(int newvalue, int min, int max, int& field);
 //--------------------------------------------------- Protected attributes
 
-	tm time; // tm struct that holds the current date.
+	tm time{}; // tm struct that holds the current date.
 	time_t timet; // time_t that holds the current date.
 	static const char* pattern; // String pattern based on strftime. No microseconds here.
 	static Date lastCallToNow; // All default-constructed Date instances will have this value. Updated on each call to Now.

@@ -9,6 +9,7 @@
 #include <locale>
 #include <map>
 #include <mutex>
+#include <sys/stat.h>
 
 #include "File.hpp"
 
@@ -16,12 +17,14 @@
 #pragma warning( disable: 26444) // Warning that occurs when using imbue.
 #include <direct.h>
 #include <io.h>
+#include <share.h>
 #include "Toolbox.hpp"
 #include <Windows.h>
 #else
+
+#include <dirent.h>
 #include <glob.h>
 #include <sys/mman.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
@@ -41,25 +44,15 @@ namespace File
 	// Data structure used to store information about files opened with Open.
 	struct ReadFileData {
 		/* Data members. */
-		const char* memoryPointer; // Holds the file data.
-		filesize_t size; // Size of the file.
+		const char* memoryPointer = nullptr; // Holds the file data.
+		filesize_t size = 0ul; // Size of the file.
 
 #ifdef _WIN32
-		HANDLE fileHandle; // File HANDLE
-		HANDLE mappingHandle; // File Mapping HANDLE
+		HANDLE fileHandle = nullptr; // File HANDLE
+		HANDLE mappingHandle = nullptr; // File Mapping HANDLE
 #else
 		int fd; // File descriptor
 #endif
-
-		/* Default constructor. */
-		ReadFileData() : memoryPointer(nullptr), size(0ul)
-#ifdef _WIN32
-			, fileHandle(nullptr), mappingHandle(nullptr)
-#else
-			, fd(0)
-#endif
-		{}
-
 	};
 
 //-------------------------------------------------------------- Constants
@@ -370,6 +363,8 @@ namespace File
 		PARENT_FOLDER = "..";
 #endif
 #else
+		DIR * d;
+		dirent * dir_entry;
 		glob_t glob_buf;
 #endif
 
@@ -400,16 +395,26 @@ namespace File
 				FindClose(hFind);
 			}
 #else
-			glob(
-				pattern, /* C-String of pattern. */
-				GLOB_MARK, /* Flag: mark folders with ending "/". */
-				nullptr, /* Error function, not used here. */
-				&glob_buf /* Pointer to glob_t struct. */
-			);
-			for (decltype(glob_buf.gl_pathc) i = 0; i < glob_buf.gl_pathc; ++i) {
-				result.emplace_back(glob_buf.gl_pathv[i]);
+			d = opendir(pattern);
+			if (d) {
+			    while ((dir_entry = readdir(d)) != nullptr) {
+			        result.emplace_back(dir_entry->d_name);
+			    }
+			    closedir(d);
 			}
-			globfree(&glob_buf);
+
+
+//			// Using glob: no because it prints the whole relative path.
+//			glob(
+//				pattern, /* C-String of pattern. */
+//				GLOB_MARK, /* Flag: mark folders with ending "/". */
+//				nullptr, /* Error function, not used here. */
+//				&glob_buf /* Pointer to glob_t struct. */
+//			);
+//			for (decltype(glob_buf.gl_pathc) i = 0; i < glob_buf.gl_pathc; ++i) {
+//				result.emplace_back(glob_buf.gl_pathv[i]);
+//			}
+//			globfree(&glob_buf);
 #endif
 		}
 		
