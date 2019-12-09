@@ -13,7 +13,6 @@
 
 //--------------------------------------------------------------- Includes
 #include <fstream>
-#include <initializer_list>
 #include <string>
 #include <vector>
 
@@ -39,10 +38,10 @@ namespace File
 	// Type used for file names.
 #if defined _WIN32 && defined UNICODE
 	typedef const wchar_t* filename_t; // typedef for const wchar_t *
-	typedef std::wstring sfilename_t; // typedef for std::wstring	
+	typedef std::wstring str_filename_t; // typedef for std::wstring
 #else
 	typedef const char* filename_t; // typedef for const char *
-	typedef std::string sfilename_t; // typedef for std::string
+	typedef std::string str_filename_t; // typedef for std::string
 #endif
 	
 
@@ -117,19 +116,15 @@ namespace File
 
 	// Returns Current Working Directory.
 	// Array created using malloc --> please use free (not delete[]).
-	filename_t GetCWD();
+	str_filename_t GetCWD();
 
-	// Returns an unordered list of files that matches the given patterns.
-	// Returns empty result is "patterns" is empty or no pattern was found.
-	std::vector<File::sfilename_t> MatchPattern(const std::vector<File::sfilename_t>& patterns);
-	inline std::vector<File::sfilename_t> MatchPattern(const std::initializer_list<File::sfilename_t>& patterns);
+	// Given a directory path with the ending PATH_SEPARATOR character,
+	// returns the complete list of files and directories that are direct children of folder.
+	// Directories have and ending PATH_SEPARATOR to make it easier to distinguish them.
+	// If anything fails, returns an empty vector.
+	std::vector<File::str_filename_t> FilesInDirectory(filename_t folder);
 } 
 
 //------------------------------------------------------ Other definitions
 
-inline std::vector<File::sfilename_t> File::MatchPattern(const std::initializer_list<File::sfilename_t>& patterns)
-{
-	std::vector<File::sfilename_t> patterns_vec(patterns.begin(), patterns.end());
-	return File::MatchPattern(patterns_vec);
-}
 #endif // FILE_H

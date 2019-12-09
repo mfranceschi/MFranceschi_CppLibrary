@@ -2,30 +2,23 @@
 
 //--------------------------------------------------------------- Includes
 
-#include <algorithm>
-#include <cassert>
 #include <codecvt>
 #include <fcntl.h>
+#include "File.hpp"
 #include <locale>
 #include <map>
 #include <mutex>
 #include <sys/stat.h>
 
-#include "File.hpp"
-
 #ifdef _WIN32
-#pragma warning( disable: 26444) // Warning that occurs when using imbue.
-#include <direct.h>
-#include <io.h>
-#include <share.h>
-#include "Toolbox.hpp"
-#include <Windows.h>
+    #pragma warning( disable: 26444) // Warning that occurs when using imbue.
+    #include <io.h>
+    #include "Toolbox.hpp"
+    #include <Windows.h>
 #else
-
-#include <dirent.h>
-#include <glob.h>
-#include <sys/mman.h>
-#include <unistd.h>
+    #include <dirent.h>
+    #include <sys/mman.h>
+    #include <unistd.h>
 #endif
 
 using std::string; 
@@ -33,7 +26,7 @@ using std::locale;
 using std::ifstream; 
 using std::ios_base;
 
-static const size_t NBR_BITS_TO_READ_ENCODING = 3;
+constexpr static size_t NBR_BITS_TO_READ_ENCODING = 3;
 
 namespace File
 {
@@ -51,7 +44,7 @@ namespace File
 		HANDLE fileHandle = nullptr; // File HANDLE
 		HANDLE mappingHandle = nullptr; // File Mapping HANDLE
 #else
-		int fd; // File descriptor
+		int fd = -1; // File descriptor
 #endif
 	};
 
@@ -91,6 +84,9 @@ namespace File
 	static inline HANDLE OpenHandleWindows(filename_t filename) {
 		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	}
+	static inline bool IsADirFromAttributesWindows(DWORD dword) {
+	    return dword & FILE_ATTRIBUTE_DIRECTORY;
+	}
 #else
 	#define _read read /* POSIX form */
 	#define _close close /* POSIX form */
@@ -118,7 +114,7 @@ namespace File
 	{
 #ifdef _WIN32 // Win32
 		DWORD attr = GetFileAttributes(filename);
-		return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
+		return !(attr == INVALID_FILE_ATTRIBUTES || IsADirFromAttributesWindows(attr));
 #else // POSIX
 		struct stat t{};
 		return !stat(filename, &t);
@@ -129,7 +125,7 @@ namespace File
 	{
 #ifdef _WIN32 // Win32
 		DWORD attrs = GetFileAttributes(filename);
-		return (attrs == INVALID_FILE_ATTRIBUTES) ? false : attrs & FILE_ATTRIBUTE_DIRECTORY;
+		return (attrs == INVALID_FILE_ATTRIBUTES) ? false : IsADirFromAttributesWindows(attrs);
 #else // POSIX
 		struct stat s{};
 		return !stat(filename, &s) & S_ISDIR(s.st_mode);
@@ -298,9 +294,9 @@ namespace File
 			// File is found, release its data.
 			ReadFileData& rfd = iterToContent->second;
 #ifdef _WIN32
-			assert(UnmapViewOfFile(content));
-			assert(CloseHandle(rfd.mappingHandle));
-			assert(CloseHandle(rfd.fileHandle));
+			UnmapViewOfFile(content);
+			CloseHandle(rfd.mappingHandle);
+			CloseHandle(rfd.fileHandle);
 #else
 			munmap((void*)rfd.memoryPointer, rfd.size);
 			_close(rfd.fd);
@@ -332,93 +328,84 @@ namespace File
 		return os;
 	}
 
-	filename_t GetCWD()
+	str_filename_t GetCWD()
 	{
+	    File::filename_t result_of_syscall;
 #ifdef _WIN32
 #ifdef UNICODE
-		return _wgetcwd(nullptr, 0);
+		result_of_syscall = _wgetcwd(nullptr, 0);
 #else
-		return _getcwd(NULL, 0);
+		result_of_syscall = _getcwd(nullptr, 0);
 #endif
 #else
-		return getcwd(nullptr, 0);
+        result_of_syscall = getcwd(nullptr, 0);
 #endif
+		str_filename_t to_return = result_of_syscall;
+		free((void *) result_of_syscall);
+		return to_return;
 	}
 
-	std::vector<File::sfilename_t> MatchPattern(const std::vector<File::sfilename_t>& patterns)
-	{
-		// Declarations
-		std::vector<File::sfilename_t> result;
-		File::filename_t pattern;
+
+    std::vector<File::str_filename_t> FilesInDirectory(filename_t folder)
+    {
+        // Declarations
+        std::vector<File::str_filename_t> result;
+        File::str_filename_t tempFilename;
+        static File::filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
+        static File::filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
 #ifdef _WIN32
-		WIN32_FIND_DATA wfd;
+        WIN32_FIND_DATA wfd;
 		HANDLE hFind;
-		static File::filename_t CUR_FOLDER, PARENT_FOLDER;
-		File::sfilename_t tempFilename;
-#ifdef UNICODE
-		CUR_FOLDER = L".";
-		PARENT_FOLDER = L"..";
+        File::str_filename_t tempFolderName = folder;
+        tempFolderName += MAKE_FILE_NAME "*";
 #else
-        CUR_FOLDER = ".";
-		PARENT_FOLDER = "..";
-#endif
-#else
-		DIR * d;
-		dirent * dir_entry;
-		glob_t glob_buf;
+        DIR * d;
+        dirent * dir_entry;
 #endif
 
-		// For each item in "patterns", add all results to "result".
-		for (const auto & item : patterns)
-		{
-			pattern = item.c_str();
 #ifdef _WIN32
-			hFind = FindFirstFile(pattern, &wfd);
-			if (hFind != INVALID_HANDLE_VALUE) {
-				do {
-					// If it is a directory, then remove "." and ".." or append an ending backslash.
-					if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                        tempFilename = wfd.cFileName;
-						if (tempFilename == CUR_FOLDER || tempFilename == PARENT_FOLDER) {
-							continue;
-						}
-						else {
-							tempFilename.append(FILE_SEPARATOR);
-						}
-						result.push_back(tempFilename);
-					}
+        hFind = FindFirstFile(tempFolderName.c_str(), &wfd);
+        if (hFind != INVALID_HANDLE_VALUE) {
+            do {
+                // If it is a directory, then remove "." and ".." or append an ending backslash.
+                if (IsADirFromAttributesWindows(wfd.dwFileAttributes)) {
+                    tempFilename = wfd.cFileName;
+                    if (tempFilename == CURRENT_FOLDER || tempFilename == PARENT_FOLDER) {
+                        continue;
+                    }
+                    else {
+                        tempFilename.append(FILE_SEPARATOR);
+                    }
+                    result.push_back(tempFilename);
+                }
 
-					else {
-						result.emplace_back(wfd.cFileName);
-					}
-				} while (FindNextFile(hFind, &wfd) != 0);
-				FindClose(hFind);
-			}
+                else {
+                    result.emplace_back(wfd.cFileName);
+                }
+            } while (FindNextFile(hFind, &wfd));
+            FindClose(hFind);
+        }
 #else
-			d = opendir(pattern);
-			if (d) {
-			    while ((dir_entry = readdir(d)) != nullptr) {
-			        result.emplace_back(dir_entry->d_name);
-			    }
-			    closedir(d);
-			}
 
-
-//			// Using glob: no because it prints the whole relative path.
-//			glob(
-//				pattern, /* C-String of pattern. */
-//				GLOB_MARK, /* Flag: mark folders with ending "/". */
-//				nullptr, /* Error function, not used here. */
-//				&glob_buf /* Pointer to glob_t struct. */
-//			);
-//			for (decltype(glob_buf.gl_pathc) i = 0; i < glob_buf.gl_pathc; ++i) {
-//				result.emplace_back(glob_buf.gl_pathv[i]);
-//			}
-//			globfree(&glob_buf);
+        d = opendir(folder);
+        if (d) {
+            while ((dir_entry = readdir(d)) != nullptr) {
+                tempFilename = dir_entry->d_name;
+                if (tempFilename == CURRENT_FOLDER || tempFilename == PARENT_FOLDER) {
+                    continue;
+                } else if (File::IsDir((std::string(folder) + tempFilename).c_str())) {
+                    tempFilename.append(FILE_SEPARATOR);
+                }
+                result.emplace_back(tempFilename);
+            }
+            closedir(d);
+        }
 #endif
-		}
-		
-		return result;
-	}
+
+        return result;
+    }
+
+
+
 
 } 

@@ -254,16 +254,17 @@ TEST(Read, ThousandsOfRead) {
 	}
 }
 
-TEST(MatchPattern, UsualTest) {
-	std::vector<File::sfilename_t> ret = File::MatchPattern({TEST_FILES_DIR_PREFIX "*" });
-    std::vector<File::sfilename_t> expected = {
+TEST(FilesInDirectory, UsualTest) {
+    std::vector<File::str_filename_t> ret = File::FilesInDirectory(TEST_FILES_DIR_PREFIX);
+    std::vector<File::str_filename_t> expected = {
             MAKE_FILE_NAME "Small_utf16le.txt",
             MAKE_FILE_NAME "aom_v.scx",
-            MAKE_FILE_NAME "EmptyFolder" FILE_SEPARATOR};
+            MAKE_FILE_NAME "EmptyFolder" FILE_SEPARATOR
+    };
 
     ASSERT_EQ(expected.size(), ret.size());
-    for (const File::sfilename_t& expectedItem : expected) {
-        ASSERT_LIST_CONTAINS(ret, expectedItem) << ret[0];
+    for (const File::str_filename_t& expectedItem : expected) {
+        ASSERT_LIST_CONTAINS(ret, expectedItem);
     }
 }
 #endif
