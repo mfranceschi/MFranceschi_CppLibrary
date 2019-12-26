@@ -1,5 +1,7 @@
 # "Google_test" is the project name
 project (Google_test)
+set(CPP_FILES_TO_TEST ../Date.cpp ../File.cpp ../Toolbox.cpp ../ArgumentsParser.cpp)
+set(TEST_CASES file_tests.cpp date_tests.cpp arguments_parser_tests.cpp)
 
 # Import the repo according to the pattern described here:
 # https://github.com/CLIUtils/cmake/blob/master/AddGoogleTest.cmake
@@ -16,7 +18,6 @@ if(NOT googletest_POPULATED)
 endif()
 
 # "Google_Tests_run" is the target name
-set(MY_SOURCES ../Date.cpp ../File.cpp ../Toolbox.cpp)
-add_executable(Google_Tests_run file_tests.cpp date_tests.cpp ${MY_SOURCES})
+add_executable(Google_Tests_run ${CPP_FILES_TO_TEST} ${TEST_CASES})
 add_compile_definitions(UNICODE)
 target_link_libraries(Google_Tests_run gtest)

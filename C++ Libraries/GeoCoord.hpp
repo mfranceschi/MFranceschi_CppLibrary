@@ -2,8 +2,8 @@
 // Created by mfran on 04/10/2019.
 //
 
-#ifndef MYWORKS_TEST0_GEOCOORD_H
-#define MYWORKS_TEST0_GEOCOORD_H
+#ifndef MYWORKS_TEST0_GEOCOORD_HPP
+#define MYWORKS_TEST0_GEOCOORD_HPP
 
 #include <cmath>
 #include <limits>
@@ -70,4 +70,4 @@ constexpr bool GeoCoord::ValidateHeight(double h) noexcept {return h >= 0.;}
 constexpr bool GeoCoord::ValidateLatitude(double la) noexcept {return la >= LAT_MIN && la <= LAT_MAX ;}
 constexpr bool GeoCoord::ValidateLongitude(double lo) noexcept {return lo >= LON_MIN && lo <= LON_MAX;}
 
-#endif //MYWORKS_TEST0_GEOCOORD_H
+#endif //MYWORKS_TEST0_GEOCOORD_HPP

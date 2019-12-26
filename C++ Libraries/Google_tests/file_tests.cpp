@@ -3,12 +3,23 @@
 //
 
 #include "tests_datas.hpp"
+#include "../File.hpp"
+#include "../Toolbox.hpp"
+
+#define MIDDLE_SIZE_RAW      "aom_v.scx"
+#define NOT_EXISTING_RAW      "not_existing._tut"
+#define SMALL_UTF16LE_RAW   "Small_utf16le.txt"
+#define TEMP_RAW            "I_AM_TEMP"
+#define _Make_Fname(raw)    TEST_FILES_DIR_PREFIX raw
+
+#define TEST_FILES_DIR_PREFIX MAKE_FILE_NAME ".." FILE_SEPARATOR ".." FILE_SEPARATOR "Google_tests" FILE_SEPARATOR "files" FILE_SEPARATOR
+
 
 // First settings : file names, (Win) memory leaks check.
 #if 1
 
-constexpr File::filename_t FILENAME_MIDDLE_SIZE = _Make_Fname(MIDDLESIZE_RAW);
-constexpr File::filename_t FILENAME_NOT_EXISTING = _Make_Fname(UNEXISTING_RAW);
+constexpr File::filename_t FILENAME_MIDDLE_SIZE = _Make_Fname(MIDDLE_SIZE_RAW);
+constexpr File::filename_t FILENAME_NOT_EXISTING = _Make_Fname(NOT_EXISTING_RAW);
 constexpr File::filename_t FILENAME_SMALL_UTF16LE = _Make_Fname(SMALL_UTF16LE_RAW);
 constexpr File::filename_t FILENAME_TEMP = _Make_Fname(TEMP_RAW);
 
@@ -23,7 +34,7 @@ constexpr File::filename_t FILENAME_TEMP = _Make_Fname(TEMP_RAW);
 // Structure that holds file information.
 struct file_info_data
 {
-	File::filesize_t size;
+	File::file_size_t size;
 	File::filename_t name;
 	char firstByte, lastByte;
 	bool exists;
@@ -50,7 +61,7 @@ protected:
 	{}
 
 	void CheckSize() {
-		File::filesize_t size = File::Size(fid.name);
+		File::file_size_t size = File::Size(fid.name);
 		if (fid.size)
 			ASSERT_NE(size, 0);
 		EXPECT_EQ(size, fid.size);
@@ -94,7 +105,7 @@ protected:
 		}
 		else {
 			// Max nbr of chars that will be readed.
-			unsigned int chars_max = std::min(static_cast<File::filesize_t>(5), fid.size / 10);
+			unsigned int chars_max = std::min(static_cast<File::file_size_t>(5), fid.size / 10);
 
 			// Try to read an invalid number of chars.
 			ASSERT_FALSE(File::IsEmpty(fid.name, 0));

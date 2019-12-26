@@ -1,6 +1,6 @@
 /* Martin Franceschi - MyWorks package - File module.
  * 
- * This module gives various informations about a given file.
+ * This module gives various information about a given file.
  * You can check if it exists, check its size and encoding.
  * You can also open it by applying automatically a locale
  * (UTF-8 and UTF-16LE only).
@@ -33,7 +33,7 @@ namespace File
 	typedef encoding_e encoding_t;
 	
 	// Type used to deal with file sizes of any weight (GBs are okay).
-	typedef unsigned long filesize_t;
+	typedef unsigned long file_size_t;
 
 	// Type used for file names.
 #if defined _WIN32 && defined UNICODE
@@ -47,16 +47,15 @@ namespace File
 
 //-------------------------------------------------------------- Constants
 #if defined _WIN32
+#   define FILE_SEPARATOR R"slash(\)slash"
     #if defined UNICODE
-        #define FILE_SEPARATOR LR"slash(\)slash"
         #define MAKE_FILE_NAME L""
     #else
-        #define FILE_SEPARATOR R"slash(\)slash"
         #define MAKE_FILE_NAME ""
     #endif
 #else
-    #define FILE_SEPARATOR "/"
-    #define MAKE_FILE_NAME ""
+#   define FILE_SEPARATOR R"slash(/)slash"
+#   define MAKE_FILE_NAME ""
 #endif
 
 //////////////////////////////////////////////////////////////////  PUBLIC
@@ -104,7 +103,7 @@ namespace File
 	bool Read_Close(const char* content);
 
 	// Returns the file size in bytes, or 0.
-	filesize_t Size(filename_t filename);
+	file_size_t Size(filename_t filename);
 
 	// Displays the file encoding as a string.
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc);

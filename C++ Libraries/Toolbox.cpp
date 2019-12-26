@@ -7,7 +7,14 @@
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include "Toolbox.hpp"
+
+#if defined _WIN32 && defined _MSC_VER
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#endif // WIN32
+
 
 namespace Toolbox
 {
@@ -67,4 +74,37 @@ namespace Toolbox
 	{
 		set_rdbuf(&icab);
 	}
+
+    void PrettyAssertion(bool condition, const char* message) {
+        using std::cout;
+        using std::endl;
+
+        if (!condition) {
+            cout << "Fatal failure. ";
+            if (message) {
+                cout << "Details: " << message;
+            }
+            cout << endl;
+            exit(EXIT_FAILURE);
+        }
+	}
+
+	void Win_CheckForMemoryLeaks(const std::function<void()>& func, size_t iterations) {
+#ifdef _MSC_VER
+	    _CrtMemState states[3];
+        _CrtMemCheckpoint(&states[0]);
+#endif
+
+        for (size_t i = 0; i < iterations; ++i) {
+            func();
+        }
+
+#ifdef _MSC_VER
+        _CrtMemCheckpoint(&states[1]);
+
+        if (_CrtMemDifference(&states[2], &states[0], &states[1])) {
+            _CrtMemDumpStatistics(&states[2]);
+        }
+#endif
+    }
 }

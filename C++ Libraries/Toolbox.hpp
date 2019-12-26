@@ -78,6 +78,13 @@ namespace Toolbox
 	// Uses the system tool to display "Press any key to continue..." on the console and wait for any user input.
 	// This is obviously a blocking call.
 	inline void PressAnyKeyToContinue();
+
+	// Like normal <cassert> assertion, but displays a more pretty (and optional) message on failure.
+	void PrettyAssertion(bool condition, const char* message = nullptr);
+
+	// Runs the given code "iterations" times and dumps the memory leaks if there are some in the debug output.
+	// If not MSVC, it does nothing nor runs the function.
+	void Win_CheckForMemoryLeaks(const std::function<void()>&, size_t iterations = 1);
 }
 
 //------------------------------------------------------ Other definitions

@@ -38,7 +38,7 @@ namespace File
 	struct ReadFileData {
 		/* Data members. */
 		const char* memoryPointer = nullptr; // Holds the file data.
-		filesize_t size = 0ul; // Size of the file.
+		file_size_t size = 0ul; // Size of the file.
 
 #ifdef _WIN32
 		HANDLE fileHandle = nullptr; // File HANDLE
@@ -183,7 +183,7 @@ namespace File
 			return false;
 	}
 
-	filesize_t Size(filename_t filename)
+	file_size_t Size(filename_t filename)
 	{
 #ifdef _WIN32 // Win32
 		HANDLE file = OpenHandleWindows(filename);
@@ -191,11 +191,11 @@ namespace File
 		LARGE_INTEGER res;
 		GetFileSizeEx(file, &res);
 		CloseHandle(file);
-		return filesize_t(res.QuadPart);
+		return file_size_t(res.QuadPart);
 #else // POSIX
 		struct stat t{};
 		if (stat(filename, &t)) return 0;
-		return filesize_t(t.st_size);
+		return file_size_t(t.st_size);
 #endif
 	}
 
@@ -374,7 +374,7 @@ namespace File
                         continue;
                     }
                     else {
-                        tempFilename.append(FILE_SEPARATOR);
+                        tempFilename += MAKE_FILE_NAME FILE_SEPARATOR;
                     }
                     result.push_back(tempFilename);
                 }
