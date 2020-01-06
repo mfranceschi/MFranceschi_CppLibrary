@@ -3,17 +3,19 @@
 //
 
 #include <ctime>
-#include <fcntl.h>
 #include "File.hpp"
 #include <functional>
-#include <io.h>
 #include <iostream>
-#include "Shlwapi.h"
 #include <string>
 #include <sys/stat.h>
 #include "TimingExperience.hpp"
 #include "Toolbox.hpp"
-#include <Windows.h>
+
+#ifdef _MSC_VER
+#include <fcntl.h>
+#include <io.h>
+#include "Shlwapi.h"
+#endif
 
 using std::cout;
 using std::endl;

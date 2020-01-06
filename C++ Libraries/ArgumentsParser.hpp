@@ -7,7 +7,6 @@
 
 #include <exception>
 #include <map>
-#include <string>
 
 class InvalidMultiItemsArgument : std::exception
 {
@@ -30,35 +29,28 @@ public:
 };
 
 enum class ValueType {
-    BOOL = 1,
+    BOOLEAN = 1,
     INTEGER = 2,
     LIST_STRING = 3
 };
 
-union ValueUnion {
-    int entier;
-    bool bouleen;
-    //std::string str;
-};
-
 struct Argument {
-    ValueUnion value;
     bool present;
     ValueType valueType;
-};
-
-struct ArgumentParameter {
-    const char* name = nullptr;
-    unsigned short minOccurs = 1; // Minimum required number of occurrences of the argument.
-    unsigned short maxOccurs = 1; // Maximum required number of occurrences of the argument.
-    unsigned short minFollowingParameters = 1;
-    unsigned short maxFollowingParameters = 1;
+    union {
+        int integer_v; // For INTEGER
+        bool boolean_v; // For BOOLEAN
+        struct { // For LIST_STRING
+            size_t length;
+            const char** elements;
+        };
+    };
 };
 
 class ArgumentsParser {
 public:
     // INNER TYPES
-    using _Results = std::map<const char*, Argument*>;
+    using _Results = std::map<const char*, Argument>;
 
     // PUBLIC METHODS
     const ArgumentsParser& parse(int nargs, const char **the_args); // Parses the user input and returns current instance.
