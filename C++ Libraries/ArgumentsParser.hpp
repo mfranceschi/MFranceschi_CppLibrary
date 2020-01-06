@@ -78,6 +78,8 @@ public:
 protected:
     // PROTECTED METHODS
     void parseInternal(int begin, int end, const char **the_args);
+    void _getArgumentsAsIntegers(int begin, int end, const char **the_args);
+    void computeMultiItemsArguments(int begin, int end, const char **the_args);
 
     // PROTECTED ATTRIBUTES
     _Results results;
