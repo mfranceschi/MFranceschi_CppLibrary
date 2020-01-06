@@ -23,8 +23,7 @@ ArgumentsParser::~ArgumentsParser() {
 }
 
 void ArgumentsParser::free() {
-    for (const std::pair<const char *const, Argument *>& argument : results) {
-        delete argument.second;
+    for (const auto& argument : results) {
     }
     results.clear();
 }
@@ -49,11 +48,10 @@ void ArgumentsParser::_getArgumentsAsIntegers(int begin, int end, const char **t
                 nbr = 0;
             }
 
-            auto arg = new Argument{
-                nbr,
-                true,
-                ValueType::INTEGER
-            };
+            Argument arg;
+            arg.present=true;
+            arg.valueType = ValueType::INTEGER;
+            arg.integer_v = nbr;
             results.insert({the_args[i], arg});
         }
     }

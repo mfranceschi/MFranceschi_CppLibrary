@@ -63,3 +63,16 @@ TEST(MultiItemsArgument, InvalidWithOneInvalid) {
     toto[2] = "item2";
     EXPECT_THROW(ap.parse(3, toto), InvalidMultiItemsArgument);
 }
+
+TEST(Quick, Quick0) {
+    ArgumentsParser ap;
+    const char** toto = new const char* [4];
+    toto[0] = "item0";
+    toto[1] = "1";
+    toto[2] = "2";
+    toto[3] = "";
+    ap.parse(4, toto);
+    for (const auto& truc : ap.get()) {
+        EXPECT_EQ(truc.second.valueType, ValueType::INTEGER);
+    }
+}
