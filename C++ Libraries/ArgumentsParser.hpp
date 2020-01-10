@@ -6,6 +6,7 @@
 #define MYWORKS_TEST0_ARGUMENTSPARSER_HPP
 
 #include <exception>
+#include <list>
 #include <map>
 
 class InvalidMultiItemsArgument : std::exception
@@ -58,6 +59,7 @@ public:
     void free(); // Call this to free the resources from the results.
 
     // OPERATORS OVERLOADING
+    inline const ArgumentsParser& operator () (int nargs, const char** the_args); // Proxy for parse.
 
     // CONSTRUCTORS AND DESTRUCTOR
     ArgumentsParser() = default;
@@ -67,11 +69,12 @@ public:
     ArgumentsParser&& operator= (const ArgumentsParser&&) = delete;
     virtual ~ArgumentsParser();
 
-protected:
+private:
     // PROTECTED METHODS
     void parseInternal(int begin, int end, const char **the_args);
-    void _getArgumentsAsIntegers(int begin, int end, const char **the_args);
-    void computeMultiItemsArguments(int begin, int end, const char **the_args);
+    void _getArgumentsAsIntegers(int begin, int end, const char **the_args, const std::list<std::pair<int, int>> &lomia);
+    void computeMultiItemsArguments(int begin, int end, const char **the_args,
+                                    std::list<std::pair<int, int>> &lomia);
 
     // PROTECTED ATTRIBUTES
     _Results results;
@@ -80,6 +83,10 @@ protected:
 // OTHER DEFINITIONS
 const ArgumentsParser::_Results &ArgumentsParser::get() const {
     return results;
+}
+
+const ArgumentsParser& ArgumentsParser::operator () (int nargs, const char** the_args) {
+    return parse(nargs, the_args);
 }
 
 #endif //MYWORKS_TEST0_ARGUMENTSPARSER_HPP

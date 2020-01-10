@@ -6,7 +6,6 @@
 #define MYWORKS_TEST0_GEOCOORD_HPP
 
 #include <cmath>
-#include <limits>
 #include "Toolbox.hpp"
 
 class GeoCoord {

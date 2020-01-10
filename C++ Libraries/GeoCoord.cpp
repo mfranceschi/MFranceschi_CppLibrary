@@ -6,7 +6,6 @@
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
-#include <string>
 
 #include "GeoCoord.hpp"
 

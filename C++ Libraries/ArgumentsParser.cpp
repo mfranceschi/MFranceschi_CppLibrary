@@ -7,13 +7,10 @@
 #include <mutex>
 #include "ArgumentsParser.hpp"
 
-// PRIVATE
-static std::list<std::pair<int, int>> listOfMultiItemsArguments;
-static std::mutex mutexOfListOfMultiItemsArguments;
-
 const ArgumentsParser &ArgumentsParser::parse(int nargs, const char **the_args) {
-    computeMultiItemsArguments(1, nargs, the_args);
-    _getArgumentsAsIntegers(1, nargs, the_args);
+    std::list<std::pair<int, int>> listOfMultiItemsArguments;
+    computeMultiItemsArguments(1, nargs, the_args, listOfMultiItemsArguments);
+    _getArgumentsAsIntegers(1, nargs, the_args, listOfMultiItemsArguments);
     parseInternal(1, nargs, the_args);
     return *this;
 }
@@ -24,6 +21,7 @@ ArgumentsParser::~ArgumentsParser() {
 
 void ArgumentsParser::free() {
     for (const auto& argument : results) {
+        // TODO
     }
     results.clear();
 }
@@ -32,18 +30,19 @@ void ArgumentsParser::parseInternal(int begin, int end, const char **the_args) {
     // TODO
 }
 
-void ArgumentsParser::_getArgumentsAsIntegers(int begin, int end, const char **the_args) {
+void
+ArgumentsParser::_getArgumentsAsIntegers(int begin, int end, const char **the_args, const std::list<std::pair<int, int>> &lomia) {
     // Simple, lazy test of the parser.
     // Converts to zero on failure.
 
-    auto lastMIA = listOfMultiItemsArguments.cbegin();
+    auto lastMIA = lomia.cbegin();
     for (int i = begin; i < end; i++) {
         if (lastMIA->first == i) {
             // TODO do not skip
 
             lastMIA++;
         } else {
-            int nbr = std::strtol(the_args[i], nullptr, 0);
+            int nbr = static_cast<int>(std::strtol(the_args[i], nullptr, 0));
             if (errno == ERANGE) {
                 nbr = 0;
             }
@@ -57,13 +56,12 @@ void ArgumentsParser::_getArgumentsAsIntegers(int begin, int end, const char **t
     }
 }
 
-void ArgumentsParser::computeMultiItemsArguments(int begin, int end, const char **the_args) {
+void ArgumentsParser::computeMultiItemsArguments(int begin, int end, const char **the_args,
+                                                 std::list<std::pair<int, int>> &lomia) {
     // If some arguments are spread over multiple elements of "the_args",
     // we note their beginning and end indexes.
     // We then call them "Multi-Item argument" because there are several items from "the_args" to consider.
 
-    mutexOfListOfMultiItemsArguments.lock();
-    listOfMultiItemsArguments.clear();
     std::pair<int, int> currentMultiItemArgument(-1, -1);
 
     for (int i = begin; i < end; i++) {
@@ -75,7 +73,6 @@ void ArgumentsParser::computeMultiItemsArguments(int begin, int end, const char 
                 if (currentMultiItemArgument.first == -1) {
                     currentMultiItemArgument.first = i;
                 } else {
-                    mutexOfListOfMultiItemsArguments.unlock();
                     throw UnfinishedMultiItemsArgument(currentMultiItemArgument.first);
                 }
             }
@@ -83,18 +80,16 @@ void ArgumentsParser::computeMultiItemsArguments(int begin, int end, const char 
             // If the string ends with a ", we end the currently opened Multi-Item argument if there is one.
             if (the_args[i][len - 1] == '"') {
                 if (currentMultiItemArgument.first == -1) {
-                    mutexOfListOfMultiItemsArguments.unlock();
                     throw InvalidMultiItemsArgument(i);
                 } else {
                     currentMultiItemArgument.second = i;
-                    listOfMultiItemsArguments.push_back(currentMultiItemArgument);
+                    lomia.push_back(currentMultiItemArgument);
                     currentMultiItemArgument = {-1, -1};
                 }
             }
         }
     }
 
-    mutexOfListOfMultiItemsArguments.unlock();
     if (currentMultiItemArgument.first != -1) {
         throw UnfinishedMultiItemsArgument(currentMultiItemArgument.first);
     }
