@@ -1,7 +1,7 @@
 # "Google_test" is the project name
 project (Google_test)
-set(CPP_FILES_TO_TEST ../Date.cpp ../File.cpp ../Toolbox.cpp ../ArgumentsParser.cpp)
-set(TEST_CASES file_tests.cpp date_tests.cpp arguments_parser_tests.cpp)
+set(CPP_FILES_TO_TEST ../Date.cpp ../File.cpp ../Toolbox.cpp)
+set(TEST_CASES file_tests.cpp date_tests.cpp)
 
 # Import the repo according to the pattern described here:
 # https://github.com/CLIUtils/cmake/blob/master/AddGoogleTest.cmake

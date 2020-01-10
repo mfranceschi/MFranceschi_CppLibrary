@@ -32,7 +32,7 @@ namespace Toolbox
 	//------------------------------------------------------- Public functions
 
 	
-	double Timethis(size_t iter, const std::function<void(void)>& func)
+	double TimeThis(size_t iter, const std::function<void(void)>& func)
 	{
 		using namespace std::chrono;
 		high_resolution_clock::time_point beginning = high_resolution_clock::now();

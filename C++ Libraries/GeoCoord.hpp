@@ -8,6 +8,24 @@
 #include <cmath>
 #include "Toolbox.hpp"
 
+struct MassiveSphereRadius {
+private:
+    double radius;
+public:
+    constexpr double getRadius() const { return radius; }
+    constexpr double operator () () const { return getRadius(); }
+    constexpr explicit operator double () const { return getRadius(); }
+protected:
+    constexpr explicit MassiveSphereRadius(double radius) : radius(radius) {}
+};
+
+// Use the following macro to easily declare MassiveSphereRadius subclasses.
+#define DECLARE_MASSIVE_SPHERE_RADIUS(className, radiusAsDouble) \
+struct className : public MassiveSphereRadius { \
+    constexpr className() : MassiveSphereRadius(radiusAsDouble) {}; \
+};
+DECLARE_MASSIVE_SPHERE_RADIUS(EarthRadius, 6371008.)
+
 class GeoCoord {
 public:
     // static
@@ -16,14 +34,12 @@ public:
     static constexpr double LON_MAX = +180.; // Inferior bound of longitudes range.
     static constexpr double LON_MIN = -180.; // Superior bound of longitudes range.
 
-    static constexpr double RADIUS_OF_EARTH = 6371008.;
-
     static constexpr bool ValidateLongitude(double) noexcept;
     static constexpr bool ValidateLatitude(double) noexcept;
     static constexpr bool ValidateHeight(double) noexcept;
 
     // methods
-    double DistanceFrom(const GeoCoord& other, double radius = RADIUS_OF_EARTH);
+    double DistanceFrom(const GeoCoord& other, double radius = EarthRadius()());
 
     // getters and setters
     constexpr double GetLongitude() const noexcept;
@@ -53,9 +69,7 @@ constexpr GeoCoord::GeoCoord(double lon, double lat, double height) :
     height(Toolbox::Validate(height, 0, ValidateHeight(height)))
 {}
 
-double GeoCoord::operator-(const GeoCoord &other) {
-    return DistanceFrom(other);
-}
+double GeoCoord::operator-(const GeoCoord &other) { return DistanceFrom(other); }
 
 constexpr double GeoCoord::GetLongitude() const noexcept {return longitude;}
 constexpr double GeoCoord::GetLatitude() const noexcept {return latitude;}

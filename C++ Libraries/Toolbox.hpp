@@ -55,7 +55,7 @@ namespace Toolbox
 
 	// Returns the execution time for the given function.
 	// It runs "iter" times and returns (total_time/iter).
-	double Timethis(size_t iter, const std::function<void(void)>&);
+	double TimeThis(size_t iter, const std::function<void(void)>&);
 
 	// Returns the sign of the given number: -1, 0 or +1, as an int.
 	template <typename type = long long>
@@ -84,7 +84,7 @@ namespace Toolbox
 
 	// Runs the given code "iterations" times and dumps the memory leaks if there are some in the debug output.
 	// If not MSVC, it does nothing nor runs the function.
-	void Win_CheckForMemoryLeaks(const std::function<void()>&, size_t iterations = 1);
+	void Win_CheckForMemoryLeaks(const std::function<void()>& = [] () {}, size_t iterations = 1);
 }
 
 //------------------------------------------------------ Other definitions

@@ -26,7 +26,7 @@ static constexpr File::filename_t file_L = MAKE_FILE_NAME ".." FILE_SEPARATOR "G
 #endif
 
 static inline double TimeWithRepetition(const std::function<void()>& func) {
-    return Toolbox::Timethis(TimingExperience::NUMBER_OF_ITERATIONS, func);
+    return Toolbox::TimeThis(TimingExperience::NUMBER_OF_ITERATIONS, func);
 }
 
 namespace TimingExperience {
