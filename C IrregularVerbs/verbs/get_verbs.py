@@ -1,0 +1,40 @@
+import requests
+from lxml import etree
+
+URL: str = "https://www.allemandfacile.com/exercices/exercice-allemand-2/exercice-allemand-22677.php"
+SEPARATOR: str = ","
+LINE_SEPARATOR: str = "\n"
+
+def get_texts(td) -> str:
+    """
+    Recursive function: returns the text content,
+    or the concatenation of the text content of sub-elements.
+    """
+    if td.text:
+        return td.text.lower()
+    else:
+        return " ".join(get_texts(c) for c in td)
+
+response = requests.get(URL)
+if (response.status_code == 200):
+    root = etree.HTML(response.content)
+    
+    with open("verbs.csv", mode="w+", encoding="UTF-8") as f:
+        f.write(f"inf{SEPARATOR}time1{SEPARATOR}time2{SEPARATOR}trans{SEPARATOR}{LINE_SEPARATOR}")
+        first = True  # We will skip 1st row
+
+        for table_body in root.xpath("//article//div[@align='center']/table/tbody"):
+            for row in table_body:
+                if first:
+                    first = False
+                    continue
+
+                inf = get_texts(row[0])
+                trans = get_texts(row[4])
+                time1 = get_texts(row[2])
+                time2 = get_texts(row[3])
+
+                f.write(f'"{inf}"{SEPARATOR}"{time1}"{SEPARATOR}"{time2}"{SEPARATOR}"{trans}"{SEPARATOR}{LINE_SEPARATOR}')
+    print("DONE")
+else:
+    print("ERROR: ", response.status_code)
