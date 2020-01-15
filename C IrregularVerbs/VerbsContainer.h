@@ -8,11 +8,17 @@
 #include <stdbool.h>
 #include "Verb.h"
 
+typedef struct QueryResults_s {
+    size_t length;
+    Verb** results;
+} QueryResults;
+
 bool addVerb(const Verb*);
-const Verb** getVerbsByInfinitive(STRING);
-const Verb** getVerbsByTranslation(STRING);
-const Verb** getVerbsByTime1(STRING);
-const Verb** getVerbsByTime2(STRING);
+QueryResults* getVerbsByInfinitive(STRING);
+QueryResults* getVerbsByTranslation(STRING);
+QueryResults* getVerbsByTime1(STRING);
+QueryResults* getVerbsByTime2(STRING);
+void freeQueryResults(QueryResults*);
 void startUp();
 void shutDown();
 

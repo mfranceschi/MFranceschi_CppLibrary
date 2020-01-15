@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "SQLite/sqlite3.h"
+#include "Verb.h"
+#include "VerbsContainer.h"
 
 int main(int nargs, char** args) {
     fprintf(stdin, "It works!\n");
