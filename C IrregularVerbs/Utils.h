@@ -7,7 +7,7 @@
 
 #include "Strings.h"
 
-STRING CSV_FILENAME = "rsc/verbs.csv";
+STRING CSV_FILENAME = "rsc/rsc.csv";
 
 void fillVerbsContainer();
 

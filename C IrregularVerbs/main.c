@@ -20,14 +20,19 @@ static void test_sqlite_works() {
     sqlite3_open(NULL, NULL);
 }
 
-int main(int nargs, char** args) {
-    fprintf(stdout, "It works!\n");
-
+static void tests_make_verb() {
     Verb* v = malloc(sizeof(Verb));
     makeVerbFromStrings("infinitif", "translation", "time1", "time2", v);
     fprintf(stdout, "%p\n", v->infinitive);
     freeVerb(v);
     free(v);
+}
+
+int main(int nargs, char** args) {
+    fprintf(stdout, "It works!\n");
+
+    startUp();
+    shutDown();
     system("pause");
     return EXIT_SUCCESS;
 }

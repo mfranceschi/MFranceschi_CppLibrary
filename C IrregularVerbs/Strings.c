@@ -5,6 +5,8 @@
 #include <string.h>
 #include "Strings.h"
 
+static const STRING SEPARATOR = ",";
+
 void makeMultiStrings(STRING input, MultiStrings* output) {
     /* TODO */
     output->length = 1;
