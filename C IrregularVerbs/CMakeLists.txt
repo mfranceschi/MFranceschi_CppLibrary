@@ -8,5 +8,5 @@ include_directories(${CURSES_INCLUDE_DIR})
 
 file(GLOB SQLITE_SOURCE_FILES ./SQLite/*.c)
 file(GLOB SOURCE_FILES ./*.c ${SQLITE_SOURCE_FILES})
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} Strings.h Utils.h Strings.c Verb.c)
 target_link_libraries(${PROJECT_NAME} ${CURSES_LIBRARY})
