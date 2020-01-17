@@ -23,6 +23,7 @@ bool isSubstringOfMultiStrings(STRING potential, const MultiStrings* toCompareTo
 bool matchesString(STRING potential, STRING toCompareTo);
 bool matchesMultiStrings(STRING potential, const MultiStrings* toCompareTo);
 
-STRING makeStringFromMultiStrings(MultiStrings* input, STRING separator);
+STRING makeStringFromMultiStrings(MultiStrings* input, STRING* output);
+void freeStringFromMultiStrings(STRING);
 
 #endif //IRREGULARVERBS_MULTISTRINGS_H

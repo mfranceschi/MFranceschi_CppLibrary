@@ -13,13 +13,14 @@ typedef struct QueryResults_s {
     Verb** results;
 } QueryResults;
 
-bool addVerb(const Verb*);
-QueryResults* getVerbsByInfinitive(STRING);
-QueryResults* getVerbsByTranslation(STRING);
-QueryResults* getVerbsByTime1(STRING);
-QueryResults* getVerbsByTime2(STRING);
-void freeQueryResults(QueryResults*);
-void startUp();
-void shutDown();
+bool container_addVerb(const Verb*);
+bool container_addVerbs(const Verb**, size_t number);
+QueryResults* container_getVerbsByInfinitive(STRING);
+QueryResults* container_getVerbsByTranslation(STRING);
+QueryResults* container_getVerbsByTime1(STRING);
+QueryResults* container_getVerbsByTime2(STRING);
+void container_freeQueryResults(QueryResults*);
+void container_start_up();
+void container_shut_down();
 
 #endif //IRREGULARVERBS_VERBSCONTAINER_H

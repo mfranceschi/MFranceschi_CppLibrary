@@ -19,7 +19,7 @@ void freeMultiStrings(MultiStrings* ms) {
         free((void *) ms->array[i]);
     }
     free(ms->array);
-    ms->length = 0;
+    free(ms);
 }
 
 bool isSubstringOfString(STRING potential, STRING toCompareTo) {
@@ -49,7 +49,11 @@ bool matchesMultiStrings(STRING potential, const MultiStrings* toCompareTo) {
     return false;
 }
 
-STRING makeStringFromMultiStrings(MultiStrings* input, STRING separator) {
+STRING makeStringFromMultiStrings(MultiStrings* input, STRING* output) {
     // equivalent to Python's str.join(iterable)
     return NULL;
+}
+
+void freeStringFromMultiStrings(STRING str) {
+
 }

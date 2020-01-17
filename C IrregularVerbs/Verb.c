@@ -59,4 +59,6 @@ void freeVerb(Verb* v) {
 
     freeMultiStrings(v->time2);
     free(v->time2);
+
+    free(v);
 }

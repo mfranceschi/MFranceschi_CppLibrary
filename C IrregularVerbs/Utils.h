@@ -7,8 +7,6 @@
 
 #include "Strings.h"
 
-STRING CSV_FILENAME = "rsc/rsc.csv";
-
 void fillVerbsContainer();
 
 #endif //IRREGULARVERBS_UTILS_H
