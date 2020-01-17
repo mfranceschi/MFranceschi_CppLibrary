@@ -8,5 +8,7 @@
 #include "Strings.h"
 
 void fillVerbsContainer();
+size_t countOccurrencesOfSubstring(STRING substring, STRING big);
+#define max_nbr(a,b) ((a > b) ? (a) : (b))
 
 #endif //IRREGULARVERBS_UTILS_H

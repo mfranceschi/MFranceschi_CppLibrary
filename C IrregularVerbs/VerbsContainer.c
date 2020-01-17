@@ -21,7 +21,8 @@ static sqlite3_stmt* sql_search = NULL;
 static bool runSimpleQuery(sqlite3_stmt* prepared) {
     return
         (sqlite3_step(prepared) == SQLITE_DONE) &&
-        (sqlite3_reset(prepared) == SQLITE_OK);
+        (sqlite3_reset(prepared) == SQLITE_OK) &&
+        (sqlite3_clear_bindings(prepared) == SQLITE_OK);
 }
 
 /**
@@ -29,15 +30,14 @@ static bool runSimpleQuery(sqlite3_stmt* prepared) {
  * Stores the results (in order) in the QueryResults.
  *
  * @param stmt The statement which shall be ready.
- * @param output The object on which results will be written.
+ * @return The object on which results will be written.
  */
-static void makeQueryResults(sqlite3_stmt* stmt, QueryResults* output) {
+static QueryResults* makeQueryResults(sqlite3_stmt *stmt) {
 
 }
 
 static void bindToStmt(sqlite3_stmt* stmt, int id, MultiStrings* multis) {
-    STRING str;
-    makeStringFromMultiStrings(multis, &str);
+    STRING str = makeStringFromMultiStrings(multis);
     sqlite3_bind_text(stmt, id, str, -1, NULL);
     freeStringFromMultiStrings(str);
 }
@@ -83,13 +83,8 @@ void container_freeQueryResults(QueryResults* qr) {
 
 void container_start_up() {
     if (sqlite3_open_v2(":memory:", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) == SQLITE_OK) {
-        sqlite3_stmt* sql_create_table;
         STRING statement_text = "CREATE TABLE Verbs (infinitive TEXT PRIMARY KEY, translation TEXT, time1 TEXT, time2 TEXT) ;";
-        if (
-                (sqlite3_prepare_v2(db, statement_text, -1, &sql_create_table, NULL) == SQLITE_OK) &&
-                runSimpleQuery(sql_create_table))
-        {
-            sqlite3_finalize(sql_create_table);
+        if (sqlite3_exec(db, statement_text, NULL, NULL, NULL) == SQLITE_OK) {
 
             // Prepare all statements
             if (
@@ -117,4 +112,8 @@ void container_shut_down() {
     sqlite3_finalize(sql_count);
     sqlite3_finalize(sql_search);
     sqlite3_close(db);
+}
+
+STRING container_get_last_error() {
+    return sqlite3_errmsg(db);
 }

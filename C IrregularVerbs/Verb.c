@@ -27,15 +27,10 @@ bool matchesTime2(STRING potential, const Verb* verb, bool strictly) {
 }
 
 void makeVerbFromStrings(STRING infinitive, STRING translation, STRING time1, STRING time2, Verb* output) {
-    MultiStrings* inf = malloc(sizeof(MultiStrings));
-    MultiStrings* tra = malloc(sizeof(MultiStrings));
-    MultiStrings* ti1 = malloc(sizeof(MultiStrings));
-    MultiStrings* ti2 = malloc(sizeof(MultiStrings));
-
-    makeMultiStrings(infinitive, inf);
-    makeMultiStrings(translation, tra);
-    makeMultiStrings(time1, ti1);
-    makeMultiStrings(time2, ti2);
+    MultiStrings* inf = makeMultiStrings(infinitive);
+    MultiStrings* tra = makeMultiStrings(translation);
+    MultiStrings* ti1 = makeMultiStrings(time1);
+    MultiStrings* ti2 = makeMultiStrings(time2);
 
     makeVerbFromMultiStrings(inf, tra, ti1, ti2, output);
 }
@@ -49,16 +44,8 @@ void makeVerbFromMultiStrings(MultiStrings* infinitive, MultiStrings* translatio
 
 void freeVerb(Verb* v) {
     freeMultiStrings(v->infinitive);
-    free(v->infinitive);
-
     freeMultiStrings(v->translation);
-    free(v->translation);
-
     freeMultiStrings(v->time1);
-    free(v->time1);
-
     freeMultiStrings(v->time2);
-    free(v->time2);
-
     free(v);
 }

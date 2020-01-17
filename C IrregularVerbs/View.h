@@ -7,9 +7,9 @@
 
 #include "Strings.h"
 
-typedef enum Commands_e {
-    LIST, SEARCH, EXERCISE
-} Commands;
+typedef enum Command_e {
+    LIST, SEARCH, EXERCISE, BACK_HOME, QUIT
+} Command;
 
 void view_start_up();
 void show_welcome_screen();

@@ -24,7 +24,7 @@ static void test_sqlite_works() {
 
 static void tests_make_verb() {
     Verb* v = malloc(sizeof(Verb));
-    makeVerbFromStrings("infinitif", "translation", "time1", "time2", v);
+    makeVerbFromStrings("\"infinitif\"", "\"translation\"", "\"time1\"", "\"time2\"", v);
     printf("%i", container_addVerbs((const Verb **) &v, 1));
     freeVerb(v);
 }

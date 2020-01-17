@@ -20,6 +20,7 @@ QueryResults* container_getVerbsByTranslation(STRING);
 QueryResults* container_getVerbsByTime1(STRING);
 QueryResults* container_getVerbsByTime2(STRING);
 void container_freeQueryResults(QueryResults*);
+STRING container_get_last_error();
 void container_start_up();
 void container_shut_down();
 

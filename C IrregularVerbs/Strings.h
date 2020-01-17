@@ -15,7 +15,7 @@ typedef struct MultiStrings_s {
     STRING* array;
 } MultiStrings;
 
-void makeMultiStrings(STRING input, MultiStrings* output);
+MultiStrings* makeMultiStrings(STRING input);
 void freeMultiStrings(MultiStrings*);
 
 bool isSubstringOfString(STRING potential, STRING toCompareTo);
@@ -23,7 +23,7 @@ bool isSubstringOfMultiStrings(STRING potential, const MultiStrings* toCompareTo
 bool matchesString(STRING potential, STRING toCompareTo);
 bool matchesMultiStrings(STRING potential, const MultiStrings* toCompareTo);
 
-STRING makeStringFromMultiStrings(MultiStrings* input, STRING* output);
+STRING makeStringFromMultiStrings(MultiStrings *input);
 void freeStringFromMultiStrings(STRING);
 
 #endif //IRREGULARVERBS_MULTISTRINGS_H
