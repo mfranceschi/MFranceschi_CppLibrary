@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="xyz" uuid="0ed8da77-fcbc-4dfe-8c84-aeec0e76baaa">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\mfran\CLionProjects\MyWorks\C IrregularVerbs\cmake-build-debug\xyz.sqlite</jdbc-url>
+    </data-source>
+  </component>
+</project>

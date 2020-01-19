@@ -26,32 +26,24 @@ MultiStrings* makeMultiStrings(STRING input) {
     } else {
         // Count how many separators = n
         // Allocate array of n+1 strings
-        // Copy all strings without " up to n-1
-        // Copy last string without "
+        // Copy all strings
 
-        size_t count_of_separators = countOccurrencesOfSubstring(SEPARATOR, input);
-
-        length = count_of_separators + 1;
+        length = countOccurrencesOfSubstring(SEPARATOR, input) + 1;
         array = malloc(length * sizeof(STRING));
 
         STRING input_ptr = input;
         for (size_t i = 0; i < length; i++) {
-            input_ptr++; // skip first "
-
             // get end of current substring
-            STRING next_occurrence = strstr(input_ptr, SEPARATOR);
-            STRING end_of_current_substring = next_occurrence;
-            if (!end_of_current_substring) {
-                end_of_current_substring = input_ptr;
-                while (*end_of_current_substring != '\0') {end_of_current_substring++;}
+            STRING end_of_current_substring = input_ptr;
+            while (strcmp(end_of_current_substring, SEPARATOR) != 0 && *end_of_current_substring != '\0') {
+                ++end_of_current_substring;
             }
 
             size_t bytes_to_allocate = end_of_current_substring - input_ptr + 1;
-            array[i] = malloc(sizeof(char) * bytes_to_allocate);
+            array[i] = malloc(bytes_to_allocate);
             strncpy(array[i], input_ptr, bytes_to_allocate - 1);
+            array[i][bytes_to_allocate - 1] = '\0';
             input_ptr = end_of_current_substring;
-
-            input_ptr++; // skip second "
 
             if (i != input_length - 1) { // skip separator if so
                 input_ptr += LEN_SEPARATOR;
@@ -61,6 +53,25 @@ MultiStrings* makeMultiStrings(STRING input) {
 
     output->length = length;
     output->array = (STRING *) array;
+    return output;
+}
+
+MultiStrings* copyMultiStrings(const MultiStrings* input) {
+    size_t length = input->length;
+    WRITEABLE_STRING* array = malloc(sizeof(STRING) * length);
+
+    for (size_t i = 0; i < length; ++i) {
+        size_t str_len = strlen(input->array[i]);
+        array[i] = malloc(str_len + 1);
+        strcpy(array[i], input->array[i]);
+    }
+
+    MultiStrings* output = malloc(sizeof(MultiStrings));
+    *output = (MultiStrings) {
+            .length = length,
+            .array = malloc(sizeof(STRING) * length)
+    };
+
     return output;
 }
 
@@ -100,14 +111,14 @@ bool matchesMultiStrings(STRING potential, const MultiStrings* toCompareTo) {
 }
 
 STRING makeStringFromMultiStrings(MultiStrings *input) {
-    // get total size of string = size of all strings + (n-1) * separator + 2n
+    // get total size of string = size of all strings + (n-1) * separator + 1
     // allocate
-    // copy all strings up to (n-1) followed by separator and surrounded by "
-    // copy last string without separator and surrounded by "
+    // copy all strings up to (n-1) followed by separator
+    // copy last string without separator
 
     const size_t ms_len = input->length;
 
-    size_t total_length = ((ms_len - 1) * strlen(SEPARATOR)) + (2 * ms_len) + 1;
+    size_t total_length = ((ms_len - 1) * strlen(SEPARATOR)) + 1;
     for (size_t i = 0; i < ms_len; i++) {
         total_length += strlen(input->array[i]);
     }
@@ -116,16 +127,10 @@ STRING makeStringFromMultiStrings(MultiStrings *input) {
     WRITEABLE_STRING output_ptr = output;
 
     for (size_t i = 0; i < ms_len; i++) {
-        output_ptr[0] = '"';
-        output_ptr++;
-
         strcpy(output_ptr, input->array[i]);
         output_ptr += strlen(input->array[i]);
 
-        output_ptr[0] = '"';
-        output_ptr++;
-
-        if (i == ms_len - 1) {
+        if (i != ms_len - 1) {
             strcpy(output_ptr, SEPARATOR);
             output_ptr += LEN_SEPARATOR;
         }

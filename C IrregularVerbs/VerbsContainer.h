@@ -5,21 +5,19 @@
 #ifndef IRREGULARVERBS_VERBSCONTAINER_H
 #define IRREGULARVERBS_VERBSCONTAINER_H
 
+#include "Contiki_2.6/list.h"
 #include <stdbool.h>
 #include "Verb.h"
 
-typedef struct QueryResults_s {
-    size_t length;
-    Verb** results;
-} QueryResults;
+typedef struct list_node_s {
+    struct list_node_s * next;
+    Verb* verb;
+} list_node ;
 
-bool container_addVerb(const Verb*);
 bool container_addVerbs(const Verb**, size_t number);
-QueryResults* container_getVerbsByInfinitive(STRING);
-QueryResults* container_getVerbsByTranslation(STRING);
-QueryResults* container_getVerbsByTime1(STRING);
-QueryResults* container_getVerbsByTime2(STRING);
-void container_freeQueryResults(QueryResults*);
+list_node* container_getVerbsBySubstring(STRING);
+size_t container_getCount();
+void container_freeResults();
 STRING container_get_last_error();
 void container_start_up();
 void container_shut_down();

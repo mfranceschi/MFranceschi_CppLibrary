@@ -23,10 +23,17 @@ static void test_sqlite_works() {
 }
 
 static void tests_make_verb() {
-    Verb* v = malloc(sizeof(Verb));
-    makeVerbFromStrings("\"infinitif\"", "\"translation\"", "\"time1\"", "\"time2\"", v);
-    printf("%i", container_addVerbs((const Verb **) &v, 1));
+    Verb* v = makeVerbFromStrings("infinitif", "translation", "time1", "time2");
+    printf("%i\n", container_addVerbs((const Verb **) &v, 1));
     freeVerb(v);
+    printf("Count: %u\n", container_getCount());
+
+    list_node* node = container_getVerbsBySubstring("time");
+    while (node) {
+        printf("Verbe infinitif: '%s'", node->verb->infinitive->array[0]);
+        node = node->next;
+    }
+    container_freeResults();
 }
 
 int main(int nargs, char** args) {

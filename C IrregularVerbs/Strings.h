@@ -16,6 +16,7 @@ typedef struct MultiStrings_s {
 } MultiStrings;
 
 MultiStrings* makeMultiStrings(STRING input);
+MultiStrings* copyMultiStrings(const MultiStrings*);
 void freeMultiStrings(MultiStrings*);
 
 bool isSubstringOfString(STRING potential, STRING toCompareTo);
