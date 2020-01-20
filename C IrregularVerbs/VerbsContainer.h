@@ -15,11 +15,12 @@ typedef struct list_node_s {
 } list_node ;
 
 bool container_addVerbs(const Verb**, size_t number);
-list_node* container_getVerbsBySubstring(STRING);
+list_t container_getVerbsBySubstring(STRING);
+list_t container_getAllVerbs();
 size_t container_getCount();
 void container_freeResults();
 STRING container_get_last_error();
-void container_start_up();
+bool container_start_up();
 void container_shut_down();
 
 #endif //IRREGULARVERBS_VERBSCONTAINER_H

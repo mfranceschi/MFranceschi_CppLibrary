@@ -23,16 +23,18 @@ static void test_sqlite_works() {
 }
 
 static void tests_make_verb() {
-    Verb* v = makeVerbFromStrings("infinitif", "translation", "time1", "time2");
-    printf("%i\n", container_addVerbs((const Verb **) &v, 1));
+    Verb* v = makeVerbFromStrings("infinitive", "translation", "time1", "time2");
+    printf("Success de l'ajout: %i\n", container_addVerbs((const Verb **) &v, 1));
     freeVerb(v);
     printf("Count: %u\n", container_getCount());
 
-    list_node* node = container_getVerbsBySubstring("time");
+    list_t list = container_getAllVerbs();
+    list_node* node = (list_node *) list_tail(list);
     while (node) {
         printf("Verbe infinitif: '%s'", node->verb->infinitive->array[0]);
         node = node->next;
     }
+    printf("Last error: '%s'", container_get_last_error());
     container_freeResults();
 }
 
