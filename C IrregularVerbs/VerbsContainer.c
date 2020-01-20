@@ -54,7 +54,7 @@ size_t container_getCount() {
 
 void container_freeResults() {
     list_node* current_node;
-    while ((current_node = list_tail(current_results)) != 0) {
+    while ((current_node = list_head(current_results)) != NULL) {
         freeVerb(current_node->verb);
         list_pop(current_results);
     }

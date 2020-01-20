@@ -102,7 +102,7 @@ static void _bindMultiStringsToStmt(sqlite3_stmt* stmt, int id, MultiStrings* mu
 }
 
 static void _bindStringToStmt(sqlite3_stmt* stmt, int id, STRING to_bind) {
-    sqlite3_bind_text(stmt, id, to_bind, -1, NULL);
+    sqlite3_bind_text(stmt, id, to_bind, -1, SQLITE_TRANSIENT);
 }
 
 void m_sqlite_search_substring(STRING substring, list_t output) {
@@ -156,6 +156,7 @@ bool m_sqlite_run_in_exclusive_write_transaction(void (*action) (va_list), ...) 
 
 bool m_sqlite_start_up() {
     if (sqlite3_open_v2(":memory:", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) == SQLITE_OK) {
+        sqlite3_exec(db, "DROP TABLE Verbs;", NULL, NULL, NULL);
         STRING statement_text = "CREATE TABLE Verbs (infinitive TEXT PRIMARY KEY, translation TEXT, time1 TEXT, time2 TEXT) ;";
         if (sqlite3_exec(db, statement_text, NULL, NULL, NULL) == SQLITE_OK) {
 

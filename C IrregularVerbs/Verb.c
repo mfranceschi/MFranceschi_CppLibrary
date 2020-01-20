@@ -41,6 +41,7 @@ Verb* makeVerbFromMultiStrings(MultiStrings* infinitive, MultiStrings* translati
     output->translation = translation;
     output->time1 = time1;
     output->time2 = time2;
+    return output;
 }
 
 Verb* copyVerb(const Verb* input) {

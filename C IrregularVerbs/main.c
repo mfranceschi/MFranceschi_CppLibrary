@@ -29,11 +29,11 @@ static void tests_make_verb() {
     printf("Count: %u\n", container_getCount());
 
     list_t list = container_getAllVerbs();
-    list_node* node = (list_node *) list_tail(list);
-    while (node) {
+    list_node* node = (list_node *) list_head(list);
+    do {
         printf("Verbe infinitif: '%s'", node->verb->infinitive->array[0]);
-        node = node->next;
-    }
+        node = list_item_next(node);
+    } while ((node = list_item_next(node)) != NULL);
     printf("Last error: '%s'", container_get_last_error());
     container_freeResults();
 }
