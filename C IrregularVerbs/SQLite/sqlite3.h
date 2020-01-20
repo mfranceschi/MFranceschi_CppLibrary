@@ -221,7 +221,7 @@ SQLITE_API const char *sqlite3_compileoption_get(int N);
 ** of the [SQLITE_THREADSAFE] flag.  If SQLite is compiled with
 ** SQLITE_THREADSAFE=1 or =2 then mutexes are enabled by default but
 ** can be fully or partially disabled using a call to [sqlite3_config()]
-** with the verbs [SQLITE_CONFIG_SINGLETHREAD], [SQLITE_CONFIG_MULTITHREAD],
+** with the rsc [SQLITE_CONFIG_SINGLETHREAD], [SQLITE_CONFIG_MULTITHREAD],
 ** or [SQLITE_CONFIG_SERIALIZED].  ^(The return value of the
 ** sqlite3_threadsafe() function shows only the compile-time setting of
 ** thread safety, not any run-time changes to that setting made by
@@ -7750,10 +7750,10 @@ SQLITE_API int sqlite3_db_status(sqlite3*, int op, int *pCur, int *pHiwtr, int r
 ** CAPI3REF: Status Parameters for database connections
 ** KEYWORDS: {SQLITE_DBSTATUS options}
 **
-** These constants are the available integer "verbs" that can be passed as
+** These constants are the available integer "rsc" that can be passed as
 ** the second argument to the [sqlite3_db_status()] interface.
 **
-** New verbs may be added in future releases of SQLite. Existing verbs
+** New rsc may be added in future releases of SQLite. Existing rsc
 ** might be discontinued. Applications should check the return code from
 ** [sqlite3_db_status()] to make sure that the call worked.
 ** The [sqlite3_db_status()] interface will return a non-zero error code
