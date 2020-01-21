@@ -2,7 +2,6 @@
 // Created by mfran on 17/01/2020.
 //
 
-#include "Low-Level Implementations/FileStreamManipulations.h"
 #include <stdio.h>
 #include <string.h>
 #include "Utils.h"
@@ -21,32 +20,43 @@ STRING CSV_FILENAME = "../rsc/verbs.csv";
 void fillVerbsContainer() {
 
     // open file
-    FILE* csv_file = NULL;
-    if ((csv_file = fopen(CSV_FILENAME, "r")) == NULL) {
+    FILE* csv_file_stream = NULL;
+    if ((csv_file_stream = fopen(CSV_FILENAME, "r")) == NULL) {
         if (
                 system("python " PYTHON_SCRIPT_FILENAME) || /* Failure of PYTHON script */
-                (csv_file = fopen(CSV_FILENAME, "r")) == NULL /* File still cannot be read */
+                (csv_file_stream = fopen(CSV_FILENAME, "r")) == NULL /* File still cannot be read */
                 ) {
             exit(EXIT_BECAUSE_FILE_FAILURE);
         }
     }
 
     // prepare buffers
-    const static size_t LEN_OF_LIST = 500;
+    const size_t LEN_OF_LIST = 500;
     Verb** verb_list = malloc(sizeof(Verb*) * LEN_OF_LIST);
+    size_t BUFFERS_SIZE = 200;
+    WRITEABLE_STRING buffer_infinitive =  calloc(BUFFERS_SIZE, 1);
+    WRITEABLE_STRING buffer_translation = calloc(BUFFERS_SIZE, 1);
+    WRITEABLE_STRING buffer_time1 =       calloc(BUFFERS_SIZE, 1);
+    WRITEABLE_STRING buffer_time2 =       calloc(BUFFERS_SIZE, 1);
 
     // skip first line
-    skip_line(csv_file);
+    while(getc(csv_file_stream) != '\n');
 
     // for each line, build a verb
     size_t current_index = 0;
-    Verb* current_verb;
-    while ((current_verb = get_verb_from_csv_line(csv_file)) != NULL) {
-        verb_list[current_index++] = current_verb;
+    while (!feof(csv_file_stream) && !(ferror(csv_file_stream))) {
+        fscanf(csv_file_stream, R"format("%s","%s","%s","%s\n")format", buffer_infinitive, buffer_translation, buffer_time1, buffer_time2);
+        if (*buffer_infinitive && *buffer_translation && *buffer_time1 && *buffer_time2) {
+            verb_list[current_index++] = makeVerbFromStrings(buffer_infinitive, buffer_translation, buffer_time1, buffer_time2);
+        }
     }
 
-    // close file
-    fclose(csv_file);
+    // close file and other buffers
+    fclose(csv_file_stream);
+    free(buffer_infinitive);
+    free(buffer_translation);
+    free(buffer_time1);
+    free(buffer_time2);
 
     // add verbs to container
     container_addVerbs((const Verb **) verb_list, current_index);
