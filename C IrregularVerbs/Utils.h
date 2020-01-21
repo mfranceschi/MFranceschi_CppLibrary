@@ -7,6 +7,8 @@
 
 #include "Strings.h"
 
+#define EXIT_BECAUSE_FILE_FAILURE 2
+
 void fillVerbsContainer();
 size_t countOccurrencesOfSubstring(STRING substring, STRING big);
 #define max_nbr(a,b) ((a > b) ? (a) : (b))

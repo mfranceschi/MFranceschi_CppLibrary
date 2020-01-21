@@ -4,7 +4,7 @@
 
 #include <stdarg.h>
 #include "VerbsContainer.h"
-#include "SQLiteInterface.h"
+#include "Low-Level Implementations/SQLiteInterface.h"
 
 /* Count of verbs, in a cache for optimization. */
 static size_t cache_count_of_verbs = 0;

@@ -9,8 +9,6 @@
 static const STRING SEPARATOR = ",";
 static const size_t LEN_SEPARATOR = 1; // str len(SEPARATOR)
 
-typedef char* WRITEABLE_STRING;
-
 MultiStrings* makeMultiStrings(STRING input) {
     MultiStrings* output = malloc(sizeof(MultiStrings));
     size_t length;

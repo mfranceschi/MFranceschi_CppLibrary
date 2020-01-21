@@ -8,7 +8,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-typedef const char* STRING;
+typedef const char*           STRING;
+typedef       char* WRITEABLE_STRING;
 
 typedef struct MultiStrings_s {
     size_t length;

@@ -5,7 +5,7 @@
 #ifndef IRREGULARVERBS_SQLITEINTERFACE_H
 #define IRREGULARVERBS_SQLITEINTERFACE_H
 
-#include "VerbsContainer.h"
+#include "../VerbsContainer.h"
 
 /**
  * Searches for any verb with this substring in the database.

@@ -2,11 +2,11 @@
 // Created by mfran on 20/01/2020.
 //
 
-#include "SQLite/sqlite3.h"
+#include "../SQLite/sqlite3.h"
 #include "SQLiteInterface.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include "VerbsContainer.h"
+#include "../VerbsContainer.h"
 
 /* The SQLite connexion. */
 static sqlite3* db = NULL;

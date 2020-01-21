@@ -42,7 +42,7 @@ int main(int nargs, char** args) {
     fprintf(stdout, "It works!\n");
 
     container_start_up();
-    tests_make_verb();
+    //tests_make_verb();
     fillVerbsContainer();
     container_shut_down();
     //system("pause");
