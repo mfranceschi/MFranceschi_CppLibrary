@@ -9,7 +9,7 @@
 #include "VerbsContainer.h"
 #include "View.h"
 
-#define printf(...) (void)(0)
+#define printf(...) (void)(0) /* use this to forbid stdout display */
 
 static void test_curses_works() {
     initscr();
@@ -37,13 +37,11 @@ static void tests_make_verb() {
 int main(int nargs, char** args) {
     printf("It works!\n");
 
-    for (int i = 0; i < 10000; i++) {
-        container_start_up();
-        tests_make_verb();
-        fillVerbsContainer();
-        printf("%u\n", container_getCount());
-        container_shut_down();
-    }
+    container_start_up();
+    tests_make_verb();
+    fillVerbsContainer();
+    printf("%u\n", container_getCount());
+    container_shut_down();
     system("pause");
     return EXIT_SUCCESS;
 }
