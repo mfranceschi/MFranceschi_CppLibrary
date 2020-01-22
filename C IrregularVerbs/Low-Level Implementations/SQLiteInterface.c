@@ -192,7 +192,9 @@ void m_sqlite_shut_down() {
     sqlite3_finalize(sql_insert_verb);
     sqlite3_finalize(sql_count);
     sqlite3_finalize(sql_search);
-    sqlite3_close(db);
+    sqlite3_finalize(sql_start_exclusive_transaction);
+    sqlite3_finalize(sql_end_exclusive_transaction);
+    sqlite3_close_v2(db);
 }
 
 STRING m_sqlite_get_last_error_message() {

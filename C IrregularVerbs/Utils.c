@@ -129,6 +129,7 @@ void fillVerbsContainer() {
 
     // close file and other buffers
     free(buffer);
+    free(buffer_infinitive);
     free(buffer_translation);
     free(buffer_time1);
     free(buffer_time2);
@@ -149,9 +150,7 @@ static int searchStringWithKnuthMorrisPratt(STRING s, STRING t)
 {
     size_t m = strlen(s);
     size_t n = strlen(t);
-    int i=0,j=0,
-            k=0
-    ;
+    int i=0,j=0,k=0;
     int* B = malloc(sizeof(int) * (m+1));
     B[0]=-1; B[1]=0;
     for (int l=2; l<=m; l++)
@@ -162,10 +161,14 @@ static int searchStringWithKnuthMorrisPratt(STRING s, STRING t)
     while (i<=(n-m))
     {
         while ((j<m) && (s[j] == t[i+j])) j++;
-        if (j==m) return(i);
+        if (j==m) {
+            free(B);
+            return(i);
+        }
         i=i+j-B[j];
         j=max_nbr(0, B[j]);
     }
+    free(B);
     return(-1);
 }
 

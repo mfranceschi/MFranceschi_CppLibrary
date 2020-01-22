@@ -9,6 +9,8 @@
 #include "VerbsContainer.h"
 #include "View.h"
 
+#define printf(...) (void)(0)
+
 static void test_curses_works() {
     initscr();
     addstr("Curses works!");
@@ -33,13 +35,15 @@ static void tests_make_verb() {
 }
 
 int main(int nargs, char** args) {
-    fprintf(stdout, "It works!\n");
+    printf("It works!\n");
 
-    container_start_up();
-    tests_make_verb();
-    fillVerbsContainer();
-    printf("%u\n", container_getCount());
-    container_shut_down();
-    //system("pause");
+    for (int i = 0; i < 10000; i++) {
+        container_start_up();
+        tests_make_verb();
+        fillVerbsContainer();
+        printf("%u\n", container_getCount());
+        container_shut_down();
+    }
+    system("pause");
     return EXIT_SUCCESS;
 }
