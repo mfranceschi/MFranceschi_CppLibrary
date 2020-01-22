@@ -1,3 +1,6 @@
+import sys
+print("Am I in a venv: ", hasattr(sys, "real_prefix"))
+
 import requests
 from lxml import etree
 

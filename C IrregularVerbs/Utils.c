@@ -9,11 +9,43 @@
 #include "Verb.h"
 
 STRING CSV_FILENAME = "../rsc/verbs.csv";
-#define PYTHON_SCRIPT_FILENAME "../rsc/get_verbs.py"
+#define PYTHON_SCRIPT_FILENAME "./get_verbs.py"
 
 /* ***** STATIC FUNCTIONS DECLARATION ***** */
 
+/**
+ * Runs the Python script.
+ *
+ * @param script_filepath Where is the root folder of the .py and the venv.
+ * @param script_filename Name of the Python script .py.
+ * @return Return value of the execution command.
+ */
+int run_python_script(STRING script_filepath, STRING script_filename);
+
 /* ***** STATIC FUNCTIONS DEFINITION ***** */
+
+int run_python_script(STRING script_filepath, STRING script_filename) {
+    WRITEABLE_STRING buffer = calloc(200, 1);
+    int result;
+
+    // 1 - Activate venv
+    // 2 - Run script
+    // 3 - Quit venv
+    snprintf(
+            buffer,
+            200,
+            "cd %s && cd && \"venv/Scripts/activate.bat\" && python %s && \"venv/Scripts/deactivate.bat\"", script_filepath, script_filename);
+    result = system(buffer);
+    if (result == EXIT_SUCCESS) {/*
+        sprintf(buffer, "python %s", script_filename);
+        result = system(buffer);
+        if (result == EXIT_SUCCESS) {
+            sprintf(buffer, ".\\venv\\Scripts\\deactivate.bat");
+            system(buffer);
+        }*/    }
+    free(buffer);
+    return result;
+}
 
 /* ***** PUBLIC FUNCTIONS DEFINITION ***** */
 
@@ -23,7 +55,7 @@ void fillVerbsContainer() {
     FILE* csv_file_stream = NULL;
     if ((csv_file_stream = fopen(CSV_FILENAME, "r")) == NULL) {
         if (
-                system("python " PYTHON_SCRIPT_FILENAME) || /* Failure of PYTHON script */
+                (run_python_script(".\\..\\rsc\\", PYTHON_SCRIPT_FILENAME) != EXIT_SUCCESS) || /* Failure of PYTHON script */
                 (csv_file_stream = fopen(CSV_FILENAME, "r")) == NULL /* File still cannot be read */
                 ) {
             exit(EXIT_BECAUSE_FILE_FAILURE);
@@ -34,6 +66,9 @@ void fillVerbsContainer() {
     const size_t LEN_OF_LIST = 500;
     Verb** verb_list = malloc(sizeof(Verb*) * LEN_OF_LIST);
     size_t BUFFERS_SIZE = 200;
+    const WRITEABLE_STRING buffer = calloc(BUFFERS_SIZE, 1);
+    WRITEABLE_STRING pointer_to_beginning, pointer_to_end;
+
     WRITEABLE_STRING buffer_infinitive =  calloc(BUFFERS_SIZE, 1);
     WRITEABLE_STRING buffer_translation = calloc(BUFFERS_SIZE, 1);
     WRITEABLE_STRING buffer_time1 =       calloc(BUFFERS_SIZE, 1);
@@ -45,18 +80,59 @@ void fillVerbsContainer() {
     // for each line, build a verb
     size_t current_index = 0;
     while (!feof(csv_file_stream) && !(ferror(csv_file_stream))) {
-        fscanf(csv_file_stream, R"format("%s","%s","%s","%s\n")format", buffer_infinitive, buffer_translation, buffer_time1, buffer_time2);
-        if (*buffer_infinitive && *buffer_translation && *buffer_time1 && *buffer_time2) {
-            verb_list[current_index++] = makeVerbFromStrings(buffer_infinitive, buffer_translation, buffer_time1, buffer_time2);
+        fgets(buffer, BUFFERS_SIZE, csv_file_stream);
+
+        /* DEAL WITH INFINITIVE */
+        pointer_to_beginning = buffer + 1; // skip first "
+
+        pointer_to_end = pointer_to_beginning + 1; // copy until next "
+        while (*pointer_to_end != '"') {
+            ++pointer_to_end;
         }
+        strncpy(buffer_infinitive, pointer_to_beginning, pointer_to_end - pointer_to_beginning);
+        buffer_infinitive[pointer_to_end - pointer_to_beginning] = '\0';
+
+        pointer_to_beginning = pointer_to_end + 3; // skip " and , and "
+
+        /* DEAL WITH TRANSLATION */
+        pointer_to_end = pointer_to_beginning + 1; // copy until next "
+        while (*pointer_to_end != '"') {
+            ++pointer_to_end;
+        }
+        strncpy(buffer_translation, pointer_to_beginning, pointer_to_end - pointer_to_beginning);
+        buffer_translation[pointer_to_end - pointer_to_beginning] = '\0';
+
+        pointer_to_beginning = pointer_to_end + 3; // skip " and , and "
+
+        /* DEAL WITH TIME 1 */
+        pointer_to_end = pointer_to_beginning + 1; // copy until next "
+        while (*pointer_to_end != '"') {
+            ++pointer_to_end;
+        }
+        strncpy(buffer_time1, pointer_to_beginning, pointer_to_end - pointer_to_beginning);
+        buffer_time1[pointer_to_end - pointer_to_beginning] = '\0';
+
+        pointer_to_beginning = pointer_to_end + 3; // skip " and , and "
+
+        /* DEAL WITH TIME 2 */
+        pointer_to_end = pointer_to_beginning + 1; // copy until next "
+        while (*pointer_to_end != '"') {
+            ++pointer_to_end;
+        }
+        strncpy(buffer_time2, pointer_to_beginning, pointer_to_end - pointer_to_beginning);
+        buffer_time2[pointer_to_end - pointer_to_beginning] = '\0';
+
+        /* FINALLY MAKE VERB */
+        verb_list[current_index++] = makeVerbFromStrings(buffer_infinitive, buffer_translation, buffer_time1, buffer_time2);
+        //exit(6);
     }
 
     // close file and other buffers
-    fclose(csv_file_stream);
-    free(buffer_infinitive);
+    free(buffer);
     free(buffer_translation);
     free(buffer_time1);
     free(buffer_time2);
+    fclose(csv_file_stream);
 
     // add verbs to container
     container_addVerbs((const Verb **) verb_list, current_index);

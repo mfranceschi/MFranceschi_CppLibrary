@@ -83,7 +83,8 @@ static void _makeQueryResults(sqlite3_stmt *stmt, list_t output) {
         STRING time1 = (STRING) sqlite3_column_text(stmt, INDEX_TIME_1);
         STRING time2 = (STRING) sqlite3_column_text(stmt, INDEX_TIME_2);
 
-        list_node current_node = {
+        list_node* current_node = calloc(1, sizeof(list_node));
+        *current_node = (list_node) {
                 .next = NULL, /* Not necessary because already done by "list_add" but anyway */
                 .verb = makeVerbFromStrings(
                         infinitive,
@@ -91,7 +92,7 @@ static void _makeQueryResults(sqlite3_stmt *stmt, list_t output) {
                         time1,
                         time2
                 )};
-        list_add(output, &current_node);
+        list_add(output, current_node);
     }
 }
 
