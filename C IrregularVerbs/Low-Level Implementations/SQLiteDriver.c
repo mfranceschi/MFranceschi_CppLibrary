@@ -6,6 +6,7 @@
 #include "SQLiteDriver.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include "../VerbsContainer.h"
 
 /* The SQLite connexion. */
@@ -19,9 +20,9 @@ static STRING sql_count_code = "SELECT COUNT(*) FROM Verbs ;";
 static sqlite3_stmt* sql_list_all = NULL;
 static STRING sql_list_all_code = "SELECT * FROM Verbs ORDER BY infinitive ;";
 static sqlite3_stmt* sql_list_all_by_first_letter_of_inf = NULL;
-static STRING sql_list_all_by_first_letter_of_inf_code = "SELECT * FROM Verbs WHERE infinitive LIKE ($s || '%') ORDER BY infinitive ;";
+static STRING sql_list_all_by_first_letter_of_inf_code = "SELECT * FROM Verbs WHERE infinitive LIKE @s || '%' ORDER BY infinitive ;";
 static sqlite3_stmt* sql_search = NULL;
-static STRING sql_search_code = "SELECT * FROM Verbs WHERE (instr(infinitive, $s) > 0) OR (instr(translation, $s) > 0) OR (instr(time1, $s) > 0) OR (instr(time2, $s) > 0) ORDER BY infinitive ;";
+static STRING sql_search_code = "SELECT * FROM Verbs WHERE (instr(infinitive, @s) > 0) OR (instr(translation, @s) > 0) OR (instr(time1, @s) > 0) OR (instr(time2, @s) > 0) ORDER BY infinitive ;";
 static sqlite3_stmt* sql_start_exclusive_transaction = NULL;
 static STRING sql_start_exclusive_transaction_code = "BEGIN EXCLUSIVE TRANSACTION;";
 static sqlite3_stmt* sql_end_exclusive_transaction = NULL;
@@ -145,7 +146,7 @@ bool m_sqlite_run_in_exclusive_write_transaction(void (*action) (va_list), ...) 
     // 2 - add verbs within this transaction
     // 3 - commit
 
-    bool results = true;
+    bool results = false;
     if (_runSimpleQuery(sql_start_exclusive_transaction)) {
         va_list va;
         va_start(va, action);
@@ -153,11 +154,8 @@ bool m_sqlite_run_in_exclusive_write_transaction(void (*action) (va_list), ...) 
         va_end(va);
         if (_runSimpleQuery(sql_end_exclusive_transaction)) {
             sqlite3_db_cacheflush(db);
-        } else {
-            results = false;
+            results = true;
         }
-    } else {
-        results = false;
     }
     return results;
 }
