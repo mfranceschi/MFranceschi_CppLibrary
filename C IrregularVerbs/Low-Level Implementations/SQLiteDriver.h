@@ -2,8 +2,8 @@
 // Created by mfran on 20/01/2020.
 //
 
-#ifndef IRREGULARVERBS_SQLITEINTERFACE_H
-#define IRREGULARVERBS_SQLITEINTERFACE_H
+#ifndef IRREGULARVERBS_SQLITEDRIVER_H
+#define IRREGULARVERBS_SQLITEDRIVER_H
 
 #include "../VerbsContainer.h"
 
@@ -38,6 +38,12 @@ size_t m_sqlite_get_count();
 void m_sqlite_get_all(list_t output);
 
 /**
+ * @param start_substring The starting substring in the infinitive column.
+ * @param output All verbs will be written here.
+ */
+void m_sqlite_get_by_first_letters_of_infinitive(STRING start_substring, list_t output);
+
+/**
  * Performs the given action in a transaction in EXCLUSIVE WRITE mode.
  *
  * @param action The function to run.
@@ -60,4 +66,4 @@ void m_sqlite_shut_down();
  */
 STRING m_sqlite_get_last_error_message();
 
-#endif //IRREGULARVERBS_SQLITEINTERFACE_H
+#endif //IRREGULARVERBS_SQLITEDRIVER_H

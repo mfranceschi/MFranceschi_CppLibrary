@@ -24,7 +24,7 @@ static void tests_make_verb() {
     freeVerb(v);
     printf("Count: %u\n", container_getCount());
 
-    list_t list = container_getAllVerbs();
+    list_t list = container_getVerbsByFirstLetter("i");
     list_node* node = (list_node *) list_head(list);
     do {
         printf("Verbe infinitif: '%s'\n", node->verb->infinitive->array[0]);

@@ -4,7 +4,7 @@
 
 #include <stdarg.h>
 #include "VerbsContainer.h"
-#include "Low-Level Implementations/SQLiteInterface.h"
+#include "Low-Level Implementations/SQLiteDriver.h"
 
 /* Count of verbs, in a cache for optimization. */
 static size_t cache_count_of_verbs = 0;
@@ -35,6 +35,13 @@ list_t container_getVerbsBySubstring(STRING str) {
     container_freeResults();
     list_init(current_results);
     m_sqlite_search_substring(str, current_results);
+    return current_results;
+}
+
+list_t container_getVerbsByFirstLetter(STRING str) {
+    container_freeResults();
+    list_init(current_results);
+    m_sqlite_get_by_first_letters_of_infinitive(str, current_results);
     return current_results;
 }
 

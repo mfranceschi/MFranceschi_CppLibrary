@@ -17,6 +17,7 @@ typedef struct list_node_s {
 bool container_addVerbs(const Verb**, size_t number);
 list_t container_getVerbsBySubstring(STRING);
 list_t container_getAllVerbs();
+list_t container_getVerbsByFirstLetter(STRING);
 size_t container_getCount();
 void container_freeResults();
 STRING container_get_last_error();

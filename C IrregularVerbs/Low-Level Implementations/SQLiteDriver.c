@@ -3,7 +3,7 @@
 //
 
 #include "../SQLite/sqlite3.h"
-#include "SQLiteInterface.h"
+#include "SQLiteDriver.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include "../VerbsContainer.h"
@@ -16,8 +16,10 @@ static sqlite3_stmt* sql_insert_verb = NULL;
 static STRING sql_insert_verb_code = "INSERT INTO Verbs VALUES ( ?1, ?2, ?3, ?4 ) ;";
 static sqlite3_stmt* sql_count = NULL;
 static STRING sql_count_code = "SELECT COUNT(*) FROM Verbs ;";
-static sqlite3_stmt* sql_list_by_first_letter = NULL;
-static STRING sql_list_by_first_letter_code = "SELECT * FROM Verbs ORDER BY infinitive ;";
+static sqlite3_stmt* sql_list_all = NULL;
+static STRING sql_list_all_code = "SELECT * FROM Verbs ORDER BY infinitive ;";
+static sqlite3_stmt* sql_list_all_by_first_letter_of_inf = NULL;
+static STRING sql_list_all_by_first_letter_of_inf_code = "SELECT * FROM Verbs WHERE infinitive LIKE ($s || '%') ORDER BY infinitive ;";
 static sqlite3_stmt* sql_search = NULL;
 static STRING sql_search_code = "SELECT * FROM Verbs WHERE (instr(infinitive, $s) > 0) OR (instr(translation, $s) > 0) OR (instr(time1, $s) > 0) OR (instr(time2, $s) > 0) ORDER BY infinitive ;";
 static sqlite3_stmt* sql_start_exclusive_transaction = NULL;
@@ -130,7 +132,12 @@ size_t m_sqlite_get_count() {
 }
 
 void m_sqlite_get_all(list_t output) {
-    _makeQueryResults(sql_list_by_first_letter, output);
+    _makeQueryResults(sql_list_all, output);
+}
+
+void m_sqlite_get_by_first_letters_of_infinitive(STRING start_substring, list_t output) {
+    _bindStringToStmt(sql_list_all_by_first_letter_of_inf, 1, start_substring);
+    _makeQueryResults(sql_list_all_by_first_letter_of_inf, output);
 }
 
 bool m_sqlite_run_in_exclusive_write_transaction(void (*action) (va_list), ...) {
@@ -165,7 +172,8 @@ bool m_sqlite_start_up() {
             if (
                     (sqlite3_prepare_v2(db, sql_count_code, -1, &sql_count, NULL) == SQLITE_OK) &&
                     (sqlite3_prepare_v2(db, sql_insert_verb_code, -1, &sql_insert_verb, NULL) == SQLITE_OK) &&
-                    (sqlite3_prepare_v2(db, sql_list_by_first_letter_code, -1, &sql_list_by_first_letter, NULL) == SQLITE_OK) &&
+                    (sqlite3_prepare_v2(db, sql_list_all_code, -1, &sql_list_all, NULL) == SQLITE_OK) &&
+                    (sqlite3_prepare_v2(db, sql_list_all_by_first_letter_of_inf_code, -1, &sql_list_all_by_first_letter_of_inf, NULL) == SQLITE_OK) &&
                     (sqlite3_prepare_v2(db, sql_search_code, -1, &sql_search, NULL) == SQLITE_OK) &&
                     (sqlite3_prepare_v2(db, sql_start_exclusive_transaction_code, -1, &sql_start_exclusive_transaction, NULL) == SQLITE_OK) &&
                     (sqlite3_prepare_v2(db, sql_end_exclusive_transaction_code, -1, &sql_end_exclusive_transaction, NULL) == SQLITE_OK)
@@ -188,7 +196,8 @@ bool m_sqlite_start_up() {
 }
 
 void m_sqlite_shut_down() {
-    sqlite3_finalize(sql_list_by_first_letter);
+    sqlite3_finalize(sql_list_all);
+    sqlite3_finalize(sql_list_all_by_first_letter_of_inf);
     sqlite3_finalize(sql_insert_verb);
     sqlite3_finalize(sql_count);
     sqlite3_finalize(sql_search);
