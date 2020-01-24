@@ -6,7 +6,7 @@ set(CURSES_USE_NCURSES TRUE)
 find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -std=gnu99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSQLITE_THREADSAFE=0")
 file(GLOB EXT_LIBRARIES_SOURCE_FILES ./SQLite/*.c ./Contiki_2.6/*.c "Low-Level Implementations/*")
 file(GLOB SOURCE_FILES ./*.c ${EXT_LIBRARIES_SOURCE_FILES})
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
