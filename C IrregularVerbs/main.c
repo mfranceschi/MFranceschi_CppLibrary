@@ -2,7 +2,7 @@
 // Created by mfran on 15/01/2020.
 //
 
-#include <ncurses/ncurses.h>
+#include "Controller.h"
 #include <stdio.h>
 #include "Utils.h"
 #include "Verb.h"
@@ -11,14 +11,13 @@
 
 //#define printf(...) (void)(0) /* use this to forbid stdout display */
 
-static void test_curses_works() {
-    initscr();
-    addstr("Curses works!");
-    getch();
-    endwin();
-}
-
 static void tests_make_verb() {
+    bool should_shut_down_after = !container_is_working();
+    if (should_shut_down_after) {
+        container_start_up();
+    }
+
+
     Verb* v = makeVerbFromStrings("infinitive", "translation", "time1", "time2");
     printf("Success de l'ajout: %i\n", container_addVerbs((const Verb **) &v, 1));
     freeVerb(v);
@@ -33,16 +32,14 @@ static void tests_make_verb() {
     }
     printf("Last error: '%s'\n", container_get_last_error());
     container_freeResults();
+
+    if (should_shut_down_after) {
+        container_shut_down();
+    }
 }
 
 int main(int nargs, char** args) {
-    printf("It works!\n");
-
-    container_start_up();
-    tests_make_verb();
-    fillVerbsContainer();
-    printf("DB size: %u\n", container_getCount());
-    container_shut_down();
+    run();
     system("pause");
     return EXIT_SUCCESS;
 }

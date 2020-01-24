@@ -7,7 +7,8 @@
 
 #include "Strings.h"
 
-#define EXIT_BECAUSE_FILE_FAILURE 2
+#define EXIT_BECAUSE_FILE_FAILURE 2 /* exit with this if a file failure occurred. */
+#define EXIT_UNEXPECTED 3 /* exit with this NEVER please */
 
 /**
  * Simply reads the CSV file and adds every verb to the VerbsContainer.

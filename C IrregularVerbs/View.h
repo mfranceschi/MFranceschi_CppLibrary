@@ -35,9 +35,10 @@ void show_main_menu();
 /**
  * Returns the user's input as a Command.
  *
+ * @param can_go_back True if the "go back" option is allowed for the user.
  * @return a Command corresponding to the user's input.
  */
-Command view_ask_user_choice();
+Command view_ask_user_choice(bool can_go_back);
 
 void show_list_from_letter(char);
 void update_list_from_letter(char, unsigned int nb_rows_scrolled_down);

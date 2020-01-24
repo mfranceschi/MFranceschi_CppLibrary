@@ -2,19 +2,70 @@
 // Created by mfran on 17/01/2020.
 //
 
-#include <ncurses/ncurses.h>
+#include <curses.h>
+#include <string.h>
+#include "Texts/Interface_French.h"
+#include <unistd.h>
+#include "Utils.h"
 #include "View.h"
 
 void view_start_up() {
     initscr();
     keypad(stdscr, true); /* to be tested */
+    cbreak();
 }
 
-void show_welcome_screen();
+void show_welcome_screen() {
+    noecho();
+    addstr(dummy_welcome);
+    wmove(stdscr, 1, 0);
+    refresh_screen();
+}
 
-void show_main_menu();
+void show_main_menu() {
+    // TODO
+}
 
-Command view_ask_user_choice();
+Command view_ask_user_choice(bool can_go_back) {
+#define _SELECTED_FORBIDDEN_VALUE -1
+    int selected = _SELECTED_FORBIDDEN_VALUE;
+    Command output = -1;
+    while (selected == _SELECTED_FORBIDDEN_VALUE) {
+        selected = wgetch(stdscr);
+
+        switch (selected) {
+            case 'L':
+            case 'l':
+                output = LIST;
+                break;
+            case 'S':
+            case 's':
+                output = SEARCH;
+                break;
+            case 'E':
+            case 'e':
+                output = EXERCISE;
+                break;
+            case 'B':
+            case 'b':
+                if (can_go_back) {
+                    output = BACK_HOME;
+                } else {
+                    selected = _SELECTED_FORBIDDEN_VALUE;
+                }
+                break;
+            case 'Q':
+            case 'q':
+                output = QUIT;
+                break;
+            default:
+                selected = _SELECTED_FORBIDDEN_VALUE;
+        }
+
+    }
+    return output;
+#undef _SELECTED_FORBIDDEN_VALUE
+}
 
 void show_list_from_letter(char);
 void update_list_from_letter(char, unsigned int nb_rows_scrolled_down);

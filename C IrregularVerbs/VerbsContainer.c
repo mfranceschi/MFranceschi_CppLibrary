@@ -12,6 +12,9 @@ static size_t cache_count_of_verbs = 0;
 /* List of current results. */
 LIST(current_results);
 
+/* Indicates whether the container is running now. */
+static bool working = false;
+
 static void _addVerbs_inALoopOf_addVerb(va_list arguments) {
     const Verb** verbs = va_arg(arguments, const Verb**);
     size_t number = va_arg(arguments, size_t);
@@ -68,13 +71,17 @@ void container_freeResults() {
 }
 
 bool container_start_up() {
-    return m_sqlite_start_up();
+    return working = m_sqlite_start_up();
 }
 
 void container_shut_down() {
-    return m_sqlite_shut_down();
+    return (working = false, m_sqlite_shut_down());
 }
 
 STRING container_get_last_error() {
     return m_sqlite_get_last_error_message();
+}
+
+bool container_is_working() {
+    return working;
 }

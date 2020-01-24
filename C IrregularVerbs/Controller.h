@@ -1,0 +1,10 @@
+//
+// Created by mfran on 24/01/2020.
+//
+
+#ifndef IRREGULARVERBS_CONTROLLER_H
+#define IRREGULARVERBS_CONTROLLER_H
+
+int run();
+
+#endif //IRREGULARVERBS_CONTROLLER_H
