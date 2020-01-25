@@ -9,14 +9,13 @@
 #include "VerbsContainer.h"
 #include "View.h"
 
-//#define printf(...) (void)(0) /* use this to forbid stdout display */
+#define printf(...) (void)(0) /* use this to forbid stdout display */
 
 static void tests_make_verb() {
     bool should_shut_down_after = !container_is_working();
     if (should_shut_down_after) {
         container_start_up();
     }
-
 
     Verb* v = makeVerbFromStrings("infinitive", "translation", "time1", "time2");
     printf("Success de l'ajout: %i\n", container_addVerbs((const Verb **) &v, 1));
@@ -39,7 +38,5 @@ static void tests_make_verb() {
 }
 
 int main(int nargs, char** args) {
-    run();
-    system("pause");
-    return EXIT_SUCCESS;
+    return run();
 }
