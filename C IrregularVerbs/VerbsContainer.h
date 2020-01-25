@@ -5,7 +5,7 @@
 #ifndef IRREGULARVERBS_VERBSCONTAINER_H
 #define IRREGULARVERBS_VERBSCONTAINER_H
 
-#include "Contiki_2.6/list.h"
+#include "extlibs/Contiki_2.6/list.h"
 #include <stdbool.h>
 #include "Verb.h"
 

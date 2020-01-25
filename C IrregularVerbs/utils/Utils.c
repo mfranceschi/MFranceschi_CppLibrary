@@ -2,11 +2,12 @@
 // Created by mfran on 17/01/2020.
 //
 
+#include "ftime.h"
 #include <stdio.h>
 #include <string.h>
 #include "Utils.h"
-#include "VerbsContainer.h"
-#include "Verb.h"
+#include "../VerbsContainer.h"
+#include "../Verb.h"
 
 STRING CSV_FILENAME = "../rsc/verbs.csv";
 #define PYTHON_SCRIPT_FILENAME "./get_verbs.py"
@@ -181,4 +182,22 @@ size_t countOccurrencesOfSubstring(STRING substring, STRING big) {
         result = searchStringWithKnuthMorrisPratt(substring, big);
     }
     return count;
+}
+
+void run_and_wait ( unsigned int milliseconds, void(* function) (va_list), ...) {
+    int64_t t_c = milliseconds; /* time parameter converted */
+    timeval start_time, end_time;
+    gettimeofday(&start_time, NULL);
+
+    va_list l;
+    va_start(l, function);
+    function(l);
+    va_end(l);
+
+    gettimeofday(&end_time, NULL);
+    int64_t elapsed = timeval_difftime(&end_time, &start_time);
+
+    if (elapsed < t_c) {
+        usleep(t_c - elapsed);
+    }
 }

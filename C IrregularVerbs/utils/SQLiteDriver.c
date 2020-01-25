@@ -2,7 +2,7 @@
 // Created by mfran on 20/01/2020.
 //
 
-#include "../SQLite/sqlite3.h"
+#include "../extlibs/SQLite/sqlite3.h"
 #include "SQLiteDriver.h"
 #include <stdarg.h>
 #include <stdio.h>

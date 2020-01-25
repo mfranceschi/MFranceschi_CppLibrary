@@ -6,7 +6,7 @@
 #include <string.h>
 #include "Texts/Interface_French.h"
 #include <unistd.h>
-#include "Utils.h"
+#include "utils/Utils.h"
 #include "View.h"
 
 void view_start_up() {
@@ -17,7 +17,7 @@ void view_start_up() {
 
 void show_welcome_screen() {
     noecho();
-    addstr(dummy_welcome);
+    addstr(dummy_welcome); // TODO
     wmove(stdscr, 1, 0);
     refresh_screen();
 }

@@ -4,7 +4,7 @@
 
 #include "Controller.h"
 #include <stdio.h>
-#include "Utils.h"
+#include "utils/Utils.h"
 #include "Verb.h"
 #include "VerbsContainer.h"
 #include "View.h"
