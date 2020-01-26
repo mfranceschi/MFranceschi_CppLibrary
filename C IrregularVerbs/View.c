@@ -3,13 +3,27 @@
 //
 
 #include <curses.h>
-#include <string.h>
 #include "Texts/Interface_French.h"
-#include <unistd.h>
-#include "utils/Utils.h"
+#include <locale.h>
 #include "View.h"
+#include "Verb.h"
+#include "VerbsContainer.h"
+
+struct x{struct x* next; Verb* verb;};
+
+void _show_verbs(list_t results) {
+    struct x* y = list_head(results);
+    Verb* v;
+    while (y != NULL) {
+        v = y->verb;
+        printw("Verbe '%s': '%s'. \n", v->infinitive->array[0], v->translation->array[0]);
+        y = list_item_next(y);
+    }
+    refresh_screen();
+}
 
 void view_start_up() {
+    setlocale(LC_ALL, "UTF-8"); /* for wide characters support */
     initscr();
     keypad(stdscr, true); /* to be tested */
     cbreak();
@@ -23,6 +37,9 @@ void show_welcome_screen() {
 }
 
 void show_main_menu() {
+    list_t res = container_getVerbsByFirstLetter("b");
+    _show_verbs(res);
+    container_freeResults();
     // TODO
 }
 

@@ -19,7 +19,7 @@ MultiStrings* makeMultiStrings(STRING input) {
         // If empty string then special case (faster).
         length = 1;
         array = malloc(sizeof(STRING));
-        array[0] = malloc(1 * sizeof(char));
+        array[0] = malloc(1);
         array[0][0] = '\0';
     } else {
         // Count how many separators = n

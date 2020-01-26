@@ -195,9 +195,9 @@ void run_and_wait ( unsigned int milliseconds, void(* function) (va_list), ...) 
     va_end(l);
 
     gettimeofday(&end_time, NULL);
-    int64_t elapsed = timeval_difftime(&end_time, &start_time);
+    int64_t elapsed = timeval_difftime(&end_time, &start_time) / 1000;
 
     if (elapsed < t_c) {
-        usleep(t_c - elapsed);
+        usleep((t_c - elapsed));
     }
 }
