@@ -12,6 +12,7 @@
 struct x{struct x* next; Verb* verb;};
 
 static WINDOW* title_win = NULL;
+static WINDOW* title_text_win = NULL; /* TODO sub window of title_win */
 static WINDOW* contents_win = NULL;
 static int title_win_max_x;
 static int contents_win_max_x, contents_win_max_y;
