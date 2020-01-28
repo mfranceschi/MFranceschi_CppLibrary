@@ -22,7 +22,7 @@ static void _controller_shut_down() {
 
 int run() {
     run_and_wait(500, _controller_start_up);
-    //show_main_menu(main_menu_title, main_menu_header, (STRING *) &main_menu_choices_verbose);
+    show_main_menu(main_menu_title, main_menu_header, (STRING *) &main_menu_choices_verbose);
     view_ask_user_choice(false);
     _controller_shut_down();
     return EXIT_SUCCESS;

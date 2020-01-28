@@ -29,15 +29,14 @@ void _show_verbs(list_t results) {
 
 void _set_title(STRING new_title) {
     /* clear line */
-    wmove(title_win, 1, 1);
-    for (int i=0; i<(title_win_max_x-1); i++) {
+    wmove(title_win, 1, 2);
+    for (int i=0; i<(title_win_max_x-2); i++) {
         waddch(title_win, ' ');
     }
 
     /* print in center */
-    wmove(title_win, 1, 1);
+    wmove(title_win, 1, 2);
     waddstr(title_win, new_title);
-    //mvwprintw(title_win, 1, 1/*(title_win_max_x - (int)strlen(new_title)) / 2*/, "%s", new_title);
 }
 
 void view_start_up() {
@@ -51,7 +50,7 @@ void view_start_up() {
     getmaxyx(stdscr, screen_x, screen_y);
     title_win = newwin(3, 0, 0, 0);
     contents_win = newwin(screen_y - 3, 0, 3, 0);
-    title_win_max_x = screen_x - 2;
+    title_win_max_x = screen_x - 4;
     contents_win_max_x = screen_x;
     contents_win_max_y = screen_y - 3;
 
@@ -61,9 +60,9 @@ void view_start_up() {
         waddch(title_win, '#');
     }
     wmove(title_win, 1, 0);
-    waddch(title_win, 'A');
+    waddch(title_win, '#');
     wmove(title_win, 1, screen_x - 1);
-    waddch(title_win, 'B');
+    waddch(title_win, '#');
     wmove(title_win, 2, 0);
     for (int i=0; i<screen_x; ++i) {
         waddch(title_win, '#');
@@ -73,15 +72,21 @@ void view_start_up() {
 void show_welcome_screen(STRING title, STRING central_text) {
     noecho();
     _set_title(title);
+    wclear(contents_win);
     wmove(contents_win, 1, 0);
-    //waddstr(contents_win, central_text); // TODO
+    waddstr(contents_win, central_text); // TODO
     view_refresh_screen();
 }
 
 void show_main_menu(STRING title, STRING guideline, STRING choices[4]) {
-    list_t res = container_getVerbsByFirstLetter("b");
+    _set_title(title);
+    wclear(contents_win);
+    mvwaddstr(contents_win, 0, 0, guideline);
+    wmove(contents_win, 2, 0);
+    wprintw(contents_win, "[L] - %s. \n[S] - %s. \n[E] - %s. \n[Q] - %s. ", choices[0], choices[1], choices[2], choices[3]);
+    /*list_t res = container_getVerbsByFirstLetter("b");
     _show_verbs(res);
-    container_freeResults();
+    container_freeResults();*/
     // TODO
     view_refresh_screen();
 }
@@ -123,14 +128,13 @@ Command view_ask_user_choice(bool can_go_back) {
         }
 
     }
-    addstr("coucou"); view_refresh_screen();
-    for (int i=0; i<999999999; i += (-1) * (-1));
     return output;
 #undef _SELECTED_FORBIDDEN_VALUE
 }
 
 void view_refresh_screen() {
-    refresh();
+    wrefresh(title_win);
+    wrefresh(contents_win);
 }
 
 void view_clear_screen() {
