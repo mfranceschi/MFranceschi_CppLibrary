@@ -2,10 +2,13 @@
 // Created by mfran on 24/01/2020.
 //
 
-#ifndef IRREGULARVERBS_INTERFACE_FRENCH_H
-#define IRREGULARVERBS_INTERFACE_FRENCH_H
+#ifndef IRREGULARVERBS_INTERFACE_TEXTS_H
+#define IRREGULARVERBS_INTERFACE_TEXTS_H
 
 #include "../Strings.h"
+
+#define LANG_INTERFACE French
+#define LANG_VERBS German
 
 /* WELCOME SCREEN */
 extern const STRING welcome_screen_title;
@@ -16,7 +19,11 @@ extern const STRING main_menu_title;
 extern const STRING main_menu_header;
 extern const STRING main_menu_choices_verbose[4];
 
+/* LIST VERBS BY FIRST LETTER */
+extern const STRING list_title_beginning;
+extern const STRING list_column_headers[4];
+
 /* MISCELLANEOUS */
 extern const STRING dummy_welcome;
 
-#endif //IRREGULARVERBS_INTERFACE_FRENCH_H
+#endif //IRREGULARVERBS_INTERFACE_TEXTS_H

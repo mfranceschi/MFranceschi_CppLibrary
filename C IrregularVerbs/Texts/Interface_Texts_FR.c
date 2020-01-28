@@ -2,7 +2,8 @@
 // Created by mfran on 24/01/2020.
 //
 
-#include "Interface_French.h"
+#include "Interface_Texts.h"
+#if LANG_INTERFACE == French
 
 /* WELCOME SCREEN */
 const STRING welcome_screen_title = "Verbes irréguliers";
@@ -18,5 +19,16 @@ const STRING main_menu_choices_verbose[4] = {
         "Quitter"
 };
 
+/* LIST VERBS BY FIRST LETTER */
+const STRING list_title_beginning = "Liste";
+const STRING list_column_headers[4] = {
+        "Infinitif", "Traduction",
+#if LANG_VERBS == German
+        "Prétérit", "Parfait"
+#endif
+};
+
 /* MISCELLANEOUS */
 const STRING dummy_welcome = "Message simplet de bienvenue !";
+
+#endif

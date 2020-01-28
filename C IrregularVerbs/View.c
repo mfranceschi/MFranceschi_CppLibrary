@@ -3,7 +3,7 @@
 //
 
 #include <curses.h>
-#include "Texts/Interface_French.h"
+#include "Texts/Interface_Texts.h"
 #include <locale.h>
 #include "View.h"
 #include "Verb.h"
@@ -12,7 +12,7 @@
 struct x{struct x* next; Verb* verb;};
 
 static WINDOW* title_win = NULL;
-static WINDOW* title_text_win = NULL; /* TODO sub window of title_win */
+static WINDOW* title_text_win = NULL;
 static WINDOW* contents_win = NULL;
 static int title_win_max_x;
 static int contents_win_max_x, contents_win_max_y;
@@ -28,16 +28,63 @@ void _show_verbs(list_t results) {
     view_refresh_screen();
 }
 
-void _set_title(STRING new_title) {
-    /* clear line */
-    wmove(title_win, 1, 2);
-    for (int i=0; i<(title_win_max_x-2); i++) {
-        waddch(title_win, ' ');
-    }
+/**
+ * Prints some text at the center of the given space.
+ * The unused space is filled with whitespaces.
+ * No-op is string is too long. // TODO change
+ *
+ * @param win The window to print text in.
+ * @param start_y Row of start in window.
+ * @param start_x Column of start in window.
+ * @param width Number of columns that we have.
+ * @param text The text to print.
+ */
+static void _print_at_center(WINDOW* win, int start_y, int start_x, int width, STRING text);
 
-    /* print in center */
-    wmove(title_win, 1, 2);
-    waddstr(title_win, new_title);
+/**
+ * Prints one row similarly to printf("%s | %s | %s | %s\n", texts[0], ...).
+ *
+ * @param win The window in which we will print.
+ * @param row_i The index of the row.
+ * @param col_i The index of the column.
+ * @param col_width The width of each individual column (text space allowed).
+ * @param centered If true then we print at the center of each column.
+ * @param texts The four strings to print.
+ */
+static void _print_one_row(WINDOW* win, int row_i, int col_i, int col_width, bool centered, const STRING texts[4]); // TODO implement
+
+static void _print_one_row(WINDOW* win, int row_i, int col_i, int col_width, bool centered, const STRING texts[4]) {
+    int cur_pos = col_i;
+    static const STRING separator = " | ";
+    static const int sep_len = 3;
+    int i;
+
+    for (i=0; i<4; i++) {
+        if (centered) {
+            _print_at_center(win, row_i, cur_pos, col_width, texts[i]);
+        } else {
+            mvwaddstr(win, row_i, cur_pos, texts[i]);
+            wmove(win, row_i, cur_pos + col_width);
+        }
+
+        if (i != 4-1) {
+            waddstr(win, separator);
+            cur_pos += col_width + sep_len;
+        }
+    }
+    wmove(win, row_i + 1, 0);
+}
+
+static void _print_at_center(WINDOW* win, int start_y, int start_x, int width, STRING text) {
+    int len = (int) strlen(text);
+    if (len <= width) {
+        mvwprintw(win, start_y, start_x, "%*s", width, "");
+        mvwaddstr(win, start_y, start_x + ((width - len) / 2), text);
+    }
+}
+
+void view_set_title(STRING new_title) {
+    _print_at_center(title_text_win, 0, 0, title_win_max_x, new_title);
 }
 
 void view_start_up() {
@@ -45,15 +92,17 @@ void view_start_up() {
     initscr();
     keypad(stdscr, true); /* to be tested */
     cbreak();
+    wclear(stdscr);
 
     /* initialize the windows */
     int screen_x, screen_y;
-    getmaxyx(stdscr, screen_x, screen_y);
+    getmaxyx(stdscr, screen_y, screen_x);
     title_win = newwin(3, 0, 0, 0);
     contents_win = newwin(screen_y - 3, 0, 3, 0);
     title_win_max_x = screen_x - 4;
     contents_win_max_x = screen_x;
     contents_win_max_y = screen_y - 3;
+    title_text_win = derwin(title_win, 1, title_win_max_x, 1, 2);
 
     /* fill the title window */
     wmove(title_win, 0, 0);
@@ -70,25 +119,20 @@ void view_start_up() {
     }
 }
 
-void show_welcome_screen(STRING title, STRING central_text) {
+void view_show_welcome_screen(STRING title, STRING central_text) {
     noecho();
-    _set_title(title);
+    view_set_title(title);
     wclear(contents_win);
-    wmove(contents_win, 1, 0);
-    waddstr(contents_win, central_text); // TODO
+    _print_at_center(title_win, 1, 0, contents_win_max_x, central_text);
     view_refresh_screen();
 }
 
-void show_main_menu(STRING title, STRING guideline, STRING choices[4]) {
-    _set_title(title);
+void view_show_main_menu(STRING title, STRING guideline, STRING *choices) {
+    view_set_title(title);
     wclear(contents_win);
     mvwaddstr(contents_win, 0, 0, guideline);
     wmove(contents_win, 2, 0);
     wprintw(contents_win, "[L] - %s. \n[S] - %s. \n[E] - %s. \n[Q] - %s. ", choices[0], choices[1], choices[2], choices[3]);
-    /*list_t res = container_getVerbsByFirstLetter("b");
-    _show_verbs(res);
-    container_freeResults();*/
-    // TODO
     view_refresh_screen();
 }
 
@@ -133,16 +177,54 @@ Command view_ask_user_choice(bool can_go_back) {
 #undef _SELECTED_FORBIDDEN_VALUE
 }
 
+void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING title_precision) {
+#define ROW_OF_HEADER 1
+
+    /* 1 - PRINT TITLE */
+    view_clear_contents();
+    {
+        char* title_buffer = calloc(title_win_max_x, 1);
+        snprintf(title_buffer, title_win_max_x, "%s - %s", title, title_precision);
+        view_set_title(title_buffer);
+        free(title_buffer);
+    }
+
+    int len_cols = ((contents_win_max_x / 4) - 2);
+
+    /* 2 - PRINT COLUMN HEADERS AND HORIZONTAL LINE */
+    _print_one_row(contents_win, ROW_OF_HEADER, 0, len_cols, true, names);
+    wmove(contents_win, ROW_OF_HEADER + 1, 0);
+    for(int i=0; i<contents_win_max_x; i++) {
+        waddch(contents_win, '=');
+    }
+
+    /* 3 - PRINT VERBS */
+    struct x * pointed_struct;
+    while (verbs != NULL) {
+        pointed_struct = verbs;
+
+
+
+        verbs = pointed_struct->next;
+    }
+
+    view_refresh_screen();
+#undef ROW_OF_HEADER
+}
+
 void view_refresh_screen() {
+    touchline(title_win, 1, 1); // inform title_win that its content are going to change because of sub window
+    wrefresh(title_text_win);
     wrefresh(title_win);
     wrefresh(contents_win);
 }
 
-void view_clear_screen() {
-    clear(); /* or erase? */
+void view_clear_contents() {
+    werase(contents_win);
 }
 
 void view_shut_down() {
+    delwin(title_text_win);
     delwin(contents_win);
     delwin(title_win);
     endwin();

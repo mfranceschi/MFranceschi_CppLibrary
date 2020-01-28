@@ -23,7 +23,7 @@ void view_start_up();
  * @param title Title of that screen.
  * @param central_text The central text indicating that we are loading now.
  */
-void show_welcome_screen(STRING title, STRING central_text);
+void view_show_welcome_screen(STRING title, STRING central_text);
 
 /**
  * Shows the program's main menu. The user does not have control yet.
@@ -32,18 +32,20 @@ void show_welcome_screen(STRING title, STRING central_text);
  * @param guideline The guideline below the title.
  * @param choices Explanation of each of the four options.
  */
-void show_main_menu(STRING title, STRING guideline, STRING choices[4]);
+void view_show_main_menu(STRING title, STRING guideline, STRING *choices);
 
 /**
  * Returns the user's input as a Command.
  *
- * @param can_go_back True if the "go back" option is allowed for the user.
+ * @param can_go_back True if the "go back" option is allowed.
  * @return a Command corresponding to the user's input.
  */
 Command view_ask_user_choice(bool can_go_back);
 
 /**
  * Sets the current view's Title.
+ * If the string is too long then no-op.
+ * It should not be explicitly called except for dev.
  *
  * @param t The new title.
  */
@@ -57,7 +59,7 @@ void view_set_title(STRING t);
  * @param names Titles of the four columns displaying the verbs: inf, tra, ti1, ti2.
  * @param verbs Linked list of verbs.
  */
-void view_show_verbs_list(STRING title, STRING names[4], void* verbs);
+void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING title_precision);
 
 /**
  * If relevant, performs a screen refresh.
@@ -67,7 +69,7 @@ void view_refresh_screen();
 /**
  * Cleans the screen (empty or so) but does not perform an explicit refresh.
  */
-void view_clear_screen();
+void view_clear_contents();
 
 /**
  * Closes and releases any resource associated with the view.
