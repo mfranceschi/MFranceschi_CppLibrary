@@ -11,15 +11,33 @@
 
 struct x{struct x* next; Verb* verb;};
 
+static WINDOW* title_win = NULL;
+static WINDOW* contents_win = NULL;
+static int title_win_max_x;
+static int contents_win_max_x, contents_win_max_y;
+
 void _show_verbs(list_t results) {
     struct x* y = list_head(results);
     Verb* v;
     while (y != NULL) {
         v = y->verb;
-        printw("Verbe '%s': '%s'. \n", v->infinitive->array[0], v->translation->array[0]);
+        wprintw(contents_win, "Verbe '%s': '%s'. \n", v->infinitive->array[0], v->translation->array[0]);
         y = list_item_next(y);
     }
-    refresh_screen();
+    view_refresh_screen();
+}
+
+void _set_title(STRING new_title) {
+    /* clear line */
+    wmove(title_win, 1, 1);
+    for (int i=0; i<(title_win_max_x-1); i++) {
+        waddch(title_win, ' ');
+    }
+
+    /* print in center */
+    wmove(title_win, 1, 1);
+    waddstr(title_win, new_title);
+    //mvwprintw(title_win, 1, 1/*(title_win_max_x - (int)strlen(new_title)) / 2*/, "%s", new_title);
 }
 
 void view_start_up() {
@@ -27,20 +45,45 @@ void view_start_up() {
     initscr();
     keypad(stdscr, true); /* to be tested */
     cbreak();
+
+    /* initialize the windows */
+    int screen_x, screen_y;
+    getmaxyx(stdscr, screen_x, screen_y);
+    title_win = newwin(3, 0, 0, 0);
+    contents_win = newwin(screen_y - 3, 0, 3, 0);
+    title_win_max_x = screen_x - 2;
+    contents_win_max_x = screen_x;
+    contents_win_max_y = screen_y - 3;
+
+    /* fill the title window */
+    wmove(title_win, 0, 0);
+    for (int i=0; i<screen_x; ++i) {
+        waddch(title_win, '#');
+    }
+    wmove(title_win, 1, 0);
+    waddch(title_win, 'A');
+    wmove(title_win, 1, screen_x - 1);
+    waddch(title_win, 'B');
+    wmove(title_win, 2, 0);
+    for (int i=0; i<screen_x; ++i) {
+        waddch(title_win, '#');
+    }
 }
 
-void show_welcome_screen() {
+void show_welcome_screen(STRING title, STRING central_text) {
     noecho();
-    addstr(dummy_welcome); // TODO
-    wmove(stdscr, 1, 0);
-    refresh_screen();
+    _set_title(title);
+    wmove(contents_win, 1, 0);
+    //waddstr(contents_win, central_text); // TODO
+    view_refresh_screen();
 }
 
-void show_main_menu() {
+void show_main_menu(STRING title, STRING guideline, STRING choices[4]) {
     list_t res = container_getVerbsByFirstLetter("b");
     _show_verbs(res);
     container_freeResults();
     // TODO
+    view_refresh_screen();
 }
 
 Command view_ask_user_choice(bool can_go_back) {
@@ -48,7 +91,7 @@ Command view_ask_user_choice(bool can_go_back) {
     int selected = _SELECTED_FORBIDDEN_VALUE;
     Command output = -1;
     while (selected == _SELECTED_FORBIDDEN_VALUE) {
-        selected = wgetch(stdscr);
+        selected = wgetch(contents_win);
 
         switch (selected) {
             case 'L':
@@ -80,23 +123,22 @@ Command view_ask_user_choice(bool can_go_back) {
         }
 
     }
+    addstr("coucou"); view_refresh_screen();
+    for (int i=0; i<999999999; i += (-1) * (-1));
     return output;
 #undef _SELECTED_FORBIDDEN_VALUE
 }
 
-void show_list_from_letter(char);
-void update_list_from_letter(char, unsigned int nb_rows_scrolled_down);
-void show_research_results(STRING);
-void update_research_results(STRING, unsigned int nb_rows_scrolled_down);
-
-void refresh_screen() {
+void view_refresh_screen() {
     refresh();
 }
 
-void clear_screen() {
+void view_clear_screen() {
     clear(); /* or erase? */
 }
 
 void view_shut_down() {
+    delwin(contents_win);
+    delwin(title_win);
     endwin();
 }
