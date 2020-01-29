@@ -30,8 +30,8 @@ int run() {
         input = view_ask_user_choice(false);
         switch (input) {
             case LIST:
-                current_results = container_getVerbsByFirstLetter("a");
-                view_show_verbs_list(list_title_beginning, list_column_headers, list_head(current_results), "a");
+                current_results = container_getVerbsByFirstLetter("b");
+                view_show_verbs_list(list_title_beginning, list_column_headers, list_head(current_results), "b");
                 view_ask_user_choice(true); // TODO handle correctly
                 break;
             default:

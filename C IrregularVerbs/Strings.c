@@ -114,7 +114,7 @@ STRING makeStringFromMultiStrings(MultiStrings *input) {
     // copy all strings up to (n-1) followed by separator
     // copy last string without separator
 
-    const size_t ms_len = input->length;
+    size_t ms_len = input->length;
 
     size_t total_length = ((ms_len - 1) * strlen(SEPARATOR)) + 1;
     for (size_t i = 0; i < ms_len; i++) {

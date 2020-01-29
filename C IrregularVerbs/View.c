@@ -8,6 +8,7 @@
 #include "View.h"
 #include "Verb.h"
 #include "VerbsContainer.h"
+#include "utils/Utils.h"
 
 struct x{struct x* next; Verb* verb;};
 
@@ -16,17 +17,6 @@ static WINDOW* title_text_win = NULL;
 static WINDOW* contents_win = NULL;
 static int title_win_max_x;
 static int contents_win_max_x, contents_win_max_y;
-
-void _show_verbs(list_t results) {
-    struct x* y = list_head(results);
-    Verb* v;
-    while (y != NULL) {
-        v = y->verb;
-        wprintw(contents_win, "Verbe '%s': '%s'. \n", v->infinitive->array[0], v->translation->array[0]);
-        y = list_item_next(y);
-    }
-    view_refresh_screen();
-}
 
 /**
  * Prints some text at the center of the given space.
@@ -46,27 +36,47 @@ static void _print_at_center(WINDOW* win, int start_y, int start_x, int width, S
  *
  * @param win The window in which we will print.
  * @param row_i The index of the row.
- * @param col_i The index of the column.
+ * @param col_i The index of the column [NOT ACTUALLY USED, WE CONSIDER THE WHOLE LINE].
  * @param col_width The width of each individual column (text space allowed).
  * @param centered If true then we print at the center of each column.
  * @param texts The four strings to print.
  */
-static void _print_one_row(WINDOW* win, int row_i, int col_i, int col_width, bool centered, const STRING texts[4]); // TODO implement
+static void _print_one_row(WINDOW* win, int row_i, int col_i, int col_width, bool centered, const STRING texts[4]);
+
+/**
+ * Prints the given verb on one or several rows.
+ *
+ * @param win The window in which we will print.
+ * @param row_i The index of the row.
+ * @param col_i The index of the column [NOT ACTUALLY USED, WE CONSIDER THE WHOLE LINE].
+ * @param col_width The width of each individual column (text space allowed).
+ * @param centered If true then we print at the center of each column.
+ * @param remaining The number or remaining allowed rows. We won't print more than remaining rows.
+ * @param v The verb of course.
+ */
+static void _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, bool centered, int remaining, Verb* v);
 
 static void _print_one_row(WINDOW* win, int row_i, int col_i, int col_width, bool centered, const STRING texts[4]) {
-    int cur_pos = col_i;
+    UNUSED(col_i);
+    int cur_pos = 0;
     static const STRING separator = " | ";
     static const int sep_len = 3;
     int i;
 
+    /* 1 - CLEAR THE LINE */
+    wmove(win, row_i, 0);
+    for (int j=0; j<getmaxx(win); j++) {
+        waddch(win, ' ');
+    }
+
+    /* 2 - DO THE DAMN JOB */
     for (i=0; i<4; i++) {
         if (centered) {
             _print_at_center(win, row_i, cur_pos, col_width, texts[i]);
         } else {
             mvwaddstr(win, row_i, cur_pos, texts[i]);
-            wmove(win, row_i, cur_pos + col_width);
         }
-
+        wmove(win, row_i, cur_pos + col_width);
         if (i != 4-1) {
             waddstr(win, separator);
             cur_pos += col_width + sep_len;
@@ -80,6 +90,28 @@ static void _print_at_center(WINDOW* win, int start_y, int start_x, int width, S
     if (len <= width) {
         mvwprintw(win, start_y, start_x, "%*s", width, "");
         mvwaddstr(win, start_y, start_x + ((width - len) / 2), text);
+    }
+}
+
+static void _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, bool centered, int remaining, Verb* v) {
+    int max_iter = max_nbr(
+            remaining, max_nbr(
+                    v->infinitive->length, max_nbr(
+                            v->translation->length, max_nbr(
+                                    v->time1->length, v->time2->length))));
+    STRING texts[4];
+    STRING* inf_a = v->infinitive->array;
+    STRING* tra_a = v->translation->array;
+    STRING* ti1_a = v->time1->array;
+    STRING* ti2_a = v->time2->array;
+
+    for (int i=0; i<max_iter; i++) {
+        texts[0] = (v->infinitive->length < i) ? "" : inf_a[i];
+        texts[1] = (v->translation->length < i) ? "" : tra_a[i];
+        texts[2] = (v->time1->length < i) ? "" : ti1_a[i];
+        texts[3] = (v->time2->length < i) ? "" : ti2_a[i];
+        mvwprintw(win, row_i + i, 0, "%s", texts[0]); // TODO FIX THE SEGFAULT
+        //_print_one_row(win, row_i + i, 0, col_width, centered, texts);
     }
 }
 
@@ -179,15 +211,13 @@ Command view_ask_user_choice(bool can_go_back) {
 
 void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING title_precision) {
 #define ROW_OF_HEADER 1
+    view_clear_contents();
 
     /* 1 - PRINT TITLE */
-    view_clear_contents();
-    {
-        char* title_buffer = calloc(title_win_max_x, 1);
-        snprintf(title_buffer, title_win_max_x, "%s - %s", title, title_precision);
-        view_set_title(title_buffer);
-        free(title_buffer);
-    }
+    char* title_buffer = calloc(title_win_max_x, 1);
+    snprintf(title_buffer, title_win_max_x, "%s - %s", title, title_precision);
+    view_set_title(title_buffer);
+    free(title_buffer);
 
     int len_cols = ((contents_win_max_x / 4) - 2);
 
@@ -200,12 +230,26 @@ void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING
 
     /* 3 - PRINT VERBS */
     struct x * pointed_struct;
-    while (verbs != NULL) {
+    Verb* pointed_verb;
+    STRING to_print[4];
+    int current_row = ROW_OF_HEADER + 2;
+    while (verbs != NULL && current_row < contents_win_max_y) {
         pointed_struct = verbs;
+        pointed_verb = pointed_struct->verb;
+        to_print[0] = makeStringFromMultiStrings(pointed_verb->infinitive);
+        to_print[1] = makeStringFromMultiStrings(pointed_verb->translation);
+        to_print[2] = makeStringFromMultiStrings(pointed_verb->time1);
+        to_print[3] = makeStringFromMultiStrings(pointed_verb->time2);
 
+        //_print_one_row(contents_win, current_row, 0, len_cols, false, to_print);
+        // TODO change to one verb by considering MultiStrings
+        _print_one_verb(contents_win, current_row, 0, len_cols, false, contents_win_max_y - current_row, pointed_verb);
 
-
+        for(int i=0; i<4; i++) {
+            freeStringFromMultiStrings(to_print[i]);
+        }
         verbs = pointed_struct->next;
+        ++current_row;
     }
 
     view_refresh_screen();
