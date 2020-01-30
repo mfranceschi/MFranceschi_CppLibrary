@@ -3,6 +3,7 @@
 //
 
 #include "ftime.h"
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include "Utils.h"
@@ -21,11 +22,22 @@ STRING CSV_FILENAME = "../rsc/verbs.csv";
  * @param script_filename Name of the Python script .py.
  * @return Return value of the execution command.
  */
-int run_python_script(STRING script_filepath, STRING script_filename);
+static int run_python_script(STRING script_filepath, STRING script_filename);
+
+/* Code snippet adapted from https://stackoverflow.com/q/17415499/11996851 */
+static int searchStringWithKnuthMorrisPratt(STRING s, STRING t);
+
+/**
+ * Makes a string from one CSV portion, surrounded by ".
+ *
+ * @param pp_beginning Pointer to pointer to the first ", the pointed value will be altered.
+ * @param output_buffer Pointer to the buffer to write on.
+ */
+static void _make_string_from_csv (WRITEABLE_STRING* pp_beginning, WRITEABLE_STRING output_buffer);
 
 /* ***** STATIC FUNCTIONS DEFINITION ***** */
 
-int run_python_script(STRING script_filepath, STRING script_filename) {
+static int run_python_script(STRING script_filepath, STRING script_filename) {
     WRITEABLE_STRING buffer = calloc(200, 1);
     int result;
 
@@ -46,6 +58,48 @@ int run_python_script(STRING script_filepath, STRING script_filename) {
         }*/    }
     free(buffer);
     return result;
+}
+
+static int searchStringWithKnuthMorrisPratt(STRING s, STRING t)
+{
+    size_t m = strlen(s);
+    size_t n = strlen(t);
+    int i=0,j=0,k=0;
+    int* B = malloc(sizeof(int) * (m+1));
+    B[0]=-1; B[1]=0;
+    for (int l=2; l<=m; l++)
+    {
+        while ((k>=0) && s[k] != s[l - 1]) k=B[k];
+        B[l]=++k;
+    }
+    while (i<=(n-m))
+    {
+        while ((j<m) && (s[j] == t[i+j])) j++;
+        if (j==m) {
+            free(B);
+            return(i);
+        }
+        i=i+j-B[j];
+        j=max_nbr(0, B[j]);
+    }
+    free(B);
+    return(-1);
+}
+
+static void _make_string_from_csv (WRITEABLE_STRING* pp_beginning, WRITEABLE_STRING output_buffer) {
+    WRITEABLE_STRING pointer_to_end;
+    WRITEABLE_STRING pointer_to_beginning = *pp_beginning;
+    ++pointer_to_beginning; // skip first "
+
+    pointer_to_end = pointer_to_beginning + 1; // copy until next "
+    while (*pointer_to_end != '"') {
+        ++pointer_to_end;
+    }
+    strncpy(output_buffer, pointer_to_beginning, pointer_to_end - pointer_to_beginning);
+    output_buffer[pointer_to_end - pointer_to_beginning] = '\0';
+
+    pointer_to_beginning = pointer_to_end +1; // skip ending "
+    *pp_beginning = pointer_to_beginning;
 }
 
 /* ***** PUBLIC FUNCTIONS DEFINITION ***** */
@@ -125,7 +179,6 @@ void fillVerbsContainer() {
 
         /* FINALLY MAKE VERB */
         verb_list[current_index++] = makeVerbFromStrings(buffer_infinitive, buffer_translation, buffer_time1, buffer_time2);
-        //exit(6);
     }
 
     // close file and other buffers
@@ -144,33 +197,6 @@ void fillVerbsContainer() {
         freeVerb(verb_list[i]);
     }
     free(verb_list);
-}
-
-/* Code snippet adapted from https://stackoverflow.com/q/17415499/11996851 */
-static int searchStringWithKnuthMorrisPratt(STRING s, STRING t)
-{
-    size_t m = strlen(s);
-    size_t n = strlen(t);
-    int i=0,j=0,k=0;
-    int* B = malloc(sizeof(int) * (m+1));
-    B[0]=-1; B[1]=0;
-    for (int l=2; l<=m; l++)
-    {
-        while ((k>=0) && s[k] != s[l - 1]) k=B[k];
-        B[l]=++k;
-    }
-    while (i<=(n-m))
-    {
-        while ((j<m) && (s[j] == t[i+j])) j++;
-        if (j==m) {
-            free(B);
-            return(i);
-        }
-        i=i+j-B[j];
-        j=max_nbr(0, B[j]);
-    }
-    free(B);
-    return(-1);
 }
 
 size_t countOccurrencesOfSubstring(STRING substring, STRING big) {
@@ -200,4 +226,38 @@ void run_and_wait ( unsigned int milliseconds, void(* function) (va_list), ...) 
     if (elapsed < t_c) {
         usleep((t_c - elapsed));
     }
+}
+
+int min_nbr_var(int n, ...) {
+    va_list l;
+    int result = INT_MAX;
+    int cur, i;
+
+    va_start(l, n);
+    for(i=0; i<n; i++) {
+        cur = va_arg(l, int);
+        if (cur < result) {
+            result = cur;
+        }
+    }
+    va_end(l);
+
+    return result;
+}
+
+int max_nbr_var(int n, ...) {
+    va_list l;
+    int result = INT_MIN;
+    int cur, i;
+
+    va_start(l, n);
+    for(i=0; i<n; i++) {
+        cur = va_arg(l, int);
+        if (cur > result) {
+            result = cur;
+        }
+    }
+    va_end(l);
+
+    return result;
 }

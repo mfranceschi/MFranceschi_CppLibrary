@@ -39,7 +39,18 @@ size_t countOccurrencesOfSubstring(STRING substring, STRING big);
  */
 void run_and_wait ( unsigned int milliseconds, void(* function) (va_list), ...);
 
-/** Returns the maximum number between a and b. */
+/**
+ * Returns the minimum or maximum of the given arguments.
+ *
+ * @param n Number of arguments **following this one**.
+ * @param ... List of numbers to test.
+ * @return The min/max of the arguments, or INT_MIN/INT_MAX if no arguments.
+ */
+int min_nbr_var(int n, ...);
+int max_nbr_var(int n, ...);
+
+/** Returns the maximum or number between a and b. */
 #define max_nbr(a,b) ((a > b) ? (a) : (b))
+#define min_nbr(a,b) ((a < b) ? (a) : (b))
 
 #endif //IRREGULARVERBS_UTILS_H

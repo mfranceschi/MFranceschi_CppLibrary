@@ -94,24 +94,25 @@ static void _print_at_center(WINDOW* win, int start_y, int start_x, int width, S
 }
 
 static void _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, bool centered, int remaining, Verb* v) {
-    int max_iter = max_nbr(
-            remaining, max_nbr(
-                    v->infinitive->length, max_nbr(
-                            v->translation->length, max_nbr(
-                                    v->time1->length, v->time2->length))));
+    const MultiStrings decl[] = {
+            *(v->infinitive),
+            *(v->translation),
+            *(v->time1),
+            *(v->time2)
+    };
+    const int max_iter = min_nbr(
+            remaining,
+            max_nbr_var(
+                    4,
+                    decl[0].length, decl[1].length, decl[2].length, decl[3].length));
     STRING texts[4];
-    STRING* inf_a = v->infinitive->array;
-    STRING* tra_a = v->translation->array;
-    STRING* ti1_a = v->time1->array;
-    STRING* ti2_a = v->time2->array;
 
     for (int i=0; i<max_iter; i++) {
-        texts[0] = (v->infinitive->length < i) ? "" : inf_a[i];
-        texts[1] = (v->translation->length < i) ? "" : tra_a[i];
-        texts[2] = (v->time1->length < i) ? "" : ti1_a[i];
-        texts[3] = (v->time2->length < i) ? "" : ti2_a[i];
-        mvwprintw(win, row_i + i, 0, "%s", texts[0]); // TODO FIX THE SEGFAULT
-        //_print_one_row(win, row_i + i, 0, col_width, centered, texts);
+        for(int j=0; j<4; j++) {
+            texts[j] = (i < decl[j].length) ? decl[j].array[i] : "";
+        }
+        _print_one_row(win, row_i + i, col_i, col_width, centered, texts);
+        //if (max_iter > 1) break;
     }
 }
 
