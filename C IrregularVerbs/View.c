@@ -94,26 +94,28 @@ static void _print_at_center(WINDOW* win, int start_y, int start_x, int width, S
 }
 
 static void _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, bool centered, int remaining, Verb* v) {
-    const MultiStrings decl[] = {
+    MultiStrings decl[] = {
             *(v->infinitive),
             *(v->translation),
             *(v->time1),
             *(v->time2)
     };
-    const int max_iter = min_nbr(
+    int max_iter = min_nbr(
             remaining,
             max_nbr_var(
                     4,
                     decl[0].length, decl[1].length, decl[2].length, decl[3].length));
     STRING texts[4];
+    mvwprintw(win, row_i, col_i, "Remaining=%d; max_iter=%d; infN=%d; traN=%d; ti1N=%d; ti2N=%d; verb=%s", remaining, max_iter, v->infinitive->length, v->translation->length, v->time1->length, v->time2->length, v->infinitive->array[0]);
 
+    /*
     for (int i=0; i<max_iter; i++) {
         for(int j=0; j<4; j++) {
             texts[j] = (i < decl[j].length) ? decl[j].array[i] : "";
         }
         _print_one_row(win, row_i + i, col_i, col_width, centered, texts);
-        //if (max_iter > 1) break;
     }
+     */
 }
 
 void view_set_title(STRING new_title) {
@@ -121,7 +123,7 @@ void view_set_title(STRING new_title) {
 }
 
 void view_start_up() {
-    setlocale(LC_ALL, "UTF-8"); /* for wide characters support */
+    setlocale(LC_ALL, ""); /* for wide characters support */
     initscr();
     keypad(stdscr, true); /* to be tested */
     cbreak();
@@ -142,10 +144,8 @@ void view_start_up() {
     for (int i=0; i<screen_x; ++i) {
         waddch(title_win, '#');
     }
-    wmove(title_win, 1, 0);
-    waddch(title_win, '#');
-    wmove(title_win, 1, screen_x - 1);
-    waddch(title_win, '#');
+    mvwaddch(title_win, 1, 0, '#');
+    mvwaddch(title_win, 1, screen_x - 1, '#');
     wmove(title_win, 2, 0);
     for (int i=0; i<screen_x; ++i) {
         waddch(title_win, '#');
@@ -242,8 +242,6 @@ void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING
         to_print[2] = makeStringFromMultiStrings(pointed_verb->time1);
         to_print[3] = makeStringFromMultiStrings(pointed_verb->time2);
 
-        //_print_one_row(contents_win, current_row, 0, len_cols, false, to_print);
-        // TODO change to one verb by considering MultiStrings
         _print_one_verb(contents_win, current_row, 0, len_cols, false, contents_win_max_y - current_row, pointed_verb);
 
         for(int i=0; i<4; i++) {

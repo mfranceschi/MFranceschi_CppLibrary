@@ -12,7 +12,7 @@ static void _controller_start_up(va_list list) {
     view_start_up();
     view_show_welcome_screen(welcome_screen_title, welcome_screen_central_text);
     container_start_up();
-    fillVerbsContainer();
+    fill_verbs_container();
 }
 
 static void _controller_shut_down() {
@@ -30,10 +30,18 @@ int run() {
         input = view_ask_user_choice(false);
         switch (input) {
             case LIST:
-                current_results = container_getVerbsByFirstLetter("b");
-                view_show_verbs_list(list_title_beginning, list_column_headers, list_head(current_results), "b");
+                current_results = container_getVerbsByFirstLetter("s");
+                view_show_verbs_list(list_title_beginning, list_column_headers, list_head(current_results), "s");
                 view_ask_user_choice(true); // TODO handle correctly
                 break;
+
+            case SEARCH:
+                current_results = container_getVerbsBySubstring("berg");
+                view_show_verbs_list(list_title_beginning, list_column_headers, list_head(current_results), "berg");
+                view_ask_user_choice(true); // TODO same
+                break;
+
+            case EXERCISE: // TODO one day maybe
             default:
                 break; // TODO
         }

@@ -2,12 +2,12 @@
 // Created by Martin on 16/01/2020.
 //
 
-#include "utils/Utils.h"
 #include <string.h>
 #include "Strings.h"
+#include "utils/Utils.h"
 
 static const STRING SEPARATOR = ",";
-static const size_t LEN_SEPARATOR = 1; // str len(SEPARATOR)
+static const size_t LEN_SEPARATOR = 1; // length of SEPARATOR
 
 MultiStrings* makeMultiStrings(STRING input) {
     MultiStrings* output = malloc(sizeof(MultiStrings));
@@ -26,7 +26,7 @@ MultiStrings* makeMultiStrings(STRING input) {
         // Allocate array of n+1 strings
         // Copy all strings
 
-        length = countOccurrencesOfSubstring(SEPARATOR, input) + 1;
+        length = count_occurrences_of_substring(SEPARATOR, input) + 1;
         array = malloc(length * sizeof(STRING));
 
         STRING input_ptr = input;

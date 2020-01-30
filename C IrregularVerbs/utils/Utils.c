@@ -4,6 +4,7 @@
 
 #include "ftime.h"
 #include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include "Utils.h"
@@ -22,10 +23,10 @@ STRING CSV_FILENAME = "../rsc/verbs.csv";
  * @param script_filename Name of the Python script .py.
  * @return Return value of the execution command.
  */
-static int run_python_script(STRING script_filepath, STRING script_filename);
+static int _run_python_script(STRING script_filepath, STRING script_filename);
 
 /* Code snippet adapted from https://stackoverflow.com/q/17415499/11996851 */
-static int searchStringWithKnuthMorrisPratt(STRING s, STRING t);
+static int _searchStringWithKnuthMorrisPratt(STRING s, STRING t);
 
 /**
  * Makes a string from one CSV portion, surrounded by ".
@@ -37,7 +38,7 @@ static void _make_string_from_csv (WRITEABLE_STRING* pp_beginning, WRITEABLE_STR
 
 /* ***** STATIC FUNCTIONS DEFINITION ***** */
 
-static int run_python_script(STRING script_filepath, STRING script_filename) {
+static int _run_python_script(STRING script_filepath, STRING script_filename) {
     WRITEABLE_STRING buffer = calloc(200, 1);
     int result;
 
@@ -60,7 +61,7 @@ static int run_python_script(STRING script_filepath, STRING script_filename) {
     return result;
 }
 
-static int searchStringWithKnuthMorrisPratt(STRING s, STRING t)
+static int _searchStringWithKnuthMorrisPratt(STRING s, STRING t)
 {
     size_t m = strlen(s);
     size_t n = strlen(t);
@@ -104,13 +105,13 @@ static void _make_string_from_csv (WRITEABLE_STRING* pp_beginning, WRITEABLE_STR
 
 /* ***** PUBLIC FUNCTIONS DEFINITION ***** */
 
-void fillVerbsContainer() {
+void fill_verbs_container() {
 
     // open file
     FILE* csv_file_stream = NULL;
     if ((csv_file_stream = fopen(CSV_FILENAME, "r")) == NULL) {
         if (
-                (run_python_script(".\\..\\rsc\\", PYTHON_SCRIPT_FILENAME) != EXIT_SUCCESS) || /* Failure of PYTHON script */
+                (_run_python_script(".\\..\\rsc\\", PYTHON_SCRIPT_FILENAME) != EXIT_SUCCESS) || /* Failure of PYTHON script */
                 (csv_file_stream = fopen(CSV_FILENAME, "r")) == NULL /* File still cannot be read */
                 ) {
             exit(EXIT_BECAUSE_FILE_FAILURE);
@@ -122,7 +123,7 @@ void fillVerbsContainer() {
     Verb** verb_list = malloc(sizeof(Verb*) * LEN_OF_LIST);
     size_t BUFFERS_SIZE = 200;
     const WRITEABLE_STRING buffer = calloc(BUFFERS_SIZE, 1);
-    WRITEABLE_STRING pointer_to_beginning, pointer_to_end;
+    WRITEABLE_STRING pointer_to_beginning;
 
     WRITEABLE_STRING buffer_infinitive =  calloc(BUFFERS_SIZE, 1);
     WRITEABLE_STRING buffer_translation = calloc(BUFFERS_SIZE, 1);
@@ -134,51 +135,28 @@ void fillVerbsContainer() {
 
     // for each line, build a verb
     size_t current_index = 0;
-    while (!feof(csv_file_stream) && !(ferror(csv_file_stream))) {
+    while (!feof(csv_file_stream) && !ferror(csv_file_stream)) {
         fgets(buffer, BUFFERS_SIZE, csv_file_stream);
+        pointer_to_beginning = buffer;
 
-        /* DEAL WITH INFINITIVE */
-        pointer_to_beginning = buffer + 1; // skip first "
+        // get strings
+        _make_string_from_csv(&pointer_to_beginning, buffer_infinitive);
+        pointer_to_beginning++; // skip ,
+        _make_string_from_csv(&pointer_to_beginning, buffer_translation);
+        pointer_to_beginning++; // skip ,
+        _make_string_from_csv(&pointer_to_beginning, buffer_time1);
+        pointer_to_beginning++; // skip ,
+        _make_string_from_csv(&pointer_to_beginning, buffer_time2);
 
-        pointer_to_end = pointer_to_beginning + 1; // copy until next "
-        while (*pointer_to_end != '"') {
-            ++pointer_to_end;
-        }
-        strncpy(buffer_infinitive, pointer_to_beginning, pointer_to_end - pointer_to_beginning);
-        buffer_infinitive[pointer_to_end - pointer_to_beginning] = '\0';
-
-        pointer_to_beginning = pointer_to_end + 3; // skip " and , and "
-
-        /* DEAL WITH TRANSLATION */
-        pointer_to_end = pointer_to_beginning + 1; // copy until next "
-        while (*pointer_to_end != '"') {
-            ++pointer_to_end;
-        }
-        strncpy(buffer_translation, pointer_to_beginning, pointer_to_end - pointer_to_beginning);
-        buffer_translation[pointer_to_end - pointer_to_beginning] = '\0';
-
-        pointer_to_beginning = pointer_to_end + 3; // skip " and , and "
-
-        /* DEAL WITH TIME 1 */
-        pointer_to_end = pointer_to_beginning + 1; // copy until next "
-        while (*pointer_to_end != '"') {
-            ++pointer_to_end;
-        }
-        strncpy(buffer_time1, pointer_to_beginning, pointer_to_end - pointer_to_beginning);
-        buffer_time1[pointer_to_end - pointer_to_beginning] = '\0';
-
-        pointer_to_beginning = pointer_to_end + 3; // skip " and , and "
-
-        /* DEAL WITH TIME 2 */
-        pointer_to_end = pointer_to_beginning + 1; // copy until next "
-        while (*pointer_to_end != '"') {
-            ++pointer_to_end;
-        }
-        strncpy(buffer_time2, pointer_to_beginning, pointer_to_end - pointer_to_beginning);
-        buffer_time2[pointer_to_end - pointer_to_beginning] = '\0';
-
-        /* FINALLY MAKE VERB */
+        // make the verb
         verb_list[current_index++] = makeVerbFromStrings(buffer_infinitive, buffer_translation, buffer_time1, buffer_time2);
+
+#define CLEAR_BUFFER(b) memset(b, 0, strlen(b) + 1) /* this resets the buffer to avoid memory garbage */
+        CLEAR_BUFFER(buffer_infinitive);
+        CLEAR_BUFFER(buffer_translation);
+        CLEAR_BUFFER(buffer_time1);
+        CLEAR_BUFFER(buffer_time2);
+#undef CLEAR_BUFFER
     }
 
     // close file and other buffers
@@ -199,13 +177,13 @@ void fillVerbsContainer() {
     free(verb_list);
 }
 
-size_t countOccurrencesOfSubstring(STRING substring, STRING big) {
+size_t count_occurrences_of_substring(STRING substring, STRING big) {
     size_t count = 0;
-    int result = searchStringWithKnuthMorrisPratt(substring, big);
+    int result = _searchStringWithKnuthMorrisPratt(substring, big);
     while (result > -1) {
         ++count;
         big = big + result + 2;
-        result = searchStringWithKnuthMorrisPratt(substring, big);
+        result = _searchStringWithKnuthMorrisPratt(substring, big);
     }
     return count;
 }
@@ -236,9 +214,7 @@ int min_nbr_var(int n, ...) {
     va_start(l, n);
     for(i=0; i<n; i++) {
         cur = va_arg(l, int);
-        if (cur < result) {
-            result = cur;
-        }
+        result = min_nbr(result, cur);
     }
     va_end(l);
 
@@ -253,11 +229,17 @@ int max_nbr_var(int n, ...) {
     va_start(l, n);
     for(i=0; i<n; i++) {
         cur = va_arg(l, int);
-        if (cur > result) {
-            result = cur;
-        }
+        result = max_nbr(result, cur);
     }
     va_end(l);
 
     return result;
+}
+
+int min_nbr(int a, int b) {
+    return (int)fminl(a, b);
+}
+
+int max_nbr(int a, int b) {
+    return (int)fmaxl(a, b);
 }

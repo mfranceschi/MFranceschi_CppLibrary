@@ -17,7 +17,7 @@
  * Simply reads the CSV file and adds every verb to the VerbsContainer.
  * The container shall be opened.
  */
-void fillVerbsContainer();
+void fill_verbs_container();
 
 /**
  * Get the number of occurrences of a substring in a given bigger string.
@@ -26,7 +26,7 @@ void fillVerbsContainer();
  * @param big The string to look in.
  * @return 0 or more occurrences.
  */
-size_t countOccurrencesOfSubstring(STRING substring, STRING big);
+size_t count_occurrences_of_substring(STRING substring, STRING big);
 
 /**
  * Runs the given function and waits (with a thread sleeping function)
@@ -50,7 +50,9 @@ int min_nbr_var(int n, ...);
 int max_nbr_var(int n, ...);
 
 /** Returns the maximum or number between a and b. */
-#define max_nbr(a,b) ((a > b) ? (a) : (b))
-#define min_nbr(a,b) ((a < b) ? (a) : (b))
+int max_nbr(int a, int b);
+int min_nbr(int a, int b);
+//#define max_nbr(a,b) ((a > b) ? (a) : (b))
+//#define min_nbr(a,b) ((a < b) ? (a) : (b))
 
 #endif //IRREGULARVERBS_UTILS_H
