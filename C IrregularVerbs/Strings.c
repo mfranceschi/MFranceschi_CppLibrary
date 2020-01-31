@@ -2,54 +2,50 @@
 // Created by Martin on 16/01/2020.
 //
 
+#include <ctype.h>
 #include <string.h>
 #include "Strings.h"
 #include "utils/Utils.h"
 
-static const STRING SEPARATOR = ",";
-static const size_t LEN_SEPARATOR = 1; // length of SEPARATOR
+const STRING SEPARATOR = ",";
+const size_t LEN_SEPARATOR = 1; // length of SEPARATOR
 
 MultiStrings* makeMultiStrings(STRING input) {
-    MultiStrings* output = malloc(sizeof(MultiStrings));
-    size_t length;
-    WRITEABLE_STRING* array;
-    const size_t input_length = strlen(input);
+    // Algorithm:
+    // 1 - Allocate (number of separators + 1) pointers of strings = initial_length
+    // 2 - Run through the string and allocate a string only if necessary (non-empty string)
 
-    if (input[0] == '\0') {
-        // If empty string then special case (faster).
-        length = 1;
-        array = malloc(sizeof(STRING));
-        array[0] = malloc(1);
-        array[0][0] = '\0';
-    } else {
-        // Count how many separators = n
-        // Allocate array of n+1 strings
-        // Copy all strings
+    MultiStrings* output = malloc(sizeof(MultiStrings)); // to be returned
+    size_t initial_length = count_occurrences_of_substring(SEPARATOR, input) + 1; // maximum number of arrays allocated
+    WRITEABLE_STRING* array = calloc(initial_length * sizeof(STRING), 1); // c-alloc so that a free on NULL is not harmful
+    STRING end_of_current_substring;
+    size_t length_of_current_substring;
+    STRING beginning_of_current_substring = input;
+    size_t real_length = 0;
 
-        length = count_occurrences_of_substring(SEPARATOR, input) + 1;
-        array = malloc(length * sizeof(STRING));
-
-        STRING input_ptr = input;
-        for (size_t i = 0; i < length; i++) {
-            // get end of current substring
-            STRING end_of_current_substring = input_ptr;
-            while (strcmp(end_of_current_substring, SEPARATOR) != 0 && *end_of_current_substring != '\0') {
-                ++end_of_current_substring;
-            }
-
-            size_t bytes_to_allocate = end_of_current_substring - input_ptr + 1;
-            array[i] = malloc(bytes_to_allocate);
-            strncpy(array[i], input_ptr, bytes_to_allocate - 1);
-            array[i][bytes_to_allocate - 1] = '\0';
-            input_ptr = end_of_current_substring;
-
-            if (i != input_length - 1) { // skip separator if so
-                input_ptr += LEN_SEPARATOR;
-            }
+    for (size_t i = 0; i < initial_length; i++) {
+        // skip trailing spaces at the beginning
+        while(isspace(*beginning_of_current_substring)) {
+            beginning_of_current_substring++;
         }
+
+        // get end of current substring
+        if ((end_of_current_substring = strstr(beginning_of_current_substring, SEPARATOR)) == NULL) {
+            end_of_current_substring = beginning_of_current_substring + strlen(beginning_of_current_substring);
+        }
+
+        // allocate and copy if necessary
+        length_of_current_substring = end_of_current_substring - beginning_of_current_substring;
+        if (length_of_current_substring > 0) {
+            array[real_length] = malloc(length_of_current_substring + 1);
+            strncpy(array[real_length], beginning_of_current_substring, length_of_current_substring);
+            array[real_length][length_of_current_substring] = '\0';
+            real_length++;
+        }
+        beginning_of_current_substring = end_of_current_substring + 1;
     }
 
-    output->length = length;
+    output->length = real_length;
     output->array = (STRING *) array;
     return output;
 }

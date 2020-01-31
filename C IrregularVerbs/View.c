@@ -7,7 +7,6 @@
 #include <locale.h>
 #include "View.h"
 #include "Verb.h"
-#include "VerbsContainer.h"
 #include "utils/Utils.h"
 
 struct x{struct x* next; Verb* verb;};
@@ -53,8 +52,9 @@ static void _print_one_row(WINDOW* win, int row_i, int col_i, int col_width, boo
  * @param centered If true then we print at the center of each column.
  * @param remaining The number or remaining allowed rows. We won't print more than remaining rows.
  * @param v The verb of course.
+ * @return The current_row of the last printed row
  */
-static void _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, bool centered, int remaining, Verb* v);
+static int _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, bool centered, int remaining, Verb* v);
 
 static void _print_one_row(WINDOW* win, int row_i, int col_i, int col_width, bool centered, const STRING texts[4]) {
     UNUSED(col_i);
@@ -93,7 +93,7 @@ static void _print_at_center(WINDOW* win, int start_y, int start_x, int width, S
     }
 }
 
-static void _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, bool centered, int remaining, Verb* v) {
+static int _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, bool centered, int remaining, Verb* v) {
     MultiStrings decl[] = {
             *(v->infinitive),
             *(v->translation),
@@ -106,16 +106,15 @@ static void _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, bo
                     4,
                     decl[0].length, decl[1].length, decl[2].length, decl[3].length));
     STRING texts[4];
-    mvwprintw(win, row_i, col_i, "Remaining=%d; max_iter=%d; infN=%d; traN=%d; ti1N=%d; ti2N=%d; verb=%s", remaining, max_iter, v->infinitive->length, v->translation->length, v->time1->length, v->time2->length, v->infinitive->array[0]);
 
-    /*
     for (int i=0; i<max_iter; i++) {
         for(int j=0; j<4; j++) {
             texts[j] = (i < decl[j].length) ? decl[j].array[i] : "";
         }
         _print_one_row(win, row_i + i, col_i, col_width, centered, texts);
     }
-     */
+
+    return row_i + max_iter - 1;
 }
 
 void view_set_title(STRING new_title) {
@@ -242,7 +241,7 @@ void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING
         to_print[2] = makeStringFromMultiStrings(pointed_verb->time1);
         to_print[3] = makeStringFromMultiStrings(pointed_verb->time2);
 
-        _print_one_verb(contents_win, current_row, 0, len_cols, false, contents_win_max_y - current_row, pointed_verb);
+        current_row = _print_one_verb(contents_win, current_row, 0, len_cols, false, contents_win_max_y - current_row, pointed_struct->verb);
 
         for(int i=0; i<4; i++) {
             freeStringFromMultiStrings(to_print[i]);

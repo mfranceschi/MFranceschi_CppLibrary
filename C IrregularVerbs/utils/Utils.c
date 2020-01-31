@@ -141,12 +141,12 @@ void fill_verbs_container() {
 
         // get strings
         _make_string_from_csv(&pointer_to_beginning, buffer_infinitive);
-        pointer_to_beginning++; // skip ,
-        _make_string_from_csv(&pointer_to_beginning, buffer_translation);
-        pointer_to_beginning++; // skip ,
+        pointer_to_beginning += LEN_SEPARATOR;
         _make_string_from_csv(&pointer_to_beginning, buffer_time1);
-        pointer_to_beginning++; // skip ,
+        pointer_to_beginning += LEN_SEPARATOR;
         _make_string_from_csv(&pointer_to_beginning, buffer_time2);
+        pointer_to_beginning += LEN_SEPARATOR;
+        _make_string_from_csv(&pointer_to_beginning, buffer_translation);
 
         // make the verb
         verb_list[current_index++] = makeVerbFromStrings(buffer_infinitive, buffer_translation, buffer_time1, buffer_time2);

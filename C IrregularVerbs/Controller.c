@@ -31,13 +31,13 @@ int run() {
         switch (input) {
             case LIST:
                 current_results = container_getVerbsByFirstLetter("s");
-                view_show_verbs_list(list_title_beginning, list_column_headers, list_head(current_results), "s");
+                view_show_verbs_list(list_title_beginning, verb_column_headers, list_head(current_results), "s");
                 view_ask_user_choice(true); // TODO handle correctly
                 break;
 
             case SEARCH:
                 current_results = container_getVerbsBySubstring("berg");
-                view_show_verbs_list(list_title_beginning, list_column_headers, list_head(current_results), "berg");
+                view_show_verbs_list(search_title_beginning, verb_column_headers, list_head(current_results), "berg");
                 view_ask_user_choice(true); // TODO same
                 break;
 

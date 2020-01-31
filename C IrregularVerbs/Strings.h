@@ -17,6 +17,9 @@ typedef struct MultiStrings_s {
     STRING* array;
 } MultiStrings;
 
+extern const STRING SEPARATOR;
+extern const size_t LEN_SEPARATOR; // length of SEPARATOR
+
 MultiStrings* makeMultiStrings(STRING input);
 MultiStrings* copyMultiStrings(const MultiStrings*);
 void freeMultiStrings(MultiStrings*);

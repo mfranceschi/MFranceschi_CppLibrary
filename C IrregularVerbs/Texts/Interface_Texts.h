@@ -19,9 +19,10 @@ extern const STRING main_menu_title;
 extern const STRING main_menu_header;
 extern const STRING main_menu_choices_verbose[4];
 
-/* LIST VERBS BY FIRST LETTER */
+/* LIST VERBS */
 extern const STRING list_title_beginning;
-extern const STRING list_column_headers[4];
+extern const STRING search_title_beginning;
+extern const STRING verb_column_headers[4];
 
 /* MISCELLANEOUS */
 extern const STRING dummy_welcome;
