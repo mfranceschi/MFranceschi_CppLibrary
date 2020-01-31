@@ -9,7 +9,8 @@
 #include "../Strings.h"
 
 #define EXIT_BECAUSE_FILE_FAILURE 2 /* exit with this if a file failure occurred. */
-#define EXIT_BECAUSE_UNEXPECTED 3 /* exit with this NEVER please */
+#define EXIT_BECAUSE_CURSES_ISSUE 3 /* exit with this if the curses lib could not run initscr */
+#define EXIT_BECAUSE_UNEXPECTED 9 /* exit with this NEVER please */
 
 #define UNUSED(a) ((void)(a))
 

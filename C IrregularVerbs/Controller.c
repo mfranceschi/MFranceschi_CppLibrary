@@ -7,6 +7,8 @@
 #include "VerbsContainer.h"
 #include "View.h"
 
+#define DEFAULT_LIST_LETTER 'b'
+
 static void _controller_start_up(va_list list) {
     UNUSED(list);
     view_start_up();
@@ -22,8 +24,8 @@ static void _controller_shut_down() {
 
 int run() {
     Command input_command = BACK_HOME;
-    char input_char = 'a';
     WRITEABLE_STRING list_letter_as_string = calloc(2, 1);
+    *list_letter_as_string = DEFAULT_LIST_LETTER;
     list_t current_results;
     run_and_wait(500, _controller_start_up);
 
@@ -33,13 +35,12 @@ int run() {
         switch (input_command) {
             case LIST:
                 do {
-                    container_freeResults();
-                    list_letter_as_string[0] = input_char;
                     current_results = container_getVerbsByFirstLetter(list_letter_as_string);
+                    view_clear_contents();
                     view_show_verbs_list(list_title_beginning, verb_column_headers, list_head(current_results),
                             list_letter_as_string);
-                } while((input_char = view_ask_user_letter(true)) != ESC);
-                input_char = 'a';
+                } while((*list_letter_as_string = view_ask_user_letter(true)) != ESC);
+                *list_letter_as_string = DEFAULT_LIST_LETTER;
                 break;
 
             case SEARCH:

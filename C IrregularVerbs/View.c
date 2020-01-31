@@ -123,7 +123,9 @@ void view_set_title(STRING new_title) {
 
 void view_start_up() {
     setlocale(LC_ALL, ""); /* for wide characters support */
-    initscr();
+    if (initscr() == NULL) {
+        exit(EXIT_BECAUSE_CURSES_ISSUE);
+    }
     keypad(stdscr, true); /* to be tested */
     cbreak();
     wclear(stdscr);
