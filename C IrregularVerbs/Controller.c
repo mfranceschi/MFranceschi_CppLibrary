@@ -21,18 +21,25 @@ static void _controller_shut_down() {
 }
 
 int run() {
-    Command input = BACK_HOME;
+    Command input_command = BACK_HOME;
+    char input_char = 'a';
+    WRITEABLE_STRING list_letter_as_string = calloc(2, 1);
     list_t current_results;
     run_and_wait(500, _controller_start_up);
 
-    while (input != QUIT) {
+    while (input_command != QUIT) {
         view_show_main_menu(main_menu_title, main_menu_header, (STRING *) &main_menu_choices_verbose);
-        input = view_ask_user_choice(false);
-        switch (input) {
+        input_command = view_ask_user_choice(false);
+        switch (input_command) {
             case LIST:
-                current_results = container_getVerbsByFirstLetter("s");
-                view_show_verbs_list(list_title_beginning, verb_column_headers, list_head(current_results), "s");
-                view_ask_user_choice(true); // TODO handle correctly
+                do {
+                    container_freeResults();
+                    list_letter_as_string[0] = input_char;
+                    current_results = container_getVerbsByFirstLetter(list_letter_as_string);
+                    view_show_verbs_list(list_title_beginning, verb_column_headers, list_head(current_results),
+                            list_letter_as_string);
+                } while((input_char = view_ask_user_letter(true)) != ESC);
+                input_char = 'a';
                 break;
 
             case SEARCH:
@@ -47,6 +54,7 @@ int run() {
         }
         container_freeResults();
     }
+    free(list_letter_as_string);
     _controller_shut_down();
     return EXIT_SUCCESS;
 }

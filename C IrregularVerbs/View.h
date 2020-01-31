@@ -6,6 +6,7 @@
 #define IRREGULARVERBS_VIEW_H
 
 #include "Strings.h"
+extern const char ESC;
 
 typedef enum Command_e {
     LIST, SEARCH, EXERCISE, BACK_HOME, QUIT
@@ -41,6 +42,14 @@ void view_show_main_menu(STRING title, STRING guideline, STRING *choices);
  * @return a Command corresponding to the user's input.
  */
 Command view_ask_user_choice(bool can_go_back);
+
+/**
+ * Returns the user's input as a lowercase character, or ESC.
+ *
+ * @param can_escape True if the ESC char is allowed.
+ * @return a char or ESC.
+ */
+char view_ask_user_letter(bool can_escape);
 
 /**
  * Sets the current view's Title.

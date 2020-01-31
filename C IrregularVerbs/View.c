@@ -1,7 +1,8 @@
 //
-// Created by mfran on 17/01/2020.
+// Created by Martin on 17/01/2020.
 //
 
+#include <ctype.h>
 #include <curses.h>
 #include "Texts/Interface_Texts.h"
 #include <locale.h>
@@ -14,8 +15,7 @@ struct x{struct x* next; Verb* verb;};
 static WINDOW* title_win = NULL;
 static WINDOW* title_text_win = NULL;
 static WINDOW* contents_win = NULL;
-static int title_win_max_x;
-static int contents_win_max_x, contents_win_max_y;
+const char ESC = 27;
 
 /**
  * Prints some text at the center of the given space.
@@ -118,7 +118,7 @@ static int _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, boo
 }
 
 void view_set_title(STRING new_title) {
-    _print_at_center(title_text_win, 0, 0, title_win_max_x, new_title);
+    _print_at_center(title_text_win, 0, 0, getmaxx(title_text_win), new_title);
 }
 
 void view_start_up() {
@@ -133,10 +133,7 @@ void view_start_up() {
     getmaxyx(stdscr, screen_y, screen_x);
     title_win = newwin(3, 0, 0, 0);
     contents_win = newwin(screen_y - 3, 0, 3, 0);
-    title_win_max_x = screen_x - 4;
-    contents_win_max_x = screen_x;
-    contents_win_max_y = screen_y - 3;
-    title_text_win = derwin(title_win, 1, title_win_max_x, 1, 2);
+    title_text_win = derwin(title_win, 1, screen_x - 4, 1, 2);
 
     /* fill the title window */
     wmove(title_win, 0, 0);
@@ -155,7 +152,7 @@ void view_show_welcome_screen(STRING title, STRING central_text) {
     noecho();
     view_set_title(title);
     wclear(contents_win);
-    _print_at_center(title_win, 1, 0, contents_win_max_x, central_text);
+    _print_at_center(title_win, 1, 0, getmaxx(title_win), central_text);
     view_refresh_screen();
 }
 
@@ -163,8 +160,7 @@ void view_show_main_menu(STRING title, STRING guideline, STRING *choices) {
     view_set_title(title);
     wclear(contents_win);
     mvwaddstr(contents_win, 0, 0, guideline);
-    wmove(contents_win, 2, 0);
-    wprintw(contents_win, "[L] - %s. \n[S] - %s. \n[E] - %s. \n[Q] - %s. ", choices[0], choices[1], choices[2], choices[3]);
+    mvwprintw(contents_win, 2, 0, "[L] - %s. \n[S] - %s. \n[E] - %s. \n[Q] - %s. ", choices[0], choices[1], choices[2], choices[3]);
     view_refresh_screen();
 }
 
@@ -209,22 +205,36 @@ Command view_ask_user_choice(bool can_go_back) {
 #undef _SELECTED_FORBIDDEN_VALUE
 }
 
+char view_ask_user_letter(bool can_escape) {
+    int input;
+
+    // ugly method but it is explicit
+    while(1) {
+        input = mvwgetch(title_text_win, 0, 0);
+        if (can_escape && input == ESC) {
+            return ESC;
+        } else if (isalpha(input)) {
+            return (char)tolower(input);
+        }
+    }
+}
+
 void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING title_precision) {
 #define ROW_OF_HEADER 1
     view_clear_contents();
 
     /* 1 - PRINT TITLE */
-    char* title_buffer = calloc(title_win_max_x, 1);
-    snprintf(title_buffer, title_win_max_x, "%s - %s", title, title_precision);
+    char* title_buffer = calloc(getmaxx(title_text_win), 1);
+    snprintf(title_buffer, getmaxx(title_text_win), "%s - %s", title, title_precision);
     view_set_title(title_buffer);
     free(title_buffer);
 
-    int len_cols = ((contents_win_max_x / 4) - 2);
+    int len_cols = ((getmaxx(contents_win) / 4) - 2);
 
     /* 2 - PRINT COLUMN HEADERS AND HORIZONTAL LINE */
     _print_one_row(contents_win, ROW_OF_HEADER, 0, len_cols, true, names);
     wmove(contents_win, ROW_OF_HEADER + 1, 0);
-    for(int i=0; i<contents_win_max_x; i++) {
+    for(int i=0; i<getmaxx(contents_win); i++) {
         waddch(contents_win, '=');
     }
 
@@ -233,7 +243,7 @@ void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING
     Verb* pointed_verb;
     STRING to_print[4];
     int current_row = ROW_OF_HEADER + 2;
-    while (verbs != NULL && current_row < contents_win_max_y) {
+    while (verbs != NULL && current_row < getmaxx(contents_win)) {
         pointed_struct = verbs;
         pointed_verb = pointed_struct->verb;
         to_print[0] = makeStringFromMultiStrings(pointed_verb->infinitive);
@@ -241,7 +251,7 @@ void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING
         to_print[2] = makeStringFromMultiStrings(pointed_verb->time1);
         to_print[3] = makeStringFromMultiStrings(pointed_verb->time2);
 
-        current_row = _print_one_verb(contents_win, current_row, 0, len_cols, false, contents_win_max_y - current_row, pointed_struct->verb);
+        current_row = _print_one_verb(contents_win, current_row, 0, len_cols, false, getmaxx(contents_win) - current_row, pointed_struct->verb);
 
         for(int i=0; i<4; i++) {
             freeStringFromMultiStrings(to_print[i]);
