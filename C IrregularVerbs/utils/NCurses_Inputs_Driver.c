@@ -46,20 +46,44 @@ Command ncurses_input_user_choice(WINDOW* window, bool can_go_back) {
 #undef _SELECTED_FORBIDDEN_VALUE
 }
 
-CHARACTER ncurses_input_user_letter(WINDOW* window, int row_i, int col_i, bool can_escape, bool can_arrows) {
+CHARACTER ncurses_input_user_letter(WINDOW* window, int row_i, int col_i, bool can_escape, bool can_arrows, bool can_backspace) {
     int input;
+    noecho(); cbreak(); keypad(window, true);
+    wmove(window, row_i, col_i);
+
     // ugly method but it is explicit
     while(1) {
-        input = mvwgetch(window, row_i, col_i);
-        if (can_escape && input == KB_KEY_ESC) {
-            return KB_KEY_ESC;
-        } else if (can_arrows) {
-            if (input == KEY_UP || input == KEY_DOWN) {
-                return input;
-            }
-        }
-        else if (isalpha(input)) {
-            return (CHARACTER)tolower(input);
+        input = wgetch(window);
+        switch (input) {
+            case KB_KEY_ESC:
+                if (can_escape) {
+                    return KB_KEY_ESC;
+                }
+                break;
+
+            case KEY_UP:
+                if (can_arrows) {
+                    return KB_KEY_UP;
+                }
+                break;
+
+            case KEY_DOWN:
+                if (can_arrows) {
+                    return KB_KEY_DOWN;
+                }
+                break;
+
+            case KEY_BACKSPACE:
+                if (can_backspace) {
+                    return KB_KEY_BACKSPACE;
+                }
+                break;
+
+            default:
+                if (isalpha(input)) {
+                    return (CHARACTER)tolower(input);
+                }
+                break;
         }
     }
 }

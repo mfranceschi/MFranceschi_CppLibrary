@@ -8,8 +8,10 @@
 /**
  * This function handles the proper execution of the whole application.
  *
- * @return One of the values EXIT_BECAUSE_* plus EXIT_SUCCESS.
+ * @return One of the values EXIT_BECAUSE_* or EXIT_SUCCESS.
  */
 int run();
+
+void controller_handle_list();
 
 #endif //IRREGULARVERBS_CONTROLLER_H

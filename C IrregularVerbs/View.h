@@ -1,5 +1,5 @@
 //
-// Created by mfran on 17/01/2020.
+// Created by Martin on 17/01/2020.
 //
 
 #ifndef IRREGULARVERBS_VIEW_H
@@ -7,9 +7,10 @@
 
 #include "Strings.h"
 
-#define KB_KEY_ESC 27
-#define KB_KEY_UP 1
-#define KB_KEY_DOWN 2
+#define KB_KEY_ESC        (char) 27
+#define KB_KEY_UP         (char) 1
+#define KB_KEY_DOWN       (char) 2
+#define KB_KEY_BACKSPACE  (char) 3
 
 typedef enum Command_e {
     LIST, SEARCH, EXERCISE, BACK_HOME, QUIT
@@ -51,9 +52,10 @@ Command view_ask_user_choice(bool can_go_back);
  *
  * @param can_escape True if the ESC char is allowed.
  * @param can_arrows True if UP and DOWN are allowed.
- * @return a char or ESC.
+ * @param can_backspace True if BACKSPACE is allowed.
+ * @return a char or ESC or UP or DOWN.
  */
-CHARACTER view_ask_user_letter(bool can_escape, bool can_arrows);
+CHARACTER view_ask_user_letter(bool can_escape, bool can_arrows, bool can_backspace);
 
 /**
  * Sets the current view's Title.
@@ -73,7 +75,7 @@ void view_set_title(STRING t, bool centered);
  */
 void view_show_verbs_list(void *verbs);
 
-void view_show_table_headers(const STRING headers[4]);
+void view_show_table_headers();
 
 /**
  * If relevant, performs a screen refresh.
