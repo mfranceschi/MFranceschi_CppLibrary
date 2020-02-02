@@ -6,7 +6,10 @@
 #define IRREGULARVERBS_VIEW_H
 
 #include "Strings.h"
-extern const CHARACTER ESC;
+
+#define KB_KEY_ESC 27
+#define KB_KEY_UP 1
+#define KB_KEY_DOWN 2
 
 typedef enum Command_e {
     LIST, SEARCH, EXERCISE, BACK_HOME, QUIT
@@ -47,9 +50,10 @@ Command view_ask_user_choice(bool can_go_back);
  * Returns the user's input as a lowercase character, or ESC.
  *
  * @param can_escape True if the ESC char is allowed.
+ * @param can_arrows True if UP and DOWN are allowed.
  * @return a char or ESC.
  */
-CHARACTER view_ask_user_letter(bool can_escape);
+CHARACTER view_ask_user_letter(bool can_escape, bool can_arrows);
 
 /**
  * Sets the current view's Title.
@@ -57,18 +61,19 @@ CHARACTER view_ask_user_letter(bool can_escape);
  * It should not be explicitly called except for dev.
  *
  * @param t The new title.
+ * @param centered If true then title is centered, if not it is left-aligned.
  */
-void view_set_title(STRING t);
+void view_set_title(STRING t, bool centered);
 
 /**
  * Show a list of verbs.
  * The `verbs` pointer shall point to a linked list of {.next: void*, .verb: Verb*} (declared in that order).
  *
- * @param title Title of that screen.
- * @param names Titles of the four columns displaying the verbs: inf, tra, ti1, ti2.
  * @param verbs Linked list of verbs.
  */
-void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING title_precision);
+void view_show_verbs_list(void *verbs);
+
+void view_show_table_headers(const STRING headers[4]);
 
 /**
  * If relevant, performs a screen refresh.

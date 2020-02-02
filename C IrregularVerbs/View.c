@@ -11,11 +11,12 @@
 #include "utils/Utils.h"
 
 struct x{struct x* next; Verb* verb;};
+#define ROW_OF_HEADER 1
+#define len_cols ((getmaxx(contents_win) / 4) - 2)
 
 static WINDOW* title_win = NULL;
 static WINDOW* title_text_win = NULL;
 static WINDOW* contents_win = NULL;
-const CHARACTER ESC = 27;
 
 /**
  * Prints some text at the center of the given space.
@@ -117,8 +118,13 @@ static int _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, boo
     return row_i + max_iter - 1;
 }
 
-void view_set_title(STRING new_title) {
-    _print_at_center(title_text_win, 0, 0, getmaxx(title_text_win), new_title);
+void view_set_title(STRING new_title, bool centered) {
+    if (centered) {
+        _print_at_center(title_text_win, 0, 0, getmaxx(title_text_win), new_title);
+    } else {
+        wclear(title_text_win);
+        mvwaddstr(title_text_win, 0, 0, new_title);
+    }
 }
 
 void view_start_up() {
@@ -143,14 +149,14 @@ void view_start_up() {
 
 void view_show_welcome_screen(STRING title, STRING central_text) {
     noecho();
-    view_set_title(title);
+    view_set_title(title, true);
     wclear(contents_win);
     _print_at_center(title_win, 1, 0, getmaxx(title_win), central_text);
     view_refresh_screen();
 }
 
 void view_show_main_menu(STRING title, STRING guideline, STRING *choices) {
-    view_set_title(title);
+    view_set_title(title, true);
     wclear(contents_win);
     mvwaddstr(contents_win, 0, 0, guideline);
     mvwprintw(contents_win, 2, 0, "[L] - %s. \n[S] - %s. \n[E] - %s. \n[Q] - %s. ", choices[0], choices[1], choices[2], choices[3]);
@@ -161,53 +167,29 @@ Command view_ask_user_choice(bool can_go_back) {
     return ncurses_input_user_choice(contents_win, can_go_back);
 }
 
-CHARACTER view_ask_user_letter(bool can_escape) {
-    return ncurses_input_user_letter(title_text_win, 0, 0, can_escape);
+CHARACTER view_ask_user_letter(bool can_escape, bool can_arrows) {
+    return ncurses_input_user_letter(title_text_win, 0, 0, can_escape, can_arrows);
 }
 
-void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING title_precision) {
-#define ROW_OF_HEADER 1
-    view_clear_contents();
+void view_show_verbs_list(void *verbs) {
+    struct x * pointed_struct;
+    int current_row = ROW_OF_HEADER + 2;
+    while (verbs != NULL && current_row < getmaxx(contents_win)) {
+        pointed_struct = verbs;
 
-    /* 1 - PRINT TITLE */
-    WRITEABLE_STRING title_buffer = calloc(getmaxx(title_text_win), 1);
-    snprintf(title_buffer, getmaxx(title_text_win), "%s - %s", title, title_precision);
-    view_set_title(title_buffer);
-    free(title_buffer);
+        current_row = _print_one_verb(contents_win, current_row, 0, len_cols, false, getmaxx(contents_win) - current_row, pointed_struct->verb);
 
-    int len_cols = ((getmaxx(contents_win) / 4) - 2);
+        verbs = pointed_struct->next;
+        ++current_row;
+    }
+}
 
-    /* 2 - PRINT COLUMN HEADERS AND HORIZONTAL LINE */
-    _print_one_row(contents_win, ROW_OF_HEADER, 0, len_cols, true, names);
+void view_show_table_headers(const STRING headers[4]) {
+    _print_one_row(contents_win, ROW_OF_HEADER, 0, len_cols, true, headers);
     wmove(contents_win, ROW_OF_HEADER + 1, 0);
     for(int i=0; i<getmaxx(contents_win); i++) {
         waddch(contents_win, '=');
     }
-
-    /* 3 - PRINT VERBS */
-    struct x * pointed_struct;
-    Verb* pointed_verb;
-    STRING to_print[4];
-    int current_row = ROW_OF_HEADER + 2;
-    while (verbs != NULL && current_row < getmaxx(contents_win)) {
-        pointed_struct = verbs;
-        pointed_verb = pointed_struct->verb;
-        to_print[0] = makeStringFromMultiStrings(pointed_verb->infinitive);
-        to_print[1] = makeStringFromMultiStrings(pointed_verb->translation);
-        to_print[2] = makeStringFromMultiStrings(pointed_verb->time1);
-        to_print[3] = makeStringFromMultiStrings(pointed_verb->time2);
-
-        current_row = _print_one_verb(contents_win, current_row, 0, len_cols, false, getmaxx(contents_win) - current_row, pointed_struct->verb);
-
-        for(int i=0; i<4; i++) {
-            freeStringFromMultiStrings(to_print[i]);
-        }
-        verbs = pointed_struct->next;
-        ++current_row;
-    }
-
-    view_refresh_screen();
-#undef ROW_OF_HEADER
 }
 
 void view_refresh_screen() {
@@ -228,3 +210,5 @@ void view_shut_down() {
     delwin(title_win);
     endwin();
 }
+
+#undef ROW_OF_HEADER

@@ -46,14 +46,19 @@ Command ncurses_input_user_choice(WINDOW* window, bool can_go_back) {
 #undef _SELECTED_FORBIDDEN_VALUE
 }
 
-CHARACTER ncurses_input_user_letter(WINDOW* window, int row_i, int col_i, bool can_escape) {
+CHARACTER ncurses_input_user_letter(WINDOW* window, int row_i, int col_i, bool can_escape, bool can_arrows) {
     int input;
     // ugly method but it is explicit
     while(1) {
         input = mvwgetch(window, row_i, col_i);
-        if (can_escape && input == ESC) {
-            return ESC;
-        } else if (isalpha(input)) {
+        if (can_escape && input == KB_KEY_ESC) {
+            return KB_KEY_ESC;
+        } else if (can_arrows) {
+            if (input == KEY_UP || input == KEY_DOWN) {
+                return input;
+            }
+        }
+        else if (isalpha(input)) {
             return (CHARACTER)tolower(input);
         }
     }

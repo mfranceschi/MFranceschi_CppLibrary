@@ -2,12 +2,14 @@
 // Created by mfran on 24/01/2020.
 //
 
+#include <ctype.h>
+#include <stdio.h>
 #include "Texts/Interface_Texts.h"
 #include "utils/Utils.h"
 #include "VerbsContainer.h"
 #include "View.h"
 
-#define DEFAULT_LIST_LETTER 'b'
+#define DEFAULT_LIST_LETTER 'g'
 
 static void _controller_start_up(va_list list) {
     UNUSED(list);
@@ -22,29 +24,62 @@ static void _controller_shut_down() {
     view_shut_down();
 }
 
+void controller_handle_list() {
+    size_t len_of_title = strlen(list_title_beginning) + strlen(" - ") + 1;
+    WRITEABLE_STRING title = calloc(len_of_title + 1, 1);
+    char input = DEFAULT_LIST_LETTER;
+    list_node* current_results;
+    int offset = 0;
+
+    snprintf(title, len_of_title + 1, "%s - %c", list_title_beginning, input);
+    view_set_title(title, true);
+    view_show_table_headers(verb_column_headers);
+    view_refresh_screen();
+
+    while(input != KB_KEY_ESC) {
+        switch (input) {
+            case KB_KEY_UP:
+                // just go one line higher
+                break;
+            case KB_KEY_DOWN:
+                // just go one line lower
+                break;
+            default:
+                // isalpha is true
+                title[len_of_title - 1] = input;
+                view_set_title(title, true);
+
+                current_results = list_head(container_getVerbsByFirstLetter(input));
+                offset = 0;
+
+                for (int i=0; i<offset; i++) {
+                    current_results = current_results->next;
+                }
+                view_show_verbs_list(current_results);
+                break;
+        }
+        view_refresh_screen();
+        input = view_ask_user_letter(true, true);
+    }
+    free(title);
+}
+
 int run() {
     Command input_command = BACK_HOME;
-    CHARACTER list_letter_as_string [] = {DEFAULT_LIST_LETTER, '\0'};
     list_t current_results;
-    run_and_wait(500, _controller_start_up);
+    run_and_wait(500000, _controller_start_up);
 
     while (input_command != QUIT) {
         view_show_main_menu(main_menu_title, main_menu_header, (STRING *) &main_menu_choices_verbose);
         input_command = view_ask_user_choice(false);
         switch (input_command) {
             case LIST:
-                do {
-                    current_results = container_getVerbsByFirstLetter(list_letter_as_string);
-                    view_clear_contents();
-                    view_show_verbs_list(list_title_beginning, verb_column_headers, list_head(current_results),
-                            list_letter_as_string);
-                } while((*list_letter_as_string = view_ask_user_letter(true)) != ESC);
-                *list_letter_as_string = DEFAULT_LIST_LETTER;
-                break;
-
+                view_clear_contents();
+                controller_handle_list();
             case SEARCH:
+                view_clear_contents();
                 current_results = container_getVerbsBySubstring("berg");
-                view_show_verbs_list(search_title_beginning, verb_column_headers, list_head(current_results), "berg");
+                view_show_verbs_list(current_results);
                 view_ask_user_choice(true); // TODO same
                 break;
 

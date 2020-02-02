@@ -41,10 +41,12 @@ list_t container_getVerbsBySubstring(STRING str) {
     return current_results;
 }
 
-list_t container_getVerbsByFirstLetter(STRING str) {
+list_t container_getVerbsByFirstLetter(CHARACTER character) {
+    static CHARACTER str_to_put_in_query [2] = {'\0', '\0'};
+    str_to_put_in_query[0] = character;
     container_freeResults();
     list_init(current_results);
-    m_sqlite_get_by_first_letters_of_infinitive(str, current_results);
+    m_sqlite_get_by_first_letters_of_infinitive(str_to_put_in_query, current_results);
     return current_results;
 }
 
