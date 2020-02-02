@@ -1,25 +1,83 @@
-# [FR] Verbes irréguliers en Allemand
+# Irregular Verbs
 
-## Résumé
+## Summary
 
-Ce programme simple en ligne de commande permettra de visualiser et de s'exercer à la connaissance des verbes irréguliers en Allemand.
+This simple program shall allow the user to visualize and test (or even train) its knowledge with irregular verbs in some language (originally German).
 
-Ces verbes irréguliers sont composés de l'infinitif, de l'accord à la 3PS du prétérit, de l'accord à la 3PS du parfait avec l'auxiliaire, de la traduction française. Il est permis d'avoir plusieurs possibilités à chaque fois.
+The verbs are dealed with like they are tuples of (infinitive form, translation, form at time 1, form at time 2), with every field being easily customizable. Even more: each field can hold several values for each verb (example: several translations for one verb).
 
-Au lancement, il lit un fichier CSV contenant les verbes irréguliers et les stocke en mémoire.
+At the beginning, it reads a CSV file and stores all the verbs in memory. Then the user is given a graphical interface that allows him/her to choose its next activity between:
 
-L'utilisateur a une interface graphique lui permettant de choisir son activité, parmi :
+* List verbs in alphabetical order and filtered by first letter.
+* Search any verb by a substring.
+* Test its knowledge by doing some exercise. One line is displayed, an incomplete line that the user shall fill the blanks in. The user can also ask for the solution.
 
-* Visualiser par lettre initiale les verbes sous forme de liste.
-* Rechercher, par une sous-chaîne, un ou des verbes (résultats à l'écran en temps réel).
-* Compléter une ligne affichée incomplète. La recherche est aléatoire, ainsi que la partie masquée de la ligne. L'utilisateur dispose d'une façon de demander la solution.
+## Implementation proposition
 
-## Suggestion d'implémentation
+* Language: `C`
+* Display: CLI with `curses`
+* Verbs in-memory storage: SQLite
+* Design patterns: MVC, ?
+* No threads
+* A Python script fetches the verbs from `https://www.allemandfacile.com/exercices/exercice-allemand-2/exercice-allemand-22677.php` (only once, if the `.CSV` file is missing).
 
-* Langage : C
-* Affichage : CLI avec (n)curses
-* Stockage en mémoire des verbes : SQLite
-* Utilisation du MVC
-* Pas de threads
-* Contrôleur avec design pattern State
-* Génération du CSV des verbes : script Python qui récupère depuis `https://www.allemandfacile.com/exercices/exercice-allemand-2/exercice-allemand-22677.php` (1 seule fois, en cas d'absence du fichier).
+## Windows concepts
+
+### Welcome screen
+```
+####################################
+#          (some title)            #
+####################################
+
+
+          Now loading...
+
+
+```
+
+### Main menu screen
+```
+####################################
+#          (some title)            #
+####################################
+
+(Some guideline)...
+
+1 - (choice 1, list)
+2 - (choice 2, search)
+3 - (choice 3, exercise)
+4 - (choice 4, quit)
+```
+
+### List screen
+
+Each time the user presses an alphabetic key, the screen updates with the new results. 
+The user may quit this screen using the ESCAPE key.
+
+```
+##################################################
+#                      List - k                  # (For letter k)
+##################################################
+
+(infinitive) | (translation) | (time 1) | (time 2) (Headers)
+==================================================
+(infinitive) | (translation) | (time 1) | (time 2) (Instance 1)
+(infinitive) | (translation) | (time 1) | (time 2) (Instance 2)
+...
+```
+
+### Search screen
+
+Each time the user presses an alphabetic key or BACKSPACE, the screen updates with the new results. An empty input (after several BACKSPACES) provides no results. The user may quit using the ESCAPE key. 
+
+```
+##################################################
+#                  Search - xyz                  # (For input xyz)
+##################################################
+
+(infinitive) | (translation) | (time 1) | (time 2) (Headers)
+==================================================
+(infinitive) | (translation) | (time 1) | (time 2) (Instance 1)
+(infinitive) | (translation) | (time 1) | (time 2) (Instance 2)
+...
+```

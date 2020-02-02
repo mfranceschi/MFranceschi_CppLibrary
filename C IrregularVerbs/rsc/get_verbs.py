@@ -1,9 +1,11 @@
+import sys
+print("Am I in a venv: ", hasattr(sys, "real_prefix"))
+
 import requests
 from lxml import etree
 
 URL: str = "https://www.allemandfacile.com/exercices/exercice-allemand-2/exercice-allemand-22677.php"
 SEPARATOR: str = ","
-LINE_SEPARATOR: str = "\n"
 
 def get_texts(td) -> str:
     """
@@ -16,7 +18,7 @@ def get_texts(td) -> str:
         return " ".join(get_texts(c) for c in td)
 
 def write_line(file, a, b, c, d):
-    file.write(f'"{a}"{SEPARATOR}"{b}"{SEPARATOR}"{c}"{SEPARATOR}"{d}"{LINE_SEPARATOR}')
+    file.write(f'"{a}"{SEPARATOR}"{b}"{SEPARATOR}"{c}"{SEPARATOR}"{d}"\n')
 
 response = requests.get(URL)
 if (response.status_code == 200):

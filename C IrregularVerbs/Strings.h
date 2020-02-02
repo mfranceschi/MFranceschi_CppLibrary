@@ -7,13 +7,19 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
-typedef const char* STRING;
+typedef const char*           STRING; // Normal string
+typedef       char* WRITEABLE_STRING; // Normal string that we can write on
+typedef       char         CHARACTER; // Normal character
 
 typedef struct MultiStrings_s {
     size_t length;
     STRING* array;
 } MultiStrings;
+
+extern const STRING SEPARATOR;
+extern const size_t LEN_SEPARATOR; // length of SEPARATOR
 
 MultiStrings* makeMultiStrings(STRING input);
 MultiStrings* copyMultiStrings(const MultiStrings*);
