@@ -7,7 +7,6 @@
 #include "utils/Utils.h"
 #include "Verb.h"
 #include "VerbsContainer.h"
-#include "View.h"
 
 #define printf(...) (void)(0) /* use this to forbid stdout display */
 

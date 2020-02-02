@@ -9,8 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef const char*           STRING;
-typedef       char* WRITEABLE_STRING;
+typedef const char*           STRING; // Normal string
+typedef       char* WRITEABLE_STRING; // Normal string that we can write on
+typedef       char         CHARACTER; // Normal character
 
 typedef struct MultiStrings_s {
     size_t length;

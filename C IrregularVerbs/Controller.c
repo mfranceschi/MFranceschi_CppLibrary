@@ -24,8 +24,7 @@ static void _controller_shut_down() {
 
 int run() {
     Command input_command = BACK_HOME;
-    WRITEABLE_STRING list_letter_as_string = calloc(2, 1);
-    *list_letter_as_string = DEFAULT_LIST_LETTER;
+    CHARACTER list_letter_as_string [] = {DEFAULT_LIST_LETTER, '\0'};
     list_t current_results;
     run_and_wait(500, _controller_start_up);
 
@@ -55,7 +54,6 @@ int run() {
         }
         container_freeResults();
     }
-    free(list_letter_as_string);
     _controller_shut_down();
     return EXIT_SUCCESS;
 }

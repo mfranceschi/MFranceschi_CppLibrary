@@ -49,12 +49,31 @@ At the beginning, it reads a CSV file and stores all the verbs in memory. Then t
 4 - (choice 4, quit)
 ```
 
-### Search / List screen
+### List screen
+
+Each time the user presses an alphabetic key, the screen updates with the new results. 
+The user may quit this screen using the ESCAPE key.
+
 ```
-####################################
-#          (some title)            #
-####################################
-(Some indication text about what is looked up for)
+##################################################
+#                      List - k                  # (For letter k)
+##################################################
+
+(infinitive) | (translation) | (time 1) | (time 2) (Headers)
+==================================================
+(infinitive) | (translation) | (time 1) | (time 2) (Instance 1)
+(infinitive) | (translation) | (time 1) | (time 2) (Instance 2)
+...
+```
+
+### Search screen
+
+Each time the user presses an alphabetic key or BACKSPACE, the screen updates with the new results. An empty input (after several BACKSPACES) provides no results. The user may quit using the ESCAPE key. 
+
+```
+##################################################
+#                  Search - xyz                  # (For input xyz)
+##################################################
 
 (infinitive) | (translation) | (time 1) | (time 2) (Headers)
 ==================================================

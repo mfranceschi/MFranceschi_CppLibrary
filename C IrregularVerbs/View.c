@@ -2,12 +2,12 @@
 // Created by Martin on 17/01/2020.
 //
 
-#include <ctype.h>
 #include <curses.h>
 #include "Texts/Interface_Texts.h"
 #include <locale.h>
 #include "View.h"
 #include "Verb.h"
+#include "utils/NCurses_Inputs_Driver.h"
 #include "utils/Utils.h"
 
 struct x{struct x* next; Verb* verb;};
@@ -15,7 +15,7 @@ struct x{struct x* next; Verb* verb;};
 static WINDOW* title_win = NULL;
 static WINDOW* title_text_win = NULL;
 static WINDOW* contents_win = NULL;
-const char ESC = 27;
+const CHARACTER ESC = 27;
 
 /**
  * Prints some text at the center of the given space.
@@ -138,16 +138,7 @@ void view_start_up() {
     title_text_win = derwin(title_win, 1, screen_x - 4, 1, 2);
 
     /* fill the title window */
-    wmove(title_win, 0, 0);
-    for (int i=0; i<screen_x; ++i) {
-        waddch(title_win, '#');
-    }
-    mvwaddch(title_win, 1, 0, '#');
-    mvwaddch(title_win, 1, screen_x - 1, '#');
-    wmove(title_win, 2, 0);
-    for (int i=0; i<screen_x; ++i) {
-        waddch(title_win, '#');
-    }
+    wborder(title_win, '#', '#', '#', '#', '#', '#', '#', '#');
 }
 
 void view_show_welcome_screen(STRING title, STRING central_text) {
@@ -167,58 +158,11 @@ void view_show_main_menu(STRING title, STRING guideline, STRING *choices) {
 }
 
 Command view_ask_user_choice(bool can_go_back) {
-#define _SELECTED_FORBIDDEN_VALUE -1
-    int selected = _SELECTED_FORBIDDEN_VALUE;
-    Command output = -1;
-    while (selected == _SELECTED_FORBIDDEN_VALUE) {
-        selected = wgetch(contents_win);
-
-        switch (selected) {
-            case 'L':
-            case 'l':
-                output = LIST;
-                break;
-            case 'S':
-            case 's':
-                output = SEARCH;
-                break;
-            case 'E':
-            case 'e':
-                output = EXERCISE;
-                break;
-            case 'B':
-            case 'b':
-                if (can_go_back) {
-                    output = BACK_HOME;
-                } else {
-                    selected = _SELECTED_FORBIDDEN_VALUE;
-                }
-                break;
-            case 'Q':
-            case 'q':
-                output = QUIT;
-                break;
-            default:
-                selected = _SELECTED_FORBIDDEN_VALUE;
-        }
-
-    }
-    return output;
-#undef _SELECTED_FORBIDDEN_VALUE
+    return ncurses_input_user_choice(contents_win, can_go_back);
 }
 
-char view_ask_user_letter(bool can_escape) {
-    int input;
-
-    // ugly method but it is explicit
-    while(1) {
-        input = mvwgetch(title_text_win, 0, 0);
-        if (can_escape && input == ESC) {
-            return ESC;
-        } else if (isalpha(input)) {
-            return (char)tolower(input);
-        }
-    }
+CHARACTER view_ask_user_letter(bool can_escape) {
+    return ncurses_input_user_letter(title_text_win, 0, 0, can_escape);
 }
 
 void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING title_precision) {
@@ -226,7 +170,7 @@ void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING
     view_clear_contents();
 
     /* 1 - PRINT TITLE */
-    char* title_buffer = calloc(getmaxx(title_text_win), 1);
+    WRITEABLE_STRING title_buffer = calloc(getmaxx(title_text_win), 1);
     snprintf(title_buffer, getmaxx(title_text_win), "%s - %s", title, title_precision);
     view_set_title(title_buffer);
     free(title_buffer);
@@ -267,7 +211,8 @@ void view_show_verbs_list(STRING title, STRING const *names, void *verbs, STRING
 }
 
 void view_refresh_screen() {
-    touchline(title_win, 1, 1); // inform title_win that its content are going to change because of sub window
+    //touchline(title_win, 1, 1); // inform title_win that its content are going to change because of sub window
+    touchwin(title_win);
     wrefresh(title_text_win);
     wrefresh(title_win);
     wrefresh(contents_win);

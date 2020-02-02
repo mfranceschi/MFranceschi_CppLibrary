@@ -1,5 +1,5 @@
 //
-// Created by mfran on 20/01/2020.
+// Created by Martin on 20/01/2020.
 //
 
 #include "../extlibs/SQLite/sqlite3.h"
@@ -97,6 +97,9 @@ static void _makeQueryResults(sqlite3_stmt *stmt, list_t output) {
                 )};
         list_add(output, current_node);
     }
+
+    sqlite3_reset(sql_list_all_by_first_letter_of_inf);
+    sqlite3_clear_bindings(sql_list_all_by_first_letter_of_inf);
 }
 
 static void _bindMultiStringsToStmt(sqlite3_stmt* stmt, int id, MultiStrings* multiStrings) {
@@ -112,8 +115,6 @@ static void _bindStringToStmt(sqlite3_stmt* stmt, int id, STRING to_bind) {
 void m_sqlite_search_substring(STRING substring, list_t output) {
     _bindStringToStmt(sql_search, 1, substring);
     _makeQueryResults(sql_search, output);
-    sqlite3_reset(sql_list_all_by_first_letter_of_inf);
-    sqlite3_clear_bindings(sql_list_all_by_first_letter_of_inf);
 }
 
 bool m_sqlite_addVerb(const Verb* verb) {
@@ -141,8 +142,6 @@ void m_sqlite_get_all(list_t output) {
 void m_sqlite_get_by_first_letters_of_infinitive(STRING start_substring, list_t output) {
     _bindStringToStmt(sql_list_all_by_first_letter_of_inf, 1, start_substring);
     _makeQueryResults(sql_list_all_by_first_letter_of_inf, output);
-    sqlite3_reset(sql_list_all_by_first_letter_of_inf);
-    sqlite3_clear_bindings(sql_list_all_by_first_letter_of_inf);
 }
 
 bool m_sqlite_run_in_exclusive_write_transaction(void (*action) (va_list), ...) {

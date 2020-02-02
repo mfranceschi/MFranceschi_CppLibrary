@@ -53,7 +53,5 @@ int max_nbr_var(int n, ...);
 /** Returns the maximum or number between a and b. */
 int max_nbr(int a, int b);
 int min_nbr(int a, int b);
-//#define max_nbr(a,b) ((a > b) ? (a) : (b))
-//#define min_nbr(a,b) ((a < b) ? (a) : (b))
 
 #endif //IRREGULARVERBS_UTILS_H
