@@ -2,12 +2,11 @@
 // Created by Martin on 17/01/2020.
 //
 
-#include <curses.h>
 #include "Texts/Interface_Texts.h"
 #include <locale.h>
 #include "View.h"
 #include "Verb.h"
-#include "utils/NCurses_Inputs_Driver.h"
+#include "utils/NCurses_Inputs_Driver.h" // it includes curses
 #include "utils/Utils.h"
 
 struct x{struct x* next; Verb* verb;};
@@ -214,7 +213,6 @@ void view_show_table_headers() {
 }
 
 void view_refresh_screen() {
-    //touchline(title_win, 1, 1); // inform title_win that its content are going to change because of sub window
     touchwin(title_win);
     wrefresh(title_text_win);
     wrefresh(title_win);
