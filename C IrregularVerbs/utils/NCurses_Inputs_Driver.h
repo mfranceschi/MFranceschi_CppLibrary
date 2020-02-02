@@ -5,7 +5,7 @@
 #ifndef IRREGULARVERBS_NCURSES_INPUTS_DRIVER_H
 #define IRREGULARVERBS_NCURSES_INPUTS_DRIVER_H
 
-#include <curses.h>
+#include <ncurses/curses.h>
 #include "Utils.h"
 #include "../View.h"
 
