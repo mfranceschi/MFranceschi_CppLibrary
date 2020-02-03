@@ -27,6 +27,8 @@ static sqlite3_stmt* sql_start_exclusive_transaction = NULL;
 static STRING sql_start_exclusive_transaction_code = "BEGIN EXCLUSIVE TRANSACTION;";
 static sqlite3_stmt* sql_end_exclusive_transaction = NULL;
 static STRING sql_end_exclusive_transaction_code = "COMMIT";
+static sqlite3_stmt* sql_get_row_by_id = NULL;
+static STRING sql_get_row_by_id_code = "SELECT * FROM Verbs WHERE rowid = ?;";
 
 /* When verbs are returned by queries using "select *", here are the indices of columns. */
 #define INDEX_INFINITIVE   0
@@ -177,7 +179,8 @@ bool m_sqlite_start_up() {
                     (sqlite3_prepare_v2(db, sql_list_all_by_first_letter_of_inf_code, -1, &sql_list_all_by_first_letter_of_inf, NULL) == SQLITE_OK) &&
                     (sqlite3_prepare_v2(db, sql_search_code, -1, &sql_search, NULL) == SQLITE_OK) &&
                     (sqlite3_prepare_v2(db, sql_start_exclusive_transaction_code, -1, &sql_start_exclusive_transaction, NULL) == SQLITE_OK) &&
-                    (sqlite3_prepare_v2(db, sql_end_exclusive_transaction_code, -1, &sql_end_exclusive_transaction, NULL) == SQLITE_OK)
+                    (sqlite3_prepare_v2(db, sql_end_exclusive_transaction_code, -1, &sql_end_exclusive_transaction, NULL) == SQLITE_OK) &&
+                    (sqlite3_prepare_v2(db, sql_get_row_by_id_code, -1, &sql_get_row_by_id, NULL) == SQLITE_OK)
             ) {
                 return true;
             } else {
@@ -204,6 +207,7 @@ void m_sqlite_shut_down() {
     sqlite3_finalize(sql_search);
     sqlite3_finalize(sql_start_exclusive_transaction);
     sqlite3_finalize(sql_end_exclusive_transaction);
+    sqlite3_finalize(sql_get_row_by_id);
     sqlite3_close_v2(db);
 }
 

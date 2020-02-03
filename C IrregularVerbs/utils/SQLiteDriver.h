@@ -52,6 +52,13 @@ void m_sqlite_get_by_first_letters_of_infinitive(STRING start_substring, list_t 
 bool m_sqlite_run_in_exclusive_write_transaction(void (* action) (va_list), ...);
 
 /**
+ * Returns the verb at the given row ID, or NULL.
+ * @param id The row ID
+ * @return
+ */
+Verb* m_sqlite_get_by_id(int id);
+
+/**
  * @return true if the database is well started.
  */
 bool m_sqlite_start_up();
