@@ -10,6 +10,8 @@
 #include "View.h"
 
 #define DEFAULT_LIST_LETTER 's'
+#define LIST_OFFSET_DECREASE(o) if (o) {o--;} (void)0
+#define LIST_OFFSET_INCREASE(o,len) if (o < len - 1) {o++;} (void)0
 
 static void _controller_start_up(va_list list) {
     UNUSED(list);
@@ -38,15 +40,11 @@ void controller_handle_list() {
         switch (input) {
             case KB_KEY_UP:
                 // just go one line higher
-                if (offset) {
-                    offset--;
-                }
+                LIST_OFFSET_DECREASE(offset);
                 break;
             case KB_KEY_DOWN:
                 // just go one line lower
-                if (offset < list_length(results_as_list) - 1) {
-                    offset++;
-                }
+                LIST_OFFSET_INCREASE(offset, list_length((results_as_list)));
                 break;
             default:
                 if (isalpha(input)) { // i cannot find why it is necessary (^D sometimes when lateral arrow keys)
@@ -70,22 +68,38 @@ void controller_handle_list() {
 }
 
 void controller_handle_search() {
-    size_t len_of_title = strlen(list_title_beginning) + strlen(" - ") + 1;
-    WRITEABLE_STRING title = calloc(len_of_title + 1, 1);
-    char input = DEFAULT_LIST_LETTER;
     list_t results_as_list = NULL;
     list_node* current_results;
     int offset = 0;
+    Buffer_Command cmd = BUFFER_RESET;
     view_show_table_headers();
-
-    results_as_list = container_getVerbsBySubstring("berg");
-    current_results = list_head(results_as_list);
-    view_show_table_headers();
-    view_show_verbs_list(current_results);
-    view_refresh_screen();
-    view_ask_user_choice(true); // TODO same
-
-    free(title);
+    STRING input_string;
+    while (1) {
+        switch(cmd) {
+            case BUFFER_RESET:
+                input_string = view_get_search_string();
+                results_as_list = container_getVerbsBySubstring(input_string);
+                offset = 0;
+                break;
+            case BUFFER_BACK_HOME:
+                return;
+            case BUFFER_KEY_UP:
+                LIST_OFFSET_DECREASE(offset);
+                break;
+            case BUFFER_KEY_DOWN:
+                LIST_OFFSET_INCREASE(offset, list_length(results_as_list));
+                break;
+            default:
+                exit(EXIT_BECAUSE_UNEXPECTED);
+        }
+        current_results = list_head(results_as_list);
+        for (int i=0; i<offset; i++) {
+            current_results = current_results->next;
+        }
+        view_show_verbs_list(current_results);
+        view_refresh_screen();
+        cmd = view_get_search_command();
+    }
 }
 
 int run() {

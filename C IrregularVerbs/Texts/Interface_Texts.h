@@ -21,8 +21,10 @@ extern const STRING main_menu_choices_verbose[4];
 
 /* LIST VERBS */
 extern const STRING list_title_beginning;
-extern const STRING search_title_beginning;
 extern const STRING verb_column_headers[4];
+
+/* SEARCH VERBS */
+extern const STRING search_title_beginning;
 
 /* MISCELLANEOUS */
 extern const STRING dummy_welcome;

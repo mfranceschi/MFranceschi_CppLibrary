@@ -21,13 +21,15 @@ const STRING main_menu_choices_verbose[4] = {
 
 /* LIST VERBS */
 const STRING list_title_beginning = "Liste";
-const STRING search_title_beginning = "Recherche";
 const STRING verb_column_headers[4] = {
         "Infinitif", "Traduction",
 #if LANG_VERBS == German
         "Prétérit", "Parfait"
 #endif
 };
+
+/* SEARCH VERBS */
+const STRING search_title_beginning = "Recherche";
 
 /* MISCELLANEOUS */
 const STRING dummy_welcome = "Message simplet de bienvenue !";

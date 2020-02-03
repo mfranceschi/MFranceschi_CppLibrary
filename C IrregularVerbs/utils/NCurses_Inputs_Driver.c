@@ -5,6 +5,9 @@
 #include "NCurses_Inputs_Driver.h"
 #include <ctype.h>
 
+#define THE_BUFFER_LEN 50
+CHARACTER the_buffer[THE_BUFFER_LEN] = {0};
+
 Command ncurses_input_user_choice(WINDOW* window, bool can_go_back) {
 #define _SELECTED_FORBIDDEN_VALUE -1
     int selected = _SELECTED_FORBIDDEN_VALUE;
@@ -46,10 +49,9 @@ Command ncurses_input_user_choice(WINDOW* window, bool can_go_back) {
 #undef _SELECTED_FORBIDDEN_VALUE
 }
 
-CHARACTER ncurses_input_user_letter(WINDOW* window, int row_i, int col_i, bool can_escape, bool can_arrows, bool can_backspace) {
+CHARACTER ncurses_input_user_letter(WINDOW* window, bool can_escape, bool can_arrows, bool can_backspace) {
     int input;
     noecho(); cbreak(); keypad(window, true);
-    wmove(window, row_i, col_i);
 
     // ugly method but it is explicit
     while(1) {
@@ -88,3 +90,41 @@ CHARACTER ncurses_input_user_letter(WINDOW* window, int row_i, int col_i, bool c
     }
 }
 
+STRING ncurses_input_buffer_get() {
+    return the_buffer;
+}
+void ncurses_input_buffer_reset() {
+    memset(the_buffer, 0, 50 * sizeof(CHARACTER));
+    the_buffer[0] = 's';
+    the_buffer[1] = 'c';
+    the_buffer[2] = 'h';
+}
+
+void ncurses_input_buffer_handle_user_input(WINDOW* window) {
+    echo();
+    wgetnstr(window, the_buffer, THE_BUFFER_LEN);
+}
+
+Buffer_Command ncurses_input_buffer_get_command(WINDOW* window) {
+    int input;
+    noecho();
+    while (1) {
+        input = wgetch(window);
+        switch(input) {
+            case KB_KEY_ESC:
+                return BUFFER_BACK_HOME;
+
+            case KEY_UP:
+                return BUFFER_KEY_UP;
+
+            case KEY_DOWN:
+                return BUFFER_KEY_DOWN;
+
+            case ' ':
+                return BUFFER_RESET;
+
+            default:
+                break;
+        }
+    }
+}

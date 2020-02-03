@@ -12,9 +12,16 @@
 #define KB_KEY_DOWN       (char) 2
 #define KB_KEY_BACKSPACE  (char) 3
 
-typedef enum Command_e {
+typedef enum {
     LIST, SEARCH, EXERCISE, BACK_HOME, QUIT
 } Command;
+
+typedef enum {
+    BUFFER_BACK_HOME,
+    BUFFER_RESET,
+    BUFFER_KEY_UP,
+    BUFFER_KEY_DOWN
+} Buffer_Command;
 
 /**
  * Starts, allocates and run every view initialization script.
@@ -75,7 +82,22 @@ void view_set_title(STRING t, bool centered);
  */
 void view_show_verbs_list(void *verbs);
 
+/**
+ * Displays the table headers.
+ */
 void view_show_table_headers();
+
+/**
+ * // todo define specs
+ * @return
+ */
+STRING view_get_search_string();
+
+/**
+ * // todo define specs
+ * @return
+ */
+Buffer_Command view_get_search_command();
 
 /**
  * If relevant, performs a screen refresh.

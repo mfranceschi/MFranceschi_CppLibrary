@@ -182,7 +182,8 @@ Command view_ask_user_choice(bool can_go_back) {
 }
 
 CHARACTER view_ask_user_letter(bool can_escape, bool can_arrows, bool can_backspace) {
-    return ncurses_input_user_letter(title_text_win, 0, 0, can_escape, can_arrows, can_backspace);
+    wmove(title_text_win, 0, 0);
+    return ncurses_input_user_letter(title_text_win, can_escape, can_arrows, can_backspace);
 }
 
 void view_show_verbs_list(void *verbs) {
@@ -210,6 +211,20 @@ void view_show_table_headers() {
     for(int i=0; i<getmaxx(contents_win); i++) {
         waddch(contents_win, '=');
     }
+}
+
+STRING view_get_search_string() {
+    ncurses_input_buffer_reset();
+    wmove(title_text_win, 0, 0);
+    view_set_title(search_title_beginning, false);
+    waddstr(title_text_win, " - ");
+    ncurses_input_buffer_handle_user_input(title_text_win);
+    return ncurses_input_buffer_get();
+}
+
+Buffer_Command view_get_search_command() {
+    wmove(title_text_win, 0, 0);
+    return ncurses_input_buffer_get_command(title_text_win);
 }
 
 void view_refresh_screen() {
