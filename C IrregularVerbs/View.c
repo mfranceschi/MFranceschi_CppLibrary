@@ -21,7 +21,7 @@ static WINDOW* contents_win = NULL;
 #define COLOR_PAIR_ONE 2
 #define COLOR_PAIR_TWO 3
 #define COLOR_PAIR_THREE 4
-#define COLOR_VERB_LOOP(cur) (\
+#define COLOR_VERB_LOOP(cur) cur = (\
     (cur == COLOR_PAIR_ONE) ? COLOR_PAIR_TWO : \
     (cur == COLOR_PAIR_TWO) ? COLOR_PAIR_THREE : \
     COLOR_PAIR_ONE)
@@ -197,7 +197,7 @@ void view_show_verbs_list(void *verbs) {
         current_row = _print_one_verb(contents_win, current_row, 0, len_cols, false, getmaxx(contents_win) - current_row, pointed_struct->verb);
         wattroff(contents_win, COLOR_PAIR(current_color_index));
 
-        current_color_index = COLOR_VERB_LOOP(current_color_index);
+        COLOR_VERB_LOOP(current_color_index);
         verbs = pointed_struct->next;
         ++current_row;
     }

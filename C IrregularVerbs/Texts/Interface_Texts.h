@@ -5,7 +5,7 @@
 #ifndef IRREGULARVERBS_INTERFACE_TEXTS_H
 #define IRREGULARVERBS_INTERFACE_TEXTS_H
 
-#include "../Strings.h"
+#include "../utils/Strings.h"
 
 #define LANG_INTERFACE French
 #define LANG_VERBS German
@@ -28,5 +28,6 @@ extern const STRING search_title_beginning;
 
 /* MISCELLANEOUS */
 extern const STRING dummy_welcome;
+extern const STRING csv_file_name;
 
 #endif //IRREGULARVERBS_INTERFACE_TEXTS_H

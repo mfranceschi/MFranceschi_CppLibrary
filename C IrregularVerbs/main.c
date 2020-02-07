@@ -4,11 +4,10 @@
 
 #include "Controller.h"
 #include <stdio.h>
-#include "utils/Utils.h"
 #include "Verb.h"
 #include "VerbsContainer.h"
 
-#define printf(...) (void)(0) /* use this to forbid stdout display */
+#define printf(...) (void)0 /* use this to forbid stdout display */
 
 static void tests_make_verb() {
     bool should_shut_down_after = !container_is_working();

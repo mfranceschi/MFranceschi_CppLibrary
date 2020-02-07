@@ -1,7 +1,0 @@
-{
-  "create": "CREATE TABLE Verbs (\n    infinitive STRING PRIMARY KEY,\n    translation STRING,\n    time1 STRING,\n    time2 STRING\n) ;",
-  "insert": "INSERT INTO Verbs VALUES ( ?i ?t ?t1 ?t2 ) ;",
-  "count": "SELECT COUNT(*) FROM Verbs ;",
-  "get all": "SELECT * FROM Verbs ORDER BY infinitive ;",
-  "search":
-}

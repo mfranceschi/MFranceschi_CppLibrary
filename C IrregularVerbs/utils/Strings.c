@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <string.h>
 #include "Strings.h"
-#include "utils/Utils.h"
+#include "Utils.h"
 
 const STRING SEPARATOR = ",";
 const size_t LEN_SEPARATOR = 1; // length of SEPARATOR

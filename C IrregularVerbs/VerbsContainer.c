@@ -15,7 +15,7 @@ LIST(current_results);
 /* Indicates whether the container is running now. */
 static bool working = false;
 
-static void _addVerbs_inALoopOf_addVerb(va_list arguments) {
+static void _addVerbsLoop(va_list arguments) {
     const Verb** verbs = va_arg(arguments, const Verb**);
     size_t number = va_arg(arguments, size_t);
     for (size_t i = 0; i < number; i++) {
@@ -26,7 +26,7 @@ static void _addVerbs_inALoopOf_addVerb(va_list arguments) {
 }
 
 bool container_addVerbs(const Verb** verbs, size_t number) {
-    if (m_sqlite_run_in_exclusive_write_transaction( _addVerbs_inALoopOf_addVerb, verbs, number)) {
+    if (m_sqlite_run_in_exclusive_write_transaction(_addVerbsLoop, verbs, number)) {
         cache_count_of_verbs = 0;
         return true;
     } else {

@@ -32,6 +32,7 @@ const STRING verb_column_headers[4] = {
 const STRING search_title_beginning = "Recherche";
 
 /* MISCELLANEOUS */
-const STRING dummy_welcome = "Message simplet de bienvenue !";
+const STRING dummy_welcome = "Message simplet de bienvenue !"; // just used during implementation, not for release
+const STRING csv_file_name = "../rsc/verbs.csv";
 
 #endif

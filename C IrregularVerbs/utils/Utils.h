@@ -6,7 +6,7 @@
 #define IRREGULARVERBS_UTILS_H
 
 #include <stdarg.h>
-#include "../Strings.h"
+#include "Strings.h"
 
 #define EXIT_BECAUSE_FILE_FAILURE 2 /* exit with this if a file failure occurred. */
 #define EXIT_BECAUSE_CURSES_ISSUE 3 /* exit with this if the curses lib could not run initscr */

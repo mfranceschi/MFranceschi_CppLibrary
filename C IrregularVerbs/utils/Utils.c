@@ -3,15 +3,14 @@
 //
 
 #include "ftime.h"
+#include "../Texts/Interface_Texts.h"
 #include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include "Utils.h"
 #include "../VerbsContainer.h"
-#include "../Verb.h"
 
-STRING CSV_FILENAME = "../rsc/verbs.csv";
 #define PYTHON_SCRIPT_FILENAME "./get_verbs.py"
 
 /* ***** STATIC FUNCTIONS DECLARATION ***** */
@@ -109,10 +108,10 @@ void fill_verbs_container() {
 
     // open file
     FILE* csv_file_stream = NULL;
-    if ((csv_file_stream = fopen(CSV_FILENAME, "r")) == NULL) {
+    if ((csv_file_stream = fopen(csv_file_name, "r")) == NULL) {
         if (
                 (_run_python_script(".\\..\\rsc\\", PYTHON_SCRIPT_FILENAME) != EXIT_SUCCESS) || /* Failure of PYTHON script */
-                (csv_file_stream = fopen(CSV_FILENAME, "r")) == NULL /* File still cannot be read */
+                (csv_file_stream = fopen(csv_file_name, "r")) == NULL /* File still cannot be read */
                 ) {
             exit(EXIT_BECAUSE_FILE_FAILURE);
         }
