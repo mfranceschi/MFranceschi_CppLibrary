@@ -6,7 +6,63 @@
 #include <ctype.h>
 
 #define THE_BUFFER_LEN 50
-CHARACTER the_buffer[THE_BUFFER_LEN] = {0};
+static CHARACTER the_buffer[THE_BUFFER_LEN];
+
+/* Code snippet adapted from https://stackoverflow.com/a/5232504/11996851 */
+static void _read_line(WINDOW* window, char *buffer, int buflen)
+/* Read up to buflen-1 characters into `buffer`.
+ * A terminating '\0' character is added after the input.  */
+{
+    int old_curs = curs_set(1);
+    int pos = 0;
+    int len = 0;
+    int x, y;
+
+    getyx(window, y, x);
+    for (;;) {
+        int c;
+
+        buffer[len] = ' ';
+        mvwaddnstr(window, y, x, buffer, len + 1);
+        wmove(window, y, x + pos);
+        c = wgetch(window);
+
+        if (c == KEY_ENTER || c == '\n' || c == '\r') {
+            break;
+        } else if (isprint(c)) {
+            if (pos < buflen-1) {
+                memmove(buffer+pos+1, buffer+pos, len-pos);
+                buffer[pos++] = (char) tolower(c);
+                len += 1;
+            } else {
+                beep();
+            }
+        } else if (c == KEY_LEFT) {
+            if (pos > 0) pos -= 1; else beep();
+        } else if (c == KEY_RIGHT) {
+            if (pos < len) pos += 1; else beep();
+        } else if (c == KEY_BACKSPACE) {
+            if (pos > 0) {
+                memmove(buffer+pos-1, buffer+pos, len-pos);
+                pos -= 1;
+                len -= 1;
+            } else {
+                beep();
+            }
+        } else if (c == KEY_DC) {
+            if (pos < len) {
+                memmove(buffer+pos, buffer+pos+1, len-pos-1);
+                len -= 1;
+            } else {
+                beep();
+            }
+        } else {
+            beep();
+        }
+    }
+    buffer[len] = '\0';
+    if (old_curs != ERR) curs_set(old_curs);
+}
 
 Command ncurses_input_user_choice(WINDOW* window, bool can_go_back) {
 #define _SELECTED_FORBIDDEN_VALUE -1
@@ -93,16 +149,20 @@ CHARACTER ncurses_input_user_letter(WINDOW* window, bool can_escape, bool can_ar
 STRING ncurses_input_buffer_get() {
     return the_buffer;
 }
+
 void ncurses_input_buffer_reset() {
-    memset(the_buffer, 0, 50 * sizeof(CHARACTER));
-    the_buffer[0] = 's';
-    the_buffer[1] = 'c';
-    the_buffer[2] = 'h';
+    memset(the_buffer, '\0', sizeof(the_buffer));
 }
 
 void ncurses_input_buffer_handle_user_input(WINDOW* window) {
     echo();
-    wgetnstr(window, the_buffer, THE_BUFFER_LEN);
+    nocbreak();
+    keypad(window, false);
+    _read_line(window, the_buffer, THE_BUFFER_LEN);
+//    wgetnstr(window, the_buffer, THE_BUFFER_LEN);
+    keypad(window, true);
+    cbreak();
+    noecho();
 }
 
 Buffer_Command ncurses_input_buffer_get_command(WINDOW* window) {
