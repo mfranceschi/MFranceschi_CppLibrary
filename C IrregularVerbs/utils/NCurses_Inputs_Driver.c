@@ -151,7 +151,7 @@ STRING ncurses_input_buffer_get() {
 }
 
 void ncurses_input_buffer_reset() {
-    memset(the_buffer, '\0', sizeof(the_buffer));
+    memset(the_buffer, '\0', THE_BUFFER_LEN);
 }
 
 void ncurses_input_buffer_handle_user_input(WINDOW* window) {
@@ -159,7 +159,6 @@ void ncurses_input_buffer_handle_user_input(WINDOW* window) {
     nocbreak();
     keypad(window, false);
     _read_line(window, the_buffer, THE_BUFFER_LEN);
-//    wgetnstr(window, the_buffer, THE_BUFFER_LEN);
     keypad(window, true);
     cbreak();
     noecho();
