@@ -89,19 +89,16 @@ static void _makeQueryResults(sqlite3_stmt *stmt, list_t output) {
         STRING time2 = (STRING) sqlite3_column_text(stmt, INDEX_TIME_2);
 
         list_node* current_node = calloc(1, sizeof(list_node));
-        *current_node = (list_node) {
-                .next = NULL, /* Not necessary because already done by "list_add" but anyway */
-                .verb = makeVerbFromStrings(
-                        infinitive,
-                        translation,
-                        time1,
-                        time2
-                )};
+        current_node->verb = makeVerbFromStrings(
+                infinitive,
+                translation,
+                time1,
+                time2);
         list_add(output, current_node);
     }
 
-    sqlite3_reset(sql_list_all_by_first_letter_of_inf);
-    sqlite3_clear_bindings(sql_list_all_by_first_letter_of_inf);
+    sqlite3_reset(stmt);
+    sqlite3_clear_bindings(stmt);
 }
 
 static void _bindMultiStringsToStmt(sqlite3_stmt* stmt, int id, MultiStrings* multiStrings) {
@@ -137,9 +134,11 @@ size_t m_sqlite_get_count() {
     return output;
 }
 
+#if defined(DEBUG_MODE) && DEBUG_MODE == 1
 void m_sqlite_get_all(list_t output) {
     _makeQueryResults(sql_list_all, output);
 }
+#endif
 
 void m_sqlite_get_by_first_letters_of_infinitive(STRING start_substring, list_t output) {
     _bindStringToStmt(sql_list_all_by_first_letter_of_inf, 1, start_substring);

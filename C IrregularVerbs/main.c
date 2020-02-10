@@ -10,7 +10,7 @@
 #define printf(...) (void)0 /* use this to forbid stdout display */
 
 static void tests_make_verb() {
-    bool should_shut_down_after = !container_is_working();
+    bool should_shut_down_after = !container_is_running();
     if (should_shut_down_after) {
         container_start_up();
     }

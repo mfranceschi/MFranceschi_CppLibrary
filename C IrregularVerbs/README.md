@@ -24,7 +24,7 @@ The current implementation is a French interface displaying German irregular ver
 
 What do I plan to do in the future (by order of priority):
 
-* Fix the **search** functionality (it works fine on the first try, but on the next attempts the results are not refreshed, we keep the original results).
+* [DONE] Fix the **search** functionality (it works fine on the first try, but on the next attempts the results are not refreshed, we keep the original results).
 * Fix the **search** input weird behavior (too many backspaces = go out of writeable field). 
 * Implement the **exercise** functionality.
 * Polish the german verbs CSV. 

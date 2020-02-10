@@ -1,17 +1,29 @@
 //
-// Created by mfran on 25/01/2020.
+// Created by Martin on 25/01/2020.
 //
 
 #ifndef IRREGULARVERBS_FTIME_H
 #define IRREGULARVERBS_FTIME_H
 
 /**
- * ftime.h, or FAKE-<sys/time.h>.
- * This module simulates the behavior of the <sys/time.h> library, which is deprecated under MinGW.
- * Do not use is as a full replacement because the contents are customized to fit in IrregularVerbs needs.
+ * FAKE-<sys/time.h>.
+ *
+ * Two cases: (we choose by checking if _WIN32 macro is defined)
+ * - If we are running a non-Windows-dependent compiler (so neither MinGW, neither MSVC) then that files just includes
+ *   the regular <sys/time.h> and adds one utility function.
+ * - Else we define ourselves two functions (same declaration as in <sys/time.h>) and add a new one.
+ *   In that case, functions will implement a behavior for microseconds but it will not be any useful below the
+ *   milliseconds range.
  */
 
 #include <stdint.h>
+
+#ifndef _WIN32
+
+// We just need to include the file that usually works!
+#include<sys/time.h>
+
+#else
 
 typedef unsigned long seconds_t;
 typedef unsigned long useconds_t;
@@ -21,21 +33,10 @@ typedef struct timeval_s {
     useconds_t tv_usec;
 } timeval;
 
-/**
- * Fills the given struct with the current time infos.
- *
- * @param t The struct to fill.
- * @param tzp Ignored, NULL is okay.
- * @return 0 (always)
- */
 int gettimeofday(timeval* t, void* tzp);
-
-/**
- * Sleeps.
- *
- * @param length Duration in microseconds (we only consider milliseconds).
- */
 void usleep(useconds_t length);
+
+#endif
 
 /**
  * BONUS FUNCTION (not in <sys/time.h>).

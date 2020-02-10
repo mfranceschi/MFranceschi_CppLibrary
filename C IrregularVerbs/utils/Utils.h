@@ -12,7 +12,7 @@
 #define EXIT_BECAUSE_CURSES_ISSUE 3 /* exit with this if the curses lib could not run initscr */
 #define EXIT_BECAUSE_UNEXPECTED 9 /* exit with this NEVER please */
 
-#define UNUSED(a) ((void)(a))
+#define UNUSED(a) ((void)(a)) /* Makes the compiler ignore unused variable. */
 
 /**
  * Simply reads the CSV file and adds every verb to the VerbsContainer.

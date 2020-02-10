@@ -23,6 +23,6 @@ void container_freeResults();
 STRING container_get_last_error();
 bool container_start_up();
 void container_shut_down();
-bool container_is_working();
+bool container_is_running();
 
 #endif //IRREGULARVERBS_VERBSCONTAINER_H
