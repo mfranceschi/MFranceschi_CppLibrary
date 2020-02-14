@@ -1,5 +1,5 @@
 //
-// Created by mfran on 17/01/2020.
+// Created by Martin on 17/01/2020.
 //
 
 #include "ftime.h"
@@ -205,6 +205,7 @@ void run_and_wait ( unsigned int milliseconds, void(* function) (va_list), ...) 
     }
 }
 
+#if DEBUG_MODE == 1
 int min_nbr_var(int n, ...) {
     va_list l;
     int result = INT_MAX;
@@ -219,6 +220,7 @@ int min_nbr_var(int n, ...) {
 
     return result;
 }
+#endif
 
 int max_nbr_var(int n, ...) {
     va_list l;
