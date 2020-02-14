@@ -12,6 +12,8 @@
  */
 int run();
 
+void controller_handle_exercise();
 void controller_handle_list();
+void controller_handle_search();
 
 #endif //IRREGULARVERBS_CONTROLLER_H

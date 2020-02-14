@@ -35,7 +35,7 @@ void view_start_up();
  * @param title Title of that screen.
  * @param central_text The central text indicating that we are loading now.
  */
-void view_show_welcome_screen(STRING title, STRING central_text);
+void view_show_welcome_screen();
 
 /**
  * Shows the program's main menu. The user does not have control yet.
@@ -44,7 +44,7 @@ void view_show_welcome_screen(STRING title, STRING central_text);
  * @param guideline The guideline below the title.
  * @param choices Explanation of each of the four options.
  */
-void view_show_main_menu(STRING title, STRING guideline, STRING *choices);
+void view_show_main_menu();
 
 /**
  * Returns the user's input as a Command.

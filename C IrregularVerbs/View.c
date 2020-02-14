@@ -7,7 +7,6 @@
 #include "View.h"
 #include "Verb.h"
 #include "utils/NCurses_Inputs_Driver.h" // it includes curses
-#include "utils/Utils.h"
 
 struct x{struct x* next; Verb* verb;};
 #define ROW_OF_HEADER 1
@@ -29,7 +28,7 @@ static WINDOW* contents_win = NULL;
 /**
  * Prints some text at the center of the given space.
  * The unused space is filled with whitespaces.
- * No-op is string is too long. // TODO change
+ * No-op if string is too long. // TODO change
  *
  * @param win The window to print text in.
  * @param start_y Row of start in window.
@@ -161,19 +160,25 @@ void view_start_up() {
     wborder(title_win, '#', '#', '#', '#', '#', '#', '#', '#');
 }
 
-void view_show_welcome_screen(STRING title, STRING central_text) {
+void view_show_welcome_screen() {
     noecho();
-    view_set_title(title, true);
+    view_set_title(welcome_screen_title, true);
     wclear(contents_win);
-    _print_at_center(title_win, 1, 0, getmaxx(title_win), central_text);
+    _print_at_center(title_win, 1, 0, getmaxx(title_win), welcome_screen_central_text);
     view_refresh_screen();
 }
 
-void view_show_main_menu(STRING title, STRING guideline, STRING *choices) {
-    view_set_title(title, true);
+void view_show_main_menu() {
+    view_set_title(main_menu_title, true);
     wclear(contents_win);
-    mvwaddstr(contents_win, 0, 0, guideline);
-    mvwprintw(contents_win, 2, 0, "[L] - %s. \n[S] - %s. \n[E] - %s. \n[Q] - %s. ", choices[0], choices[1], choices[2], choices[3]);
+    mvwaddstr(contents_win, 0, 0, main_menu_header);
+    mvwprintw(
+            contents_win, 2, 0,
+            "[L] - %s. \n[S] - %s. \n[E] - %s. \n[Q] - %s. ",
+            main_menu_choices_verbose[0],
+            main_menu_choices_verbose[1],
+            main_menu_choices_verbose[2],
+            main_menu_choices_verbose[3]);
     view_refresh_screen();
 }
 

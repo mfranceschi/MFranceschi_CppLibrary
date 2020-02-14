@@ -25,7 +25,6 @@ The current implementation is a French interface displaying German irregular ver
 What do I plan to do in the future (by order of priority):
 
 * [DONE] Fix the **search** functionality (it works fine on the first try, but on the next attempts the results are not refreshed, we keep the original results).
-* Fix the **search** input weird behavior (too many backspaces = go out of writeable field). 
 * Implement the **exercise** functionality.
 * Polish the german verbs CSV. 
 * Randomize the first displayed letter when starting the **list**. 
@@ -36,5 +35,6 @@ What do I plan to do in the future (by order of priority):
 * Change the behavior if the CSV file is not found: just exit. Perhaps display a specific error message.
 * Examine workarounds against bad UTF-8 handling. 
 * Protect the **search** functionality against empty input strings.  
+* Fix the **search** input weird behavior (too many backspaces = go out of writeable field). 
 * Enhance the colors by not resetting them when we go up and down. 
 * Do more checks on memory leaks. 

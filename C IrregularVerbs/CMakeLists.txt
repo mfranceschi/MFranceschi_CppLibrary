@@ -7,6 +7,18 @@ set(CMAKE_C_STANDARD 11)            # C11 standard
 find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
 
+# Make the info of which Curses folder to include available to the program for the #include directive.
+if(${CURSES_HAVE_CURSES_H})
+    set(CURSES_INCLUDE_DIRECTORY curses.h)
+    elseif(${CURSES_HAVE_NCURSES_H})
+    set(CURSES_INCLUDE_DIRECTORY ncurses.h)
+    elseif(${CURSES_HAVE_NCURSES_NCURSES_H})
+    set(CURSES_INCLUDE_DIRECTORY ncurses/ncurses.h)
+    elseif(CURSES_HAVE_NCURSES_CURSES_H)
+    set(CURSES_INCLUDE_DIRECTORY ncurses/curses.h)
+endif()
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DCURSES_INCLUDE_DIRECTORY=${CURSES_INCLUDE_DIRECTORY}")
+
 # Preprocessor macro: 1 if we are in debug mode, 0 otherwise.
 set(DEBUG_MODE 1)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_MODE=${DEBUG_MODE}")
