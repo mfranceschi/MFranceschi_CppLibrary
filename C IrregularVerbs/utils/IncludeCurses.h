@@ -10,20 +10,16 @@
  * It makes the right include directive for NCurses or PDCurses.
  */
 
-/* copy of the CMakeLists, to be removed later
-if(${CURSES_HAVE_CURSES_H})
-    set(CURSES_INCLUDE_DIRECTORY curses.h)
-    elseif(${CURSES_HAVE_NCURSES_H})
-    set(CURSES_INCLUDE_DIRECTORY ncurses.h)
-    elseif(${CURSES_HAVE_NCURSES_NCURSES_H})
-    set(CURSES_INCLUDE_DIRECTORY ncurses/ncurses.h)
-    elseif(CURSES_HAVE_NCURSES_CURSES_H)
-    set(CURSES_INCLUDE_DIRECTORY ncurses/curses.h)
-endif()
-*/
-
-#if 1 // CURSES_INCLUDE_DIRECTORY == curses.h // TODO why does it not works
-#include <ncurses/ncurses.h>
+#if   CURSES_HAVE_CURSES_H
+#include         <curses.h>
+#elif CURSES_HAVE_NCURSES_H
+#include         <ncurses.h>
+#elif CURSES_HAVE_NCURSES_NCURSES_H
+#include         <ncurses/ncurses.h>
+#elif CURSES_HAVE_NCURSES_CURSES_H
+#include         <ncurses/curses.h>
+#else
+#error "Problem while including Curses."
 #endif
 
 #endif //IRREGULARVERBS_INCLUDECURSES_H

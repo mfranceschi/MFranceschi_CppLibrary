@@ -29,8 +29,10 @@ What do I plan to do in the future (by order of priority):
 * Polish the german verbs CSV. 
 * Randomize the first displayed letter when starting the **list**. 
 * Put unused functions in conditional compilation. 
+  * [Update] Partially done. 
 * Finish and polish the documentation of methods and modules. 
 * Check if it might be possible to use CMake to allow some more flexible cross-platform implementation (as we do not need threads). 
+  * [Update] Partially done. More code is cross-platform designed. Some testing with Cygwin will be required. 
 * Make guides on how to extend it with other languages.
 * Change the behavior if the CSV file is not found: just exit. Perhaps display a specific error message.
 * Examine workarounds against bad UTF-8 handling. 
