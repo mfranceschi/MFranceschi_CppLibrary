@@ -2,8 +2,7 @@
 // Created by Martin on 01/02/2020.
 //
 
-#include "NCurses_Input_Driver.h"
-#include "NCurses_Commons.h"
+#include "NCurses_Inputs_Driver.h"
 #include <ctype.h>
 
 #define THE_BUFFER_LEN 50
@@ -65,12 +64,12 @@ static void _read_line(WINDOW* window, char *buffer, int buflen)
     if (old_curs != ERR) curs_set(old_curs);
 }
 
-Command ncurses_input_user_choice(bool can_go_back) {
+Command ncurses_input_user_choice(WINDOW* window, bool can_go_back) {
 #define _SELECTED_FORBIDDEN_VALUE -1
     int selected = _SELECTED_FORBIDDEN_VALUE;
     Command output = -1;
     while (selected == _SELECTED_FORBIDDEN_VALUE) {
-        selected = wgetch(ncurses_get_contents_window());
+        selected = wgetch(window);
 
         switch (selected) {
             case 'L':
@@ -106,11 +105,9 @@ Command ncurses_input_user_choice(bool can_go_back) {
 #undef _SELECTED_FORBIDDEN_VALUE
 }
 
-CHARACTER ncurses_input_user_letter(bool can_escape, bool can_arrows, bool can_backspace) {
-    WINDOW* window = ncurses_get_title_text_window();
+CHARACTER ncurses_input_user_letter(WINDOW* window, bool can_escape, bool can_arrows, bool can_backspace) {
     int input;
     noecho(); cbreak(); keypad(window, true);
-    wmove(window, 0, 0);
 
     // ugly method but it is explicit
     while(1) {
@@ -161,9 +158,7 @@ void ncurses_input_buffer_handle_user_input(WINDOW* window) {
     echo();
     nocbreak();
     keypad(window, false);
-    while (*the_buffer == '\0') {
-        _read_line(window, the_buffer, THE_BUFFER_LEN);
-    }
+    _read_line(window, the_buffer, THE_BUFFER_LEN);
     keypad(window, true);
     cbreak();
     noecho();
