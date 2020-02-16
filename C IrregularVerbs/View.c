@@ -4,6 +4,7 @@
 
 #include "Texts/Interface_Texts.h"
 #include <locale.h>
+#include <math.h>
 #include "View.h"
 #include "Verb.h"
 #include "utils/NCurses_Inputs_Driver.h" // it includes curses
@@ -108,11 +109,11 @@ static int _print_one_verb(WINDOW* win, int row_i, int col_i, int col_width, boo
             *(v->time1),
             *(v->time2)
     };
-    int max_iter = min_nbr(
+    int max_iter = (int) fminl(
             remaining,
-            max_nbr_var(
-                    4,
-                    decl[0].length, decl[1].length, decl[2].length, decl[3].length));
+            fmaxl (decl[0].length,
+                    fmaxl(decl[1].length,
+                            fmaxl(decl[2].length, decl[3].length))));
     STRING texts[4];
 
     for (int i=0; i<max_iter; i++) {
