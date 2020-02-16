@@ -5,6 +5,7 @@ set(CMAKE_C_STANDARD 11)            # C11 standard
 # Find the Curses library.
 # It might well be Curses, NCurses or PDCurses. Who knows?
 set(CURSES_NEED_NCURSES TRUE)
+set(CURSES_NEED_WIDE TRUE)
 find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
 add_compile_definitions(

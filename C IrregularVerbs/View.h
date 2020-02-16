@@ -105,7 +105,7 @@ Buffer_Command view_get_search_command();
 void view_refresh_screen();
 
 /**
- * Cleans the screen (empty or so) but does not perform an explicit refresh.
+ * Cleans the contents window but does not perform an explicit refresh.
  */
 void view_clear_contents();
 

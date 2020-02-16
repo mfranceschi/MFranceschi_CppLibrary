@@ -15,7 +15,7 @@
 void controller_handle_list() {
     size_t len_of_title = strlen(list_title_beginning) + strlen(" - ") + 1;
     WRITEABLE_STRING title = calloc(len_of_title + 1, 1);
-    char input = 's'; // TODO change to random letter
+    char input = get_random_letter();
     list_t results_as_list = NULL;
     list_node* current_results;
     int offset = 0;
@@ -26,12 +26,10 @@ void controller_handle_list() {
     while(input != KB_KEY_ESC) {
         switch (input) {
             case KB_KEY_UP:
-                // just go one line higher
-            LIST_OFFSET_DECREASE(offset);
+              LIST_OFFSET_DECREASE(offset);
                 break;
             case KB_KEY_DOWN:
-                // just go one line lower
-            LIST_OFFSET_INCREASE(offset, list_length((results_as_list)));
+                LIST_OFFSET_INCREASE(offset, list_length((results_as_list)));
                 break;
             default:
                 if (isalpha(input)) { // i cannot find why it is necessary (^D sometimes when lateral arrow keys)
@@ -74,10 +72,10 @@ void controller_handle_search() {
             case BUFFER_BACK_HOME:
                 return;
             case BUFFER_KEY_UP:
-            LIST_OFFSET_DECREASE(offset);
+                LIST_OFFSET_DECREASE(offset);
                 break;
             case BUFFER_KEY_DOWN:
-            LIST_OFFSET_INCREASE(offset, list_length(results_as_list));
+                LIST_OFFSET_INCREASE(offset, list_length(results_as_list));
                 break;
             default:
                 exit(EXIT_BECAUSE_UNEXPECTED);

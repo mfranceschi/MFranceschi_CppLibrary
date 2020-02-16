@@ -4,25 +4,14 @@
 
 #include "ftime.h"
 #include "../Texts/Interface_Texts.h"
-#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "Utils.h"
 #include "../VerbsContainer.h"
 
-#define PYTHON_SCRIPT_FILENAME "./get_verbs.py"
-
 /* ***** STATIC FUNCTIONS DECLARATION ***** */
-
-/**
- * Runs the Python script.
- *
- * @param script_filepath Where is the root folder of the .py and the venv.
- * @param script_filename Name of the Python script .py.
- * @return Return value of the execution command.
- */
-static int _run_python_script(STRING script_filepath, STRING script_filename);
 
 /* Code snippet adapted from https://stackoverflow.com/q/17415499/11996851 */
 static int _searchStringWithKnuthMorrisPratt(STRING s, STRING t);
@@ -34,31 +23,6 @@ static int _searchStringWithKnuthMorrisPratt(STRING s, STRING t);
  * @param output_buffer Pointer to the buffer to write on.
  */
 static void _make_string_from_csv (WRITEABLE_STRING* pp_beginning, WRITEABLE_STRING output_buffer);
-
-/* ***** STATIC FUNCTIONS DEFINITION ***** */
-
-static int _run_python_script(STRING script_filepath, STRING script_filename) {
-    WRITEABLE_STRING buffer = calloc(200, 1);
-    int result;
-
-    // 1 - Activate venv
-    // 2 - Run script
-    // 3 - Quit venv
-    snprintf(
-            buffer,
-            200,
-            "cd %s && cd && \"venv/Scripts/activate.bat\" && python %s && \"venv/Scripts/deactivate.bat\"", script_filepath, script_filename);
-    result = system(buffer);
-    if (result == EXIT_SUCCESS) {/*
-        sprintf(buffer, "python %s", script_filename);
-        result = system(buffer);
-        if (result == EXIT_SUCCESS) {
-            sprintf(buffer, ".\\venv\\Scripts\\deactivate.bat");
-            system(buffer);
-        }*/    }
-    free(buffer);
-    return result;
-}
 
 static int _searchStringWithKnuthMorrisPratt(STRING s, STRING t)
 {
@@ -80,7 +44,7 @@ static int _searchStringWithKnuthMorrisPratt(STRING s, STRING t)
             return(i);
         }
         i=i+j-B[j];
-        j=max_nbr(0, B[j]);
+        j = (int) fmaxl(0, B[j]);
     }
     free(B);
     return(-1);
@@ -107,14 +71,9 @@ static void _make_string_from_csv (WRITEABLE_STRING* pp_beginning, WRITEABLE_STR
 void fill_verbs_container() {
 
     // open file
-    FILE* csv_file_stream = NULL;
+    FILE* csv_file_stream;
     if ((csv_file_stream = fopen(csv_file_name, "r")) == NULL) {
-        if (
-                (_run_python_script(".\\..\\rsc\\", PYTHON_SCRIPT_FILENAME) != EXIT_SUCCESS) || /* Failure of PYTHON script */
-                (csv_file_stream = fopen(csv_file_name, "r")) == NULL /* File still cannot be read */
-                ) {
-            exit(EXIT_BECAUSE_FILE_FAILURE);
-        }
+        exit(EXIT_BECAUSE_FILE_FAILURE);
     }
 
     // prepare buffers
@@ -205,42 +164,13 @@ void run_and_wait ( unsigned int milliseconds, void(* function) (va_list), ...) 
     }
 }
 
-#if DEBUG_MODE == 1
-int min_nbr_var(int n, ...) {
-    va_list l;
-    int result = INT_MAX;
-    int cur, i;
+char get_random_letter() {
+    static bool need_to_initialize_random_seed = true;
 
-    va_start(l, n);
-    for(i=0; i<n; i++) {
-        cur = va_arg(l, int);
-        result = min_nbr(result, cur);
+    if (need_to_initialize_random_seed) {
+        srand(time(NULL));
+        need_to_initialize_random_seed = false;
     }
-    va_end(l);
 
-    return result;
-}
-#endif
-
-int max_nbr_var(int n, ...) {
-    va_list l;
-    int result = INT_MIN;
-    int cur, i;
-
-    va_start(l, n);
-    for(i=0; i<n; i++) {
-        cur = va_arg(l, int);
-        result = max_nbr(result, cur);
-    }
-    va_end(l);
-
-    return result;
-}
-
-int min_nbr(int a, int b) {
-    return (int)fminl(a, b);
-}
-
-int max_nbr(int a, int b) {
-    return (int)fmaxl(a, b);
+    return (char) ((rand() % ('z' - 'a')) + 'a');
 }

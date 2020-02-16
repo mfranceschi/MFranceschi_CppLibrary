@@ -41,17 +41,8 @@ size_t count_occurrences_of_substring(STRING substring, STRING big);
 void run_and_wait ( unsigned int milliseconds, void(* function) (va_list), ...);
 
 /**
- * Returns the minimum or maximum of the given arguments.
- *
- * @param n Number of arguments **following this one**.
- * @param ... List of numbers to test.
- * @return The min/max of the arguments, or INT_MIN/INT_MAX if no arguments.
+ * @return A random lowercase letter: [a-z].
  */
-int min_nbr_var(int n, ...);
-int max_nbr_var(int n, ...);
-
-/** Returns the maximum or number between a and b. */
-int max_nbr(int a, int b);
-int min_nbr(int a, int b);
+char get_random_letter();
 
 #endif //IRREGULARVERBS_UTILS_H
