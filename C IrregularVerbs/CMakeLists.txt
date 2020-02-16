@@ -19,7 +19,7 @@ add_compile_definitions(
 set(DEBUG_MODE 1)
 add_compile_definitions(DEBUG_MODE=${DEBUG_MODE})
 
-# Tell SQLite not to add thread-safety policy + set the
+# Tell SQLite not to add thread-safety policy.
 add_compile_definitions(SQLITE_THREADSAFE=0)
 
 # Add sources.
@@ -31,4 +31,22 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${EXTLIBS_SOURCE_FILES})
 
 # Link Curses.
 target_link_libraries(${PROJECT_NAME} ${CURSES_LIBRARIES})
-# link with math and dl if linux
+
+# Link math and Dynamic Linking libraries.
+if (NOT MSVC)
+    target_link_libraries(${PROJECT_NAME} m ${CMAKE_DL_LIBS})
+endif()
+
+# Add warnings
+set(WarningsAsErrors FALSE)
+if(MSVC)
+    add_compile_options(/W4)
+    if (${WarningsAsErrors})
+        add_compile_options(/WX)
+    endif()
+else()
+    add_compile_options(-Wall -Wextra -pedantic)
+    if (${WarningsAsErrors})
+        add_compile_options(-Werror)
+    endif()
+endif()
