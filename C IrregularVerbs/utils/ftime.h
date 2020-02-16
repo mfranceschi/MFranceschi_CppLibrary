@@ -16,24 +16,23 @@
  *   milliseconds range.
  */
 
+#include "ftime_useful_defs.h"
 #include <stdint.h>
 
 #ifndef _WIN32
 
 // We just need to include the file that usually works!
-#include<sys/time.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 #else
 
-typedef unsigned long seconds_t;
-typedef unsigned long useconds_t;
-
-typedef struct timeval_s {
+struct timeval {
     seconds_t tv_sec;
     useconds_t tv_usec;
-} timeval;
+};
 
-int gettimeofday(timeval* t, void* tzp);
+int gettimeofday(struct timeval* t, void* tzp);
 void usleep(useconds_t length);
 
 #endif
@@ -45,6 +44,6 @@ void usleep(useconds_t length);
  * @param b
  * @return a-b in microseconds
  */
-int64_t timeval_difftime(const timeval* a, const timeval* b);
+int64_t timeval_difftime(const struct timeval* a, const struct timeval* b);
 
 #endif //IRREGULARVERBS_FTIME_H

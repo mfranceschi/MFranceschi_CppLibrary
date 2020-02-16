@@ -148,7 +148,7 @@ size_t count_occurrences_of_substring(STRING substring, STRING big) {
 
 void run_and_wait ( unsigned int milliseconds, void(* function) (va_list), ...) {
     int64_t t_c = milliseconds; /* time parameter converted */
-    timeval start_time, end_time;
+    struct timeval start_time, end_time;
     gettimeofday(&start_time, NULL);
 
     va_list l;

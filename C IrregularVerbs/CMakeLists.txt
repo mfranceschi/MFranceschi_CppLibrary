@@ -31,3 +31,4 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${EXTLIBS_SOURCE_FILES})
 
 # Link Curses.
 target_link_libraries(${PROJECT_NAME} ${CURSES_LIBRARIES})
+# link with math and dl if linux
