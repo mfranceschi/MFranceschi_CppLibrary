@@ -26,8 +26,16 @@ extern const STRING verb_column_headers[4];
 /* SEARCH VERBS */
 extern const STRING search_title_beginning;
 
-/* MISCELLANEOUS */
-extern const STRING dummy_welcome;
 extern const STRING csv_file_name;
+
+// To define the CSV file name, please use this macro like this:
+// const STRING csv_file_name = _MAKE_CSV_FILE_NAME("myFile.csv").
+// It will generate it without you to care about build location.
+#define MAKE_CSV_FILE_NAME(csv_file_name) ".." _SEP "rsc" _SEP csv_file_name
+#ifdef _WIN32
+    #define _SEP "\\"
+#else
+    #define _SEP "/"
+#endif
 
 #endif //IRREGULARVERBS_INTERFACE_TEXTS_H

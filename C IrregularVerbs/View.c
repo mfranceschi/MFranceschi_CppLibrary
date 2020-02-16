@@ -245,10 +245,12 @@ void view_clear_contents() {
 }
 
 void view_shut_down() {
-    delwin(title_text_win);
-    delwin(contents_win);
-    delwin(title_win);
-    endwin();
+    if (!isendwin()) {
+        delwin(title_text_win);
+        delwin(contents_win);
+        delwin(title_win);
+        endwin();
+    }
 }
 
 #undef ROW_OF_HEADER

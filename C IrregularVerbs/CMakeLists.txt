@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0) # I do not know what to put here ^v^
 project(IrregularVerbs LANGUAGES C) # C program
 set(CMAKE_C_STANDARD 11)            # C11 standard
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 
 # Find the Curses library.
 # It might well be Curses, NCurses or PDCurses. Who knows?

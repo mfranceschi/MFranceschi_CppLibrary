@@ -10,9 +10,11 @@
 static void _controller_start_up(va_list list) {
     UNUSED(list);
     view_start_up();
+    atexit(view_shut_down);
     view_show_welcome_screen();
     container_start_up();
     fill_verbs_container();
+    atexit(container_shut_down);
 }
 
 static void _controller_shut_down(va_list list) {

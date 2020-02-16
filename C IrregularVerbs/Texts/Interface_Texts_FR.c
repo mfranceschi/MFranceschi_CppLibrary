@@ -33,6 +33,6 @@ const STRING search_title_beginning = "Recherche";
 
 /* MISCELLANEOUS */
 const STRING dummy_welcome = "Message simplet de bienvenue !"; // just used during implementation, not for release
-const STRING csv_file_name = "../rsc/verbs.csv";
+const STRING csv_file_name = MAKE_CSV_FILE_NAME("verbs.csv");
 
 #endif

@@ -76,11 +76,20 @@ void container_freeResults() {
 }
 
 bool container_start_up() {
-    return running = m_sqlite_start_up();
+    if (!running) {
+        return running = m_sqlite_start_up();
+    } else {
+        return false;
+    }
 }
 
 void container_shut_down() {
-    return (running = false, m_sqlite_shut_down());
+    if (running) {
+        running = false;
+        m_sqlite_shut_down();
+    } else {
+        false;
+    }
 }
 
 #if defined(DEBUG_MODE) && DEBUG_MODE == 1
