@@ -17,14 +17,10 @@
  */
 
 #include "ftime_useful_defs.h"
-#include <stdint.h>
 
 #ifndef _WIN32
-
-// We just need to include the file that usually works!
-#include <sys/time.h>
-#include <unistd.h>
-
+#  include <sys/time.h>
+#  include <unistd.h>
 #else
 
 struct timeval {

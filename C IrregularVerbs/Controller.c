@@ -3,7 +3,7 @@
 //
 
 #include "Controller.h"
-#include "utils/Utils.h"
+#include "Utils.h"
 #include "VerbsContainer.h"
 #include "View.h"
 

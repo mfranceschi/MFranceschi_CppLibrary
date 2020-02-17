@@ -4,10 +4,10 @@
 
 #include <ctype.h>
 #include <stdio.h>
-#include "Texts/Interface_Texts.h"
+#include "Interface_Texts.h"
 #include "VerbsContainer.h"
 #include "View.h"
-#include "utils/Utils.h"
+#include "Utils.h"
 
 #define LIST_OFFSET_DECREASE(o) if (o) {o--;} (void)0
 #define LIST_OFFSET_INCREASE(o,len) if (o < len - 1) {o++;} (void)0

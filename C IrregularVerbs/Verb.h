@@ -6,7 +6,7 @@
 #define IRREGULARVERBS_VERB_H
 
 #include <stdbool.h>
-#include "utils/Strings.h"
+#include "Strings.h"
 
 typedef struct Verb_s {
     MultiStrings* infinitive;

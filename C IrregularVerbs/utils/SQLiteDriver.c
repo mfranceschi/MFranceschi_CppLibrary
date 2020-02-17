@@ -2,12 +2,12 @@
 // Created by Martin on 20/01/2020.
 //
 
-#include "../extlibs/SQLite/sqlite3.h"
+#include "extlibs/SQLite/sqlite3.h"
 #include "SQLiteDriver.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include "../VerbsContainer.h"
+#include "VerbsContainer.h"
 
 /* The SQLite connexion. */
 static sqlite3* db = NULL;

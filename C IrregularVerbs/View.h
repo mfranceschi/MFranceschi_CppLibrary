@@ -5,7 +5,7 @@
 #ifndef IRREGULARVERBS_VIEW_H
 #define IRREGULARVERBS_VIEW_H
 
-#include "utils/Strings.h"
+#include "Strings.h"
 
 #define KB_KEY_ESC        (char) 27
 #define KB_KEY_UP         (char) 1

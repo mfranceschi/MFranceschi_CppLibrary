@@ -3,13 +3,13 @@
 //
 
 #include "ftime.h"
-#include "../Texts/Interface_Texts.h"
+#include "Interface_Texts.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include "Utils.h"
-#include "../VerbsContainer.h"
+#include "VerbsContainer.h"
 
 /* ***** STATIC FUNCTIONS DECLARATION ***** */
 

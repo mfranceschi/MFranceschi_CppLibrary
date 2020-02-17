@@ -1,11 +1,11 @@
 //
-// Created by mfran on 24/01/2020.
+// Created by Martin on 24/01/2020.
 //
 
 #ifndef IRREGULARVERBS_INTERFACE_TEXTS_H
 #define IRREGULARVERBS_INTERFACE_TEXTS_H
 
-#include "../utils/Strings.h"
+#include "Strings.h"
 
 #define LANG_INTERFACE French
 #define LANG_VERBS German

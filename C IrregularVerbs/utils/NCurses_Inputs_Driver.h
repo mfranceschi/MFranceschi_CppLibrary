@@ -7,7 +7,7 @@
 
 #include "IncludeCurses.h"
 #include "Utils.h"
-#include "../View.h"
+#include "View.h"
 
 Command ncurses_input_user_choice(WINDOW* window, bool can_go_back);
 CHARACTER ncurses_input_user_letter(WINDOW* window, bool can_escape, bool can_arrows, bool can_backspace);

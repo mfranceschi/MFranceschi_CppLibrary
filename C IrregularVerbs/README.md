@@ -36,7 +36,7 @@ What do I plan to do in the future (by order of priority):
 * Make guides on how to extend it with other languages.
 * [DONE] Change the behavior if the CSV file is not found: just exit. Perhaps display a specific error message.
 * Examine workarounds against bad UTF-8 handling. 
-* Protect the **search** functionality against empty input strings.  
+* [DONE] Protect the **search** functionality against empty input strings.  
 * Fix the **search** input weird behavior (too many backspaces = go out of writeable field). 
 * Enhance the colors by not resetting them when we go up and down. 
 * Do more checks on memory leaks. 
