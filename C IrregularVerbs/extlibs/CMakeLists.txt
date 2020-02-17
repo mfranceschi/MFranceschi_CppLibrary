@@ -3,7 +3,7 @@
 
 # Ensure that they are well included.
 # The SYSTEM parameter makes the potential warnings disappear.
-include_directories(SYSTEM Contiki_2.6 SQLite)
+include_directories(Contiki_2.6 SQLite)
 
 # Set the variable's contents and make it available (and usable) at parent level.
 SET(

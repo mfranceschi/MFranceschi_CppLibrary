@@ -19,6 +19,7 @@ list_t container_getVerbsBySubstring(STRING);
 list_t container_getAllVerbs();
 list_t container_getVerbsByFirstLetter(CHARACTER character);
 size_t container_getCount();
+list_t container_getRandomVerb();
 void container_freeResults();
 STRING container_get_last_error();
 bool container_start_up();
