@@ -3,6 +3,7 @@
 //
 
 #include <stdarg.h>
+#include "Utils.h"
 #include "VerbsContainer.h"
 #include "SQLiteDriver.h"
 
@@ -57,8 +58,15 @@ list_t container_getAllVerbs() {
     m_sqlite_get_all(current_results);
     return current_results;
 }
-
 #endif
+
+list_t container_getRandomVerb() {
+    container_freeResults();
+    list_init(current_results);
+    int index_to_get = get_random_int(0, (int)container_getCount());
+    m_sqlite_get_by_id(index_to_get, current_results);
+    return current_results;
+}
 
 size_t container_getCount() {
     if (!cache_count_of_verbs) {

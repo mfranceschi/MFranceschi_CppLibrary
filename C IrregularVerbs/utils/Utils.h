@@ -45,4 +45,12 @@ void run_and_wait ( unsigned int milliseconds, void(* function) (va_list), ...);
  */
 char get_random_letter();
 
+/**
+ * Returns a random integer within the given range.
+ * @param minimum Inclusive minimum of range.
+ * @param maximum Inclusive maximum of range.
+ * @return An integer in that range.
+ */
+int get_random_int(int minimum, int maximum);
+
 #endif //IRREGULARVERBS_UTILS_H

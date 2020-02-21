@@ -26,6 +26,9 @@ extern const STRING verb_column_headers[4];
 /* SEARCH VERBS */
 extern const STRING search_title_beginning;
 
+/* EXERCISES */
+extern const STRING exercises_title;
+
 extern const STRING csv_file_name;
 
 // To define the CSV file name, please use this macro like this:

@@ -31,8 +31,10 @@ const STRING verb_column_headers[4] = {
 /* SEARCH VERBS */
 const STRING search_title_beginning = "Recherche";
 
-/* MISCELLANEOUS */
-const STRING dummy_welcome = "Message simplet de bienvenue !"; // just used during implementation, not for release
+/* EXERCISES */
+const STRING exercises_title = "Exercice";
+
+// just used during implementation, not for release
 const STRING csv_file_name = MAKE_CSV_FILE_NAME("verbs.csv");
 
 #endif

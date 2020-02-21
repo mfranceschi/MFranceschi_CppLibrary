@@ -28,7 +28,7 @@ static STRING sql_start_exclusive_transaction_code = "BEGIN EXCLUSIVE TRANSACTIO
 static sqlite3_stmt* sql_end_exclusive_transaction = NULL;
 static STRING sql_end_exclusive_transaction_code = "COMMIT";
 static sqlite3_stmt* sql_get_row_by_id = NULL;
-static STRING sql_get_row_by_id_code = "SELECT * FROM Verbs WHERE rowid = ?;";
+static STRING sql_get_row_by_id_code = "SELECT * FROM Verbs WHERE rowid = ?1;";
 
 /* When verbs are returned by queries using "select *", here are the indices of columns. */
 #define INDEX_INFINITIVE   0
@@ -162,6 +162,11 @@ bool m_sqlite_run_in_exclusive_write_transaction(void (*action) (va_list), ...) 
         }
     }
     return results;
+}
+
+void m_sqlite_get_by_id(int id, list_t results) {
+    sqlite3_bind_int(sql_get_row_by_id, 1, id);
+    _makeQueryResults(sql_get_row_by_id, results);
 }
 
 bool m_sqlite_start_up() {

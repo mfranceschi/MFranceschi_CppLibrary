@@ -165,6 +165,10 @@ void run_and_wait ( unsigned int milliseconds, void(* function) (va_list), ...) 
 }
 
 char get_random_letter() {
+    return (char) get_random_int('a', 'z');
+}
+
+int get_random_int(int minimum, int maximum) {
     static bool need_to_initialize_random_seed = true;
 
     if (need_to_initialize_random_seed) {
@@ -172,5 +176,5 @@ char get_random_letter() {
         need_to_initialize_random_seed = false;
     }
 
-    return (char) ((rand() % ('z' - 'a')) + 'a');
+    return (rand() % (maximum - minimum)) + minimum;
 }
