@@ -6,9 +6,8 @@
 include_directories(SYSTEM Contiki_2.6 SQLite)
 
 # Set the variable's contents and make it available (and usable) at parent level.
-SET(
-        EXTLIBS_SOURCE_FILES
+target_sources(${PROJECT_NAME}
+        PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Contiki_2.6/list.c
         ${CMAKE_CURRENT_SOURCE_DIR}/SQLite/sqlite3.c
-        PARENT_SCOPE
 )

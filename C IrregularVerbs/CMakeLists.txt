@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0) # I do not know what to put here ^v^
 project(IrregularVerbs LANGUAGES C) # C program
 set(CMAKE_C_STANDARD 11)            # C11 standard
+add_executable(${PROJECT_NAME})
 
 # Directories settings
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
@@ -31,7 +32,8 @@ file(GLOB SOURCE_FILES ./*.c utils/*.c Texts/*.c)
 add_subdirectory(extlibs)
 
 # Declare the executable.
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${EXTLIBS_SOURCE_FILES} utils/NCurses_Outputs_Helpers.h)
+target_sources(${PROJECT_NAME}
+        PUBLIC ${SOURCE_FILES})
 
 # Link Curses.
 target_link_libraries(${PROJECT_NAME} ${CURSES_LIBRARIES})
