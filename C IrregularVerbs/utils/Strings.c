@@ -137,3 +137,87 @@ STRING makeStringFromMultiStrings(MultiStrings *input) {
 void freeStringFromMultiStrings(STRING str) {
     free((void*)str);
 }
+
+STRING ensure_ascii(STRING str) {
+    bool need_new_string = false;
+
+    for (int i=0; str[i] != '\0'; i++) {
+        if (!isprint(str[i])) {
+            need_new_string = true;
+        }
+    }
+
+    if (need_new_string) {
+        strlen(str);
+        WRITEABLE_STRING output = calloc(strlen(str), 1);
+        unsigned int i_input = 0;
+        unsigned int i_output = 0;
+
+        for (; str[i_input] != '\0'; i_input++) {
+            if (isprint(str[i_input])) {
+                output[i_output++] = str[i_input];
+            } else {
+                switch (str[i_input]) {
+                    case '\xC3':
+                        switch (str[++i_input]) {
+                            case '\x9f':
+                                output[i_output++] = 's';
+                                output[i_output++] = 's';
+                                break;
+
+                            case '\xa0':
+                            case '\xa2':
+                            case '\xa4':
+                                output[i_output++] = 'a';
+                                break;
+
+                            case '\xa7':
+                                output[i_output++] = 'c';
+                                break;
+
+                            case '\xa8':
+                            case '\xa9':
+                            case '\xaa':
+                            case '\xab':
+                                output[i_output++] = 'e';
+                                break;
+
+                            case '\xac':
+                            case '\xad':
+                            case '\xae':
+                            case '\xaf':
+                                output[i_output++] = 'i';
+                                break;
+
+                            case '\xb1':
+                                output[i_output++] = 'n';
+                                break;
+
+                            case '\xb0':
+                            case '\xb2':
+                            case '\xb3':
+                            case '\xb4':
+                            case '\xb5':
+                            case '\xb6':
+                            case '\xb8':
+                                output[i_output++] = 'o';
+                                break;
+
+                            case '\xb9':
+                            case '\xba':
+                            case '\xbb':
+                            case '\xbc':
+                                output[i_output++] = 'u';
+                                break;
+                        }
+                        break;
+
+                }
+            }
+        }
+        free((void *)str);
+        return output;
+    } else {
+        return str;
+    }
+}

@@ -77,9 +77,12 @@ size_t container_getCount() {
 
 void container_freeResults() {
     list_node* current_node;
+    void* head;
     while ((current_node = list_head(current_results)) != NULL) {
         freeVerb(current_node->verb);
+         head = list_head(current_results);
         list_pop(current_results);
+        free(head);
     }
 }
 
@@ -92,6 +95,7 @@ bool container_start_up() {
 }
 
 void container_shut_down() {
+    container_freeResults();
     if (running) {
         running = false;
         m_sqlite_shut_down();

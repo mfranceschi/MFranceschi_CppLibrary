@@ -59,4 +59,11 @@ STRING makeStringFromMultiStrings(MultiStrings *input);
  */
 void freeStringFromMultiStrings(STRING);
 
+/**
+ * Checks and if necessary re-formats a given string so that there are only single-byte characters (ASCII).
+ * @param str The input string, which may me un-allocated.
+ * @return The resulting string, which may be the input string or a newly malloc-ed string.
+ */
+STRING ensure_ascii(STRING str);
+
 #endif //IRREGULARVERBS_MULTISTRINGS_H
