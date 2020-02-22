@@ -2,18 +2,16 @@
 // Created by Martin on 14/02/2020.
 //
 
-#include "Controller.h"
 #include "Interface_Texts.h"
 #include "VerbsContainer.h"
 #include "View.h"
 
+static Verb* current_verb = NULL;
+static unsigned int current_score = 0;
+#define NUMBER_OF_QUESTIONS 10
+
 void controller_handle_exercise() {
     // TODO
-
-    // Set title: exercises (it won't change)
-    // Clear contents
-    // Show table headers
-    // Show one random verb
 
     list_t results_as_list = NULL;
     list_node* current_results;

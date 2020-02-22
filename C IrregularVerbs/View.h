@@ -5,7 +5,9 @@
 #ifndef IRREGULARVERBS_VIEW_H
 #define IRREGULARVERBS_VIEW_H
 
+#include "stdint.h"
 #include "Strings.h"
+#include "Verb.h"
 
 #define KB_KEY_ESC        (char) 27
 #define KB_KEY_UP         (char) 1
@@ -22,6 +24,29 @@ typedef enum {
     BUFFER_KEY_UP,
     BUFFER_KEY_DOWN
 } Buffer_Command;
+
+#define VERB_FIELD_INFINITIVE    0x1
+#define VERB_FIELD_TRANSLATION   0x2
+#define VERB_FIELD_TIME_1  0x3
+#define VERB_FIELD_TIME_2        0x4
+
+/**
+ * This is used for the "exercises" functionality.
+ * - Field "user_score" gives the current score of the user.
+ * - Field "total_score" gives the upper bound of the user's score.
+ * - Field "fields_to_display" indicates whether or not to display the fields from the verb. It should be filled
+ *   using bitwise operators using the macros VERB_FIELD_X.
+ */
+typedef struct {
+    union {
+        struct {
+            uint8_t user_score;
+            uint8_t total_score;
+        };
+        uint16_t scores;
+    };
+    uint8_t fields_to_display;
+} ExerciseParams;
 
 /**
  * Starts, allocates and run every view initialization script.
@@ -98,6 +123,8 @@ STRING view_get_search_string();
  * @return
  */
 Buffer_Command view_get_search_command();
+
+WRITEABLE_STRING * view_exercise(const Verb* verb, ExerciseParams scores);
 
 /**
  * If relevant, performs a screen refresh.

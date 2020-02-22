@@ -27,7 +27,7 @@ add_compile_definitions(DEBUG_MODE=${DEBUG_MODE})
 add_compile_definitions(SQLITE_THREADSAFE=0)
 
 # Add sources.
-file(GLOB SOURCE_FILES ./*.c utils/*.c Texts/*.c)
+file(GLOB SOURCE_FILES ./*.c utils/*.c Texts/*.c View/*.c)
 add_subdirectory(extlibs)
 
 # Declare the executable.

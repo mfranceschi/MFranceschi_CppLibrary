@@ -104,3 +104,17 @@ Each time the user presses an alphabetic key or BACKSPACE, the screen updates wi
 (infinitive) | (translation) | (time 1) | (time 2) (Instance 2)
 ...
 ```
+
+### Exercises screen
+
+```
+##################################################
+#                 Exercise - 1/2                 # (User's score is 1 over 2)
+##################################################
+
+(infinitive):   .                                  (Not given, the user must fill the field)
+(translation):  .                                  (Not given, the user must fill the field)
+(time 1):       X                                  (Given, nothing to do)
+(time 2):       Y                                  (Given, nothing to do)
+
+```
