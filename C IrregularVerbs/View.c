@@ -41,6 +41,7 @@ void view_start_up() {
         exit(EXIT_BECAUSE_CURSES_ISSUE);
     }
     wclear(stdscr);
+    curs_set(0);
 
     /* initialize the colors */
     // I do not check has_colors neither can_change_colors because using color functions cannot be harmful

@@ -13,7 +13,7 @@ static void _read_line(WINDOW* window, char *buffer, int buflen)
 /* Read up to buflen-1 characters into `buffer`.
  * A terminating '\0' character is added after the input.  */
 {
-    int old_curs = curs_set(1);
+    curs_set(1);
     int pos = 0;
     int len = 0;
     int x, y;
@@ -61,7 +61,7 @@ static void _read_line(WINDOW* window, char *buffer, int buflen)
         }
     }
     buffer[len] = '\0';
-    if (old_curs != ERR) curs_set(old_curs);
+    curs_set(0);
 }
 
 Command ncurses_input_user_choice(WINDOW* window, bool can_go_back) {
