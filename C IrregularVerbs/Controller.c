@@ -25,7 +25,7 @@ static void _controller_shut_down(va_list list) {
 
 int run() {
     Command input_command = BACK_HOME;
-    run_and_wait(500, _controller_start_up);
+    run_and_wait(500000, _controller_start_up);
 
     while (input_command != QUIT) {
         view_show_main_menu();
@@ -39,12 +39,12 @@ int run() {
                 controller_handle_search();
                 break;
 
-            case EXERCISE: // TODO
+            case EXERCISE:
                 controller_handle_exercise();
                 break;
 
             default:
-                break; // TODO
+                exit(EXIT_BECAUSE_UNEXPECTED);
         }
         container_freeResults();
     }
