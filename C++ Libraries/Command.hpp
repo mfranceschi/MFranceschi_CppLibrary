@@ -5,7 +5,52 @@
 #ifndef MYWORKS_TEST0_COMMAND_HPP
 #define MYWORKS_TEST0_COMMAND_HPP
 
+#include <string>
+#include <vector>
+#include <functional>
 
+enum class OutputChoice {
+    KEEP, // Let it on the console
+    KILL, // Silent and ignore
+    EXPORT, // Write outputs into the file "outputFile"
+    EXPORT_APPEND, // Appends outputs into the file "outputFile"
+    RETRIEVE // Get outputs in the return structure
+};
+
+enum class ErrorChoice {
+    KEEP, // Let errors on the console
+    KILL, // Silent and ignore
+    EXPORT, // Write errors into the file "outputFile"
+    EXPORT_APPEND, // Appends errors into the file "outputFile"
+    RETRIEVE, // Get errors in the return structure
+    LIKE_OUTPUTS // Use the same setting as for the outputs
+};
+
+enum class InputChoice {
+    NONE, // Nothing
+    STRING, // Give the string "inputString"
+    FUNCTION, // Generate the input by calling the function "inputFunction"
+    FROM_FILE // Gives the file named "inputString" as input
+};
+
+struct CommandCall {
+    std::string executable; // Name or path to the executable
+    std::vector<std::string> arguments; // List of arguments to the executable, they will be concatenated with " ".
+    std::string outputFile; // [?] File in which to write outputs
+    OutputChoice outputChoice = OutputChoice::KEEP; // Choice for outputs
+    std::string errorFile; // [?] File in which to write errors
+    ErrorChoice errorsChoice = ErrorChoice::KEEP; // Choice for errors
+    std::function<const char*()> inputFunction; // [?] Function to retrieve inputs
+    std::string inputString; // [?] String as inputs
+    InputChoice inputChoice = InputChoice::NONE; // Choice for inputs
+};
+
+struct CommandReturn {
+    int returnCode = 0; // Return value of the command
+    std::string outputText; // [?] Complete string of the outputs
+};
+
+void Command(const CommandCall& call, CommandReturn&);
 // TODO implement
 // - Normal call
 // - CMD specific call
