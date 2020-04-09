@@ -42,6 +42,7 @@ struct CommandCall {
     ErrorChoice errorsChoice = ErrorChoice::KEEP; // Choice for errors
     std::function<const char*()> inputFunction; // [?] Function to retrieve inputs
     std::string inputString; // [?] String as inputs
+    std::string inputFile; // [?] File from which to read inputs
     InputChoice inputChoice = InputChoice::NONE; // Choice for inputs
 };
 
