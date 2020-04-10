@@ -335,7 +335,7 @@ namespace File
 #ifdef UNICODE
 		result_of_syscall = _wgetcwd(nullptr, 0);
 #else
-		result_of_syscall = _getcwd(nullptr, 0);
+		//result_of_syscall = _getcwd(nullptr, 0);
 #endif
 #else
         result_of_syscall = getcwd(nullptr, 0);

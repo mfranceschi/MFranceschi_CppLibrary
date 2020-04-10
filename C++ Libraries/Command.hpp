@@ -8,13 +8,14 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <chrono>
 
 enum class OutputChoice {
     KEEP, // Let it on the console
     KILL, // Silent and ignore
     EXPORT, // Write outputs into the file "outputFile"
     EXPORT_APPEND, // Appends outputs into the file "outputFile"
-    RETRIEVE // Get outputs in the return structure
+    RETRIEVE // Get outputs as string in the return structure
 };
 
 enum class ErrorChoice {
@@ -22,7 +23,7 @@ enum class ErrorChoice {
     KILL, // Silent and ignore
     EXPORT, // Write errors into the file "outputFile"
     EXPORT_APPEND, // Appends errors into the file "outputFile"
-    RETRIEVE, // Get errors in the return structure
+    RETRIEVE, // Get errors as string in the return structure
     LIKE_OUTPUTS // Use the same setting as for the outputs
 };
 
@@ -33,6 +34,19 @@ enum class InputChoice {
     FROM_FILE // Gives the file named "inputString" as input
 };
 
+enum class ReturnChoice {
+    WHEN_DONE, // Return the function right after it finishes
+    IMMEDIATELY, // The function returns now and the command runs independently
+    FUNCTION // Same as IMMEDIATELY, but also calls the given function when done
+};
+
+enum class InterruptChoice {
+    NEVER, // No restriction for the execution
+    AFTER_TIME, // Interrupts the execution after the given time
+    ON_DEMAND // Interrupts the execution when some function is called (returned in CommandReturn)
+};
+
+template <typename Duration_t = double>
 struct CommandCall {
     std::string executable; // Name or path to the executable
     std::vector<std::string> arguments; // List of arguments to the executable, they will be concatenated with " ".
@@ -41,17 +55,21 @@ struct CommandCall {
     std::string errorFile; // [?] File in which to write errors
     ErrorChoice errorsChoice = ErrorChoice::KEEP; // Choice for errors
     std::function<const char*()> inputFunction; // [?] Function to retrieve inputs
-    std::string inputString; // [?] String as inputs
-    std::string inputFile; // [?] File from which to read inputs
+    std::string inputData; // [?] String or file as input
     InputChoice inputChoice = InputChoice::NONE; // Choice for inputs
+    std::function<void(CommandCall&)> returnFunction;
+    ReturnChoice returnChoice = ReturnChoice::WHEN_DONE;
+    Duration_t executionDuration;
+    InterruptChoice interruptChoice = InterruptChoice::NEVER;
 };
 
 struct CommandReturn {
     int returnCode = 0; // Return value of the command
     std::string outputText; // [?] Complete string of the outputs
+    std::function<void()> callToTerminate; // [?] Call this to (try to) force the command to terminate
 };
 
-void Command(const CommandCall& call, CommandReturn&);
+void Command(const CommandCall<>& call, CommandReturn&);
 // TODO implement
 // - Normal call
 // - CMD specific call

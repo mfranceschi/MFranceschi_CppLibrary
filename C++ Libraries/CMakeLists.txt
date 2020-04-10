@@ -9,7 +9,7 @@ include_directories(.)
 add_executable(MyWorks_test0 ${SOURCES})
 
 if (WIN32)
-    add_compile_definitions(UNICODE)
+    # add_compile_definitions(UNICODE)
     target_link_libraries(MyWorks_test0 "Shlwapi.dll")
 else()
     target_compile_options(MyWorks_test0 PRIVATE -Wall -Wextra)
