@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 #include <functional>
-#include <chrono>
 
 enum class OutputChoice {
     KEEP, // Let it on the console
@@ -35,7 +34,7 @@ enum class InputChoice {
 };
 
 enum class ReturnChoice {
-    WHEN_DONE, // Return the function right after it finishes
+    WHEN_DONE, // Return the function right after it finishes (no new thread created)
     IMMEDIATELY, // The function returns now and the command runs independently
     FUNCTION // Same as IMMEDIATELY, but also calls the given function when done
 };
@@ -46,7 +45,13 @@ enum class InterruptChoice {
     ON_DEMAND // Interrupts the execution when some function is called (returned in CommandReturn)
 };
 
-template <typename Duration_t = double>
+struct CommandReturn {
+    int returnCode = 0; // Return value of the command
+    std::string outputText; // [?] Complete string of the outputs
+    std::string errorText; // [?] Complete string of the errors
+    std::function<void()> callToTerminate; // [?] Call this to (try to) force the command to terminate
+};
+
 struct CommandCall {
     std::string executable; // Name or path to the executable
     std::vector<std::string> arguments; // List of arguments to the executable, they will be concatenated with " ".
@@ -57,19 +62,13 @@ struct CommandCall {
     std::function<const char*()> inputFunction; // [?] Function to retrieve inputs
     std::string inputData; // [?] String or file as input
     InputChoice inputChoice = InputChoice::NONE; // Choice for inputs
-    std::function<void(CommandCall&)> returnFunction;
+    std::function<void(CommandReturn&)> returnFunction;
     ReturnChoice returnChoice = ReturnChoice::WHEN_DONE;
-    Duration_t executionDuration;
+    unsigned int executionDuration = -1; // In milliseconds
     InterruptChoice interruptChoice = InterruptChoice::NEVER;
 };
 
-struct CommandReturn {
-    int returnCode = 0; // Return value of the command
-    std::string outputText; // [?] Complete string of the outputs
-    std::function<void()> callToTerminate; // [?] Call this to (try to) force the command to terminate
-};
-
-void Command(const CommandCall<>& call, CommandReturn&);
+void Command(const CommandCall& call, CommandReturn&);
 // TODO implement
 // - Normal call
 // - CMD specific call

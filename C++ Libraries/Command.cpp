@@ -3,13 +3,14 @@
 //
 
 #include <cstdlib>
-#include <sstream>
+#include <thread>
 
+#include <sstream>
 #if defined(WIN32)
-#   define _CRT_SECURE_NO_WARNINGS 1
 #   include <Windows.h>
 #endif
 
+#include "File.hpp"
 #include "Command.hpp"
 
 // Code taken from https://stackoverflow.com/a/28876046/11996851
@@ -25,8 +26,7 @@ struct is_chrono_duration<std::chrono::duration<Rep, Period>>
     static constexpr bool value = true;
 };
 
-template <typename Duration_t>
-static void _PrepareCommandString(const CommandCall<Duration_t>& commandCall, std::string commandString) {
+static void _PrepareCommandString(const CommandCall& commandCall, std::string commandString) {
     std::ostringstream oss;
 
     if (commandCall.executable.find(' ') != std::string::npos) {
@@ -104,10 +104,8 @@ void _WindowsReturnNowCommand(HANDLE& processHandle) {
     _WindowsWaitForProcess(processHandle);
 }
 
-template <typename Duration_t>
-void _WindowsReturnLaterCommand(HANDLE& processHandle, const Duration_t& duration) {
-    DWORD durationDword = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    WaitForSingleObject(processHandle, durationDword);
+void _WindowsReturnLaterCommand(HANDLE& processHandle, unsigned int duration) {
+    WaitForSingleObject(processHandle, duration);
     TerminateProcess(processHandle, -1);
     _WindowsWaitForProcess(processHandle);
 }
@@ -118,26 +116,70 @@ int _WindowsGetExitCodeCommand(HANDLE& processHandle) {
     return static_cast<int>(exitCode);
 }
 
-template <typename Duration_t>
-void Command(const CommandCall<Duration_t>& commandCall, CommandReturn& commandReturn) {
-    static_assert(is_chrono_duration<Duration_t>::value, "The duration requires to be of type std::chrono::duration");
+void _FillStringWithFileContents(const std::string& filename, std::string toFill) {
+    const char* contents = File::Read(filename.c_str());
+    std::size_t length = File::Size(filename.c_str());
+    toFill.reserve(length);
+    toFill.assign(contents, length);
+    File::Read_Close(contents);
+}
+
+void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
     std::string commandString;
     _PrepareCommandString(commandCall, commandString);
+    std::string outputsTempFile;
+    std::string errorsTempFile;
 
-#if defined(WIN32)
+#if defined(_WIN32)
     HANDLE processHandle;
     _WindowsCreateCommand(commandString, processHandle);
     switch (commandCall.returnChoice) {
         case ReturnChoice::WHEN_DONE:
             _WindowsReturnNowCommand(processHandle);
             commandReturn.returnCode = _WindowsGetExitCodeCommand(processHandle);
+            _FillStringWithFileContents(outputsTempFile, commandReturn.outputText);
+            _FillStringWithFileContents(errorsTempFile, commandReturn.errorText);
             break;
         case ReturnChoice::IMMEDIATELY:
-
+        case ReturnChoice::FUNCTION:
+        {
+            switch (commandCall.interruptChoice) {
+                case InterruptChoice::NEVER: {
+                    std::thread processThread([&]() {
+                        _WindowsWaitForProcess(processHandle);
+                        if (commandCall.returnChoice == ReturnChoice::FUNCTION) {
+                            CommandReturn newCommandReturn;
+                            newCommandReturn.returnCode = _WindowsGetExitCodeCommand(processHandle);
+                            _FillStringWithFileContents(outputsTempFile, newCommandReturn.outputText);
+                            _FillStringWithFileContents(errorsTempFile, newCommandReturn.errorText);
+                            commandCall.returnFunction(newCommandReturn);
+                        }
+                    });
+                    processThread.detach();
+                    break;
+                }
+                case InterruptChoice::AFTER_TIME: {
+                    std::thread processThread([&]() {
+                        _WindowsReturnLaterCommand(processHandle, commandCall.executionDuration);
+                        if (commandCall.returnChoice == ReturnChoice::FUNCTION) {
+                            CommandReturn newCommandReturn;
+                            newCommandReturn.returnCode = _WindowsGetExitCodeCommand(processHandle);
+                            _FillStringWithFileContents(outputsTempFile, newCommandReturn.outputText);
+                            _FillStringWithFileContents(errorsTempFile, newCommandReturn.errorText);
+                            commandCall.returnFunction(newCommandReturn);
+                        }
+                    });
+                    processThread.detach();
+                    break;
+                }
+                case InterruptChoice::ON_DEMAND: {
+                    // TODO
+                    break;
+                }
+            }
+            break;
+        }
     }
 
 #endif
-
-
-    commandReturn.returnCode = returnCode;
 }

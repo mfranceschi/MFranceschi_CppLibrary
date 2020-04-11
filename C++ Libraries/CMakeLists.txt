@@ -10,6 +10,8 @@ add_executable(MyWorks_test0 ${SOURCES})
 
 if (WIN32)
     # add_compile_definitions(UNICODE)
+    target_compile_definitions(MyWorks_test0 PUBLIC _CRT_SECURE_NO_WARNINGS=)
+    target_compile_options(MyWorks_test0 PUBLIC /W3)
     target_link_libraries(MyWorks_test0 "Shlwapi.dll")
 else()
     target_compile_options(MyWorks_test0 PRIVATE -Wall -Wextra)

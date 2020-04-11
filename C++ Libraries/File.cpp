@@ -11,10 +11,11 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
-    #pragma warning( disable: 26444) // Warning that occurs when using imbue.
-    #include <io.h>
-    #include "Toolbox.hpp"
-    #include <Windows.h>
+#    pragma warning( disable: 26444) // Warning that occurs when using imbue.
+#    include <io.h>
+#    include "Toolbox.hpp"
+#    include <Windows.h>
+#    include <direct.h>
 #else
     #include <dirent.h>
     #include <sys/mman.h>
@@ -335,7 +336,7 @@ namespace File
 #ifdef UNICODE
 		result_of_syscall = _wgetcwd(nullptr, 0);
 #else
-		//result_of_syscall = _getcwd(nullptr, 0);
+		result_of_syscall = _getcwd(nullptr, 0);
 #endif
 #else
         result_of_syscall = getcwd(nullptr, 0);
