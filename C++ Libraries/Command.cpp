@@ -64,9 +64,9 @@ bool _WindowsCreateCommand(const std::string& commandString, HANDLE& processHand
 
     STARTUPINFO startupinfo;
     PROCESS_INFORMATION processInformation;
-    SecureZeroMemory(&startupinfo, sizeof(startupinfo));
-    SecureZeroMemory(&processInformation, sizeof(processInformation));
+    ZeroMemory(&startupinfo, sizeof(startupinfo));
     startupinfo.cb = sizeof(startupinfo);
+    ZeroMemory(&processInformation, sizeof(processInformation));
     bool createProcessResult = CreateProcess(
             nullptr,    // No module name (use command line)
             newCommandString,
