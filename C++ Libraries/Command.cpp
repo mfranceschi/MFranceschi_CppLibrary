@@ -8,23 +8,11 @@
 #include <sstream>
 #if defined(WIN32)
 #   include <Windows.h>
+#include <strsafe.h>
 #endif
 
 #include "File.hpp"
 #include "Command.hpp"
-
-// Code taken from https://stackoverflow.com/a/28876046/11996851
-template <typename T>
-struct is_chrono_duration
-{
-    static constexpr bool value = false;
-};
-
-template <typename Rep, typename Period>
-struct is_chrono_duration<std::chrono::duration<Rep, Period>>
-{
-    static constexpr bool value = true;
-};
 
 static void _PrepareCommandString(const CommandCall& commandCall, std::string commandString) {
     std::ostringstream oss;
@@ -68,6 +56,7 @@ static void _PrepareCommandString(const CommandCall& commandCall, std::string co
     commandString = oss.str();
 }
 
+int _WindowsGetExitCodeCommand(HANDLE& processHandle);
 bool _WindowsCreateCommand(const std::string& commandString, HANDLE& processHandle) {
     const char* commandStringPointer = commandString.c_str();
     char* newCommandString = new char[commandString.size() + 1];
@@ -92,6 +81,7 @@ bool _WindowsCreateCommand(const std::string& commandString, HANDLE& processHand
             );
     processHandle = processInformation.hProcess;
     CloseHandle(processInformation.hThread);
+    _WindowsGetExitCodeCommand(processHandle);
     return createProcessResult;
 }
 
@@ -112,8 +102,39 @@ void _WindowsReturnLaterCommand(HANDLE& processHandle, unsigned int duration) {
 
 int _WindowsGetExitCodeCommand(HANDLE& processHandle) {
     DWORD exitCode;
-    GetExitCodeProcess(processHandle, &exitCode);
-    return static_cast<int>(exitCode);
+    if (GetExitCodeProcess(processHandle, &exitCode)) {
+        return static_cast<int>(exitCode);
+    } else {
+        // Retrieve the system error message for the last-error code
+
+        LPVOID lpMsgBuf;
+        LPVOID lpDisplayBuf;
+        DWORD dw = GetLastError();
+
+        FormatMessage(
+                FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL,
+                dw,
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPTSTR) &lpMsgBuf,
+                0, NULL );
+
+        // Display the error message and exit the process
+
+        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
+                                          (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)"GetExitCodeProcess") + 40) * sizeof(TCHAR));
+        StringCchPrintf((LPTSTR)lpDisplayBuf,
+                        LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+                        TEXT("%s failed with error %d: %s"),
+                        "GetExitCodeProcess", dw, lpMsgBuf);
+        MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+        LocalFree(lpMsgBuf);
+        LocalFree(lpDisplayBuf);
+        ExitProcess(dw);
+    }
 }
 
 void _FillStringWithFileContents(const std::string& filename, std::string toFill) {
@@ -135,7 +156,7 @@ void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
     _WindowsCreateCommand(commandString, processHandle);
     switch (commandCall.returnChoice) {
         case ReturnChoice::WHEN_DONE:
-            _WindowsReturnNowCommand(processHandle);
+            _WindowsWaitForProcess(processHandle);
             commandReturn.returnCode = _WindowsGetExitCodeCommand(processHandle);
             _FillStringWithFileContents(outputsTempFile, commandReturn.outputText);
             _FillStringWithFileContents(errorsTempFile, commandReturn.errorText);

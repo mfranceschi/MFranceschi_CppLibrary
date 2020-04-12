@@ -14,11 +14,12 @@ int main() {
     wcout << "Current working dir: " << File::GetCWD().c_str() << endl;
 
     Toolbox::Win_CheckForMemoryLeaks([] () {
-        TimingExperience::RunAll();
+        //TimingExperience::RunAll();
     });
     CommandCall call;
     call.executable = R"(C:\cygwin64\bin\pwd.exe)";
     CommandReturn cr;
+    cr.returnCode = 44;
     Command(call, cr);
     wcout << "cr exit code is " << cr.returnCode << "!" << endl;
     Toolbox::PressAnyKeyToContinue();
