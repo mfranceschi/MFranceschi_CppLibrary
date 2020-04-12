@@ -9,10 +9,44 @@
 #if defined(WIN32)
 #   include <Windows.h>
 #include <strsafe.h>
+#include <cassert>
+
 #endif
 
 #include "File.hpp"
 #include "Command.hpp"
+
+void _WinShowErMsg(const char* function) {
+    // Retrieve the system error message for the last-error code
+
+    LPVOID lpMsgBuf;
+    LPVOID lpDisplayBuf;
+    DWORD dw = GetLastError();
+
+    FormatMessage(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            dw,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPTSTR) &lpMsgBuf,
+            0, NULL );
+
+    // Display the error message and exit the process
+
+    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
+                                      (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)function) + 40) * sizeof(TCHAR));
+    StringCchPrintf((LPTSTR)lpDisplayBuf,
+                    LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+                    TEXT("%s failed with error %d: %s"),
+                    function, dw, lpMsgBuf);
+    MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+    LocalFree(lpMsgBuf);
+    LocalFree(lpDisplayBuf);
+    ExitProcess(dw);
+}
 
 static void _PrepareCommandString(const CommandCall& commandCall, std::string commandString) {
     std::ostringstream oss;
@@ -72,13 +106,16 @@ bool _WindowsCreateCommand(const std::string& commandString, HANDLE& processHand
             newCommandString,
             nullptr,// Process handle not inheritable
             nullptr,// Thread handle not inheritable
-            false,// Set handle inheritance to FALSE
+            FALSE,// Set handle inheritance to FALSE
             0,// No creation flags
             nullptr,// Use parent's environment block
             nullptr,// Use parent's starting directory
             &startupinfo,
             &processInformation
             );
+    _WinShowErMsg("create processs");
+    assert(createProcessResult);
+    assert(processInformation.hProcess);
     processHandle = processInformation.hProcess;
     CloseHandle(processInformation.hThread);
     _WindowsGetExitCodeCommand(processHandle);
@@ -105,35 +142,7 @@ int _WindowsGetExitCodeCommand(HANDLE& processHandle) {
     if (GetExitCodeProcess(processHandle, &exitCode)) {
         return static_cast<int>(exitCode);
     } else {
-        // Retrieve the system error message for the last-error code
 
-        LPVOID lpMsgBuf;
-        LPVOID lpDisplayBuf;
-        DWORD dw = GetLastError();
-
-        FormatMessage(
-                FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                FORMAT_MESSAGE_FROM_SYSTEM |
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL,
-                dw,
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                (LPTSTR) &lpMsgBuf,
-                0, NULL );
-
-        // Display the error message and exit the process
-
-        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
-                                          (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)"GetExitCodeProcess") + 40) * sizeof(TCHAR));
-        StringCchPrintf((LPTSTR)lpDisplayBuf,
-                        LocalSize(lpDisplayBuf) / sizeof(TCHAR),
-                        TEXT("%s failed with error %d: %s"),
-                        "GetExitCodeProcess", dw, lpMsgBuf);
-        MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
-
-        LocalFree(lpMsgBuf);
-        LocalFree(lpDisplayBuf);
-        ExitProcess(dw);
     }
 }
 
