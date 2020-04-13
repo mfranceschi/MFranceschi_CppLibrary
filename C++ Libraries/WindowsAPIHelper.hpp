@@ -2,7 +2,7 @@
 // Created by mfran on 13/04/2020.
 //
 
-#ifndef MYWORKS_TEST0_WINDOWSAPIHELPER_HPP && defined(_WIN32)
+#if !defined(MYWORKS_TEST0_WINDOWSAPIHELPER_HPP) && defined(_WIN32)
 #define MYWORKS_TEST0_WINDOWSAPIHELPER_HPP
 
 #include <string>

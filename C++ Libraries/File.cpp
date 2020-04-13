@@ -15,7 +15,6 @@
 #   include <io.h>
 #   include "Toolbox.hpp"
 #   include <Windows.h>
-#   include <direct.h>
 #   include "WindowsAPIHelper.hpp"
 #else
 #   include <dirent.h>
