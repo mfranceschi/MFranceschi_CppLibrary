@@ -8,6 +8,7 @@
 #if defined(_WIN32)
 
 #include <string>
+#include "File.hpp"
 
 using ProcessHandle = void*;
 
@@ -50,6 +51,19 @@ void _WindowsReturnLaterCommand(ProcessHandle& processHandle, unsigned int durat
  * @param processHandle The process to kill.
  */
 void _WindowsReturnNowProcess(ProcessHandle& processHandle);
+
+// ///////////////////////////////////////////////////////////////
+// /////////////////// FILE HANDLING API /////////////////////////
+// ///////////////////////////////////////////////////////////////
+
+bool _WindowsDeleteFile(File::filename_t filename);
+bool _WindowsDeleteDirectory(File::filename_t directoryName);
+bool _WindowsFileExists(File::filename_t filename);
+bool _WindowsDirectoryExists(File::filename_t directoryName);
+File::file_size_t _WindowsGetFileSize(File::filename_t filename);
+bool _WindowsCreateDirectory(File::filename_t directoryName);
+File::str_filename_t _WindowsGetCurrentWorkingDirectory();
+void _WindowsGetDirectoryContents(File::filename_t directoryName, std::vector<File::str_filename_t>);
 
 #endif // defined _WIN32
 

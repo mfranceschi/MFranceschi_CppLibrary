@@ -4,7 +4,6 @@
 
 #include <thread>
 #include <sstream>
-#include <iostream>
 
 #if defined(WIN32)
 #  include "WindowsAPIHelper.hpp"
@@ -74,7 +73,6 @@ std::string _PrepareCommandString(const CommandCall& commandCall) {
 void _FillStringWithFileContents(const std::string& filename, std::string& toFill) {
     const char* contents = File::Read(filename.c_str());
     std::size_t length = File::Size(filename.c_str());
-    toFill.reserve(length);
     toFill.assign(contents, length);
     File::Read_Close(contents);
 }
@@ -86,7 +84,6 @@ void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
     std::string commandString = _PrepareCommandString(commandCall);
     std::string outputsTempFile;
     std::string errorsTempFile;
-    std::cout << "Command: " << commandString << std::endl << std::flush;
 
 #if defined(_WIN32)
     ProcessHandle processHandle;

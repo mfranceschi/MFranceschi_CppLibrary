@@ -48,11 +48,11 @@ namespace File
 //-------------------------------------------------------------- Constants
 #if defined _WIN32
 #   define FILE_SEPARATOR R"slash(\)slash"
-    #if defined UNICODE
-        #define MAKE_FILE_NAME L""
-    #else
-        #define MAKE_FILE_NAME ""
-    #endif
+#   if defined UNICODE
+#       define MAKE_FILE_NAME L""
+#   else
+#       define MAKE_FILE_NAME ""
+#   endif
 #else
 #   define FILE_SEPARATOR R"slash(/)slash"
 #   define MAKE_FILE_NAME ""

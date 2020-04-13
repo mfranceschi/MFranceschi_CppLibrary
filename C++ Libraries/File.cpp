@@ -11,15 +11,16 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
-#    pragma warning( disable: 26444) // Warning that occurs when using imbue.
-#    include <io.h>
-#    include "Toolbox.hpp"
-#    include <Windows.h>
-#    include <direct.h>
+#   pragma warning( disable: 26444) // Warning that occurs when using imbue.
+#   include <io.h>
+#   include "Toolbox.hpp"
+#   include <Windows.h>
+#   include <direct.h>
+#   include "WindowsAPIHelper.hpp"
 #else
-    #include <dirent.h>
-    #include <sys/mman.h>
-    #include <unistd.h>
+#   include <dirent.h>
+#   include <sys/mman.h>
+#   include <unistd.h>
 #endif
 
 using std::string; 
@@ -100,9 +101,9 @@ namespace File
 	{
 #ifdef _WIN32 // Win32
 		if (fileOnly)
-			return DeleteFile(filename);
+			return _WindowsDeleteFile(filename);
 		else
-			return DeleteFile(filename) ? true : RemoveDirectory(filename);
+			return _WindowsDeleteFile(filename) ? true : _WindowsDeleteDirectory(filename);
 #else // POSIX
 		if (fileOnly)
 			return !unlink(filename);
@@ -114,8 +115,7 @@ namespace File
 	bool Exists(filename_t filename)
 	{
 #ifdef _WIN32 // Win32
-		DWORD attr = GetFileAttributes(filename);
-		return !(attr == INVALID_FILE_ATTRIBUTES || IsADirFromAttributesWindows(attr));
+	    return _WindowsFileExists(filename);
 #else // POSIX
 		struct stat t{};
 		return !stat(filename, &t);
@@ -125,8 +125,7 @@ namespace File
 	bool IsDir(filename_t filename)
 	{
 #ifdef _WIN32 // Win32
-		DWORD attrs = GetFileAttributes(filename);
-		return (attrs == INVALID_FILE_ATTRIBUTES) ? false : IsADirFromAttributesWindows(attrs);
+		return _WindowsDirectoryExists(filename);
 #else // POSIX
 		struct stat s{};
 		return !stat(filename, &s) & S_ISDIR(s.st_mode);
@@ -187,12 +186,7 @@ namespace File
 	file_size_t Size(filename_t filename)
 	{
 #ifdef _WIN32 // Win32
-		HANDLE file = OpenHandleWindows(filename);
-		if (file == INVALID_HANDLE_VALUE) return 0;
-		LARGE_INTEGER res;
-		GetFileSizeEx(file, &res);
-		CloseHandle(file);
-		return file_size_t(res.QuadPart);
+		return _WindowsGetFileSize(filename);
 #else // POSIX
 		struct stat t{};
 		if (stat(filename, &t)) return 0;
@@ -229,7 +223,7 @@ namespace File
 	bool CreateFolder(filename_t filename)
 	{
 #ifdef _WIN32
-		return CreateDirectory(filename, nullptr);
+		return _WindowsCreateDirectory(filename);
 #else
 		return !mkdir(filename, S_IRWXU | S_IRWXG | S_IRWXO);
 #endif
@@ -331,19 +325,15 @@ namespace File
 
 	str_filename_t GetCWD()
 	{
-	    File::filename_t result_of_syscall;
 #ifdef _WIN32
-#ifdef UNICODE
-		result_of_syscall = _wgetcwd(nullptr, 0);
+        return _WindowsGetCurrentWorkingDirectory();
 #else
-		result_of_syscall = _getcwd(nullptr, 0);
-#endif
-#else
+        File::filename_t result_of_syscall;
         result_of_syscall = getcwd(nullptr, 0);
-#endif
-		str_filename_t to_return = result_of_syscall;
+        str_filename_t to_return = result_of_syscall;
 		free((void *) result_of_syscall);
 		return to_return;
+#endif
 	}
 
 
@@ -402,11 +392,6 @@ namespace File
             closedir(d);
         }
 #endif
-
         return result;
     }
-
-
-
-
 } 
