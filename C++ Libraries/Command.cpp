@@ -2,63 +2,44 @@
 // Created by mfran on 09/04/2020.
 //
 
-#include <cstdlib>
 #include <thread>
-
 #include <sstream>
+#include <iostream>
+
 #if defined(WIN32)
-#   include <Windows.h>
-#include <strsafe.h>
-#include <cassert>
-
+#  include "WindowsAPIHelper.hpp"
 #endif
-
 #include "File.hpp"
 #include "Command.hpp"
 
-void _WinShowErMsg(const char* function) {
-    // Retrieve the system error message for the last-error code
+// PRIVATE DECLARATIONS
 
-    LPVOID lpMsgBuf;
-    LPVOID lpDisplayBuf;
-    DWORD dw = GetLastError();
+/**
+ * Given a command call, generates the string to pass to the command interpreter.
+ * @param commandCall The command call settings
+ * @return A string to use.
+ */
+static std::string _PrepareCommandString(const CommandCall& commandCall);
 
-    FormatMessage(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER |
-            FORMAT_MESSAGE_FROM_SYSTEM |
-            FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL,
-            dw,
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (LPTSTR) &lpMsgBuf,
-            0, NULL );
+/**
+ * Copies every byte from the file to the string. Maximum-optimized.
+ * @param filename URL to the file to open.
+ * @param toFill String to modify.
+ */
+static void _FillStringWithFileContents(const std::string& filename, std::string& toFill);
 
-    // Display the error message and exit the process
+// PRIVATE DEFINITIONS
 
-    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
-                                      (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)function) + 40) * sizeof(TCHAR));
-    StringCchPrintf((LPTSTR)lpDisplayBuf,
-                    LocalSize(lpDisplayBuf) / sizeof(TCHAR),
-                    TEXT("%s failed with error %d: %s"),
-                    function, dw, lpMsgBuf);
-    MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
-
-    LocalFree(lpMsgBuf);
-    LocalFree(lpDisplayBuf);
-    ExitProcess(dw);
-}
-
-static void _PrepareCommandString(const CommandCall& commandCall, std::string commandString) {
+std::string _PrepareCommandString(const CommandCall& commandCall) {
     std::ostringstream oss;
 
-    if (commandCall.executable.find(' ') != std::string::npos) {
-        oss << "\"" << commandCall.executable << "\" ";
-    } else {
-        oss << commandCall.executable << " ";
-    }
+    oss << "\"" << commandCall.executable << "\" ";
+
     for (const std::string& argument : commandCall.arguments) {
         oss << argument << " ";
     }
+
+    // TODO handle in the good order input output error
 
     switch (commandCall.inputChoice) {
         case InputChoice::NONE:
@@ -87,66 +68,10 @@ static void _PrepareCommandString(const CommandCall& commandCall, std::string co
         }
     }
 
-    commandString = oss.str();
+    return oss.str();
 }
 
-int _WindowsGetExitCodeCommand(HANDLE& processHandle);
-bool _WindowsCreateCommand(const std::string& commandString, HANDLE& processHandle) {
-    const char* commandStringPointer = commandString.c_str();
-    char* newCommandString = new char[commandString.size() + 1];
-    std::strcpy(newCommandString, commandStringPointer);
-
-    STARTUPINFO startupinfo;
-    PROCESS_INFORMATION processInformation;
-    ZeroMemory(&startupinfo, sizeof(startupinfo));
-    startupinfo.cb = sizeof(startupinfo);
-    ZeroMemory(&processInformation, sizeof(processInformation));
-    bool createProcessResult = CreateProcess(
-            nullptr,    // No module name (use command line)
-            newCommandString,
-            nullptr,// Process handle not inheritable
-            nullptr,// Thread handle not inheritable
-            FALSE,// Set handle inheritance to FALSE
-            0,// No creation flags
-            nullptr,// Use parent's environment block
-            nullptr,// Use parent's starting directory
-            &startupinfo,
-            &processInformation
-            );
-    _WinShowErMsg("create processs");
-    assert(createProcessResult);
-    assert(processInformation.hProcess);
-    processHandle = processInformation.hProcess;
-    CloseHandle(processInformation.hThread);
-    _WindowsGetExitCodeCommand(processHandle);
-    return createProcessResult;
-}
-
-void _WindowsWaitForProcess(HANDLE& processHandle) {
-    WaitForSingleObject(processHandle, INFINITE);
-}
-
-void _WindowsReturnNowCommand(HANDLE& processHandle) {
-    TerminateProcess(processHandle, -1);
-    _WindowsWaitForProcess(processHandle);
-}
-
-void _WindowsReturnLaterCommand(HANDLE& processHandle, unsigned int duration) {
-    WaitForSingleObject(processHandle, duration);
-    TerminateProcess(processHandle, -1);
-    _WindowsWaitForProcess(processHandle);
-}
-
-int _WindowsGetExitCodeCommand(HANDLE& processHandle) {
-    DWORD exitCode;
-    if (GetExitCodeProcess(processHandle, &exitCode)) {
-        return static_cast<int>(exitCode);
-    } else {
-
-    }
-}
-
-void _FillStringWithFileContents(const std::string& filename, std::string toFill) {
+void _FillStringWithFileContents(const std::string& filename, std::string& toFill) {
     const char* contents = File::Read(filename.c_str());
     std::size_t length = File::Size(filename.c_str());
     toFill.reserve(length);
@@ -154,14 +79,17 @@ void _FillStringWithFileContents(const std::string& filename, std::string toFill
     File::Read_Close(contents);
 }
 
+
+// PUBLIC DEFINITIONS
+
 void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
-    std::string commandString;
-    _PrepareCommandString(commandCall, commandString);
+    std::string commandString = _PrepareCommandString(commandCall);
     std::string outputsTempFile;
     std::string errorsTempFile;
+    std::cout << "Command: " << commandString << std::endl << std::flush;
 
 #if defined(_WIN32)
-    HANDLE processHandle;
+    ProcessHandle processHandle;
     _WindowsCreateCommand(commandString, processHandle);
     switch (commandCall.returnChoice) {
         case ReturnChoice::WHEN_DONE:
