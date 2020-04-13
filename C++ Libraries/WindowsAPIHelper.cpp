@@ -217,10 +217,24 @@ const _WindowsReadFileData* _WindowsOpenFile(File::filename_t filename) {
     return rfd;
 }
 
-void _WindowsCloseReadFileData(const _WindowsReadFileData* readFileData) {
-    UnmapViewOfFile(readFileData->contents);
-    CloseHandle(readFileData->mappingHandle);
-    CloseHandle(readFileData->fileHandle);
+void _WindowsCloseReadFileData(const File::ReadFileData* readFileData) {
+    auto rfd = dynamic_cast<const _WindowsReadFileData*>(readFileData);
+    UnmapViewOfFile(rfd->contents);
+    CloseHandle(rfd->mappingHandle);
+    CloseHandle(rfd->fileHandle);
     delete readFileData;
+}
+
+int _WindowsReadFileToBuffer(File::filename_t filename, char* buffer, File::file_size_t bufferSize) {
+    FileHandle fileHandle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (fileHandle == INVALID_HANDLE_VALUE) {
+        return -1;
+    }
+
+    DWORD numberOfBytesRead;
+    BOOL returnValue = ReadFile(fileHandle, buffer, bufferSize, &numberOfBytesRead, nullptr);
+    CloseHandle(fileHandle);
+
+    return returnValue ? static_cast<int>(numberOfBytesRead) : -1;
 }
 #endif

@@ -71,10 +71,11 @@ std::string _PrepareCommandString(const CommandCall& commandCall) {
 }
 
 void _FillStringWithFileContents(const std::string& filename, std::string& toFill) {
-    const char* contents = File::Read(filename.c_str());
+    auto fileContents = File::Read(filename.c_str());
+    const char* contents = fileContents->contents;
     std::size_t length = File::Size(filename.c_str());
     toFill.assign(contents, length);
-    File::Read_Close(contents);
+    File::Read_Close(fileContents);
 }
 
 

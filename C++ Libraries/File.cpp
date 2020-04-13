@@ -3,18 +3,13 @@
 //--------------------------------------------------------------- Includes
 
 #include <codecvt>
-#include <fcntl.h>
 #include "File.hpp"
 #include <locale>
-#include <map>
-#include <mutex>
 #include <sys/stat.h>
 
 #if defined(_WIN32)
 #   pragma warning( disable: 26444) // Warning that occurs when using imbue.
-#   include <io.h>
 #   include "Toolbox.hpp"
-#   include <Windows.h>
 #   include "WindowsAPIHelper.hpp"
 #else
 #   include <dirent.h>
@@ -43,41 +38,9 @@ namespace File
 		new std::codecvt_utf8_utf16<wchar_t, 0x10ffffUL, std::little_endian>()
 	); // I can call "new" because the locale's destructors deletes the facet.
 
-	static std::map<const char*, ReadFileData>openedFiles;
-	static std::mutex openedFilesMutex;
-
 //------------------------------------------------------- Static variables
 
 //------------------------------------------------------ Private functions
-
-    // Returns true on success.
-	static inline bool open_file(File::filename_t filename, int& fd) { 
-	#ifdef _WIN32
-			#ifdef UNICODE
-				#define WIN_OPEN_FCT _wsopen_s
-			#else
-				#define WIN_OPEN_FCT _sopen_s
-			#endif
-			return !WIN_OPEN_FCT(&fd, filename, _O_RDONLY | O_BINARY, _SH_DENYWR, _S_IREAD);
-			#undef WIN_OPEN_FCT
-		#else
-			fd = open(filename, O_RDONLY);
-			return fd != -1;
-		#endif
-	}
-
-	/* LOW-LEVEL FILE HANDLING */
-#ifdef _WIN32 // Windows
-	static inline HANDLE OpenHandleWindows(filename_t filename) {
-		return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	}
-	static inline bool IsADirFromAttributesWindows(DWORD dword) {
-	    return dword & FILE_ATTRIBUTE_DIRECTORY;
-	}
-#else
-	#define _read read /* POSIX form */
-	#define _close close /* POSIX form */
-#endif
 
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
@@ -120,6 +83,12 @@ namespace File
 	bool CanReadFile(filename_t filename, int charsToRead)
 	{
 	    // TODO fix
+#if defined(_WIN32)
+        char* buffer = new char[charsToRead];
+        int bytesRead = _WindowsReadFileToBuffer(filename, buffer, charsToRead);
+        delete[] buffer;
+        return bytesRead == charsToRead;
+#else
 		int file;
 		bool forReturn = false;
 
@@ -137,6 +106,7 @@ namespace File
 		}
 
 		return forReturn;
+#endif
 	}
 
 	bool Open(ifstream& ifs, filename_t filename,
@@ -181,10 +151,25 @@ namespace File
 	}
 
 	encoding_t Encoding(filename_t filename)
-	{
+    {
 	    // TODO fix
+        char bits[NBR_BITS_TO_READ_ENCODING];
+        encoding_t forReturn;
+
+#if defined(_WIN32)
+        int readResult = _WindowsReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
+        if (readResult != NBR_BITS_TO_READ_ENCODING) {
+            forReturn = File::encoding_t::ENC_ERROR;
+        } else if (bits[0] == '\xff' && bits[1] == '\xfe') {
+            forReturn = encoding_t::ENC_UTF16LE;
+        } else if (bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf') {
+            forReturn = encoding_t::ENC_UTF8;
+        } else {
+            forReturn = encoding_t::ENC_DEFAULT;
+        }
+#else
+
 		int file;
-		encoding_t forReturn;
 
 		if (!open_file(filename, file))
 			forReturn = encoding_t::ENC_ERROR;
@@ -204,6 +189,7 @@ namespace File
 
 			_close(file);
 		}
+#endif
 		return forReturn;
 	}
 
@@ -216,10 +202,10 @@ namespace File
 #endif
 	}
 
-	const char* Read(filename_t filename)
+	const ReadFileData* Read(filename_t filename)
 	{
 #ifdef _WIN32
-		return _WindowsOpenFile(filename)->contents;
+		return _WindowsOpenFile(filename);
 #else
 		if (!open_file(filename, rfd.fd))
 			return nullptr;
@@ -232,8 +218,11 @@ namespace File
 #endif
 	}
 
-	bool Read_Close(const char* content)
+	void Read_Close(const ReadFileData* content)
 	{
+#if defined(_WIN32)
+	    return _WindowsCloseReadFileData(content);
+#else
 		openedFilesMutex.lock();
 		bool found = false;
 
@@ -243,20 +232,15 @@ namespace File
 			found = true;
 			// File is found, release its data.
 			ReadFileData& rfd = iterToContent->second;
-#ifdef _WIN32
-			UnmapViewOfFile(content);
-			CloseHandle(rfd.mappingHandle);
-			CloseHandle(rfd.fileHandle);
-#else
 			munmap((void*)rfd.memoryPointer, rfd.size);
 			_close(rfd.fd);
-#endif
 			openedFiles.erase(iterToContent);
 		}
 
 		openedFilesMutex.unlock();
 		return found;
-	}
+#endif
+    }
 
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc)
 	{

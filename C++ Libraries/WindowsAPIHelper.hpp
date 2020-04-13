@@ -131,6 +131,15 @@ const _WindowsReadFileData* _WindowsOpenFile(File::filename_t filename);
  * Releases the memory associated with the file opened there.
  * @param readFileData A Windows ReadFileData to close ; its memory will also be freed.
  */
-void _WindowsCloseReadFileData(const _WindowsReadFileData* readFileData);
+void _WindowsCloseReadFileData(const File::ReadFileData* readFileData);
+
+/**
+ * Fills the given buffer with the few first chars of the given file.
+ * @param filename File to read. No ending Null-character.
+ * @param buffer Buffer to fill.
+ * @param bufferSize Length of the buffer.
+ * @return Number of bytes written, -1 on failure.
+ */
+int _WindowsReadFileToBuffer(File::filename_t filename, char* buffer, File::file_size_t bufferSize);
 
 #endif //MYWORKS_TEST0_WINDOWSAPIHELPER_HPP

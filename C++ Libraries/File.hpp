@@ -48,6 +48,7 @@ namespace File
     struct ReadFileData {
         const char* contents = nullptr; // Holds the file data.
         file_size_t size = 0ul; // Size of the file.
+        virtual ~ReadFileData() = default;
     };
 
 //-------------------------------------------------------------- Constants
@@ -100,12 +101,12 @@ namespace File
 	// If file size is zero or if it fails, returns nullptr.
 	// For closing always use Read_Close.
 	// Thread-safe.
-	const char* Read(filename_t filename);
+	const ReadFileData* Read(filename_t filename);
 
 	// Closes a file opened using the Read function.
 	// Returns whether a file was closed successfully.
 	// Thread-safe.
-	bool Read_Close(const char* content);
+	void Read_Close(const ReadFileData* content);
 
 	// Returns the file size in bytes, or 0.
 	file_size_t Size(filename_t filename);
