@@ -35,20 +35,6 @@ namespace File
 
 //------------------------------------------------------------------ Types
 
-	// Data structure used to store information about files opened with Open.
-	struct ReadFileData {
-		/* Data members. */
-		const char* memoryPointer = nullptr; // Holds the file data.
-		file_size_t size = 0ul; // Size of the file.
-
-#ifdef _WIN32
-		HANDLE fileHandle = nullptr; // File HANDLE
-		HANDLE mappingHandle = nullptr; // File Mapping HANDLE
-#else
-		int fd = -1; // File descriptor
-#endif
-	};
-
 //-------------------------------------------------------------- Constants
 
 	const static locale LOCALE_UTF8("");
@@ -131,8 +117,9 @@ namespace File
 #endif
 	}
 
-	bool IsEmpty(filename_t filename, int charsToRead)
+	bool CanReadFile(filename_t filename, int charsToRead)
 	{
+	    // TODO fix
 		int file;
 		bool forReturn = false;
 
@@ -195,6 +182,7 @@ namespace File
 
 	encoding_t Encoding(filename_t filename)
 	{
+	    // TODO fix
 		int file;
 		encoding_t forReturn;
 
@@ -230,36 +218,8 @@ namespace File
 
 	const char* Read(filename_t filename)
 	{
-		ReadFileData rfd;
-		rfd.size = Size(filename);
-		if (rfd.size == 0)
-			return nullptr;
-
-		openedFilesMutex.lock();
 #ifdef _WIN32
-		rfd.fileHandle = OpenHandleWindows(filename);
-		if (rfd.fileHandle == INVALID_HANDLE_VALUE)
-		{
-			openedFilesMutex.unlock();
-			return nullptr;
-		}
-
-		rfd.mappingHandle = CreateFileMapping(rfd.fileHandle, nullptr, PAGE_READONLY, 0, 0, nullptr);
-		if (rfd.mappingHandle == nullptr || GetLastError() == ERROR_ALREADY_EXISTS)
-		{
-			CloseHandle(rfd.fileHandle);
-			openedFilesMutex.unlock();
-			return nullptr;
-		}
-
-		rfd.memoryPointer = (const char*)MapViewOfFile(rfd.mappingHandle, FILE_MAP_READ, 0, 0, 0);
-		if (rfd.memoryPointer == nullptr)
-		{
-			CloseHandle(rfd.mappingHandle);
-			CloseHandle(rfd.fileHandle);
-			openedFilesMutex.unlock();
-			return nullptr;
-		}
+		return _WindowsOpenFile(filename)->contents;
 #else
 		if (!open_file(filename, rfd.fd))
 			return nullptr;
@@ -270,10 +230,6 @@ namespace File
 			return nullptr;
 		}
 #endif
-
-		openedFiles [rfd.memoryPointer] = rfd;
-		openedFilesMutex.unlock();
-		return rfd.memoryPointer;
 	}
 
 	bool Read_Close(const char* content)
@@ -336,48 +292,17 @@ namespace File
 	}
 
 
-    std::vector<File::str_filename_t> FilesInDirectory(filename_t folder)
-    {
-        // Declarations
+    std::vector<File::str_filename_t> FilesInDirectory(filename_t folder) {
         std::vector<File::str_filename_t> result;
+#if defined(_WIN32)
+        _WindowsGetDirectoryContents(folder, result);
+#else
         File::str_filename_t tempFilename;
         static File::filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
         static File::filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
-#ifdef _WIN32
-        WIN32_FIND_DATA wfd;
-		HANDLE hFind;
-        File::str_filename_t tempFolderName = folder;
-        tempFolderName += MAKE_FILE_NAME "*";
-#else
         DIR * d;
         dirent * dir_entry;
-#endif
-
-#ifdef _WIN32
-        hFind = FindFirstFile(tempFolderName.c_str(), &wfd);
-        if (hFind != INVALID_HANDLE_VALUE) {
-            do {
-                // If it is a directory, then remove "." and ".." or append an ending backslash.
-                if (IsADirFromAttributesWindows(wfd.dwFileAttributes)) {
-                    tempFilename = wfd.cFileName;
-                    if (tempFilename == CURRENT_FOLDER || tempFilename == PARENT_FOLDER) {
-                        continue;
-                    }
-                    else {
-                        tempFilename += MAKE_FILE_NAME FILE_SEPARATOR;
-                    }
-                    result.push_back(tempFilename);
-                }
-
-                else {
-                    result.emplace_back(wfd.cFileName);
-                }
-            } while (FindNextFile(hFind, &wfd));
-            FindClose(hFind);
-        }
-#else
-
-        d = opendir(folder);
+                d = opendir(folder);
         if (d) {
             while ((dir_entry = readdir(d)) != nullptr) {
                 tempFilename = dir_entry->d_name;
@@ -393,4 +318,4 @@ namespace File
 #endif
         return result;
     }
-} 
+}

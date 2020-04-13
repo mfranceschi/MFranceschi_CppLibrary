@@ -43,7 +43,12 @@ namespace File
 	typedef const char* filename_t; // typedef for const char *
 	typedef std::string str_filename_t; // typedef for std::string
 #endif
-	
+
+    // Data structure used to store information about files opened with Open.
+    struct ReadFileData {
+        const char* contents = nullptr; // Holds the file data.
+        file_size_t size = 0ul; // Size of the file.
+    };
 
 //-------------------------------------------------------------- Constants
 #if defined _WIN32
@@ -67,7 +72,7 @@ namespace File
 	bool Delete(filename_t filename, bool fileOnly = true);
 
 	// Returns the encoding of the file as one of the strings declared above.
-	// It executes "IsEmpty(filename, 3)" firstly and if the result is true,
+	// It executes "CanReadFile(filename, 3)" firstly and if the result is true,
 	// returns ENC_ERROR.
 	// If no encoding is found, returns ENC_DEFAULT.
 	encoding_t Encoding(filename_t filename);
@@ -80,7 +85,7 @@ namespace File
 
 	// Returns true if trying to read "charsToRead" characters from the file fails.
 	// If "charsToRead" <= 0 then it is ignored and the function only checks if the file can be opened.
-	bool IsEmpty(filename_t filename, int charsToRead = 3);
+	bool CanReadFile(filename_t filename, int charsToRead = 3);
 	
 	// Closes "ifs" and tries to open the file "filename".
 	// If an encoding is given, applies the corresponding locale 
@@ -119,7 +124,7 @@ namespace File
 
 	// Given a directory path with the ending PATH_SEPARATOR character,
 	// returns the complete list of files and directories that are direct children of folder.
-	// Directories have and ending PATH_SEPARATOR to make it easier to distinguish them.
+	// Directories have an ending PATH_SEPARATOR to make it easier to distinguish them.
 	// If anything fails, returns an empty vector.
 	std::vector<File::str_filename_t> FilesInDirectory(filename_t folder);
 } 

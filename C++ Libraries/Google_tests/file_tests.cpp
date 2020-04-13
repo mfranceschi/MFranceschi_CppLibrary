@@ -100,25 +100,25 @@ protected:
 
 	void CheckIsEmpty() {
 		if (!fid.exists) {
-			ASSERT_TRUE(File::IsEmpty(fid.name, 1));
-			ASSERT_TRUE(File::IsEmpty(fid.name));
+			ASSERT_TRUE(File::CanReadFile(fid.name, 1));
+			ASSERT_TRUE(File::CanReadFile(fid.name));
 		}
 		else {
 			// Max nbr of chars that will be readed.
 			unsigned int chars_max = std::min(static_cast<File::file_size_t>(5), fid.size / 10);
 
 			// Try to read an invalid number of chars.
-			ASSERT_FALSE(File::IsEmpty(fid.name, 0));
-			ASSERT_FALSE(File::IsEmpty(fid.name, -1));
+			ASSERT_FALSE(File::CanReadFile(fid.name, 0));
+			ASSERT_FALSE(File::CanReadFile(fid.name, -1));
 
 			// Read a few times.
 			for (unsigned int i = 1; i < chars_max; ++i) {
-				EXPECT_FALSE(File::IsEmpty(fid.name, i)) << i;
+				EXPECT_FALSE(File::CanReadFile(fid.name, i)) << i;
 			}
 			if (fid.size <= 3 /* Value of default param. */)
-				EXPECT_TRUE(File::IsEmpty(fid.name));
+				EXPECT_TRUE(File::CanReadFile(fid.name));
 			else
-				EXPECT_FALSE(File::IsEmpty(fid.name));
+				EXPECT_FALSE(File::CanReadFile(fid.name));
 		}
 	}
 

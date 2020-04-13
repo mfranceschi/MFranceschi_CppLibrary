@@ -152,6 +152,75 @@ File::str_filename_t _WindowsGetCurrentWorkingDirectory() {
 }
 
 void _WindowsGetDirectoryContents(File::filename_t directoryName, std::vector<File::str_filename_t>& result) {
-    // todo
+    File::str_filename_t tempFilename;
+    static File::filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
+    static File::filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
+    WIN32_FIND_DATA wfd;
+    HANDLE hFind;
+    File::str_filename_t tempFolderName = directoryName;
+    tempFolderName += MAKE_FILE_NAME "*";
+    hFind = FindFirstFile(tempFolderName.c_str(), &wfd);
+    if (hFind != INVALID_HANDLE_VALUE) {
+        do {
+            // If it is a directory, then remove "." and ".." or append an ending backslash.
+            if ((wfd.dwFileAttributes == INVALID_FILE_ATTRIBUTES) ? false : (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+                tempFilename = wfd.cFileName;
+                if (tempFilename == CURRENT_FOLDER || tempFilename == PARENT_FOLDER) {
+                    continue;
+                }
+                else {
+                    tempFilename += MAKE_FILE_NAME FILE_SEPARATOR;
+                }
+                result.push_back(tempFilename);
+            }
+
+            else {
+                result.emplace_back(wfd.cFileName);
+            }
+        } while (FindNextFile(hFind, &wfd));
+        FindClose(hFind);
+    }
+}
+
+const _WindowsReadFileData* _WindowsOpenFile(File::filename_t filename) {
+    auto rfd = static_cast<_WindowsReadFileData*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(_WindowsReadFileData)));
+    rfd->size = _WindowsGetFileSize(filename);
+    if (rfd->size == 0) {
+        HeapFree(GetProcessHeap(), 0, rfd);
+        return nullptr;
+    }
+
+    rfd->fileHandle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (rfd->fileHandle == INVALID_HANDLE_VALUE)
+    {
+        HeapFree(GetProcessHeap(), 0, rfd);
+        return nullptr;
+    }
+
+    rfd->mappingHandle = CreateFileMapping(rfd->fileHandle, nullptr, PAGE_READONLY, 0, 0, nullptr);
+    if (rfd->mappingHandle == nullptr || GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        CloseHandle(rfd->fileHandle);
+        HeapFree(GetProcessHeap(), 0, rfd);
+        return nullptr;
+    }
+
+    rfd->contents = (const char*)MapViewOfFile(rfd->mappingHandle, FILE_MAP_READ, 0, 0, 0);
+    if (rfd->contents == nullptr)
+    {
+        CloseHandle(rfd->mappingHandle);
+        CloseHandle(rfd->fileHandle);
+        HeapFree(GetProcessHeap(), 0, rfd);
+        return nullptr;
+    }
+
+    return rfd;
+}
+
+void _WindowsCloseReadFileData(const _WindowsReadFileData* readFileData) {
+    UnmapViewOfFile(readFileData->contents);
+    CloseHandle(readFileData->mappingHandle);
+    CloseHandle(readFileData->fileHandle);
+    delete readFileData;
 }
 #endif
