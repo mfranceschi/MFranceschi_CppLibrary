@@ -5,7 +5,7 @@
 #include <thread>
 #include <sstream>
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #  include "WindowsAPIHelper.hpp"
 #endif
 #include "File.hpp"

@@ -2,21 +2,23 @@
 // Created by mfran on 13/04/2020.
 //
 
-#ifndef MYWORKS_TEST0_WINDOWSAPIHELPER_HPP
+#ifndef MYWORKS_TEST0_WINDOWSAPIHELPER_HPP && defined(_WIN32)
 #define MYWORKS_TEST0_WINDOWSAPIHELPER_HPP
-
-#if defined(_WIN32)
 
 #include <string>
 #include "File.hpp"
-
-using ProcessHandle = void*;
 
 /**
  * Displays a message box with the error explanation, then exits.
  * @param functionName Name of the function that failed.
  */
 void _WindowsShowErrorMessage(const char* functionName);
+
+// ///////////////////////////////////////////////////////////////
+// //////////////// COMMAND HANDLING API /////////////////////////
+// ///////////////////////////////////////////////////////////////
+
+using ProcessHandle = void*;
 
 /**
  * Assuming that the given process is terminated, returns the exit code.
@@ -63,8 +65,6 @@ bool _WindowsDirectoryExists(File::filename_t directoryName);
 File::file_size_t _WindowsGetFileSize(File::filename_t filename);
 bool _WindowsCreateDirectory(File::filename_t directoryName);
 File::str_filename_t _WindowsGetCurrentWorkingDirectory();
-void _WindowsGetDirectoryContents(File::filename_t directoryName, std::vector<File::str_filename_t>);
-
-#endif // defined _WIN32
+void _WindowsGetDirectoryContents(File::filename_t directoryName, std::vector<File::str_filename_t>& result);
 
 #endif //MYWORKS_TEST0_WINDOWSAPIHELPER_HPP

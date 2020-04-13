@@ -41,6 +41,10 @@ void _WindowsShowErrorMessage(const char* functionName) {
     ExitProcess(dw);
 }
 
+// ///////////////////////////////////////////////////////////////
+// //////////////// COMMAND HANDLING API /////////////////////////
+// ///////////////////////////////////////////////////////////////
+
 int _WindowsGetExitCodeCommand(ProcessHandle& processHandle) {
     DWORD exitCode;
     if (GetExitCodeProcess(processHandle, &exitCode)) {
@@ -103,7 +107,9 @@ void _WindowsReturnNowProcess(ProcessHandle& processHandle) {
     _WindowsWaitForProcess(processHandle);
 }
 
-/////////////////////
+// ///////////////////////////////////////////////////////////////
+// /////////////////// FILE HANDLING API /////////////////////////
+// ///////////////////////////////////////////////////////////////
 
 bool _WindowsDeleteFile(File::filename_t filename) {
     return DeleteFile(filename);
@@ -144,5 +150,8 @@ File::str_filename_t _WindowsGetCurrentWorkingDirectory() {
     HeapFree(GetProcessHeap(), 0, lpBuffer);
     return returnValue;
 }
-void _WindowsGetDirectoryContents(File::filename_t directoryName, std::vector<File::str_filename_t>);
+
+void _WindowsGetDirectoryContents(File::filename_t directoryName, std::vector<File::str_filename_t>& result) {
+    // todo
+}
 #endif

@@ -10,7 +10,7 @@
 #include <mutex>
 #include <sys/stat.h>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #   pragma warning( disable: 26444) // Warning that occurs when using imbue.
 #   include <io.h>
 #   include "Toolbox.hpp"
