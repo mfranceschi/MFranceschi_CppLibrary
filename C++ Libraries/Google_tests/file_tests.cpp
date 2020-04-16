@@ -100,20 +100,22 @@ protected:
 
 	void CheckIsEmpty() {
 		if (!fid.exists) {
-			ASSERT_TRUE(File::CanReadFile(fid.name, 1));
-			ASSERT_TRUE(File::CanReadFile(fid.name));
+            EXPECT_FALSE(File::CanReadFile(fid.name, 1));
+            EXPECT_FALSE(File::CanReadFile(fid.name));
+            EXPECT_FALSE(File::CanReadFile(fid.name, -1));
 		}
 		else {
 			// Max nbr of chars that will be readed.
 			unsigned int chars_max = std::min(static_cast<File::file_size_t>(5), fid.size / 10);
 
 			// Try to read an invalid number of chars.
-			ASSERT_FALSE(File::CanReadFile(fid.name, 0));
-			ASSERT_FALSE(File::CanReadFile(fid.name, -1));
+			// Effect: check that the file exists.
+            EXPECT_TRUE(File::CanReadFile(fid.name, 0));
+            EXPECT_TRUE(File::CanReadFile(fid.name, -1));
 
 			// Read a few times.
 			for (unsigned int i = 1; i < chars_max; ++i) {
-				EXPECT_FALSE(File::CanReadFile(fid.name, i)) << i;
+				EXPECT_TRUE(File::CanReadFile(fid.name, i)) << "Fail of \"Read a few times\" with index " << i;
 			}
 			if (fid.size <= 3 /* Value of default param. */)
 				EXPECT_TRUE(File::CanReadFile(fid.name));
@@ -257,11 +259,10 @@ TEST(Delete, Unexisting)
 TEST(Read, ThousandsOfRead) {
 	File::filename_t file = fid_middle_size.name;
 	constexpr long iterations = static_cast<long>(1e3); /* A thousand times (100ms approx). */
-	const char* file_contents;
 	for (long i = 0; i < iterations; ++i) {
-		file_contents = File::Read(file);
-		ASSERT_NE(file_contents, nullptr) << "Failed to OPEN at iteration " << i;
-		ASSERT_TRUE(File::Read_Close(file_contents)) << "Failed to CLOSE at iteration " << i;
+		auto filedata = File::Read(file);
+		ASSERT_NE(filedata, nullptr) << "Failed to OPEN at iteration " << i;
+		File::Read_Close(filedata);
 	}
 }
 

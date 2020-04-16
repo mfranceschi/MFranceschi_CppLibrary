@@ -1,6 +1,6 @@
 # "Google_test" is the project name
 project (Google_test)
-set(CPP_FILES_TO_TEST ../Date.cpp ../File.cpp ../Toolbox.cpp)
+set(CPP_FILES_TO_TEST ../Date.cpp ../File.cpp ../Toolbox.cpp ../WindowsAPIHelper.cpp)
 set(TEST_CASES file_tests.cpp date_tests.cpp)
 
 # Import the repo according to the pattern described here:
@@ -19,5 +19,5 @@ endif()
 
 # "Google_Tests_run" is the target name
 add_executable(Google_Tests_run ${CPP_FILES_TO_TEST} ${TEST_CASES})
-add_compile_definitions(UNICODE)
+# add_compile_definitions(UNICODE)
 target_link_libraries(Google_Tests_run gtest)

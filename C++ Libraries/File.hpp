@@ -48,7 +48,7 @@ namespace File
     struct ReadFileData {
         const char* contents = nullptr; // Holds the file data.
         file_size_t size = 0ul; // Size of the file.
-        virtual ~ReadFileData() = default;
+        virtual ~ReadFileData() = default; // For polymorphic reasons.
     };
 
 //-------------------------------------------------------------- Constants
@@ -67,66 +67,90 @@ namespace File
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
 
-	// Deletes the file or the directory.
-	// If the "fileOnly" parameter is true and the target is a directory then it fails.
-	// Returns true on success, false otherwise.
+	/**
+	 * This function removes the given file or directory.
+	 * @param filename Name of the file or directory to remove. Often, directories require to be empty.
+	 * @param fileOnly If true, the removal is done if and only if the "filename" points to a file.
+	 * @return True if something was removed successfully.
+	 */
 	bool Delete(filename_t filename, bool fileOnly = true);
 
-	// Returns the encoding of the file as one of the strings declared above.
-	// It executes "CanReadFile(filename, 3)" firstly and if the result is true,
-	// returns ENC_ERROR.
-	// If no encoding is found, returns ENC_DEFAULT.
+	/**
+	 * Determines the encoding of the file, accordingly to the first two or three bytes in the file.
+	 * Special results: ENC_ERROR if reading the first three bytes failed; ENC_DEFAULT if no supported encoding could be determined.
+	 * @param filename Path to the file to test.
+	 * @return An "encoding_t" value.
+	 */
 	encoding_t Encoding(filename_t filename);
 
-	// Returns true if the file exists, false otherwise.
+	/// Returns true if "filename" points to an existing file, false otherwise.
 	bool Exists(filename_t filename); 
 
-	// Returns true if the given path points to a directory, false otherwise.
+	/// Returns true if "filename" points to an existing directory, false otherwise.
 	bool IsDir(filename_t filename);
 
-	// Returns true if trying to read "charsToRead" characters from the file fails.
-	// If "charsToRead" <= 0 then it is ignored and the function only checks if the file can be opened.
+	/**
+	 * Attempts to read a few bytes in the file, and simply say if it was a success or not.
+	 * @param filename Name of the file to read.
+	 * @param charsToRead Number of bytes to read. If <= 0, we simply return "Exist(filename)".
+	 * @return True if it was a success, false if we could not read exactly "charsToRead" bytes.
+	 */
 	bool CanReadFile(filename_t filename, int charsToRead = 3);
 	
-	// Closes "ifs" and tries to open the file "filename".
-	// If an encoding is given, applies the corresponding locale 
-	// (UTF-8 or UTF-16LE) ; else applies default locale.
-	// The ifs.tellg() is after BOMs.
-	// Returns true on success, false otherwise.
+	/**
+	 * Extraordinary function.
+	 *
+	 * 1. It closes "ifs".
+	 * 2. If unknown, it calls "Encoding(filename)" to determine the encoding.
+	 * 3. If the coding could be processed, we call "ifs.open(filename)" with a specific policy (locale, starting offset, etc.).
+	 * In all cases, the function returns.
+	 * @param ifs The stream to open with the given file and opening policy. It is closed before doing anything.
+	 * @param filename The path to the file to open.
+	 * @param encoding (optional) If you already know the encoding, you can set this parameter;
+	 *                            otherwise it will be determined inside the function.
+	 * @return False if and only if trying to determine the encoding failed --> file cannot be processed correctly.
+	 */
 	bool Open(std::ifstream& ifs, filename_t filename, 
 		encoding_t encoding = encoding_t::ENC_ERROR);
 
-	// Returns the entire file as a const char*.
-	// Please note that it does not end with a '\0'.
-	// If file size is zero or if it fails, returns nullptr.
-	// For closing always use Read_Close.
-	// Thread-safe.
+	/**
+	 * Stores the entire contents of file "filename" in a read-only C-string.
+	 * Also, that C-string does not end with '\0'.
+	 * It is advised to use an "InCharArrayStream".
+	 * To clean up memory, please call "Read_Close" with the structure returned from there.
+	 * The structure must remain a pointer (in reality, it is an instance of a subclass of ReadFileData).
+	 * The purpose of this function is to offer the fastest way to read an entire file.
+	 * @param filename Name of the file to open.
+	 * @return "nullptr" if anything failed or the file is empty, or a new structure.
+	 */
 	const ReadFileData* Read(filename_t filename);
 
-	// Closes a file opened using the Read function.
-	// Returns whether a file was closed successfully.
-	// Thread-safe.
+	/// Please use this simple tool to clean up any memory associated with something returned by "Read".
 	void Read_Close(const ReadFileData* content);
 
-	// Returns the file size in bytes, or 0.
+	/// Returns the size of the file pointed by "filename" in bytes, or 0 if anything failed.
 	file_size_t Size(filename_t filename);
 
-	// Displays the file encoding as a string.
+	/// Simple helper function, for use during debugging.
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc);
 
-	// Creates a folder.
-	// On Windows, new folder's access rights are the ones of the parent's dir.
-	// Otherwise it is 777.
+	/**
+	 * Creates an empty directory. No particular setting (such as permissions) is applied.
+	 * @param filename Name of the folder to create.
+	 * @return True if the folder actually got created.
+	 */
 	bool CreateFolder(filename_t filename);
 
-	// Returns Current Working Directory.
-	// Array created using malloc --> please use free (not delete[]).
+	/// Returns the "Current Working Directory" as a folder path. It ends with a FILE_SEPARATOR.
 	str_filename_t GetCWD();
 
-	// Given a directory path with the ending PATH_SEPARATOR character,
-	// returns the complete list of files and directories that are direct children of folder.
-	// Directories have an ending PATH_SEPARATOR to make it easier to distinguish them.
-	// If anything fails, returns an empty vector.
+	/**
+	 * Generates the complete list of files and directories that are direct children of the given folder.
+	 * Names are returned relative to the "folder". Directories have an ending PATH_SEPARATOR.
+	 * > FilesInDirectory("foldername/") -> ("file.txt", "image.png", "subfolder/")
+	 * @param folder Name or path to the folder. It must end with a PATH_SEPARATOR character.
+	 * @return List of files and directories names, or empty vector if anything failed.
+	 */
 	std::vector<File::str_filename_t> FilesInDirectory(filename_t folder);
 } 
 

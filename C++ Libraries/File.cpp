@@ -84,10 +84,14 @@ namespace File
 	{
 	    // TODO fix
 #if defined(_WIN32)
-        char* buffer = new char[charsToRead];
-        int bytesRead = _WindowsReadFileToBuffer(filename, buffer, charsToRead);
-        delete[] buffer;
-        return bytesRead == charsToRead;
+        if (charsToRead > 0) {
+            char *buffer = new char[charsToRead];
+            int bytesRead = _WindowsReadFileToBuffer(filename, buffer, charsToRead);
+            delete[] buffer;
+            return bytesRead == charsToRead;
+        } else {
+            return _WindowsFileExists(filename);
+        }
 #else
 		int file;
 		bool forReturn = false;
