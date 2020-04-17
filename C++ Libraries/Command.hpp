@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include "File.hpp"
 
 enum class OutputChoice {
     KEEP, // Let it on the console

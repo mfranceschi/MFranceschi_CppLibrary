@@ -33,39 +33,47 @@ namespace File
 	typedef encoding_e encoding_t;
 	
 	// Type used to deal with file sizes of any weight (GBs are okay).
-	typedef unsigned long file_size_t;
+	typedef unsigned long Filesize_t;
 
-	// Type used for file names.
-#if defined _WIN32 && defined UNICODE
-	typedef const wchar_t* filename_t; // typedef for const wchar_t *
-	typedef std::wstring str_filename_t; // typedef for std::wstring
+#if defined(_WIN32)
+#   if defined(UNICODE)
+#       define MAKE_FILE_NAME L""
+	    typedef const wchar_t* Filename_t;
+	    typedef std::wstring SFilename_t;
+#   else
+#       define MAKE_FILE_NAME ""
+        typedef const char* Filename_t;
+        typedef std::string SFilename_t;
+#   endif
+#   define FILE_SEPARATOR MAKE_FILE_NAME "\\"
 #else
-	typedef const char* filename_t; // typedef for const char *
-	typedef std::string str_filename_t; // typedef for std::string
+#   define FILE_SEPARATOR "/"
+#   define MAKE_FILE_NAME ""
+    typedef const char* Filename_t;
+	typedef std::string SFilename_t;
 #endif
 
     // Data structure used to store information about files opened with Open.
     struct ReadFileData {
         const char* contents = nullptr; // Holds the file data.
-        file_size_t size = 0ul; // Size of the file.
+        Filesize_t size = 0ul; // Size of the file.
         virtual ~ReadFileData() = default; // For polymorphic reasons.
     };
 
-//-------------------------------------------------------------- Constants
-#if defined _WIN32
-#   define FILE_SEPARATOR R"slash(\)slash"
-#   if defined UNICODE
-#       define MAKE_FILE_NAME L""
-#   else
-#       define MAKE_FILE_NAME ""
-#   endif
-#else
-#   define FILE_SEPARATOR R"slash(/)slash"
-#   define MAKE_FILE_NAME ""
-#endif
 
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
+
+    /**
+     * Generates a file name by concatenating each argument from the list.
+     * Arguments must be of "const char[]" type, so it is advised to use literal strings.
+     * If number is <= 0 then this function returns an empty string.
+     * @param absolute If true and we are not on Windows, we prepend a directory separator.
+     * @param number Number of variadic arguments.
+     * @param ... List of "number" C-strings.
+     * @return A concatenation of the arguments and the default directory separator.
+     */
+    SFilename_t MakeFilename(bool absolute, int number, ...);
 
 	/**
 	 * This function removes the given file or directory.
@@ -73,7 +81,7 @@ namespace File
 	 * @param fileOnly If true, the removal is done if and only if the "filename" points to a file.
 	 * @return True if something was removed successfully.
 	 */
-	bool Delete(filename_t filename, bool fileOnly = true);
+	bool Delete(Filename_t filename, bool fileOnly = true);
 
 	/**
 	 * Determines the encoding of the file, accordingly to the first two or three bytes in the file.
@@ -81,13 +89,13 @@ namespace File
 	 * @param filename Path to the file to test.
 	 * @return An "encoding_t" value.
 	 */
-	encoding_t Encoding(filename_t filename);
+	encoding_t Encoding(Filename_t filename);
 
 	/// Returns true if "filename" points to an existing file, false otherwise.
-	bool Exists(filename_t filename); 
+	bool Exists(Filename_t filename);
 
 	/// Returns true if "filename" points to an existing directory, false otherwise.
-	bool IsDir(filename_t filename);
+	bool IsDir(Filename_t filename);
 
 	/**
 	 * Attempts to read a few bytes in the file, and simply say if it was a success or not.
@@ -95,7 +103,7 @@ namespace File
 	 * @param charsToRead Number of bytes to read. If <= 0, we simply return "Exist(filename)".
 	 * @return True if it was a success, false if we could not read exactly "charsToRead" bytes.
 	 */
-	bool CanReadFile(filename_t filename, int charsToRead = 3);
+	bool CanReadFile(Filename_t filename, int charsToRead = 3);
 	
 	/**
 	 * Extraordinary function.
@@ -110,8 +118,8 @@ namespace File
 	 *                            otherwise it will be determined inside the function.
 	 * @return False if and only if trying to determine the encoding failed --> file cannot be processed correctly.
 	 */
-	bool Open(std::ifstream& ifs, filename_t filename, 
-		encoding_t encoding = encoding_t::ENC_ERROR);
+	bool Open(std::ifstream& ifs, Filename_t filename,
+              encoding_t encoding = encoding_t::ENC_ERROR);
 
 	/**
 	 * Stores the entire contents of file "filename" in a read-only C-string.
@@ -123,13 +131,13 @@ namespace File
 	 * @param filename Name of the file to open.
 	 * @return "nullptr" if anything failed or the file is empty, or a new structure.
 	 */
-	const ReadFileData* Read(filename_t filename);
+	const ReadFileData* Read(Filename_t filename);
 
 	/// Please use this simple tool to clean up any memory associated with something returned by "Read".
 	void Read_Close(const ReadFileData* content);
 
 	/// Returns the size of the file pointed by "filename" in bytes, or 0 if anything failed.
-	file_size_t Size(filename_t filename);
+	Filesize_t Size(Filename_t filename);
 
 	/// Simple helper function, for use during debugging.
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc);
@@ -139,10 +147,10 @@ namespace File
 	 * @param filename Name of the folder to create.
 	 * @return True if the folder actually got created.
 	 */
-	bool CreateFolder(filename_t filename);
+	bool CreateFolder(Filename_t filename);
 
 	/// Returns the "Current Working Directory" as a folder path. It ends with a FILE_SEPARATOR.
-	str_filename_t GetCWD();
+	SFilename_t GetCWD();
 
 	/**
 	 * Generates the complete list of files and directories that are direct children of the given folder.
@@ -151,7 +159,7 @@ namespace File
 	 * @param folder Name or path to the folder. It must end with a PATH_SEPARATOR character.
 	 * @return List of files and directories names, or empty vector if anything failed.
 	 */
-	std::vector<File::str_filename_t> FilesInDirectory(filename_t folder);
+	std::vector<File::SFilename_t> FilesInDirectory(Filename_t folder);
 } 
 
 //------------------------------------------------------ Other definitions

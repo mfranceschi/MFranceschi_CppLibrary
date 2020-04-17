@@ -41,6 +41,23 @@ void _WindowsShowErrorMessage(const char* functionName) {
     ExitProcess(dw);
 }
 
+const wchar_t* _WindowsConvert(const char* utf8String) {
+    // Thanks to https://stackoverflow.com/a/6693107 !
+    int wchars_num = MultiByteToWideChar(
+            CP_UTF8, // Source (and so the expected processing) is UTF-8.
+            0, // Because of UTF-8.
+            utf8String, // C-string source
+            -1, // Indicates that the source C-string is null-terminated.
+            nullptr, // No use for now.
+            0); // We ask this function to return the number of bytes to allocate.
+
+    auto* wstr = new wchar_t[wchars_num];
+    MultiByteToWideChar(
+            CP_UTF8, 0, utf8String, -1,
+            wstr, wchars_num);
+    return wstr;
+}
+
 // ///////////////////////////////////////////////////////////////
 // //////////////// COMMAND HANDLING API /////////////////////////
 // ///////////////////////////////////////////////////////////////
@@ -111,53 +128,53 @@ void _WindowsReturnNowProcess(ProcessHandle& processHandle) {
 // /////////////////// FILE HANDLING API /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-bool _WindowsDeleteFile(File::filename_t filename) {
+bool _WindowsDeleteFile(File::Filename_t filename) {
     return DeleteFile(filename);
 }
 
-bool _WindowsDeleteDirectory(File::filename_t directoryName) {
+bool _WindowsDeleteDirectory(File::Filename_t directoryName) {
     return RemoveDirectory(directoryName);
 }
 
-bool _WindowsFileExists(File::filename_t filename) {
+bool _WindowsFileExists(File::Filename_t filename) {
     DWORD attr = GetFileAttributes(filename);
     return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool _WindowsDirectoryExists(File::filename_t directoryName) {
+bool _WindowsDirectoryExists(File::Filename_t directoryName) {
     DWORD attr = GetFileAttributes(directoryName);
     return (attr == INVALID_FILE_ATTRIBUTES) ? false : (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-File::file_size_t _WindowsGetFileSize(File::filename_t filename) {
+File::Filesize_t _WindowsGetFileSize(File::Filename_t filename) {
     HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (file == INVALID_HANDLE_VALUE) return 0;
     LARGE_INTEGER res;
     GetFileSizeEx(file, &res);
     CloseHandle(file);
-    return static_cast<File::file_size_t>(res.QuadPart);
+    return static_cast<File::Filesize_t>(res.QuadPart);
 }
 
-bool _WindowsCreateDirectory(File::filename_t directoryName) {
+bool _WindowsCreateDirectory(File::Filename_t directoryName) {
     return CreateDirectory(directoryName, nullptr);
 }
 
-File::str_filename_t _WindowsGetCurrentWorkingDirectory() {
+File::SFilename_t _WindowsGetCurrentWorkingDirectory() {
     DWORD nBufferLength = GetCurrentDirectory(0, nullptr);
     auto lpBuffer = static_cast<LPTSTR>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, nBufferLength));
     GetCurrentDirectory(nBufferLength, lpBuffer);
-    File::str_filename_t returnValue(lpBuffer);
+    File::SFilename_t returnValue(lpBuffer);
     HeapFree(GetProcessHeap(), 0, lpBuffer);
     return returnValue;
 }
 
-void _WindowsGetDirectoryContents(File::filename_t directoryName, std::vector<File::str_filename_t>& result) {
-    File::str_filename_t tempFilename;
-    static File::filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
-    static File::filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
+void _WindowsGetDirectoryContents(File::Filename_t directoryName, std::vector<File::SFilename_t>& result) {
+    File::SFilename_t tempFilename;
+    static File::Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
+    static File::Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
     WIN32_FIND_DATA wfd;
     HANDLE hFind;
-    File::str_filename_t tempFolderName = directoryName;
+    File::SFilename_t tempFolderName = directoryName;
     tempFolderName += MAKE_FILE_NAME "*";
     hFind = FindFirstFile(tempFolderName.c_str(), &wfd);
     if (hFind != INVALID_HANDLE_VALUE) {
@@ -182,7 +199,7 @@ void _WindowsGetDirectoryContents(File::filename_t directoryName, std::vector<Fi
     }
 }
 
-const _WindowsReadFileData* _WindowsOpenFile(File::filename_t filename) {
+const _WindowsReadFileData* _WindowsOpenFile(File::Filename_t filename) {
     auto rfd = static_cast<_WindowsReadFileData*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(_WindowsReadFileData)));
     rfd->size = _WindowsGetFileSize(filename);
     if (rfd->size == 0) {
@@ -217,22 +234,25 @@ const _WindowsReadFileData* _WindowsOpenFile(File::filename_t filename) {
     return rfd;
 }
 
-void _WindowsCloseReadFileData(const File::ReadFileData* readFileData) {
-    auto rfd = dynamic_cast<const _WindowsReadFileData*>(readFileData);
+void _WindowsCloseReadFileData(const _WindowsReadFileData* rfd) {
     UnmapViewOfFile(rfd->contents);
     CloseHandle(rfd->mappingHandle);
     CloseHandle(rfd->fileHandle);
-    delete readFileData;
+    HeapFree(GetProcessHeap(), 0, (void*) rfd);
 }
 
-int _WindowsReadFileToBuffer(File::filename_t filename, char* buffer, File::file_size_t bufferSize) {
+void _WindowsCloseReadFileData(const File::ReadFileData* readFileData) {
+    (void)(readFileData); // to avoid "unused parameter warning
+}
+
+int _WindowsReadFileToBuffer(File::Filename_t filename, char* buffer, File::Filesize_t bufferSize) {
     FileHandle fileHandle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (fileHandle == INVALID_HANDLE_VALUE) {
         return -1;
     }
 
     DWORD numberOfBytesRead;
-    BOOL returnValue = ReadFile(fileHandle, buffer, bufferSize, &numberOfBytesRead, nullptr);
+    bool returnValue = ReadFile(fileHandle, buffer, bufferSize, &numberOfBytesRead, nullptr);
     CloseHandle(fileHandle);
 
     return returnValue ? static_cast<int>(numberOfBytesRead) : -1;

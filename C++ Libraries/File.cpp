@@ -2,6 +2,7 @@
 
 //--------------------------------------------------------------- Includes
 
+#include <stdarg.h>
 #include <codecvt>
 #include "File.hpp"
 #include <locale>
@@ -24,6 +25,12 @@ using std::ios_base;
 
 constexpr static size_t NBR_BITS_TO_READ_ENCODING = 3;
 
+#if defined(_WIN32) && defined(UNICODE)
+using _Soss_t = std::wostringstream;
+#else
+using _Soss_t = std::ostringstream;
+#endif
+
 namespace File
 {
 /////////////////////////////////////////////////////////////////  PRIVATE
@@ -45,7 +52,36 @@ namespace File
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
 
-	bool Delete(filename_t filename, bool fileOnly)
+    SFilename_t MakeFilename(bool absolute, int number, ...) {
+        using _ArgumentsType = const char*;
+        _Soss_t oss;
+        va_list argsList;
+        va_start(argsList, number);
+        _ArgumentsType currentArg;
+
+#if !defined(_WIN32)
+        // On UNIX, if the given path is intended to be absolute,
+        // we prepend a FILE_SEPARATOR.
+        if (absolute) {
+            oss << FILE_SEPARATOR;
+        }
+#endif
+
+        for (int i = 0; i < number - 1 ; i ++) {
+            currentArg = va_arg(argsList, _ArgumentsType);
+
+#if defined(_WIN32) && defined(UNICODE)
+            const wchar_t* wcharCurrentArg = _WindowsConvert(currentArg);
+            oss << wcharCurrentArg << FILE_SEPARATOR;
+            delete[] wcharCurrentArg;
+#else
+            oss << currentArg << FILE_SEPARATOR;
+#endif
+        }
+        return oss.str();
+    }
+
+	bool Delete(Filename_t filename, bool fileOnly)
 	{
 #ifdef _WIN32 // Win32
 		if (fileOnly)
@@ -60,7 +96,7 @@ namespace File
 #endif
 	}
 
-	bool Exists(filename_t filename)
+	bool Exists(Filename_t filename)
 	{
 #ifdef _WIN32 // Win32
 	    return _WindowsFileExists(filename);
@@ -70,7 +106,7 @@ namespace File
 #endif
 	}
 
-	bool IsDir(filename_t filename)
+	bool IsDir(Filename_t filename)
 	{
 #ifdef _WIN32 // Win32
 		return _WindowsDirectoryExists(filename);
@@ -80,7 +116,7 @@ namespace File
 #endif
 	}
 
-	bool CanReadFile(filename_t filename, int charsToRead)
+	bool CanReadFile(Filename_t filename, int charsToRead)
 	{
 	    // TODO fix
 #if defined(_WIN32)
@@ -113,8 +149,8 @@ namespace File
 #endif
 	}
 
-	bool Open(ifstream& ifs, filename_t filename,
-		encoding_t encoding)
+	bool Open(ifstream& ifs, Filename_t filename,
+              encoding_t encoding)
 	{
 		ifs.close();
 		if (encoding == encoding_t::ENC_ERROR)
@@ -143,18 +179,18 @@ namespace File
 			return false;
 	}
 
-	file_size_t Size(filename_t filename)
+	Filesize_t Size(Filename_t filename)
 	{
 #ifdef _WIN32 // Win32
 		return _WindowsGetFileSize(filename);
 #else // POSIX
 		struct stat t{};
 		if (stat(filename, &t)) return 0;
-		return file_size_t(t.st_size);
+		return Filesize_t(t.st_size);
 #endif
 	}
 
-	encoding_t Encoding(filename_t filename)
+	encoding_t Encoding(Filename_t filename)
     {
 	    // TODO fix
         char bits[NBR_BITS_TO_READ_ENCODING];
@@ -197,7 +233,7 @@ namespace File
 		return forReturn;
 	}
 
-	bool CreateFolder(filename_t filename)
+	bool CreateFolder(Filename_t filename)
 	{
 #ifdef _WIN32
 		return _WindowsCreateDirectory(filename);
@@ -206,7 +242,7 @@ namespace File
 #endif
 	}
 
-	const ReadFileData* Read(filename_t filename)
+	const ReadFileData* Read(Filename_t filename)
 	{
 #ifdef _WIN32
 		return _WindowsOpenFile(filename);
@@ -266,28 +302,28 @@ namespace File
 		return os;
 	}
 
-	str_filename_t GetCWD()
+	SFilename_t GetCWD()
 	{
 #ifdef _WIN32
         return _WindowsGetCurrentWorkingDirectory();
 #else
-        File::filename_t result_of_syscall;
+        File::Filename_t result_of_syscall;
         result_of_syscall = getcwd(nullptr, 0);
-        str_filename_t to_return = result_of_syscall;
+        SFilename_t to_return = result_of_syscall;
 		free((void *) result_of_syscall);
 		return to_return;
 #endif
 	}
 
 
-    std::vector<File::str_filename_t> FilesInDirectory(filename_t folder) {
-        std::vector<File::str_filename_t> result;
+    std::vector<File::SFilename_t> FilesInDirectory(Filename_t folder) {
+        std::vector<File::SFilename_t> result;
 #if defined(_WIN32)
         _WindowsGetDirectoryContents(folder, result);
 #else
-        File::str_filename_t tempFilename;
-        static File::filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
-        static File::filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
+        File::SFilename_t tempFilename;
+        static File::Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
+        static File::Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
         DIR * d;
         dirent * dir_entry;
                 d = opendir(folder);

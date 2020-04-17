@@ -14,6 +14,13 @@
  */
 void _WindowsShowErrorMessage(const char* functionName);
 
+/**
+ * Generates a newly-allocated (using the "new" operator) wchar_t array from the given Multi-Bytes string.
+ * @param utf8String Source.
+ * @return Newly-allocated string, created by copying the contents with the correct syscall.
+ */
+const wchar_t* _WindowsConvert(const char* utf8String);
+
 // ///////////////////////////////////////////////////////////////
 // //////////////// COMMAND HANDLING API /////////////////////////
 // ///////////////////////////////////////////////////////////////
@@ -70,67 +77,70 @@ struct _WindowsReadFileData : public File::ReadFileData {
  * @param filename Name of the file to delete.
  * @return True on success, false on failure.
  */
-bool _WindowsDeleteFile(File::filename_t filename);
+bool _WindowsDeleteFile(File::Filename_t filename);
 
 /**
  * Deletes a directory.
  * @param directoryName Name of the directory to delete.
  * @return True on success, false on failure.
  */
-bool _WindowsDeleteDirectory(File::filename_t directoryName);
+bool _WindowsDeleteDirectory(File::Filename_t directoryName);
 
 /**
  * Checks whether a given file exists.
  * @param filename Name of the file to check.
  * @return True on success, false on failure.
  */
-bool _WindowsFileExists(File::filename_t filename);
+bool _WindowsFileExists(File::Filename_t filename);
 
 /**
  * Checks whether a given directory exists.
  * @param directoryName Name of the directory to check.
  * @return True on success, false on failure.
  */
-bool _WindowsDirectoryExists(File::filename_t directoryName);
+bool _WindowsDirectoryExists(File::Filename_t directoryName);
 
 /**
  * Returns the size of a file.
  * @param filename Name of the file.
  * @return The size, or zero if anything failed.
  */
-File::file_size_t _WindowsGetFileSize(File::filename_t filename);
+File::Filesize_t _WindowsGetFileSize(File::Filename_t filename);
 
 /**
  * Creates a directory.
  * @param directoryName Name of the new directory.
  * @return True on success, false on failure.
  */
-bool _WindowsCreateDirectory(File::filename_t directoryName);
+bool _WindowsCreateDirectory(File::Filename_t directoryName);
 
 /**
  * Gets the name of the current working directory.
  * @return A C++ string containing the current working directory.
  */
-File::str_filename_t _WindowsGetCurrentWorkingDirectory();
+File::SFilename_t _WindowsGetCurrentWorkingDirectory();
 
 /**
  * Generates a list of contents of a given directory.
  * @param directoryName Name of the directory.
  * @param result Vector of files/directory names to fill.
  */
-void _WindowsGetDirectoryContents(File::filename_t directoryName, std::vector<File::str_filename_t>& result);
+void _WindowsGetDirectoryContents(File::Filename_t directoryName, std::vector<File::SFilename_t>& result);
 
 /**
  * Opens the given file and returns a pointer to a ReadFileData structure.
  * @param filename Name of the file to open.
  * @return A new structure, or nullptr if anything failed.
  */
-const _WindowsReadFileData* _WindowsOpenFile(File::filename_t filename);
+const _WindowsReadFileData* _WindowsOpenFile(File::Filename_t filename);
 
 /**
  * Releases the memory associated with the file opened there.
  * @param readFileData A Windows ReadFileData to close ; its memory will also be freed.
  */
+void _WindowsCloseReadFileData(const _WindowsReadFileData* readFileData);
+
+/// For polymorphic reasons; actually this is a dummy function.
 void _WindowsCloseReadFileData(const File::ReadFileData* readFileData);
 
 /**
@@ -140,6 +150,6 @@ void _WindowsCloseReadFileData(const File::ReadFileData* readFileData);
  * @param bufferSize Length of the buffer.
  * @return Number of bytes written, -1 on failure.
  */
-int _WindowsReadFileToBuffer(File::filename_t filename, char* buffer, File::file_size_t bufferSize);
+int _WindowsReadFileToBuffer(File::Filename_t filename, char* buffer, File::Filesize_t bufferSize);
 
 #endif //MYWORKS_TEST0_WINDOWSAPIHELPER_HPP

@@ -18,10 +18,10 @@
 // First settings : file names, (Win) memory leaks check.
 #if 1
 
-constexpr File::filename_t FILENAME_MIDDLE_SIZE = _Make_Fname(MIDDLE_SIZE_RAW);
-constexpr File::filename_t FILENAME_NOT_EXISTING = _Make_Fname(NOT_EXISTING_RAW);
-constexpr File::filename_t FILENAME_SMALL_UTF16LE = _Make_Fname(SMALL_UTF16LE_RAW);
-constexpr File::filename_t FILENAME_TEMP = _Make_Fname(TEMP_RAW);
+constexpr File::Filename_t FILENAME_MIDDLE_SIZE = _Make_Fname(MIDDLE_SIZE_RAW);
+constexpr File::Filename_t FILENAME_NOT_EXISTING = _Make_Fname(NOT_EXISTING_RAW);
+constexpr File::Filename_t FILENAME_SMALL_UTF16LE = _Make_Fname(SMALL_UTF16LE_RAW);
+constexpr File::Filename_t FILENAME_TEMP = _Make_Fname(TEMP_RAW);
 
 // Turn on Memory Leaks detection (Win32 only)
 #ifdef I_Want_Mem_Leaks
@@ -34,8 +34,8 @@ constexpr File::filename_t FILENAME_TEMP = _Make_Fname(TEMP_RAW);
 // Structure that holds file information.
 struct file_info_data
 {
-	File::file_size_t size;
-	File::filename_t name;
+	File::Filesize_t size;
+	File::Filename_t name;
 	char firstByte, lastByte;
 	bool exists;
 	File::encoding_t encoding;
@@ -61,7 +61,7 @@ protected:
 	{}
 
 	void CheckSize() {
-		File::file_size_t size = File::Size(fid.name);
+		File::Filesize_t size = File::Size(fid.name);
 		if (fid.size)
 			ASSERT_NE(size, 0);
 		EXPECT_EQ(size, fid.size);
@@ -106,7 +106,7 @@ protected:
 		}
 		else {
 			// Max nbr of chars that will be readed.
-			unsigned int chars_max = std::min(static_cast<File::file_size_t>(5), fid.size / 10);
+			unsigned int chars_max = std::min(static_cast<File::Filesize_t>(5), fid.size / 10);
 
 			// Try to read an invalid number of chars.
 			// Effect: check that the file exists.
@@ -117,10 +117,10 @@ protected:
 			for (unsigned int i = 1; i < chars_max; ++i) {
 				EXPECT_TRUE(File::CanReadFile(fid.name, i)) << "Fail of \"Read a few times\" with index " << i;
 			}
-			if (fid.size <= 3 /* Value of default param. */)
-				EXPECT_TRUE(File::CanReadFile(fid.name));
-			else
+			if (fid.size < 3 /* Value of default param. */)
 				EXPECT_FALSE(File::CanReadFile(fid.name));
+			else
+				EXPECT_TRUE(File::CanReadFile(fid.name));
 		}
 	}
 
@@ -234,7 +234,7 @@ TEST(IsDir, ActualFolder)
 
 TEST(IsDir, IsAFile)
 {
-	File::filename_t fname = FILENAME_SMALL_UTF16LE;
+	File::Filename_t fname = FILENAME_SMALL_UTF16LE;
 	ASSERT_TRUE(File::Exists(fname));
 	ASSERT_FALSE(File::IsDir(fname));
 }
@@ -245,7 +245,7 @@ TEST(IsDir, Unexisting)
 }
 
 TEST(IsDir, NewFolder) {
-	const File::filename_t& filename = FILENAME_TEMP;
+	const File::Filename_t& filename = FILENAME_TEMP;
 	ASSERT_TRUE(File::CreateFolder(filename));
 	EXPECT_TRUE(File::IsDir(filename));
 	ASSERT_TRUE(File::Delete(filename, false));
@@ -256,9 +256,9 @@ TEST(Delete, Unexisting)
 	ASSERT_FALSE(File::Delete(FILENAME_NOT_EXISTING));
 }
 
-TEST(Read, ThousandsOfRead) {
-	File::filename_t file = fid_middle_size.name;
-	constexpr long iterations = static_cast<long>(1e3); /* A thousand times (100ms approx). */
+TEST(Read, ManyReads) {
+	File::Filename_t file = fid_middle_size.name;
+	constexpr long iterations = 1e3l; // A thousand times (100ms approx).
 	for (long i = 0; i < iterations; ++i) {
 		auto filedata = File::Read(file);
 		ASSERT_NE(filedata, nullptr) << "Failed to OPEN at iteration " << i;
@@ -267,15 +267,15 @@ TEST(Read, ThousandsOfRead) {
 }
 
 TEST(FilesInDirectory, UsualTest) {
-    std::vector<File::str_filename_t> ret = File::FilesInDirectory(TEST_FILES_DIR_PREFIX);
-    std::vector<File::str_filename_t> expected = {
+    std::vector<File::SFilename_t> ret = File::FilesInDirectory(TEST_FILES_DIR_PREFIX);
+    std::vector<File::SFilename_t> expected = {
             MAKE_FILE_NAME "Small_utf16le.txt",
             MAKE_FILE_NAME "aom_v.scx",
             MAKE_FILE_NAME "EmptyFolder" FILE_SEPARATOR
     };
 
     ASSERT_EQ(expected.size(), ret.size());
-    for (const File::str_filename_t& expectedItem : expected) {
+    for (const File::SFilename_t& expectedItem : expected) {
         ASSERT_LIST_CONTAINS(ret, expectedItem);
     }
 }

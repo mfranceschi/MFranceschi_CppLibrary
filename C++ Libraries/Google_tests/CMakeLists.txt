@@ -1,6 +1,6 @@
 # "Google_test" is the project name
 project (Google_test)
-set(CPP_FILES_TO_TEST ../Date.cpp ../File.cpp ../Toolbox.cpp ../WindowsAPIHelper.cpp)
+set(CPP_FILES_TO_TEST ../Date.cpp ../File.cpp ../Toolbox.cpp ../WindowsAPIHelper.cpp ../Command.cpp)
 set(TEST_CASES file_tests.cpp date_tests.cpp)
 
 # Import the repo according to the pattern described here:
