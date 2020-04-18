@@ -1,7 +1,7 @@
 //---------- Implementation of class <Date> (file Date.cpp) 
 
 //---------------------------------------------------------------- INCLUDE
-#ifndef nocompil
+#ifdef nocompil
 #include <cassert>
 #include <chrono>
 #include <cmath>
