@@ -1,8 +1,3 @@
-# "Google_test" is the project name
-project (Google_test)
-set(CPP_FILES_TO_TEST ../Date.cpp ../File.cpp ../Toolbox.cpp ../WindowsAPIHelper.cpp ../Command.cpp)
-set(TEST_CASES file_tests.cpp date_tests.cpp)
-
 # Import the repo according to the pattern described here:
 # https://github.com/CLIUtils/cmake/blob/master/AddGoogleTest.cmake
 include(FetchContent)
@@ -17,7 +12,14 @@ if(NOT googletest_POPULATED)
     unset(CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
 endif()
 
-# "Google_Tests_run" is the target name
-add_executable(Google_Tests_run ${CPP_FILES_TO_TEST} ${TEST_CASES})
-# add_compile_definitions(UNICODE)
-target_link_libraries(Google_Tests_run gtest)
+set_target_properties(
+        gmock gmock_main gtest gtest_main
+        PROPERTIES
+        EXCLUDE_FROM_ALL 1
+        EXCLUDE_FROM_DEFAULT_BUILD 1
+)
+
+set(TEST_CASES file_tests.cpp date_tests.cpp)
+add_executable(Google_Tests_run)
+target_sources(Google_Tests_run PRIVATE ${TEST_CASES})
+target_link_libraries(Google_Tests_run gtest MFranceschi_CppLibrary)

@@ -3,8 +3,6 @@
 //
 
 #include "tests_datas.hpp"
-#include "../File.hpp"
-#include "../Toolbox.hpp"
 
 #define MIDDLE_SIZE_RAW      "aom_v.scx"
 #define NOT_EXISTING_RAW      "not_existing._tut"
@@ -12,7 +10,7 @@
 #define TEMP_RAW            "I_AM_TEMP"
 #define _Make_Fname(raw)    TEST_FILES_DIR_PREFIX raw
 
-#define TEST_FILES_DIR_PREFIX MAKE_FILE_NAME ".." FILE_SEPARATOR ".." FILE_SEPARATOR "Google_tests" FILE_SEPARATOR "files" FILE_SEPARATOR
+#define TEST_FILES_DIR_PREFIX MAKE_FILE_NAME ".." FILE_SEPARATOR ".." FILE_SEPARATOR "test" FILE_SEPARATOR "files" FILE_SEPARATOR
 
 
 // First settings : file names, (Win) memory leaks check.

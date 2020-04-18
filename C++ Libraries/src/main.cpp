@@ -2,11 +2,11 @@
 // Created by mfran on 08/12/2019.
 //
 
-#include "File.hpp"
+#include "src/File.hpp"
 #include <iostream>
-#include "TimingExperience.hpp"
-#include "Toolbox.hpp"
-#include "Command.hpp"
+#include "src/TimingExperience.hpp"
+#include "src/Toolbox.hpp"
+#include "src/Command.hpp"
 
 using namespace std;
 

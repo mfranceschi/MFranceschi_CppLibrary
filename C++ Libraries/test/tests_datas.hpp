@@ -6,6 +6,7 @@
 #define MYWORKS_TEST0_TESTS_DATAS_HPP
 
 #include "gtest/gtest.h"
+#include <MFranceschi_CppLibrary.hpp>
 #include <algorithm>
 
 #define ASSERT_LIST_CONTAINS(container, item) ASSERT_TRUE(std::find(container.cbegin(), container.cend(), item) != container.cend())

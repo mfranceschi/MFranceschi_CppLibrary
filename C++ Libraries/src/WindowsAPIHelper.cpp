@@ -6,7 +6,7 @@
 
 #include <Windows.h>
 #include "WindowsAPIHelper.hpp"
-#include <Strsafe.h>
+#include <strsafe.h>
 
 void _WindowsShowErrorMessage(const char* functionName) {
     // Source: https://docs.microsoft.com/fr-fr/windows/win32/debug/retrieving-the-last-error-code

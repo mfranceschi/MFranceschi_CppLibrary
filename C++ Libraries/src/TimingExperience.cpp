@@ -20,9 +20,9 @@
 using std::cout;
 using std::endl;
 
-static constexpr const char *file_name = ".." FILE_SEPARATOR "Google_tests" FILE_SEPARATOR "files" FILE_SEPARATOR "aom_v.scx";
+static constexpr const char *file_name = ".." FILE_SEPARATOR "test" FILE_SEPARATOR "files" FILE_SEPARATOR "aom_v.scx";
 #ifdef _WIN32
-static constexpr File::Filename_t file_L = MAKE_FILE_NAME ".." FILE_SEPARATOR "Google_tests" FILE_SEPARATOR "files" FILE_SEPARATOR "aom_v.scx";
+static constexpr File::Filename_t file_L = MAKE_FILE_NAME ".." FILE_SEPARATOR "tests" FILE_SEPARATOR "files" FILE_SEPARATOR "aom_v.scx";
 #endif
 
 static inline double TimeWithRepetition(const std::function<void()>& func) {
