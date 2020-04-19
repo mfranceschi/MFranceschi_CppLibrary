@@ -13,6 +13,7 @@
 #   include "Toolbox.hpp"
 #   include "WindowsAPIHelper.hpp"
 #else
+#   include "UnixAPIHelper.hpp"
 #   include <dirent.h>
 #   include <sys/mman.h>
 #   include <unistd.h>
@@ -90,9 +91,9 @@ namespace File
 			return _WindowsDeleteFile(filename) ? true : _WindowsDeleteDirectory(filename);
 #else // POSIX
 		if (fileOnly)
-			return !unlink(filename);
+			return _UnixDeleteFile(filename);
 		else
-			return !remove(filename);
+			return _UnixDeleteFileOrDirectory(filename);
 #endif
 	}
 
@@ -101,8 +102,7 @@ namespace File
 #ifdef _WIN32 // Win32
 	    return _WindowsFileExists(filename);
 #else // POSIX
-		struct stat t{};
-		return !stat(filename, &t);
+		return _UnixFileExists(filename);
 #endif
 	}
 
@@ -111,42 +111,33 @@ namespace File
 #ifdef _WIN32 // Win32
 		return _WindowsDirectoryExists(filename);
 #else // POSIX
-		struct stat s{};
-		return !stat(filename, &s) & S_ISDIR(s.st_mode);
+		return _UnixDirectoryExists(filename);
 #endif
 	}
 
 	bool CanReadFile(Filename_t filename, int charsToRead)
 	{
-	    // TODO fix
-#if defined(_WIN32)
         if (charsToRead > 0) {
             char *buffer = new char[charsToRead];
-            int bytesRead = _WindowsReadFileToBuffer(filename, buffer, charsToRead);
+            int bytesRead;
+
+#if defined(_WIN32)
+            bytesRead = _WindowsReadFileToBuffer(filename, buffer, charsToRead);
+#else
+            bytesRead = _UnixReadFileToBuffer(filename, buffer, charsToRead);
+#endif
+
             delete[] buffer;
             return bytesRead == charsToRead;
         } else {
+
+#if defined(_WIN32)
             return _WindowsFileExists(filename);
-        }
 #else
-		int file;
-		bool forReturn = false;
-
-		if (!open_file(filename, file))
-			forReturn = true;
-		else
-		{
-		    if (charsToRead >= 0) {
-                char* content = new char[charsToRead];
-                int chars_just_read = _read(file, content, charsToRead);
-                forReturn = chars_just_read != charsToRead;
-                delete[] content;
-		    }
-			_close(file);
-		}
-
-		return forReturn;
+            return _UnixFileExists(filename);
 #endif
+
+        }
 	}
 
 	bool Open(ifstream& ifs, Filename_t filename,
@@ -181,12 +172,10 @@ namespace File
 
 	Filesize_t Size(Filename_t filename)
 	{
-#ifdef _WIN32 // Win32
+#if defined(_WIN32) // Win32
 		return _WindowsGetFileSize(filename);
 #else // POSIX
-		struct stat t{};
-		if (stat(filename, &t)) return 0;
-		return Filesize_t(t.st_size);
+		return _UnixGetFileSize(filename);
 #endif
 	}
 
@@ -195,9 +184,13 @@ namespace File
 	    // TODO fix
         char bits[NBR_BITS_TO_READ_ENCODING];
         encoding_t forReturn;
+        int readResult;
 
 #if defined(_WIN32)
-        int readResult = _WindowsReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
+        readResult = _WindowsReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
+#else
+        readResult = _UnixReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
+#endif
         if (readResult != NBR_BITS_TO_READ_ENCODING) {
             forReturn = File::encoding_t::ENC_ERROR;
         } else if (bits[0] == '\xff' && bits[1] == '\xfe') {
@@ -207,29 +200,6 @@ namespace File
         } else {
             forReturn = encoding_t::ENC_DEFAULT;
         }
-#else
-
-		int file;
-
-		if (!open_file(filename, file))
-			forReturn = encoding_t::ENC_ERROR;
-		else
-		{
-			char bits[NBR_BITS_TO_READ_ENCODING];
-			int ret_read = _read(file, bits, NBR_BITS_TO_READ_ENCODING);
-			
-			if (ret_read != NBR_BITS_TO_READ_ENCODING)
-				forReturn = encoding_t::ENC_ERROR;
-			else if (bits[0] == '\xff' && bits[1] == '\xfe')
-				forReturn = encoding_t::ENC_UTF16LE;
-			else if (bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf')
-				forReturn = encoding_t::ENC_UTF8;
-			else
-				forReturn = encoding_t::ENC_DEFAULT;
-
-			_close(file);
-		}
-#endif
 		return forReturn;
 	}
 
@@ -238,7 +208,7 @@ namespace File
 #ifdef _WIN32
 		return _WindowsCreateDirectory(filename);
 #else
-		return !mkdir(filename, S_IRWXU | S_IRWXG | S_IRWXO);
+		return _UnixCreateDirectory(filename);
 #endif
 	}
 
@@ -247,14 +217,7 @@ namespace File
 #ifdef _WIN32
 		return _WindowsOpenFile(filename);
 #else
-		if (!open_file(filename, rfd.fd))
-			return nullptr;
-		rfd.memoryPointer = (const char*)mmap(nullptr, rfd.size, PROT_READ, MAP_PRIVATE, rfd.fd, 0);
-		if (rfd.memoryPointer == (void*)-1)
-		{
-			_close(rfd.fd);
-			return nullptr;
-		}
+		return _UnixOpenFile(filename);
 #endif
 	}
 
@@ -263,22 +226,7 @@ namespace File
 #if defined(_WIN32)
 	    return _WindowsCloseReadFileData(content);
 #else
-		openedFilesMutex.lock();
-		bool found = false;
-
-		auto iterToContent = openedFiles.find(content);
-		if (iterToContent != openedFiles.end())
-		{
-			found = true;
-			// File is found, release its data.
-			ReadFileData& rfd = iterToContent->second;
-			munmap((void*)rfd.memoryPointer, rfd.size);
-			_close(rfd.fd);
-			openedFiles.erase(iterToContent);
-		}
-
-		openedFilesMutex.unlock();
-		return found;
+		return _UnixCloseReadFileData(content);
 #endif
     }
 
@@ -307,38 +255,16 @@ namespace File
 #ifdef _WIN32
         return _WindowsGetCurrentWorkingDirectory();
 #else
-        File::Filename_t result_of_syscall;
-        result_of_syscall = getcwd(nullptr, 0);
-        SFilename_t to_return = result_of_syscall;
-		free((void *) result_of_syscall);
-		return to_return;
+        return _UnixGetCurrentWorkingDirectory();
 #endif
 	}
-
 
     std::vector<File::SFilename_t> FilesInDirectory(Filename_t folder) {
         std::vector<File::SFilename_t> result;
 #if defined(_WIN32)
         _WindowsGetDirectoryContents(folder, result);
 #else
-        File::SFilename_t tempFilename;
-        static File::Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
-        static File::Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
-        DIR * d;
-        dirent * dir_entry;
-                d = opendir(folder);
-        if (d) {
-            while ((dir_entry = readdir(d)) != nullptr) {
-                tempFilename = dir_entry->d_name;
-                if (tempFilename == CURRENT_FOLDER || tempFilename == PARENT_FOLDER) {
-                    continue;
-                } else if (File::IsDir((std::string(folder) + tempFilename).c_str())) {
-                    tempFilename.append(FILE_SEPARATOR);
-                }
-                result.emplace_back(tempFilename);
-            }
-            closedir(d);
-        }
+        _UnixGetDirectoryContents(folder, result);
 #endif
         return result;
     }

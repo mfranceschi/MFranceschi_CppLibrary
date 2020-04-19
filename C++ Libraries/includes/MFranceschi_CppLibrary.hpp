@@ -11,6 +11,5 @@
 #include "../src/GeoCoord.hpp"
 #include "../src/TimingExperience.hpp"
 #include "../src/Toolbox.hpp"
-#include "../src/WindowsAPIHelper.hpp"
 
 #endif //MFRANCESCHI_CPPLIBRARIES_MFRANCESCHI_CPPLIBRARY_HPP

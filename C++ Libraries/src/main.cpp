@@ -2,11 +2,8 @@
 // Created by mfran on 08/12/2019.
 //
 
-#include "src/File.hpp"
 #include <iostream>
-#include "src/TimingExperience.hpp"
-#include "src/Toolbox.hpp"
-#include "src/Command.hpp"
+#include <MFranceschi_CppLibrary.hpp>
 
 using namespace std;
 

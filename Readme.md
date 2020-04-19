@@ -1,11 +1,18 @@
-# Martin Franceschi - My Works
-## What is it?
-This is my personnal repository. I will upload there the modules that I have created. I hope they will suit someone's desire. Documentation and examples can be found in the **Wiki** section of this repository.
+# Martin Franceschi - C++ Library
 
-## What can you find here?
-- {`C++`} - __"PrimeNumbers"__ - A small Qt-based application for me to discover Qt. Can be easily extended to other functionalities. Read the embedded `Readme.md` for more info about importing it!
+This is a C++ library that I am creating in order to practise as many aspects as possible. 
 
-### Unfinished works
+Particularly, I want to build a cross-platform library but by using Windows and Unix -specific functions. 
+
+It may not necessary be useful to everyone, but at least I am learning a lot! ;)
+
+## How to use it?
+
+Normally, you can simply link this library to your project using CMake, by linking your target to the library `MFranceschi_CppLibrary`. 
+
+The code should be quite documented, and you can find extra help by visiting this project's Wiki on Github. 
+
+## Unfinished works
 - {`C++`} - The following libraries:
   - __"File" module__: gives some useful tools for files from their filename, and tools for making ifstreams manipulation easier. All functions are meant to be cross-platforms.
   - __"Date" class__: extends the `struct tm` from the C standard library with milliseconds, and overloads some operators such as comparison, +, -, etc.

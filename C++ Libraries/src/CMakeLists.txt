@@ -8,7 +8,7 @@ set(My_Sources
         WindowsAPIHelper.cpp WindowsAPIHelper.hpp)
 
 add_library(MFranceschi_CppLibrary
-        STATIC)
+        STATIC UnixAPIHelper.cpp UnixAPIHelper.hpp)
 target_sources(MFranceschi_CppLibrary PRIVATE ${My_Sources})
 
 if (WIN32)
