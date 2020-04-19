@@ -9,8 +9,12 @@
 #include <sys/stat.h>
 
 #if defined(_WIN32)
-#   pragma warning( disable: 26444) // Warning that occurs when using imbue.
-#   include "Toolbox.hpp"
+#   if defined(_MSC_VER)
+#       pragma warning( disable: 26444) // Warning that occurs when using imbue.
+#   endif
+#   if defined(UNICODE)
+#       include "Toolbox.hpp"
+#   endif
 #   include "WindowsAPIHelper.hpp"
 #else
 #   include "UnixAPIHelper.hpp"

@@ -4,9 +4,32 @@ project(MFranceschi_CppLibraries
 
 set(CMAKE_CXX_STANDARD 14)
 
+if (NOT Threads_FOUND)
+    if ((MINGW) AND (NOT MF_Lib_ForceUseThreads))
+        # The user does not want to force the use of a threading library.
+        # In MinGW it does not work fine, so we force a dummy non-detection of the libraries.
+        set(Threads_FOUND FALSE)
+        set(CMAKE_THREAD_LIBS_INIT "")
+    else()
+        find_package(Threads)
+    endif()
+endif()
+add_compile_definitions(Threads_FOUND=$<BOOL:${Threads_FOUND}>)
+
+if (MF_Lib_WantUnicode OR UNICODE)
+    add_compile_definitions(UNICODE=1)
+endif()
+
+set(MF_Lib_Libname MFranceschi_CppLibrary)
+
 include_directories(includes)
 add_subdirectory(src)
 
-enable_testing()
-add_subdirectory(test)
-add_test(NAME Testing_MFranceschi_CppLibraries COMMAND Google_Tests_run)
+if (NOT MF_Lib_RemoveTests)
+    enable_testing()
+    if (NOT MINGW)
+        add_subdirectory(test)
+        add_test(NAME Testing_MFranceschi_CppLibraries COMMAND Google_Tests_run)
+    endif()
+    add_subdirectory(TimingExperience)
+endif()

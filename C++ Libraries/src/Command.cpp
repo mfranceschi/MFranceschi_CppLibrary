@@ -6,7 +6,9 @@
 #  include "WindowsAPIHelper.hpp"
 #endif
 
-#include <thread> // TODO use MinGW-STD-Threads
+#if Threads_FOUND
+#   include <thread>
+#endif
 #include <sstream>
 #include "File.hpp"
 #include "Command.hpp"
@@ -72,10 +74,12 @@ std::string _PrepareCommandString(const CommandCall& commandCall) {
 
 void _FillStringWithFileContents(const std::string& filename, std::string& toFill) {
     auto fileContents = File::Read(filename.c_str());
-    const char* contents = fileContents->contents;
-    std::size_t length = File::Size(filename.c_str());
-    toFill.assign(contents, length);
-    File::Read_Close(fileContents);
+    if (fileContents) {
+        const char *contents = fileContents->contents;
+        std::size_t length = File::Size(filename.c_str());
+        toFill.assign(contents, length);
+        File::Read_Close(fileContents);
+    }
 }
 
 
@@ -90,16 +94,17 @@ void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
     ProcessHandle processHandle;
     _WindowsCreateCommand(commandString, processHandle);
     switch (commandCall.returnChoice) {
-        case ReturnChoice::WHEN_DONE:
+        case ReturnChoice::WHEN_DONE: {
             _WindowsWaitForProcess(processHandle);
             commandReturn.returnCode = _WindowsGetExitCodeCommand(processHandle);
             _FillStringWithFileContents(outputsTempFile, commandReturn.outputText);
             _FillStringWithFileContents(errorsTempFile, commandReturn.errorText);
+        }
             break;
         case ReturnChoice::IMMEDIATELY:
-        case ReturnChoice::FUNCTION:
-        {
+        case ReturnChoice::FUNCTION: {
             switch (commandCall.interruptChoice) {
+#if Threads_FOUND
                 case InterruptChoice::NEVER: {
                     std::thread processThread([&]() {
                         _WindowsWaitForProcess(processHandle);
@@ -128,6 +133,13 @@ void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
                     processThread.detach();
                     break;
                 }
+#else
+                case InterruptChoice::NEVER:
+                case InterruptChoice::AFTER_TIME: {
+                    // TODO
+                    break;
+                }
+#endif
                 case InterruptChoice::ON_DEMAND: {
                     // TODO
                     break;

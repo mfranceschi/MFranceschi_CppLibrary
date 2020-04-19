@@ -3,18 +3,17 @@
 //
 
 #include <ctime>
-#include "../src/File.hpp"
+#include <MFranceschi_CppLibrary.hpp>
 #include <functional>
 #include <iostream>
 #include <string>
 #include <sys/stat.h>
 #include "TimingExperience.hpp"
-#include "../src/Toolbox.hpp"
 
-#ifdef _MSC_VER
+#if defined(_WIN32)
 #include <fcntl.h>
 #include <io.h>
-#include "Shlwapi.h"
+#include <Shlwapi.h>
 #endif
 
 using std::cout;
@@ -214,4 +213,9 @@ namespace TimingExperience {
             timet = mktime(&tmt);
         }) << endl;
     }
+}
+
+int main() {
+    TimingExperience::RunAll();
+    return 0;
 }

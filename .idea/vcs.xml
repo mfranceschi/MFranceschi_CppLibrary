@@ -2,7 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/C IrregularVerbs/cmake-build-debug/_deps/ncurses-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/C++ Libraries/cmake-build-debug/_deps/googletest-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/C++ Libraries/cmake-build-debug/_deps/mingw_stdthreads-src" vcs="Git" />
   </component>
 </project>
