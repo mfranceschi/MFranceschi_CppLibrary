@@ -1,5 +1,5 @@
 set(My_Sources
-        Command.cpp Command.hpp
+        # Command.cpp Command.hpp
         Date.cpp Date.hpp
         File.cpp File.hpp
         GeoCoord.cpp GeoCoord.hpp
@@ -19,6 +19,21 @@ if (WIN32)
     # add_compile_definitions(UNICODE)
     if (MSVC)
         target_compile_options(MFranceschi_CppLibrary PRIVATE /W3)
+    elseif(MINGW)
+        ### ADAPTED FROM https://crascit.com/2015/07/25/cmake-gtest/ ###
+        message("1")
+        configure_file(MinGW.CMakeLists.txt.in mingw_stdthreads-download/CMakeLists.txt)
+        execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/mingw_stdthreads-download"
+                )
+        execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/mingw_stdthreads-download"
+                )
+        add_subdirectory("${CMAKE_BINARY_DIR}/mingw_stdthreads-src"
+                "${CMAKE_BINARY_DIR}/mingw_stdthreads-build"
+                )
+
+
     else()
         target_compile_options(MFranceschi_CppLibrary PRIVATE -Wall -Wextra)
     endif()

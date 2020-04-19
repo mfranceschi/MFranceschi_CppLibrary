@@ -1,0 +1,14 @@
+cmake_minimum_required(VERSION 2.8.2)
+project(googletest-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(mingw_stdthreads
+        GIT_REPOSITORY https://github.com/meganz/mingw-std-threads.git
+        GIT_TAG master
+        SOURCE_DIR "${CMAKE_BINARY_DIR}/mingw_stdthreads-src"
+        BINARY_DIR "${CMAKE_BINARY_DIR}/mingw_stdthreads-build"
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ""
+        TEST_COMMAND ""
+        )
