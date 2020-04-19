@@ -54,6 +54,7 @@ namespace File
 //------------------------------------------------------- Public functions
 
     SFilename_t MakeFilename(bool absolute, int number, ...) {
+        (void)(absolute);
         using _ArgumentsType = const char*;
         _Soss_t oss;
         va_list argsList;

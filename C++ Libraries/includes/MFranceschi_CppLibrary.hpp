@@ -9,7 +9,7 @@
 #include "../src/Date.hpp"
 #include "../src/File.hpp"
 #include "../src/GeoCoord.hpp"
-#include "../src/TimingExperience.hpp"
+#include "../TimingExperience/TimingExperience.hpp"
 #include "../src/Toolbox.hpp"
 
 #endif //MFRANCESCHI_CPPLIBRARIES_MFRANCESCHI_CPPLIBRARY_HPP

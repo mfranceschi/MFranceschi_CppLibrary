@@ -42,7 +42,7 @@ bool _UnixCreateDirectory(File::Filename_t directoryName) {
 
 File::SFilename_t _UnixGetCurrentWorkingDirectory() {
     char* syscall_return;
-#if !defined(_GNU_SOURCE)
+#if defined(_GNU_SOURCE)
     syscall_return = get_current_dir_name();
 #else
     syscall_return = static_cast<char *>(malloc(PATH_MAX));

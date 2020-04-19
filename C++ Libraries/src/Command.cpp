@@ -2,12 +2,12 @@
 // Created by mfran on 09/04/2020.
 //
 
-#include <thread>
-#include <sstream>
-
 #if defined(_WIN32)
 #  include "WindowsAPIHelper.hpp"
 #endif
+
+#include <thread> // TODO use MinGW-STD-Threads
+#include <sstream>
 #include "File.hpp"
 #include "Command.hpp"
 

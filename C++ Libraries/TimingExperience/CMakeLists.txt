@@ -1,0 +1,2 @@
+add_executable(TimingExperience TimingExperience.hpp TimingExperience.cpp)
+target_link_libraries(TimingExperience PRIVATE MFranceschi_CppLibraries)
