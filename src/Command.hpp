@@ -54,14 +54,15 @@ struct CommandReturn {
 };
 
 struct CommandCall {
-    std::string executable; // Name or path to the executable
-    std::vector<std::string> arguments; // List of arguments to the executable, they will be concatenated with " ".
-    std::string outputFile; // [?] File in which to write outputs
+    File::SFilename_t executable; // Name or path to the executable
+    std::vector<File::SFilename_t> arguments; // List of arguments to the executable, they will be concatenated with " ".
+    File::SFilename_t outputFile; // [?] File in which to write outputs
     OutputChoice outputChoice = OutputChoice::KEEP; // Choice for outputs
-    std::string errorFile; // [?] File in which to write errors
+    File::SFilename_t errorFile; // [?] File in which to write errors
     ErrorChoice errorsChoice = ErrorChoice::KEEP; // Choice for errors
-    std::function<const char*()> inputFunction; // [?] Function to retrieve inputs
-    std::string inputData; // [?] String or file as input
+    std::function<File::Filename_t ()> inputFunction; // [?] Function to retrieve inputs
+    File::SFilename_t inputString; // [?] String as input
+    File::SFilename_t inputFile; // [?] File as input
     InputChoice inputChoice = InputChoice::NONE; // Choice for inputs
     std::function<void(CommandReturn&)> returnFunction;
     ReturnChoice returnChoice = ReturnChoice::WHEN_DONE;

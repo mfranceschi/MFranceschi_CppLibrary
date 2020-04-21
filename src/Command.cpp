@@ -20,23 +20,23 @@
  * @param commandCall The command call settings
  * @return A string to use.
  */
-static std::string _PrepareCommandString(const CommandCall& commandCall);
+static File::SFilename_t _PrepareCommandString(const CommandCall& commandCall);
 
 /**
  * Copies every byte from the file to the string. Maximum-optimized.
  * @param filename URL to the file to open.
  * @param toFill String to modify.
  */
-static void _FillStringWithFileContents(const std::string& filename, std::string& toFill);
+static void _FillStringWithFileContents(const File::SFilename_t& filename, File::SFilename_t& toFill);
 
 // PRIVATE DEFINITIONS
 
-std::string _PrepareCommandString(const CommandCall& commandCall) {
-    std::ostringstream oss;
+File::SFilename_t _PrepareCommandString(const CommandCall& commandCall) {
+    File::OSStream_t oss;
 
     oss << "\"" << commandCall.executable << "\" ";
 
-    for (const std::string& argument : commandCall.arguments) {
+    for (const auto& argument : commandCall.arguments) {
         oss << argument << " ";
     }
 
@@ -48,10 +48,10 @@ std::string _PrepareCommandString(const CommandCall& commandCall) {
 
         case InputChoice::STRING:
         case InputChoice::FUNCTION: {
-            std::string input;
+            File::SFilename_t input;
 
             if (commandCall.inputChoice == InputChoice::STRING) {
-                input = commandCall.inputData;
+                input = commandCall.inputString;
             } else {
                 input = commandCall.inputFunction();
             }
@@ -62,8 +62,8 @@ std::string _PrepareCommandString(const CommandCall& commandCall) {
             break;
         }
         case InputChoice::FROM_FILE: {
-            std::ostringstream::pos_type currentPosition = oss.tellp();
-            oss << " < " << commandCall.inputData;
+            decltype(oss)::pos_type currentPosition = oss.tellp();
+            oss << " < " << commandCall.inputFile;
             oss.seekp(currentPosition);
             break;
         }
@@ -72,7 +72,7 @@ std::string _PrepareCommandString(const CommandCall& commandCall) {
     return oss.str();
 }
 
-void _FillStringWithFileContents(const std::string& filename, std::string& toFill) {
+void _FillStringWithFileContents(const File::SFilename_t& filename, std::string& toFill) {
     auto fileContents = File::Read(filename.c_str());
     if (fileContents) {
         const char *contents = fileContents->contents;
@@ -86,9 +86,9 @@ void _FillStringWithFileContents(const std::string& filename, std::string& toFil
 // PUBLIC DEFINITIONS
 
 void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
-    std::string commandString = _PrepareCommandString(commandCall);
-    std::string outputsTempFile;
-    std::string errorsTempFile;
+    File::SFilename_t commandString = _PrepareCommandString(commandCall);
+    File::SFilename_t outputsTempFile;
+    File::SFilename_t errorsTempFile;
 
 #if defined(_WIN32)
     ProcessHandle processHandle;

@@ -72,9 +72,9 @@ int _WindowsGetExitCodeCommand(ProcessHandle& processHandle) {
     }
 }
 
-bool _WindowsCreateCommand(const std::string& commandString, ProcessHandle& processHandle) {
-    const char* commandStringPointer = commandString.c_str();
-    char* newCommandString = new char[commandString.size() + 1];
+bool _WindowsCreateCommand(File::SFilename_t commandString, ProcessHandle& processHandle) {
+    const TCHAR* commandStringPointer = commandString.c_str();
+    auto newCommandString = new TCHAR[commandString.size() + 1];
     auto copyResult = StringCchCopy(newCommandString, commandString.size() + 1, commandStringPointer);
     if ( FAILED(copyResult) ) {
         if (copyResult == STRSAFE_E_INVALID_PARAMETER) {
@@ -161,7 +161,7 @@ bool _WindowsCreateDirectory(File::Filename_t directoryName) {
 
 File::SFilename_t _WindowsGetCurrentWorkingDirectory() {
     DWORD nBufferLength = GetCurrentDirectory(0, nullptr);
-    auto lpBuffer = static_cast<LPTSTR>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, nBufferLength));
+    auto lpBuffer = static_cast<LPTSTR>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, nBufferLength * sizeof(TCHAR)));
     GetCurrentDirectory(nBufferLength, lpBuffer);
     File::SFilename_t returnValue(lpBuffer);
     HeapFree(GetProcessHeap(), 0, lpBuffer);

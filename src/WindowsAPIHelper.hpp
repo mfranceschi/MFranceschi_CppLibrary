@@ -40,7 +40,7 @@ int _WindowsGetExitCodeCommand(ProcessHandle& processHandle);
  * @param processHandle The process handle, which will be modified.
  * @return True.
  */
-bool _WindowsCreateCommand(const std::string& commandString, ProcessHandle& processHandle);
+bool _WindowsCreateCommand(const File::SFilename_t& commandString, ProcessHandle& processHandle);
 
 /**
  * Waits forever for the given process to end. Returns when it exited.

@@ -31,9 +31,9 @@ using std::ios_base;
 constexpr static size_t NBR_BITS_TO_READ_ENCODING = 3;
 
 #if defined(_WIN32) && defined(UNICODE)
-using _Soss_t = std::wostringstream;
+using Soss_t = std::wostringstream;
 #else
-using _Soss_t = std::ostringstream;
+using Soss_t = std::ostringstream;
 #endif
 
 namespace File
@@ -57,13 +57,13 @@ namespace File
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
 
-    SFilename_t MakeFilename(bool absolute, int number, ...) {
+    SFilename_t MakeFilename(bool absolute, bool isDirectory, int number, ...) {
         (void)(absolute);
-        using _ArgumentsType = const char*;
-        _Soss_t oss;
+        using ArgumentsType = File::Filename_t;
+        Soss_t oss;
         va_list argsList;
         va_start(argsList, number);
-        _ArgumentsType currentArg;
+        ArgumentsType currentArg;
 
 #if !defined(_WIN32)
         // On UNIX, if the given path is intended to be absolute,
@@ -74,15 +74,15 @@ namespace File
 #endif
 
         for (int i = 0; i < number - 1 ; i ++) {
-            currentArg = va_arg(argsList, _ArgumentsType);
-
-#if defined(_WIN32) && defined(UNICODE)
-            const wchar_t* wcharCurrentArg = _WindowsConvert(currentArg);
-            oss << wcharCurrentArg << FILE_SEPARATOR;
-            delete[] wcharCurrentArg;
-#else
+            currentArg = va_arg(argsList, ArgumentsType);
             oss << currentArg << FILE_SEPARATOR;
-#endif
+        }
+
+        currentArg = va_arg(argsList, ArgumentsType);
+        oss << currentArg;
+
+        if (isDirectory) {
+            oss << FILE_SEPARATOR;
         }
         return oss.str();
     }
@@ -186,7 +186,6 @@ namespace File
 
 	encoding_t Encoding(Filename_t filename)
     {
-	    // TODO fix
         char bits[NBR_BITS_TO_READ_ENCODING];
         encoding_t forReturn;
         int readResult;

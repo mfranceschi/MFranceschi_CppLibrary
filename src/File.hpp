@@ -35,22 +35,22 @@ namespace File
 	// Type used to deal with file sizes of any weight (GBs are okay).
 	typedef unsigned long Filesize_t;
 
-#if defined(_WIN32)
-#   if defined(UNICODE)
-#       define MAKE_FILE_NAME L""
-	    typedef const wchar_t* Filename_t;
-	    typedef std::wstring SFilename_t;
-#   else
-#       define MAKE_FILE_NAME ""
-        typedef const char* Filename_t;
-        typedef std::string SFilename_t;
-#   endif
-#   define FILE_SEPARATOR MAKE_FILE_NAME "\\"
+#if defined(UNICODE)
+#   define MAKE_FILE_NAME L""
+    using Filename_t = const wchar_t*;
+    using SFilename_t = std::wstring;
+    using OSStream_t = std::wostringstream;
 #else
-#   define FILE_SEPARATOR "/"
 #   define MAKE_FILE_NAME ""
     typedef const char* Filename_t;
-	typedef std::string SFilename_t;
+    typedef std::string SFilename_t;
+    using OSStream_t = std::ostringstream;
+#endif
+
+#if defined(_WIN32)
+#   define FILE_SEPARATOR MAKE_FILE_NAME "\\"
+#else
+#   define FILE_SEPARATOR MAKE_FILE_NAME "/"
 #endif
 
     // Data structure used to store information about files opened with Open.
@@ -69,11 +69,12 @@ namespace File
      * Arguments must be of "const char[]" type, so it is advised to use literal strings.
      * If number is <= 0 then this function returns an empty string.
      * @param absolute If true and we are not on Windows, we prepend a directory separator.
+     * @param isDirectory If true then we append a directory separator at the very end.
      * @param number Number of variadic arguments.
      * @param ... List of "number" C-strings.
      * @return A concatenation of the arguments and the default directory separator.
      */
-    SFilename_t MakeFilename(bool absolute, int number, ...);
+    SFilename_t MakeFilename(bool absolute, bool isDirectory, int number, ...);
 
 	/**
 	 * This function removes the given file or directory.

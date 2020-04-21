@@ -13,6 +13,6 @@ if(NOT googletest_POPULATED)
 endif()
 
 set(TEST_CASES file_tests.cpp date_tests.cpp)
-add_executable(Google_Tests_run)
+add_executable(Google_Tests_run main_of_tests.cpp)
 target_sources(Google_Tests_run PRIVATE ${TEST_CASES})
 target_link_libraries(Google_Tests_run gtest ${MF_Lib_Libname})
