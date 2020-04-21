@@ -2,7 +2,7 @@
 
 This is a C++ library that I am creating in order to practice as many aspects as possible.
 
-Particularly, I want to build a cross-platform library but by using Windows and Unix -specific functions. Every module which is not marked as unfinished is then okay, tested on each of the following platforms and compilers: MSVC, MinGW, Cygwin, WSL with gcc.
+Particularly, I want to build a cross-platform library but by using Windows and Unix -specific functions. Every module which is not marked as unfinished is then okay, tested on each of the following platforms and compilers: MSVC, MinGW, Cygwin, WSL with gcc. MSVC and MinGW support both the UNICODE option.
 
 It may not necessary be useful to everyone, but at least I am learning a lot! ;)
 
