@@ -28,6 +28,7 @@ add_subdirectory(src)
 if (NOT MF_Lib_RemoveTests)
     enable_testing()
     if (NOT MINGW)
+        # Unfortunately, the designated version of Google Test has a #include issue with MinGW.
         add_subdirectory(test)
         add_test(NAME Testing_MFranceschi_CppLibraries COMMAND Google_Tests_run)
     endif()

@@ -4,7 +4,7 @@ set(My_Sources
         File.cpp File.hpp
         GeoCoord.cpp GeoCoord.hpp
         Toolbox.cpp Toolbox.hpp
-        WindowsAPIHelper.cpp WindowsAPIHelper.hpp
+        WindowsAPIHelper.cpp WindowsAPIHelper.hpp WindowsAPIHelper_Command.cpp
         UnixAPIHelper.cpp UnixAPIHelper.hpp
         StringSafePlaceHolder.hpp)
 

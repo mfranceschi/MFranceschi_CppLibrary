@@ -24,7 +24,6 @@ enum class ErrorChoice {
     EXPORT, // Write errors into the file "outputFile"
     EXPORT_APPEND, // Appends errors into the file "outputFile"
     RETRIEVE, // Get errors as string in the return structure
-    LIKE_OUTPUTS // Use the same setting as for the outputs
 };
 
 enum class InputChoice {

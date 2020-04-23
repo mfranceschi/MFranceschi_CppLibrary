@@ -72,44 +72,6 @@ int _WindowsGetExitCodeCommand(ProcessHandle& processHandle) {
     }
 }
 
-bool _WindowsCreateCommand(File::SFilename_t commandString, ProcessHandle& processHandle) {
-    const TCHAR* commandStringPointer = commandString.c_str();
-    auto newCommandString = new TCHAR[commandString.size() + 1];
-    auto copyResult = StringCchCopy(newCommandString, commandString.size() + 1, commandStringPointer);
-    if ( FAILED(copyResult) ) {
-        if (copyResult == STRSAFE_E_INVALID_PARAMETER) {
-            _WindowsShowErrorMessage("StringCchCopy <invalid param>");
-        } else {
-            _WindowsShowErrorMessage("StringCchCopy <insufficient buffer>");
-        }
-    }
-
-    STARTUPINFO startupinfo;
-    PROCESS_INFORMATION processInformation;
-    ZeroMemory(&startupinfo, sizeof(startupinfo));
-    startupinfo.cb = sizeof(startupinfo);
-    ZeroMemory(&processInformation, sizeof(processInformation));
-    bool createProcessResult = CreateProcess(
-            nullptr,    // No module name (use command line)
-            newCommandString,
-            nullptr,// Process handle not inheritable
-            nullptr,// Thread handle not inheritable
-            FALSE,// Set handle inheritance to FALSE
-            0,// No creation flags
-            nullptr,// Use parent's environment block
-            nullptr,// Use parent's starting directory
-            &startupinfo,
-            &processInformation
-    );
-    if (!createProcessResult) {
-        _WindowsShowErrorMessage("CreateProcess");
-    }
-    processHandle = processInformation.hProcess;
-    CloseHandle(processInformation.hThread);
-    _WindowsGetExitCodeCommand(processHandle);
-    return createProcessResult;
-}
-
 void _WindowsWaitForProcess(ProcessHandle& processHandle) {
     WaitForSingleObject(processHandle, INFINITE);
 }

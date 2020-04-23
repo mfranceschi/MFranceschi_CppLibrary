@@ -7,6 +7,7 @@
 
 #include <string>
 #include "File.hpp"
+#include "Command.hpp"
 
 /**
  * Displays a message box with the error explanation, then terminates the program.
@@ -36,11 +37,11 @@ int _WindowsGetExitCodeCommand(ProcessHandle& processHandle);
 
 /**
  * Creates a process by using the given command.
- * @param commandString Command to send to CMD.exe.
+ * @param commandCall Command to send to CMD.exe.
  * @param processHandle The process handle, which will be modified.
  * @return True.
  */
-bool _WindowsCreateCommand(const File::SFilename_t& commandString, ProcessHandle& processHandle);
+bool _WindowsCreateCommand(const CommandCall& commandCall, ProcessHandle& processHandle);
 
 /**
  * Waits forever for the given process to end. Returns when it exited.

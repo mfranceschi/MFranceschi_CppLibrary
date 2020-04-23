@@ -92,7 +92,7 @@ void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
 
 #if defined(_WIN32)
     ProcessHandle processHandle;
-    _WindowsCreateCommand(commandString, processHandle);
+    _WindowsCreateCommand(commandCall, processHandle);
     switch (commandCall.returnChoice) {
         case ReturnChoice::WHEN_DONE: {
             _WindowsWaitForProcess(processHandle);
