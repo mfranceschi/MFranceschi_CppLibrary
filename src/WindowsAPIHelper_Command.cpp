@@ -6,6 +6,14 @@
 #include <Windows.h>
 #include "StringSafePlaceHolder.hpp"
 
+// PRIVATE DECLARATIONS
+
+
+
+// PRIVATE DEFINITIONS
+
+
+
 bool _WindowsCreateCommand(const CommandCall& commandCall, ProcessHandle& processHandle) {
     /*
      * Sources:
@@ -38,7 +46,7 @@ bool _WindowsCreateCommand(const CommandCall& commandCall, ProcessHandle& proces
     LPSECURITY_ATTRIBUTES lpProcessAttributes = nullptr; // No specific security attribute
     LPSECURITY_ATTRIBUTES lpThreadAttributes = nullptr; // No specific security attribute
     bool bInheritHandles = false; // Handles are inherited TODO WHAT
-    DWORD dwCreationFlags = 0; // Creation flags TODO WHAT
+    DWORD dwCreationFlags = 0; // Creation flags
     LPVOID lpEnvironment = nullptr; // We use the parent's environment
     const TCHAR* lpCurrentDirectory = nullptr; // We use the parent's current working directory
     STARTUPINFO startupinfo;
@@ -58,6 +66,23 @@ bool _WindowsCreateCommand(const CommandCall& commandCall, ProcessHandle& proces
             (commandCall.errorsChoice != ErrorChoice::KEEP) ||
             (commandCall.inputChoice != InputChoice::NONE)) {
         bInheritHandles = true;
+    }
+    switch(commandCall.outputChoice) {
+        case OutputChoice::KEEP:
+            break;
+
+        case OutputChoice::KILL:
+            // TODO use file name "NUL"
+            break;
+        case OutputChoice::EXPORT:
+            // TODO use given file name with normal write flag
+            break;
+        case OutputChoice::EXPORT_APPEND:
+            // TODO use given file name with tuto https://docs.microsoft.com/fr-fr/windows/win32/fileio/appending-one-file-to-another-file?redirectedfrom=MSDN
+            break;
+        case OutputChoice::RETRIEVE:
+            // TODO same but we must be able to retrieve the data (pipe?)
+            break;
     }
 
     bool createProcessResult = CreateProcess(

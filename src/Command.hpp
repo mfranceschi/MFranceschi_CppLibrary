@@ -29,7 +29,6 @@ enum class ErrorChoice {
 enum class InputChoice {
     NONE, // Nothing
     STRING, // Give the string "inputString"
-    FUNCTION, // Generate the input by calling the function "inputFunction"
     FROM_FILE // Gives the file named "inputString" as input
 };
 
@@ -59,7 +58,6 @@ struct CommandCall {
     OutputChoice outputChoice = OutputChoice::KEEP; // Choice for outputs
     File::SFilename_t errorFile; // [?] File in which to write errors
     ErrorChoice errorsChoice = ErrorChoice::KEEP; // Choice for errors
-    std::function<File::Filename_t ()> inputFunction; // [?] Function to retrieve inputs
     File::SFilename_t inputString; // [?] String as input
     File::SFilename_t inputFile; // [?] File as input
     InputChoice inputChoice = InputChoice::NONE; // Choice for inputs

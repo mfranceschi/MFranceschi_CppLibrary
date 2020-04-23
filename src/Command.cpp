@@ -47,20 +47,10 @@ File::SFilename_t _PrepareCommandString(const CommandCall& commandCall) {
             break;
 
         case InputChoice::STRING:
-        case InputChoice::FUNCTION: {
-            File::SFilename_t input;
-
-            if (commandCall.inputChoice == InputChoice::STRING) {
-                input = commandCall.inputString;
-            } else {
-                input = commandCall.inputFunction();
-            }
-
             oss.seekp(0, std::ios_base::beg);
-            oss << "echo \"" << input << "\" | ";
+            oss << "echo \"" << commandCall.inputString << "\" | ";
             oss.seekp(0, std::ios_base::end);
             break;
-        }
         case InputChoice::FROM_FILE: {
             decltype(oss)::pos_type currentPosition = oss.tellp();
             oss << " < " << commandCall.inputFile;
