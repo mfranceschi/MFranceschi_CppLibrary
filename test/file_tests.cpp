@@ -263,6 +263,13 @@ TEST(Read, ManyReads) {
 	}
 }
 
+TEST(Read, StringRead) {
+    file_info_data& file_used = fid_smallfile_utf16le;
+    std::string callResult;
+    EXPECT_TRUE(File::ReadToString(file_used.name.c_str(), callResult)) << "Failed to call ReadToString";
+    EXPECT_EQ(callResult.size(), file_used.size) << "Wrong file size";
+}
+
 TEST(FilesInDirectory, UsualTest) {
     std::vector<File::SFilename_t> ret = File::FilesInDirectory(TEST_FILES_DIR_PREFIX);
     std::vector<File::SFilename_t> expected = {

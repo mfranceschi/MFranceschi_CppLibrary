@@ -5,7 +5,7 @@ project(MFranceschi_CppLibraries
 set(CMAKE_CXX_STANDARD 14)
 
 if (NOT Threads_FOUND)
-    if ((MINGW) AND (NOT MF_Lib_ForceUseThreads))
+    if (MINGW AND NOT MF_Lib_ForceUseThreads)
         # The user does not want to force the use of a threading library.
         # In MinGW it does not work fine, so we force a dummy non-detection of the libraries.
         set(Threads_FOUND FALSE)

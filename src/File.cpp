@@ -216,24 +216,6 @@ namespace File
 #endif
 	}
 
-	const ReadFileData* Read(Filename_t filename)
-	{
-#ifdef _WIN32
-		return Windows_OpenFile(filename);
-#else
-		return _UnixOpenFile(filename);
-#endif
-	}
-
-	void Read_Close(const ReadFileData* content)
-	{
-#if defined(_WIN32)
-	    return Windows_CloseReadFileData(content);
-#else
-		return _UnixCloseReadFileData(content);
-#endif
-    }
-
 	std::ostream& operator<< (std::ostream& os, const encoding_t& enc)
 	{
 		switch (enc)

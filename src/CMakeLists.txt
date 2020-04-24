@@ -2,11 +2,13 @@ set(My_Sources
         Command.cpp Command.hpp
         Date.cpp Date.hpp
         File.cpp File.hpp
+        FileOpen.cpp FileOpen.hpp
         GeoCoord.cpp GeoCoord.hpp
         Toolbox.cpp Toolbox.hpp
         WindowsAPIHelper.cpp WindowsAPIHelper.hpp WindowsAPIHelper_Command.cpp
         UnixAPIHelper.cpp UnixAPIHelper.hpp
-        StringSafePlaceHolder.hpp)
+        StringSafePlaceHolder.hpp
+        )
 
 if (MINGW)
     set_source_files_properties(WindowsAPIHelper.cpp PROPERTIES COMPILE_FLAGS "-Wformat=0 -Wno-sign-compare")

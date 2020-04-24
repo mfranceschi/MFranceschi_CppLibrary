@@ -7,6 +7,7 @@
 
 #include <string>
 #include "File.hpp"
+#include "FileOpen.hpp"
 #include "Command.hpp"
 
 /**
@@ -38,12 +39,9 @@ int Windows_GetExitCodeCommand(Windows_ProcessHandle& processHandle);
 /**
  * Creates a process by using the given command.
  * @param commandCall Command to send to CMD.exe.
- * @param processHandle The process handle, which will be modified.
- * @param handlesToClose List of handles to close when the process is over. It will be modified during the call.
- *                       It includes at least one element: the process handle.
- * @return True.
+ * @param commandReturn The values to return to the user.
  */
-bool Windows_CreateCommand(const CommandCall& commandCall, Windows_ProcessHandle& processHandle, std::vector<Windows_ProcessHandle>& handlesToClose);
+void Windows_Command(const CommandCall& commandCall, CommandReturn& commandReturn);
 
 /**
  * Waits forever for the given process to end. Returns when it exited.

@@ -6,16 +6,33 @@
 #include <Windows.h>
 #include "StringSafePlaceHolder.hpp"
 
+#if Threads_FOUND
+#   include <thread>
+#endif
+
+/*
+ * Sources:
+ * https://docs.microsoft.com/en-us/windows/win32/procthread/creating-a-child-process-with-redirected-input-and-output
+ * https://docs.microsoft.com/en-us/windows/win32/procthread/creating-processes
+ * https://docs.microsoft.com/fr-fr/windows/win32/fileio/appending-one-file-to-another-file?redirectedfrom=MSDN
+ */
+
 // PRIVATE DECLARATIONS
 
+/**
+ * Generates a HANDLE which will be the command's output stream, according to the choice.
+ * @param outputChoice User's choice.
+ * @param outputFile Name of the file to write into, if relevant.
+ * @return A new Handle, or an invalid handle if it is not required or if it failed.
+ */
 static HANDLE setOutputHandle(const OutputChoice& outputChoice, const File::SFilename_t& outputFile);
 
 /**
  * Adds the inherit property to the given handle.
  * @param handle The HANDLE to which the property will be applied.
- * @return True on success, false on failure.
+ * @param inherit If true then we turn on inheritance for this handle; else we remove it.
  */
-static bool makeHandleInheritable(HANDLE handle);
+static void makeHandleInheritable(HANDLE handle, bool inherit = true);
 
 /// Use this handle as a sample for inheritable handles.
 static SECURITY_ATTRIBUTES securityAttributesForInheritableHandles {
@@ -24,13 +41,24 @@ static SECURITY_ATTRIBUTES securityAttributesForInheritableHandles {
     true
 };
 
+/**
+ * Starts a process according to the command call settings.
+ * The functions returns immediately after the new process is started.
+ * @param commandCall Settings for the start
+ * @param processHandle The process Handle will be written here
+ * @param handlesToClose List of handles to close when the process is over. It will be modified during the call.
+ *                       It includes at least one element: the process handle.
+ * @return True on success, false on failure
+ */
+static bool Windows_StartProcess(
+        const CommandCall& commandCall,
+        Windows_ProcessHandle& processHandle,
+        std::vector<Windows_ProcessHandle>& handlesToClose,
+        Windows_ProcessHandle processStdHandles[3]);
+
 // PRIVATE DEFINITIONS
 
 static HANDLE setOutputHandle(const OutputChoice& outputChoice, const File::SFilename_t& outputFile) {
-    /*
-     * Source for "append":
-     * https://docs.microsoft.com/fr-fr/windows/win32/fileio/appending-one-file-to-another-file?redirectedfrom=MSDN
-     */
     const TCHAR* lpFileName;
     DWORD dwDesiredAccess = FILE_GENERIC_WRITE;
     DWORD dwShareMode = 0;
@@ -77,19 +105,15 @@ static HANDLE setOutputHandle(const OutputChoice& outputChoice, const File::SFil
     return fileHandle;
 }
 
-static bool makeHandleInheritable(HANDLE handle) {
-    return SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0);
+static void makeHandleInheritable(HANDLE handle, bool inherit) {
+    SetHandleInformation(handle, HANDLE_FLAG_INHERIT, inherit ? HANDLE_FLAG_INHERIT : 0);
 }
 
-// PUBLIC DEFINITIONS
-
-bool Windows_CreateCommand(const CommandCall& commandCall, Windows_ProcessHandle& processHandle, std::vector<Windows_ProcessHandle>& handlesToClose) {
-    /*
-     * Sources:
-     * https://docs.microsoft.com/en-us/windows/win32/procthread/creating-a-child-process-with-redirected-input-and-output
-     * https://docs.microsoft.com/en-us/windows/win32/procthread/creating-processes
-     */
-
+static bool Windows_StartProcess(
+        const CommandCall& commandCall,
+        Windows_ProcessHandle& processHandle,
+        std::vector<Windows_ProcessHandle>& handlesToClose,
+        Windows_ProcessHandle processStdHandles[3]) {
     // Define all parameters required by the CreateProcess function.
     auto lpApplicationName = commandCall.executable.c_str();
     TCHAR* lpCommandLine;
@@ -148,14 +172,16 @@ bool Windows_CreateCommand(const CommandCall& commandCall, Windows_ProcessHandle
         if (lastHandle != INVALID_HANDLE_VALUE) {
             startupinfo.hStdOutput = lastHandle;
             handlesToClose.push_back(lastHandle);
-            makeHandleInheritable(lastHandle);
+            makeHandleInheritable(lastHandle, true);
+            processStdHandles[0] = lastHandle;
         }
 
         lastHandle = setOutputHandle(commandCall.errorsChoice, commandCall.errorFile);
         if (lastHandle != INVALID_HANDLE_VALUE) {
             startupinfo.hStdError = lastHandle;
             handlesToClose.push_back(lastHandle);
-            makeHandleInheritable(lastHandle);
+            makeHandleInheritable(lastHandle, true);
+            processStdHandles[1] = lastHandle;
         }
 
         // TODO handle input
@@ -185,3 +211,68 @@ bool Windows_CreateCommand(const CommandCall& commandCall, Windows_ProcessHandle
     return createProcessResult;
 }
 
+// PUBLIC DEFINITIONS
+
+void Windows_Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
+    Windows_ProcessHandle processHandle;
+    std::vector<Windows_ProcessHandle> handlesToClose; // List of handles to close when the child process is over.
+    HANDLE processStdHandles[3] = {INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE};
+    File::SFilename_t outputsTempFile, errorsTempFile;
+
+    Windows_StartProcess(commandCall, processHandle, handlesToClose, processStdHandles);
+    switch (commandCall.returnChoice) {
+        case ReturnChoice::WHEN_DONE: {
+            Windows_WaitForProcess(processHandle);
+            commandReturn.returnCode = Windows_GetExitCodeCommand(processHandle);
+            File::ReadToString(outputsTempFile.c_str(), commandReturn.outputText);
+            File::ReadToString(errorsTempFile.c_str(), commandReturn.errorText);
+        }
+            break;
+        case ReturnChoice::IMMEDIATELY:
+        case ReturnChoice::FUNCTION: {
+            switch (commandCall.interruptChoice) {
+#if Threads_FOUND
+                case InterruptChoice::NEVER: {
+                    std::thread processThread([&]() {
+                        Windows_WaitForProcess(processHandle);
+                        if (commandCall.returnChoice == ReturnChoice::FUNCTION) {
+                            CommandReturn newCommandReturn;
+                            newCommandReturn.returnCode = Windows_GetExitCodeCommand(processHandle);
+                            File::ReadToString(outputsTempFile.c_str(), commandReturn.outputText);
+                            File::ReadToString(errorsTempFile.c_str(), commandReturn.errorText);
+                            commandCall.returnFunction(newCommandReturn);
+                        }
+                    });
+                    processThread.detach();
+                    break;
+                }
+                case InterruptChoice::AFTER_TIME: {
+                    std::thread processThread([&]() {
+                        Windows_ReturnLaterCommand(processHandle, commandCall.executionDuration);
+                        if (commandCall.returnChoice == ReturnChoice::FUNCTION) {
+                            CommandReturn newCommandReturn;
+                            newCommandReturn.returnCode = Windows_GetExitCodeCommand(processHandle);
+                            File::ReadToString(outputsTempFile.c_str(), commandReturn.outputText);
+                            File::ReadToString(errorsTempFile.c_str(), commandReturn.errorText);
+                            commandCall.returnFunction(newCommandReturn);
+                        }
+                    });
+                    processThread.detach();
+                    break;
+                }
+#else
+                    case InterruptChoice::NEVER:
+                case InterruptChoice::AFTER_TIME: {
+                    // TODO
+                    break;
+                }
+#endif
+                case InterruptChoice::ON_DEMAND: {
+                    // TODO
+                    break;
+                }
+            }
+            break;
+        }
+    }
+}

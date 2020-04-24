@@ -8,6 +8,7 @@
 #include "../src/Command.hpp"
 #include "../src/Date.hpp"
 #include "../src/File.hpp"
+#include "../src/FileOpen.hpp"
 #include "../src/GeoCoord.hpp"
 #include "../src/Toolbox.hpp"
 

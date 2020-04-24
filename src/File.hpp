@@ -53,14 +53,6 @@ namespace File
 #   define FILE_SEPARATOR MAKE_FILE_NAME "/"
 #endif
 
-    // Data structure used to store information about files opened with Open.
-    struct ReadFileData {
-        const char* contents = nullptr; // Holds the file data.
-        Filesize_t size = 0ul; // Size of the file.
-        virtual ~ReadFileData() = default; // For polymorphic reasons.
-    };
-
-
 //////////////////////////////////////////////////////////////////  PUBLIC
 //------------------------------------------------------- Public functions
 
@@ -121,21 +113,6 @@ namespace File
 	 */
 	bool Open(std::ifstream& ifs, Filename_t filename,
               encoding_t encoding = encoding_t::ENC_ERROR);
-
-	/**
-	 * Stores the entire contents of file "filename" in a read-only C-string.
-	 * Also, that C-string does not end with '\0'.
-	 * It is advised to use an "InCharArrayStream".
-	 * To clean up memory, please call "Read_Close" with the structure returned from there.
-	 * The structure must remain a pointer (in reality, it is an instance of a subclass of ReadFileData).
-	 * The purpose of this function is to offer the fastest way to read an entire file.
-	 * @param filename Name of the file to open.
-	 * @return "nullptr" if anything failed or the file is empty, or a new structure.
-	 */
-	const ReadFileData* Read(Filename_t filename);
-
-	/// Please use this simple tool to clean up any memory associated with something returned by "Read".
-	void Read_Close(const ReadFileData* content);
 
 	/// Returns the size of the file pointed by "filename" in bytes, or 0 if anything failed.
 	Filesize_t Size(Filename_t filename);
