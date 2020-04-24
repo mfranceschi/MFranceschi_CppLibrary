@@ -17,6 +17,13 @@ static HANDLE setOutputHandle(const OutputChoice& outputChoice, const File::SFil
  */
 static bool makeHandleInheritable(HANDLE handle);
 
+/// Use this handle as a sample for inheritable handles.
+static SECURITY_ATTRIBUTES securityAttributesForInheritableHandles {
+    sizeof(SECURITY_ATTRIBUTES),
+    nullptr,
+    true
+};
+
 // PRIVATE DEFINITIONS
 
 static HANDLE setOutputHandle(const OutputChoice& outputChoice, const File::SFilename_t& outputFile) {
@@ -27,7 +34,7 @@ static HANDLE setOutputHandle(const OutputChoice& outputChoice, const File::SFil
     const TCHAR* lpFileName;
     DWORD dwDesiredAccess = FILE_GENERIC_WRITE;
     DWORD dwShareMode = 0;
-    LPSECURITY_ATTRIBUTES lpSecurityAttributes = nullptr;
+    LPSECURITY_ATTRIBUTES lpSecurityAttributes = &securityAttributesForInheritableHandles;
     DWORD dwCreationDisposition = OPEN_ALWAYS;
     DWORD dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL;
     HANDLE hTemplateFile = nullptr;
