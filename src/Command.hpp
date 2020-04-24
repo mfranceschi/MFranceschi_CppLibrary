@@ -18,13 +18,7 @@ enum class OutputChoice {
     RETRIEVE // Get outputs as string in the return structure
 };
 
-enum class ErrorChoice {
-    KEEP, // Let errors on the console
-    KILL, // Silent and ignore
-    EXPORT, // Write errors into the file "outputFile"
-    EXPORT_APPEND, // Appends errors into the file "outputFile"
-    RETRIEVE, // Get errors as string in the return structure
-};
+using ErrorChoice = OutputChoice;
 
 enum class InputChoice {
     NONE, // Nothing
@@ -74,7 +68,7 @@ void Command(const CommandCall& call, CommandReturn&);
 // - PowerShell specific call
 // - Bash specific call
 // - Shell specific call
-// - Le shell bizarre specific call
+// - ZSH specific call
 // - Script Bash
 // - Script PowerShell
 // - Script Shell

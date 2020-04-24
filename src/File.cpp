@@ -91,9 +91,9 @@ namespace File
 	{
 #ifdef _WIN32 // Win32
 		if (fileOnly)
-			return _WindowsDeleteFile(filename);
+			return Windows_DeleteFile(filename);
 		else
-			return _WindowsDeleteFile(filename) ? true : _WindowsDeleteDirectory(filename);
+			return Windows_DeleteFile(filename) ? true : Windows_DeleteDirectory(filename);
 #else // POSIX
 		if (fileOnly)
 			return _UnixDeleteFile(filename);
@@ -105,7 +105,7 @@ namespace File
 	bool Exists(Filename_t filename)
 	{
 #ifdef _WIN32 // Win32
-	    return _WindowsFileExists(filename);
+	    return Windows_FileExists(filename);
 #else // POSIX
 		return _UnixFileExists(filename);
 #endif
@@ -114,7 +114,7 @@ namespace File
 	bool IsDir(Filename_t filename)
 	{
 #ifdef _WIN32 // Win32
-		return _WindowsDirectoryExists(filename);
+		return Windows_DirectoryExists(filename);
 #else // POSIX
 		return _UnixDirectoryExists(filename);
 #endif
@@ -127,7 +127,7 @@ namespace File
             int bytesRead;
 
 #if defined(_WIN32)
-            bytesRead = _WindowsReadFileToBuffer(filename, buffer, charsToRead);
+            bytesRead = Windows_ReadFileToBuffer(filename, buffer, charsToRead);
 #else
             bytesRead = _UnixReadFileToBuffer(filename, buffer, charsToRead);
 #endif
@@ -137,7 +137,7 @@ namespace File
         } else {
 
 #if defined(_WIN32)
-            return _WindowsFileExists(filename);
+            return Windows_FileExists(filename);
 #else
             return _UnixFileExists(filename);
 #endif
@@ -178,7 +178,7 @@ namespace File
 	Filesize_t Size(Filename_t filename)
 	{
 #if defined(_WIN32) // Win32
-		return _WindowsGetFileSize(filename);
+		return Windows_GetFileSize(filename);
 #else // POSIX
 		return _UnixGetFileSize(filename);
 #endif
@@ -191,7 +191,7 @@ namespace File
         int readResult;
 
 #if defined(_WIN32)
-        readResult = _WindowsReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
+        readResult = Windows_ReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
 #else
         readResult = _UnixReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
 #endif
@@ -210,7 +210,7 @@ namespace File
 	bool CreateFolder(Filename_t filename)
 	{
 #ifdef _WIN32
-		return _WindowsCreateDirectory(filename);
+		return Windows_CreateDirectory(filename);
 #else
 		return _UnixCreateDirectory(filename);
 #endif
@@ -219,7 +219,7 @@ namespace File
 	const ReadFileData* Read(Filename_t filename)
 	{
 #ifdef _WIN32
-		return _WindowsOpenFile(filename);
+		return Windows_OpenFile(filename);
 #else
 		return _UnixOpenFile(filename);
 #endif
@@ -228,7 +228,7 @@ namespace File
 	void Read_Close(const ReadFileData* content)
 	{
 #if defined(_WIN32)
-	    return _WindowsCloseReadFileData(content);
+	    return Windows_CloseReadFileData(content);
 #else
 		return _UnixCloseReadFileData(content);
 #endif
@@ -257,7 +257,7 @@ namespace File
 	SFilename_t GetCWD()
 	{
 #ifdef _WIN32
-        return _WindowsGetCurrentWorkingDirectory();
+        return Windows_GetCurrentWorkingDirectory();
 #else
         return _UnixGetCurrentWorkingDirectory();
 #endif
@@ -266,7 +266,7 @@ namespace File
     std::vector<File::SFilename_t> FilesInDirectory(Filename_t folder) {
         std::vector<File::SFilename_t> result;
 #if defined(_WIN32)
-        _WindowsGetDirectoryContents(folder, result);
+        Windows_GetDirectoryContents(folder, result);
 #else
         _UnixGetDirectoryContents(folder, result);
 #endif

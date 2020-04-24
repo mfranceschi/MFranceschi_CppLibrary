@@ -13,64 +13,66 @@
  * Displays a message box with the error explanation, then terminates the program.
  * @param functionName Name of the function that failed.
  */
-void _WindowsShowErrorMessage(const char* functionName);
+void Windows_ShowErrorMessage(const char* functionName);
 
 /**
  * Generates a newly-allocated (using the "new" operator) wchar_t array from the given Multi-Bytes string.
  * @param utf8String Source.
  * @return Newly-allocated string, created by copying the contents with the correct syscall.
  */
-const wchar_t* _WindowsConvert(const char* utf8String);
+const wchar_t* Windows_ConvertString(const char* utf8String);
 
 // ///////////////////////////////////////////////////////////////
 // //////////////// COMMAND HANDLING API /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-using ProcessHandle = void*;
+using Windows_ProcessHandle = void*;
 
 /**
  * Assuming that the given process is terminated, returns the exit code.
  * @param processHandle The process handle.
  * @return The exit code of the process.
  */
-int _WindowsGetExitCodeCommand(ProcessHandle& processHandle);
+int Windows_GetExitCodeCommand(Windows_ProcessHandle& processHandle);
 
 /**
  * Creates a process by using the given command.
  * @param commandCall Command to send to CMD.exe.
  * @param processHandle The process handle, which will be modified.
+ * @param handlesToClose List of handles to close when the process is over. It will be modified during the call.
+ *                       It includes at least one element: the process handle.
  * @return True.
  */
-bool _WindowsCreateCommand(const CommandCall& commandCall, ProcessHandle& processHandle);
+bool Windows_CreateCommand(const CommandCall& commandCall, Windows_ProcessHandle& processHandle, std::vector<Windows_ProcessHandle>& handlesToClose);
 
 /**
  * Waits forever for the given process to end. Returns when it exited.
  * @param processHandle The process to watch.
  */
-void _WindowsWaitForProcess(ProcessHandle& processHandle);
+void Windows_WaitForProcess(Windows_ProcessHandle& processHandle);
 
 /**
  * Waits some time, then kills the process. Returns when done.
  * @param processHandle The process to kill.
  * @param duration Time to wait, in milliseconds.
  */
-void _WindowsReturnLaterCommand(ProcessHandle& processHandle, unsigned int duration);
+void Windows_ReturnLaterCommand(Windows_ProcessHandle& processHandle, unsigned int duration);
 
 /**
  * Forces a process to return now. Returns when done.
  * @param processHandle The process to kill.
  */
-void _WindowsReturnNowProcess(ProcessHandle& processHandle);
+void Windows_ReturnNowProcess(Windows_ProcessHandle& processHandle);
 
 // ///////////////////////////////////////////////////////////////
 // /////////////////// FILE HANDLING API /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-using FileHandle = void*;
+using Windows_FileHandle = void*;
 
-struct _WindowsReadFileData : public File::ReadFileData {
-    FileHandle fileHandle = nullptr;
-    FileHandle mappingHandle = nullptr;
+struct Windows_ReadFileData : public File::ReadFileData {
+    Windows_FileHandle fileHandle = nullptr;
+    Windows_FileHandle mappingHandle = nullptr;
 };
 
 /**
@@ -78,71 +80,71 @@ struct _WindowsReadFileData : public File::ReadFileData {
  * @param filename Name of the file to delete.
  * @return True on success, false on failure.
  */
-bool _WindowsDeleteFile(File::Filename_t filename);
+bool Windows_DeleteFile(File::Filename_t filename);
 
 /**
  * Deletes a directory.
  * @param directoryName Name of the directory to delete.
  * @return True on success, false on failure.
  */
-bool _WindowsDeleteDirectory(File::Filename_t directoryName);
+bool Windows_DeleteDirectory(File::Filename_t directoryName);
 
 /**
  * Checks whether a given file exists.
  * @param filename Name of the file to check.
  * @return True on success, false on failure.
  */
-bool _WindowsFileExists(File::Filename_t filename);
+bool Windows_FileExists(File::Filename_t filename);
 
 /**
  * Checks whether a given directory exists.
  * @param directoryName Name of the directory to check.
  * @return True on success, false on failure.
  */
-bool _WindowsDirectoryExists(File::Filename_t directoryName);
+bool Windows_DirectoryExists(File::Filename_t directoryName);
 
 /**
  * Returns the size of a file.
  * @param filename Name of the file.
  * @return The size, or zero if anything failed.
  */
-File::Filesize_t _WindowsGetFileSize(File::Filename_t filename);
+File::Filesize_t Windows_GetFileSize(File::Filename_t filename);
 
 /**
  * Creates a directory.
  * @param directoryName Name of the new directory.
  * @return True on success, false on failure.
  */
-bool _WindowsCreateDirectory(File::Filename_t directoryName);
+bool Windows_CreateDirectory(File::Filename_t directoryName);
 
 /**
  * Gets the name of the current working directory.
  * @return A C++ string containing the current working directory.
  */
-File::SFilename_t _WindowsGetCurrentWorkingDirectory();
+File::SFilename_t Windows_GetCurrentWorkingDirectory();
 
 /**
  * Generates a list of contents of a given directory.
  * @param directoryName Name of the directory.
  * @param result Vector of files/directory names to fill.
  */
-void _WindowsGetDirectoryContents(File::Filename_t directoryName, std::vector<File::SFilename_t>& result);
+void Windows_GetDirectoryContents(File::Filename_t directoryName, std::vector<File::SFilename_t>& result);
 
 /**
  * Opens the given file and returns a pointer to a ReadFileData structure.
  * @param filename Name of the file to open.
  * @return A new structure, or nullptr if anything failed.
  */
-const _WindowsReadFileData* _WindowsOpenFile(File::Filename_t filename);
+const Windows_ReadFileData* Windows_OpenFile(File::Filename_t filename);
 
 /**
  * Releases the memory associated with the file opened there.
  * @param readFileData A Windows ReadFileData to close ; its memory will also be freed.
  */
-void _WindowsCloseReadFileData(const _WindowsReadFileData* readFileData);
+void Windows_CloseReadFileData(const Windows_ReadFileData* readFileData);
 
 /// For polymorphic reasons; actually this is a dummy function.
-void _WindowsCloseReadFileData(const File::ReadFileData* readFileData);
+void Windows_CloseReadFileData(const File::ReadFileData* readFileData);
 
 /**
  * Fills the given buffer with the few first chars of the given file.
@@ -151,6 +153,6 @@ void _WindowsCloseReadFileData(const File::ReadFileData* readFileData);
  * @param bufferSize Length of the buffer.
  * @return Number of bytes written, -1 on failure.
  */
-int _WindowsReadFileToBuffer(File::Filename_t filename, char* buffer, File::Filesize_t bufferSize);
+int Windows_ReadFileToBuffer(File::Filename_t filename, char* buffer, File::Filesize_t bufferSize);
 
 #endif //MYWORKS_TEST0_WINDOWSAPIHELPER_HPP

@@ -20,18 +20,18 @@
  * @param commandCall The command call settings
  * @return A string to use.
  */
-static File::SFilename_t _PrepareCommandString(const CommandCall& commandCall);
+static File::SFilename_t prepareCommandString(const CommandCall& commandCall);
 
 /**
  * Copies every byte from the file to the string. Maximum-optimized.
  * @param filename URL to the file to open.
  * @param toFill String to modify.
  */
-static void _FillStringWithFileContents(const File::SFilename_t& filename, File::SFilename_t& toFill);
+static void fillStringWithFileContents(const File::SFilename_t& filename, File::SFilename_t& toFill);
 
 // PRIVATE DEFINITIONS
 
-File::SFilename_t _PrepareCommandString(const CommandCall& commandCall) {
+File::SFilename_t prepareCommandString(const CommandCall& commandCall) {
     File::OSStream_t oss;
 
     oss << "\"" << commandCall.executable << "\" ";
@@ -62,7 +62,7 @@ File::SFilename_t _PrepareCommandString(const CommandCall& commandCall) {
     return oss.str();
 }
 
-void _FillStringWithFileContents(const File::SFilename_t& filename, std::string& toFill) {
+void fillStringWithFileContents(const File::SFilename_t& filename, std::string& toFill) {
     auto fileContents = File::Read(filename.c_str());
     if (fileContents) {
         const char *contents = fileContents->contents;
@@ -76,19 +76,20 @@ void _FillStringWithFileContents(const File::SFilename_t& filename, std::string&
 // PUBLIC DEFINITIONS
 
 void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
-    File::SFilename_t commandString = _PrepareCommandString(commandCall);
+    File::SFilename_t commandString = prepareCommandString(commandCall);
     File::SFilename_t outputsTempFile;
     File::SFilename_t errorsTempFile;
 
 #if defined(_WIN32)
-    ProcessHandle processHandle;
-    _WindowsCreateCommand(commandCall, processHandle);
+    Windows_ProcessHandle processHandle;
+    std::vector<Windows_ProcessHandle> handlesToClose; // List of handles to close when the child process is over.
+    Windows_CreateCommand(commandCall, processHandle, handlesToClose);
     switch (commandCall.returnChoice) {
         case ReturnChoice::WHEN_DONE: {
-            _WindowsWaitForProcess(processHandle);
-            commandReturn.returnCode = _WindowsGetExitCodeCommand(processHandle);
-            _FillStringWithFileContents(outputsTempFile, commandReturn.outputText);
-            _FillStringWithFileContents(errorsTempFile, commandReturn.errorText);
+            Windows_WaitForProcess(processHandle);
+            commandReturn.returnCode = Windows_GetExitCodeCommand(processHandle);
+            fillStringWithFileContents(outputsTempFile, commandReturn.outputText);
+            fillStringWithFileContents(errorsTempFile, commandReturn.errorText);
         }
             break;
         case ReturnChoice::IMMEDIATELY:
@@ -97,12 +98,12 @@ void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
 #if Threads_FOUND
                 case InterruptChoice::NEVER: {
                     std::thread processThread([&]() {
-                        _WindowsWaitForProcess(processHandle);
+                        Windows_WaitForProcess(processHandle);
                         if (commandCall.returnChoice == ReturnChoice::FUNCTION) {
                             CommandReturn newCommandReturn;
-                            newCommandReturn.returnCode = _WindowsGetExitCodeCommand(processHandle);
-                            _FillStringWithFileContents(outputsTempFile, newCommandReturn.outputText);
-                            _FillStringWithFileContents(errorsTempFile, newCommandReturn.errorText);
+                            newCommandReturn.returnCode = Windows_GetExitCodeCommand(processHandle);
+                            fillStringWithFileContents(outputsTempFile, newCommandReturn.outputText);
+                            fillStringWithFileContents(errorsTempFile, newCommandReturn.errorText);
                             commandCall.returnFunction(newCommandReturn);
                         }
                     });
@@ -111,12 +112,12 @@ void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
                 }
                 case InterruptChoice::AFTER_TIME: {
                     std::thread processThread([&]() {
-                        _WindowsReturnLaterCommand(processHandle, commandCall.executionDuration);
+                        Windows_ReturnLaterCommand(processHandle, commandCall.executionDuration);
                         if (commandCall.returnChoice == ReturnChoice::FUNCTION) {
                             CommandReturn newCommandReturn;
-                            newCommandReturn.returnCode = _WindowsGetExitCodeCommand(processHandle);
-                            _FillStringWithFileContents(outputsTempFile, newCommandReturn.outputText);
-                            _FillStringWithFileContents(errorsTempFile, newCommandReturn.errorText);
+                            newCommandReturn.returnCode = Windows_GetExitCodeCommand(processHandle);
+                            fillStringWithFileContents(outputsTempFile, newCommandReturn.outputText);
+                            fillStringWithFileContents(errorsTempFile, newCommandReturn.errorText);
                             commandCall.returnFunction(newCommandReturn);
                         }
                     });

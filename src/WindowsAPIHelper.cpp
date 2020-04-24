@@ -8,7 +8,7 @@
 #include "WindowsAPIHelper.hpp"
 #include "StringSafePlaceHolder.hpp"
 
-void _WindowsShowErrorMessage(const char* functionName) {
+void Windows_ShowErrorMessage(const char* functionName) {
     // Source: https://docs.microsoft.com/fr-fr/windows/win32/debug/retrieving-the-last-error-code
 
     // Retrieve the system error message for the last-error code
@@ -41,7 +41,7 @@ void _WindowsShowErrorMessage(const char* functionName) {
     ExitProcess(dw);
 }
 
-const wchar_t* _WindowsConvert(const char* utf8String) {
+const wchar_t* Windows_ConvertString(const char* utf8String) {
     // Thanks to https://stackoverflow.com/a/6693107 !
     int wchars_num = MultiByteToWideChar(
             CP_UTF8, // Source (and so the expected processing) is UTF-8.
@@ -62,53 +62,53 @@ const wchar_t* _WindowsConvert(const char* utf8String) {
 // //////////////// COMMAND HANDLING API /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-int _WindowsGetExitCodeCommand(ProcessHandle& processHandle) {
+int Windows_GetExitCodeCommand(Windows_ProcessHandle& processHandle) {
     DWORD exitCode;
     if (GetExitCodeProcess(processHandle, &exitCode)) {
         return static_cast<int>(exitCode);
     } else {
-        _WindowsShowErrorMessage("GetExitCodeProcess");
+        Windows_ShowErrorMessage("GetExitCodeProcess");
         return 3; // Will never be called because of "ExitProcess".
     }
 }
 
-void _WindowsWaitForProcess(ProcessHandle& processHandle) {
+void Windows_WaitForProcess(Windows_ProcessHandle& processHandle) {
     WaitForSingleObject(processHandle, INFINITE);
 }
 
-void _WindowsReturnLaterCommand(HANDLE& processHandle, unsigned int duration) {
+void Windows_ReturnLaterCommand(HANDLE& processHandle, unsigned int duration) {
     WaitForSingleObject(processHandle, duration);
-    _WindowsReturnNowProcess(processHandle);
+    Windows_ReturnNowProcess(processHandle);
 }
 
-void _WindowsReturnNowProcess(ProcessHandle& processHandle) {
+void Windows_ReturnNowProcess(Windows_ProcessHandle& processHandle) {
     TerminateProcess(processHandle, -1);
-    _WindowsWaitForProcess(processHandle);
+    Windows_WaitForProcess(processHandle);
 }
 
 // ///////////////////////////////////////////////////////////////
 // /////////////////// FILE HANDLING API /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-bool _WindowsDeleteFile(File::Filename_t filename) {
+bool Windows_DeleteFile(File::Filename_t filename) {
     return DeleteFile(filename);
 }
 
-bool _WindowsDeleteDirectory(File::Filename_t directoryName) {
+bool Windows_DeleteDirectory(File::Filename_t directoryName) {
     return RemoveDirectory(directoryName);
 }
 
-bool _WindowsFileExists(File::Filename_t filename) {
+bool Windows_FileExists(File::Filename_t filename) {
     DWORD attr = GetFileAttributes(filename);
     return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool _WindowsDirectoryExists(File::Filename_t directoryName) {
+bool Windows_DirectoryExists(File::Filename_t directoryName) {
     DWORD attr = GetFileAttributes(directoryName);
     return (attr == INVALID_FILE_ATTRIBUTES) ? false : (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-File::Filesize_t _WindowsGetFileSize(File::Filename_t filename) {
+File::Filesize_t Windows_GetFileSize(File::Filename_t filename) {
     HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (file == INVALID_HANDLE_VALUE) return 0;
     LARGE_INTEGER res;
@@ -117,11 +117,11 @@ File::Filesize_t _WindowsGetFileSize(File::Filename_t filename) {
     return static_cast<File::Filesize_t>(res.QuadPart);
 }
 
-bool _WindowsCreateDirectory(File::Filename_t directoryName) {
+bool Windows_CreateDirectory(File::Filename_t directoryName) {
     return CreateDirectory(directoryName, nullptr);
 }
 
-File::SFilename_t _WindowsGetCurrentWorkingDirectory() {
+File::SFilename_t Windows_GetCurrentWorkingDirectory() {
     DWORD nBufferLength = GetCurrentDirectory(0, nullptr);
     auto lpBuffer = static_cast<LPTSTR>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, nBufferLength * sizeof(TCHAR)));
     GetCurrentDirectory(nBufferLength, lpBuffer);
@@ -130,7 +130,7 @@ File::SFilename_t _WindowsGetCurrentWorkingDirectory() {
     return returnValue;
 }
 
-void _WindowsGetDirectoryContents(File::Filename_t directoryName, std::vector<File::SFilename_t>& result) {
+void Windows_GetDirectoryContents(File::Filename_t directoryName, std::vector<File::SFilename_t>& result) {
     File::SFilename_t tempFilename;
     static File::Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
     static File::Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
@@ -161,9 +161,9 @@ void _WindowsGetDirectoryContents(File::Filename_t directoryName, std::vector<Fi
     }
 }
 
-const _WindowsReadFileData* _WindowsOpenFile(File::Filename_t filename) {
-    auto rfd = static_cast<_WindowsReadFileData*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(_WindowsReadFileData)));
-    rfd->size = _WindowsGetFileSize(filename);
+const Windows_ReadFileData* Windows_OpenFile(File::Filename_t filename) {
+    auto rfd = static_cast<Windows_ReadFileData*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(Windows_ReadFileData)));
+    rfd->size = Windows_GetFileSize(filename);
     if (rfd->size == 0) {
         HeapFree(GetProcessHeap(), 0, rfd);
         return nullptr;
@@ -196,19 +196,19 @@ const _WindowsReadFileData* _WindowsOpenFile(File::Filename_t filename) {
     return rfd;
 }
 
-void _WindowsCloseReadFileData(const _WindowsReadFileData* rfd) {
-    UnmapViewOfFile(rfd->contents);
-    CloseHandle(rfd->mappingHandle);
-    CloseHandle(rfd->fileHandle);
-    HeapFree(GetProcessHeap(), 0, (void*) rfd);
+void Windows_CloseReadFileData(const Windows_ReadFileData* readFileData) {
+    UnmapViewOfFile(readFileData->contents);
+    CloseHandle(readFileData->mappingHandle);
+    CloseHandle(readFileData->fileHandle);
+    HeapFree(GetProcessHeap(), 0, (void*) readFileData);
 }
 
-void _WindowsCloseReadFileData(const File::ReadFileData* readFileData) {
+void Windows_CloseReadFileData(const File::ReadFileData* readFileData) {
     (void)(readFileData); // to avoid "unused parameter warning
 }
 
-int _WindowsReadFileToBuffer(File::Filename_t filename, char* buffer, File::Filesize_t bufferSize) {
-    FileHandle fileHandle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+int Windows_ReadFileToBuffer(File::Filename_t filename, char* buffer, File::Filesize_t bufferSize) {
+    Windows_FileHandle fileHandle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (fileHandle == INVALID_HANDLE_VALUE) {
         return -1;
     }
