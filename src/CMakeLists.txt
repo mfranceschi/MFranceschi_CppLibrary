@@ -8,6 +8,7 @@ set(My_Sources
         WindowsAPIHelper.cpp WindowsAPIHelper.hpp WindowsAPIHelper_Command.cpp
         UnixAPIHelper.cpp UnixAPIHelper.hpp
         StringSafePlaceHolder.hpp
+        CommandHelper.cpp CommandHelper.hpp
         )
 
 if (MINGW)
