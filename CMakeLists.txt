@@ -14,7 +14,10 @@ if (NOT Threads_FOUND)
         find_package(Threads)
     endif()
 endif()
-add_compile_definitions(Threads_FOUND=$<BOOL:${Threads_FOUND}>)
+add_compile_definitions(
+        Threads_FOUND=$<BOOL:${Threads_FOUND}>
+        I_Want_Mem_Leaks=1
+)
 
 if (MF_Lib_WantUnicode OR UNICODE)
     add_compile_definitions(UNICODE=1)
