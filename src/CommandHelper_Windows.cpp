@@ -2,18 +2,93 @@
 // Created by mfran on 28/04/2020.
 //
 
+#if defined(_WIN32)
+
 #include "WindowsAPIHelper.hpp"
 #include "StringSafePlaceHolder.hpp"
 #include "CommandHelper.hpp"
 #include <Windows.h>
 
+/// Use this handle as a sample for inheritable handles.
+static SECURITY_ATTRIBUTES securityAttributesForInheritableHandles {
+        sizeof(SECURITY_ATTRIBUTES),
+        nullptr,
+        true
+};
+
+// ///////////////////////////////////////////////////////////////
+// /////////////////////// INPUT STREAMS /////////////////////////
+// ///////////////////////////////////////////////////////////////
+
 HANDLE ProcessInputStream_None::getHandle() const {
     return GetStdHandle(STD_INPUT_HANDLE);
 }
 
+// ///////////////////////////////////////////////////////////////
+// ////////////////////// OUTPUT STREAMS /////////////////////////
+// ///////////////////////////////////////////////////////////////
+
 HANDLE ProcessOutputStream_Keep::getHandle() const {
-    return GetStdHandle( OUTPUT_AND_NOT_ERROR ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE);
+    return GetStdHandle( STD_OUTPUT_HANDLE);
 }
+
+HANDLE ProcessErrorStream_Keep::getHandle() const {
+    return GetStdHandle( STD_ERROR_HANDLE);
+}
+
+void ProcessOutputStream_Kill::beforeStart() {
+    nulHandle = CreateFile(
+            TEXT("NUL"),
+            FILE_GENERIC_WRITE,
+            FILE_SHARE_READ,
+            &securityAttributesForInheritableHandles,
+            OPEN_ALWAYS,
+            FILE_ATTRIBUTE_DEVICE,
+            nullptr);
+}
+
+void ProcessOutputStream_Kill::afterStop() {
+    CloseHandle(nulHandle);
+}
+
+HANDLE ProcessOutputStream_Kill::getHandle() const {
+    return nulHandle;
+}
+
+ProcessOutputStream_Export::ProcessOutputStream_Export(bool append, const File::SFilename_t& filename)  :
+        APPEND(append), filename(filename) {}
+
+void ProcessOutputStream_Export::beforeStart() {
+    DWORD dwDesiredAccess = FILE_GENERIC_WRITE;
+    if (APPEND) {
+        dwDesiredAccess |= FILE_APPEND_DATA;
+    }
+
+    fileHandle = CreateFile(
+            filename.c_str(),
+            dwDesiredAccess,
+            FILE_SHARE_READ,
+            &securityAttributesForInheritableHandles,
+            OPEN_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr);
+
+    if (APPEND) {
+        SetFilePointer(fileHandle, 0, nullptr, FILE_END);
+    }
+}
+
+void ProcessOutputStream_Export::afterStop() {
+    CloseHandle(fileHandle);
+}
+
+HANDLE ProcessOutputStream_Export::getHandle() const {
+    return fileHandle;
+}
+
+// ///////////////////////////////////////////////////////////////
+// ////////////////////// COMMAND RUNNER /////////////////////////
+// ///////////////////////////////////////////////////////////////
 
 void CommandRunner::internalStart() {
 // Define all parameters required by the CreateProcess function.
@@ -86,3 +161,4 @@ void CommandRunner::internalStart() {
 void CommandRunner::internalStop() {
 
 }
+#endif

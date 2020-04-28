@@ -2,16 +2,12 @@
 // Created by mfran on 09/04/2020.
 //
 
-#if defined(_WIN32)
-#  include "WindowsAPIHelper.hpp"
-#endif
-
 #if Threads_FOUND
 #   include <thread>
 #endif
-#include <sstream>
 #include "File.hpp"
 #include "Command.hpp"
+#include "CommandHelper.hpp"
 
 // PRIVATE DECLARATIONS
 
@@ -58,9 +54,12 @@ File::SFilename_t prepareCommandString(const CommandCall& commandCall) {
 // PUBLIC DEFINITIONS
 
 void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
-#if defined(_WIN32)
-    return Windows_Command(commandCall, commandReturn);
-#else
-
-#endif
+    CommandRunner runner;
+    runner.executable = &commandCall.executable;
+    runner.arguments = &commandCall.arguments;
+    // TODO switch cases for each option
+    runner.start();
+    // TODO handle program stopping option
+    runner.stop();
+    runner.cleanUp();
 }

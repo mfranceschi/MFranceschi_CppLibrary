@@ -4,21 +4,20 @@
 
 #include <iostream>
 #include <MFranceschi_CppLibrary.hpp>
+#include <Windows.h>
 
 using namespace std;
 
 int main() {
     wcout << "Current working dir: " << File::GetCWD().c_str() << endl;
 
-    Toolbox::Win_CheckForMemoryLeaks([] () {
-        //TimingExperience::RunAll();
-    });
     CommandCall call;
     call.executable = R"(C:\cygwin64\bin\pwd.exe)";
     CommandReturn cr;
     cr.returnCode = 44;
     Command(call, cr);
     wcout << "cr exit code is " << cr.returnCode << "!" << endl;
-    Toolbox::PressAnyKeyToContinue();
+    cout << std::to_string(GetLastError()) << endl;
+
     return EXIT_SUCCESS;
 }

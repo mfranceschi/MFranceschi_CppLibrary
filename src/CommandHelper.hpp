@@ -23,8 +23,12 @@ class ProcessOutputStream_Keep;
 class ProcessOutputStream_Kill;
 class ProcessOutputStream_Export;
 class ProcessOutputStream_Retrieve;
+class ProcessErrorStream_Keep;
 
-// BASE INTERFACE
+// ///////////////////////////////////////////////////////////////
+// ///////////// COMMAND COMPONENT interface /////////////////////
+// ///////////////////////////////////////////////////////////////
+
 class CommandComponent {
 public:
     /// This will be called right before the command is started.
@@ -40,18 +44,12 @@ public:
     virtual ~CommandComponent() = default;
 };
 
-// STREAM CLASSES
+// ///////////////////////////////////////////////////////////////
+// /////////////////////// INPUT STREAMS /////////////////////////
+// ///////////////////////////////////////////////////////////////
+
 class ProcessInputStream : public CommandComponent {
 public:
-#if defined(_WIN32)
-    virtual HANDLE getHandle() const = 0;
-#endif
-};
-
-class ProcessOutputStream : public CommandComponent {
-public:
-    const bool OUTPUT_AND_NOT_ERROR;
-    explicit ProcessOutputStream(bool notError);
 #if defined(_WIN32)
     virtual HANDLE getHandle() const = 0;
 #endif
@@ -64,32 +62,79 @@ public:
 #endif
 };
 
+// ///////////////////////////////////////////////////////////////
+// ////////////////////// OUTPUT STREAMS /////////////////////////
+// ///////////////////////////////////////////////////////////////
+
+class ProcessOutputStream : public CommandComponent {
+public:
+#if defined(_WIN32)
+    virtual HANDLE getHandle() const = 0;
+#endif
+};
+
 class ProcessOutputStream_Keep : public ProcessOutputStream {
 public:
-    explicit ProcessOutputStream_Keep(bool notError);
 #if defined(_WIN32)
     HANDLE getHandle() const override;
 #endif
 };
 
-// COMMAND RUNNER
-class CommandRunner : public CommandComponent {
+class ProcessErrorStream_Keep : public ProcessOutputStream {
+public:
+#if defined(_WIN32)
+    HANDLE getHandle() const override;
+#endif
+};
+
+class ProcessOutputStream_Kill : public ProcessOutputStream {
+public:
+    void beforeStart() override;
+    void afterStop() override;
+#if defined(_WIN32)
+    HANDLE getHandle() const override;
+protected:
+    HANDLE nulHandle = nullptr;
+#endif
+};
+
+class ProcessOutputStream_Export : public ProcessOutputStream {
+public:
+    bool APPEND;
+    explicit ProcessOutputStream_Export(bool append, const File::SFilename_t& filename);
+    void beforeStart() override;
+    void afterStop() override;
+#if defined(_WIN32)
+    HANDLE getHandle() const override;
+protected:
+    HANDLE fileHandle = nullptr;
+#endif
+    const File::SFilename_t& filename;
+};
+
+// ///////////////////////////////////////////////////////////////
+// ////////////////////// COMMAND RUNNER /////////////////////////
+// ///////////////////////////////////////////////////////////////
+
+class CommandRunner {
 public:
     void setInput(ProcessInputStream* stream);
     void setOutput(ProcessOutputStream* stream);
     void setError(ProcessOutputStream* stream);
     void start();
     void stop();
-    void cleanUp() override;
+    void cleanUp();
+    ~CommandRunner() = default;
+
+    const File::SFilename_t* executable = nullptr;
+    const std::vector<File::SFilename_t>* arguments = nullptr;
 
 protected:
     void internalStart();
     void internalStop();
 
-    File::SFilename_t* executable = nullptr;
-    std::vector<File::SFilename_t>* arguments = nullptr;
-    ProcessOutputStream* processOutputStream = new ProcessOutputStream_Keep(true);
-    ProcessOutputStream* processErrorStream = new ProcessOutputStream_Keep(false);
+    ProcessOutputStream* processOutputStream = new ProcessOutputStream_Keep;
+    ProcessOutputStream* processErrorStream = new ProcessErrorStream_Keep;
     ProcessInputStream* processInputStream = new ProcessInputStream_None;
 
 private:

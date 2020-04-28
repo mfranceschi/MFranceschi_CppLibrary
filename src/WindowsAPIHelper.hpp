@@ -40,13 +40,6 @@ using Windows_ProcessHandle = void*;
 int Windows_GetExitCodeCommand(Windows_ProcessHandle& processHandle);
 
 /**
- * Creates a process by using the given command.
- * @param commandCall Command to send to CMD.exe.
- * @param commandReturn The values to return to the user.
- */
-void Windows_Command(const CommandCall& commandCall, CommandReturn& commandReturn);
-
-/**
  * Waits forever for the given process to end. Returns when it exited.
  * @param processHandle The process to watch.
  */

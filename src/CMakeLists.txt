@@ -5,7 +5,7 @@ set(My_Sources
         FileOpen.cpp FileOpen.hpp
         GeoCoord.cpp GeoCoord.hpp
         Toolbox.cpp Toolbox.hpp
-        WindowsAPIHelper.cpp WindowsAPIHelper.hpp WindowsAPIHelper_Command.cpp
+        WindowsAPIHelper.cpp WindowsAPIHelper.hpp
         UnixAPIHelper.cpp UnixAPIHelper.hpp
         StringSafePlaceHolder.hpp
         CommandHelper_Generic.cpp CommandHelper_Windows.cpp CommandHelper.hpp

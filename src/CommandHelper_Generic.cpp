@@ -4,26 +4,37 @@
 
 #include "CommandHelper.hpp"
 
+// ///////////////////////////////////////////////////////////////
+// ///////////// COMMAND COMPONENT interface /////////////////////
+// ///////////////////////////////////////////////////////////////
+
 void CommandComponent::beforeStart() {}
 void CommandComponent::afterStart() {}
 void CommandComponent::beforeStop() {}
 void CommandComponent::afterStop() {}
 void CommandComponent::cleanUp() {}
 
-ProcessOutputStream::ProcessOutputStream(bool notError) :
-        OUTPUT_AND_NOT_ERROR(notError) {}
+// ///////////////////////////////////////////////////////////////
+// ////////////////////// OUTPUT STREAMS /////////////////////////
+// ///////////////////////////////////////////////////////////////
 
-ProcessOutputStream_Keep::ProcessOutputStream_Keep(bool notError) : ProcessOutputStream(notError) {}
+
+// ///////////////////////////////////////////////////////////////
+// ////////////////////// COMMAND RUNNER /////////////////////////
+// ///////////////////////////////////////////////////////////////
 
 void CommandRunner::setInput(ProcessInputStream* stream) {
+    delete processInputStream;
     processInputStream = stream;
 }
 
 void CommandRunner::setOutput(ProcessOutputStream* stream) {
+    delete processOutputStream;
     processOutputStream = stream;
 }
 
 void CommandRunner::setError(ProcessOutputStream* stream) {
+    delete processErrorStream;
     processErrorStream = stream;
 }
 
@@ -59,4 +70,6 @@ void CommandRunner::cleanUp() {
     delete processInputStream;
     delete processOutputStream;
     delete processErrorStream;
+
+    CloseHandle(processHandle);
 }
