@@ -23,6 +23,9 @@ void Windows_ShowErrorMessage(const char* functionName);
  */
 const wchar_t* Windows_ConvertString(const char* utf8String);
 
+/// Grants or removes the inheritance property to the given handle.
+void Windows_MakeHandleInheritable(void* handle, bool inherit = true);
+
 // ///////////////////////////////////////////////////////////////
 // //////////////// COMMAND HANDLING API /////////////////////////
 // ///////////////////////////////////////////////////////////////

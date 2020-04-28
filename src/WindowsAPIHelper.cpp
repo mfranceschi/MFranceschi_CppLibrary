@@ -58,6 +58,10 @@ const wchar_t* Windows_ConvertString(const char* utf8String) {
     return wstr;
 }
 
+void Windows_MakeHandleInheritable(void* handle, bool inherit) {
+    SetHandleInformation(handle, HANDLE_FLAG_INHERIT, inherit ? HANDLE_FLAG_INHERIT : 0);
+}
+
 // ///////////////////////////////////////////////////////////////
 // //////////////// COMMAND HANDLING API /////////////////////////
 // ///////////////////////////////////////////////////////////////

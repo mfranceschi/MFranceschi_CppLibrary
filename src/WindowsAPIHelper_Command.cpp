@@ -27,13 +27,6 @@
  */
 static HANDLE setOutputHandle(const OutputChoice& outputChoice, const File::SFilename_t& outputFile);
 
-/**
- * Adds the inherit property to the given handle.
- * @param handle The HANDLE to which the property will be applied.
- * @param inherit If true then we turn on inheritance for this handle; else we remove it.
- */
-static void makeHandleInheritable(HANDLE handle, bool inherit = true);
-
 /// Use this handle as a sample for inheritable handles.
 static SECURITY_ATTRIBUTES securityAttributesForInheritableHandles {
     sizeof(SECURITY_ATTRIBUTES),
@@ -105,10 +98,6 @@ static HANDLE setOutputHandle(const OutputChoice& outputChoice, const File::SFil
     return fileHandle;
 }
 
-static void makeHandleInheritable(HANDLE handle, bool inherit) {
-    SetHandleInformation(handle, HANDLE_FLAG_INHERIT, inherit ? HANDLE_FLAG_INHERIT : 0);
-}
-
 static bool Windows_StartProcess(
         const CommandCall& commandCall,
         Windows_ProcessHandle& processHandle,
@@ -172,7 +161,7 @@ static bool Windows_StartProcess(
         if (lastHandle != INVALID_HANDLE_VALUE) {
             startupinfo.hStdOutput = lastHandle;
             handlesToClose.push_back(lastHandle);
-            makeHandleInheritable(lastHandle, true);
+            Windows_MakeHandleInheritable(lastHandle, true);
             processStdHandles[0] = lastHandle;
         }
 
@@ -180,7 +169,7 @@ static bool Windows_StartProcess(
         if (lastHandle != INVALID_HANDLE_VALUE) {
             startupinfo.hStdError = lastHandle;
             handlesToClose.push_back(lastHandle);
-            makeHandleInheritable(lastHandle, true);
+            Windows_MakeHandleInheritable(lastHandle, true);
             processStdHandles[1] = lastHandle;
         }
 
