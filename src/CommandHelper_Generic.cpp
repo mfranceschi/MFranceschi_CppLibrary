@@ -12,12 +12,27 @@ void CommandComponent::beforeStart() {}
 void CommandComponent::afterStart() {}
 void CommandComponent::beforeStop() {}
 void CommandComponent::afterStop() {}
-void CommandComponent::cleanUp() {}
+
+// ///////////////////////////////////////////////////////////////
+// /////////////////////// INPUT STREAMS /////////////////////////
+// ///////////////////////////////////////////////////////////////
+
+ProcessInputStream_String::ProcessInputStream_String(const File::SFilename_t& str) :
+        inputString(str) {}
+
+ProcessInputStream_FromFile::ProcessInputStream_FromFile(const File::SFilename_t& file_name) :
+        filename(file_name) {}
 
 // ///////////////////////////////////////////////////////////////
 // ////////////////////// OUTPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
+std::string ProcessOutputStream::retrieveOutput() {
+    return std::string();
+}
+
+ProcessOutputStream_Export::ProcessOutputStream_Export(bool append, const File::SFilename_t& filename)  :
+        APPEND(append), filename(filename) {}
 
 // ///////////////////////////////////////////////////////////////
 // ////////////////////// COMMAND RUNNER /////////////////////////
@@ -62,14 +77,22 @@ void CommandRunner::stop() {
     processErrorStream->afterStop();
 }
 
-void CommandRunner::cleanUp() {
-    processInputStream->cleanUp();
-    processOutputStream->cleanUp();
-    processErrorStream->cleanUp();
-
+CommandRunner::~CommandRunner() {
     delete processInputStream;
     delete processOutputStream;
     delete processErrorStream;
 
     CloseHandle(processHandle);
+}
+
+std::string CommandRunner::getOutput() {
+    return processOutputStream->retrieveOutput();
+}
+
+std::string CommandRunner::getError() {
+    return processErrorStream->retrieveOutput();
+}
+
+int CommandRunner::getStatusCode() {
+    return internalGetStatusCode();
 }

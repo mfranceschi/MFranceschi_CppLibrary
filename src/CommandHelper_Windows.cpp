@@ -16,12 +16,62 @@ static SECURITY_ATTRIBUTES securityAttributesForInheritableHandles {
         true
 };
 
+static constexpr unsigned int BUFFER_LENGTH = 4096;
+
 // ///////////////////////////////////////////////////////////////
 // /////////////////////// INPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
 HANDLE ProcessInputStream_None::getHandle() const {
     return GetStdHandle(STD_INPUT_HANDLE);
+}
+
+void ProcessInputStream_String::beforeStart() {
+    SECURITY_ATTRIBUTES securityAttributes {
+            sizeof(SECURITY_ATTRIBUTES),
+            nullptr,
+            true
+    };
+    CreatePipe(&readPipeHandle, &writeToPipeHandle, &securityAttributes, BUFFER_LENGTH);
+    Windows_MakeHandleInheritable(readPipeHandle);
+}
+
+void ProcessInputStream_String::afterStart() {
+    DWORD lpWritten;
+    std::string temp;
+    temp.reserve(999);
+    for (std::size_t i = 0; i < inputString.length(); i += 999) {
+        temp = inputString.substr(i, 999);
+        WriteFile(writeToPipeHandle, temp.c_str(), 999, &lpWritten, nullptr);
+    }
+}
+
+void ProcessInputStream_String::afterStop() {
+    CloseHandle(writeToPipeHandle);
+    CloseHandle(readPipeHandle);
+}
+
+HANDLE ProcessInputStream_String::getHandle() const {
+    return readPipeHandle;
+}
+
+void ProcessInputStream_FromFile::beforeStart() {
+    fileHandle = CreateFile(
+            filename.c_str(),
+            FILE_GENERIC_READ,
+            FILE_SHARE_READ,
+            &securityAttributesForInheritableHandles,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr);
+}
+
+void ProcessInputStream_FromFile::afterStop() {
+    CloseHandle(fileHandle);
+}
+
+HANDLE ProcessInputStream_FromFile::getHandle() const {
+    return fileHandle;
 }
 
 // ///////////////////////////////////////////////////////////////
@@ -55,18 +105,10 @@ HANDLE ProcessOutputStream_Kill::getHandle() const {
     return nulHandle;
 }
 
-ProcessOutputStream_Export::ProcessOutputStream_Export(bool append, const File::SFilename_t& filename)  :
-        APPEND(append), filename(filename) {}
-
 void ProcessOutputStream_Export::beforeStart() {
-    DWORD dwDesiredAccess = FILE_GENERIC_WRITE;
-    if (APPEND) {
-        dwDesiredAccess |= FILE_APPEND_DATA;
-    }
-
     fileHandle = CreateFile(
             filename.c_str(),
-            dwDesiredAccess,
+            FILE_GENERIC_WRITE,
             FILE_SHARE_READ,
             &securityAttributesForInheritableHandles,
             OPEN_ALWAYS,
@@ -84,6 +126,46 @@ void ProcessOutputStream_Export::afterStop() {
 
 HANDLE ProcessOutputStream_Export::getHandle() const {
     return fileHandle;
+}
+
+void ProcessOutputStream_Retrieve::beforeStart() {
+    SECURITY_ATTRIBUTES securityAttributes {
+        sizeof(SECURITY_ATTRIBUTES),
+        nullptr,
+        true
+    };
+    CreatePipe(&readPipeHandle, &writeToPipeHandle, &securityAttributes, BUFFER_LENGTH);
+    Windows_MakeHandleInheritable(writeToPipeHandle);
+}
+
+void ProcessOutputStream_Retrieve::beforeStop() {
+    DWORD dwRead;
+    CHAR chBuf[BUFFER_LENGTH];
+
+    if (ReadFile(readPipeHandle, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
+        chBuf[BUFFER_LENGTH - 1] = '\0';
+        oss << chBuf;
+    }
+}
+
+void ProcessOutputStream_Retrieve::afterStop() {
+    DWORD dwRead;
+    CHAR chBuf[BUFFER_LENGTH];
+
+    while (ReadFile(readPipeHandle, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
+        chBuf[BUFFER_LENGTH - 1] = '\0';
+        oss << chBuf;
+    }
+    CloseHandle(writeToPipeHandle);
+    CloseHandle(readPipeHandle);
+}
+
+std::string ProcessOutputStream_Retrieve::retrieveOutput() {
+    return oss.str();
+}
+
+HANDLE ProcessOutputStream_Retrieve::getHandle() const {
+    return writeToPipeHandle;
 }
 
 // ///////////////////////////////////////////////////////////////
@@ -160,5 +242,9 @@ void CommandRunner::internalStart() {
 
 void CommandRunner::internalStop() {
 
+}
+
+int CommandRunner::internalGetStatusCode() {
+    return Windows_GetExitCodeCommand(processHandle);
 }
 #endif
