@@ -11,15 +11,14 @@ using namespace std;
 int main() {
     wcout << "Current working dir: " << File::GetCWD().c_str() << endl;
 
-    Toolbox::Win_CheckForMemoryLeaks([] () {
+    for (int i=0; i < 0; i++) {
         CommandCall call;
         call.executable = R"(C:\cygwin64\bin\pwd.exe)";
+        call.outputChoice = OutputChoice::RETRIEVE;
         CommandReturn cr;
         cr.returnCode = 44;
         Command(call, cr);
-        wcout << "exit code is " << cr.returnCode << "!" << endl;
-        cout << std::to_string(GetLastError()) << endl;
-    });
-
+    }
+    Toolbox::PressAnyKeyToContinue();
     return EXIT_SUCCESS;
 }
