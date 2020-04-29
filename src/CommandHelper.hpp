@@ -17,7 +17,7 @@ class CommandRunner;
 class ProcessInputStream;
 class ProcessInputStream_None;
 class ProcessInputStream_String;
-class ProcessInputStream_File;
+class ProcessInputStream_FromFile;
 class ProcessOutputStream;
 class ProcessOutputStream_Keep;
 class ProcessOutputStream_Kill;
