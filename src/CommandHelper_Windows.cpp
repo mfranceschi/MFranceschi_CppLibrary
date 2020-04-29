@@ -129,6 +129,7 @@ HANDLE ProcessOutputStream_Export::getHandle() const {
 }
 
 void ProcessOutputStream_Retrieve::beforeStart() {
+    DWORD dwMode = PIPE_NOWAIT;
     SECURITY_ATTRIBUTES securityAttributes {
         sizeof(SECURITY_ATTRIBUTES),
         nullptr,
@@ -136,6 +137,7 @@ void ProcessOutputStream_Retrieve::beforeStart() {
     };
     CreatePipe(&readPipeHandle, &writeToPipeHandle, &securityAttributes, BUFFER_LENGTH);
     Windows_MakeHandleInheritable(writeToPipeHandle);
+    SetNamedPipeHandleState(readPipeHandle, &dwMode, nullptr, nullptr);
 }
 
 void ProcessOutputStream_Retrieve::beforeStop() {
@@ -143,7 +145,7 @@ void ProcessOutputStream_Retrieve::beforeStop() {
     CHAR chBuf[BUFFER_LENGTH];
 
     if (ReadFile(readPipeHandle, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
-        chBuf[BUFFER_LENGTH - 1] = '\0';
+        chBuf[dwRead] = '\0';
         oss << chBuf;
     }
 }
@@ -153,7 +155,7 @@ void ProcessOutputStream_Retrieve::afterStop() {
     CHAR chBuf[BUFFER_LENGTH];
 
     while (ReadFile(readPipeHandle, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
-        chBuf[BUFFER_LENGTH - 1] = '\0';
+        chBuf[dwRead] = '\0';
         oss << chBuf;
     }
     CloseHandle(writeToPipeHandle);
@@ -241,7 +243,7 @@ void CommandRunner::internalStart() {
 }
 
 void CommandRunner::internalStop() {
-
+    Windows_WaitForProcess(processHandle);
 }
 
 int CommandRunner::internalGetStatusCode() {
