@@ -13,16 +13,20 @@ public:
     const char* toCString() const;
     std::string toString() const;
     std::size_t getDigestLength() const;
+    virtual ~Hash();
+
+    Hash(const Hash& copy) = delete;
+    Hash& operator=(const Hash& other) = delete;
 
 protected:
-    Hash() = default;
+    explicit Hash(std::size_t digestLength);
 
+    void internalCallComputeHash();
     virtual void internalComputeHash() = 0;
 
     const char* internalSource = nullptr;
     char* internalDigest = nullptr;
-    const std::size_t internalDigestLength = 0;
-    bool hashHasBeenComputed = false;
+    const std::size_t internalDigestLength;
 };
 
 class MD5Hash : public Hash {
