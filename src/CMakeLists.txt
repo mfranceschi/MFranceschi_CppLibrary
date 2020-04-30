@@ -9,6 +9,7 @@ set(My_Sources
         UnixAPIHelper.cpp UnixAPIHelper.hpp
         StringSafePlaceHolder.hpp
         CommandHelper_Generic.cpp CommandHelper_Windows.cpp CommandHelper.hpp
+        Security.cpp Security.hpp
         )
 
 if (MINGW)
