@@ -3,6 +3,7 @@
 //
 
 #include <bitset>
+#include <cstring>
 #include <vector>
 #include "Security.hpp"
 

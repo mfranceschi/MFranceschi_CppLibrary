@@ -8,7 +8,7 @@ set(My_Sources
         WindowsAPIHelper.cpp WindowsAPIHelper.hpp
         UnixAPIHelper.cpp UnixAPIHelper.hpp
         StringSafePlaceHolder.hpp
-        CommandHelper_Generic.cpp CommandHelper_Windows.cpp CommandHelper.hpp
+        CommandHelper_Generic.cpp CommandHelper_Windows.cpp CommandHelper_Unix.cpp CommandHelper.hpp
         Security.cpp Security.hpp
         )
 

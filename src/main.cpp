@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <MFranceschi_CppLibrary.hpp>
-#include <Windows.h>
 
 using namespace std;
 

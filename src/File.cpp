@@ -96,9 +96,9 @@ namespace File
 			return Windows_DeleteFile(filename) ? true : Windows_DeleteDirectory(filename);
 #else // POSIX
 		if (fileOnly)
-			return _UnixDeleteFile(filename);
+			return Unix_DeleteFile(filename);
 		else
-			return _UnixDeleteFileOrDirectory(filename);
+			return Unix_DeleteFileOrDirectory(filename);
 #endif
 	}
 
@@ -107,7 +107,7 @@ namespace File
 #ifdef _WIN32 // Win32
 	    return Windows_FileExists(filename);
 #else // POSIX
-		return _UnixFileExists(filename);
+		return Unix_FileExists(filename);
 #endif
 	}
 
@@ -116,7 +116,7 @@ namespace File
 #ifdef _WIN32 // Win32
 		return Windows_DirectoryExists(filename);
 #else // POSIX
-		return _UnixDirectoryExists(filename);
+		return Unix_DirectoryExists(filename);
 #endif
 	}
 
@@ -129,7 +129,7 @@ namespace File
 #if defined(_WIN32)
             bytesRead = Windows_ReadFileToBuffer(filename, buffer, charsToRead);
 #else
-            bytesRead = _UnixReadFileToBuffer(filename, buffer, charsToRead);
+            bytesRead = Unix_ReadFileToBuffer(filename, buffer, charsToRead);
 #endif
 
             delete[] buffer;
@@ -139,7 +139,7 @@ namespace File
 #if defined(_WIN32)
             return Windows_FileExists(filename);
 #else
-            return _UnixFileExists(filename);
+            return Unix_FileExists(filename);
 #endif
 
         }
@@ -180,7 +180,7 @@ namespace File
 #if defined(_WIN32) // Win32
 		return Windows_GetFileSize(filename);
 #else // POSIX
-		return _UnixGetFileSize(filename);
+		return Unix_GetFileSize(filename);
 #endif
 	}
 
@@ -193,7 +193,7 @@ namespace File
 #if defined(_WIN32)
         readResult = Windows_ReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
 #else
-        readResult = _UnixReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
+        readResult = Unix_ReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
 #endif
         if (readResult != NBR_BITS_TO_READ_ENCODING) {
             forReturn = File::encoding_t::ENC_ERROR;
@@ -212,7 +212,7 @@ namespace File
 #ifdef _WIN32
 		return Windows_CreateDirectory(filename);
 #else
-		return _UnixCreateDirectory(filename);
+		return Unix_CreateDirectory(filename);
 #endif
 	}
 
@@ -241,7 +241,7 @@ namespace File
 #ifdef _WIN32
         return Windows_GetCurrentWorkingDirectory();
 #else
-        return _UnixGetCurrentWorkingDirectory();
+        return Unix_GetCurrentWorkingDirectory();
 #endif
 	}
 
@@ -250,7 +250,7 @@ namespace File
 #if defined(_WIN32)
         Windows_GetDirectoryContents(folder, result);
 #else
-        _UnixGetDirectoryContents(folder, result);
+        Unix_GetDirectoryContents(folder, result);
 #endif
         return result;
     }

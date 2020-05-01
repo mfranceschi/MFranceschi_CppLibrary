@@ -1,23 +1,15 @@
 //
-// Created by mfran on 28/04/2020.
+// Created by mfran on 01/05/2020.
 //
 
-#if defined(_WIN32)
+#if !defined(_WIN32)
 
-#include "WindowsAPIHelper.hpp"
-#include "StringSafePlaceHolder.hpp"
+#include "UnixAPIHelper.hpp"
 #include "CommandHelper.hpp"
-#include <Windows.h>
-
-/// Use this handle as a sample for inheritable handles.
-static SECURITY_ATTRIBUTES securityAttributesForInheritableHandles {
-        sizeof(SECURITY_ATTRIBUTES),
-        nullptr,
-        true
-};
 
 static constexpr unsigned int BUFFER_LENGTH = 4096;
 
+#if 0
 // ///////////////////////////////////////////////////////////////
 // /////////////////////// INPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
@@ -253,4 +245,5 @@ int CommandRunner::internalGetStatusCode() {
 void CommandRunner::internalOSCleanUp() {
     CloseHandle(processHandle);
 }
+#endif
 #endif

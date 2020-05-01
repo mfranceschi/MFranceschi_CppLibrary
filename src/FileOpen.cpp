@@ -16,7 +16,7 @@ namespace File {
 #ifdef _WIN32
         return Windows_OpenFile(filename);
 #else
-        return _UnixOpenFile(filename);
+        return Unix_OpenFile(filename);
 #endif
     }
 
@@ -25,7 +25,7 @@ namespace File {
 #if defined(_WIN32)
         return Windows_CloseReadFileData(content);
 #else
-        return _UnixCloseReadFileData(content);
+        return Unix_CloseReadFileData(content);
 #endif
     }
 

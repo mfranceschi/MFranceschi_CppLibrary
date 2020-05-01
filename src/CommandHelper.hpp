@@ -66,12 +66,15 @@ public:
     void beforeStart() override;
     void afterStart() override;
     void afterStop() override;
+protected:
+    const File::SFilename_t& inputString;
+
 #if defined(_WIN32)
+public:
     HANDLE getHandle() const override;
 protected:
     HANDLE readPipeHandle = nullptr;
     HANDLE writeToPipeHandle = nullptr;
-    const File::SFilename_t& inputString;
 #endif
 };
 
@@ -80,11 +83,14 @@ public:
     explicit ProcessInputStream_FromFile(const File::SFilename_t& filename);
     void beforeStart() override;
     void afterStop() override;
+protected:
+    const File::SFilename_t& filename;
+
 #if defined(_WIN32)
+public:
     HANDLE getHandle() const override;
 protected:
     HANDLE fileHandle = nullptr;
-    const File::SFilename_t& filename;
 #endif
 };
 
@@ -183,6 +189,7 @@ protected:
     ProcessInputStream* processInputStream = new ProcessInputStream_None;
 
 private:
+    void internalOSCleanUp();
 #if defined(_WIN32)
     HANDLE processHandle = INVALID_HANDLE_VALUE;
 #else

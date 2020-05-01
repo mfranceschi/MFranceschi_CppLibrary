@@ -82,7 +82,7 @@ CommandRunner::~CommandRunner() {
     delete processOutputStream;
     delete processErrorStream;
 
-    CloseHandle(processHandle);
+    internalOSCleanUp();
 }
 
 std::string CommandRunner::getOutput() {
