@@ -10,6 +10,7 @@
 #   include <Windows.h>
 #else
 #   include <unistd.h>
+using FileDescriptor_t = int;
 #endif
 
 // Declarations
@@ -51,6 +52,8 @@ class ProcessInputStream : public CommandComponent {
 public:
 #if defined(_WIN32)
     virtual HANDLE getHandle() const = 0;
+#else
+    virtual FileDescriptor_t getFD() const = 0;
 #endif
 };
 
@@ -58,6 +61,8 @@ class ProcessInputStream_None : public ProcessInputStream {
 public:
 #if defined(_WIN32)
     HANDLE getHandle() const override;
+#else
+    FileDescriptor_t getFD() const override;
 #endif
 };
 
@@ -104,6 +109,8 @@ public:
     virtual std::string retrieveOutput();
 #if defined(_WIN32)
     virtual HANDLE getHandle() const = 0;
+#else
+    virtual FileDescriptor_t getFD() const = 0;
 #endif
 };
 
@@ -111,6 +118,8 @@ class ProcessOutputStream_Keep : public ProcessOutputStream {
 public:
 #if defined(_WIN32)
     HANDLE getHandle() const override;
+#else
+    FileDescriptor_t getFD() const override;
 #endif
 };
 
@@ -118,6 +127,8 @@ class ProcessErrorStream_Keep : public ProcessOutputStream {
 public:
 #if defined(_WIN32)
     HANDLE getHandle() const override;
+#else
+    FileDescriptor_t getFD() const override;
 #endif
 };
 

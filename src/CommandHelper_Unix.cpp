@@ -11,15 +11,15 @@
 
 static constexpr unsigned int BUFFER_LENGTH = 4096;
 
-#if 0
 // ///////////////////////////////////////////////////////////////
 // /////////////////////// INPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-HANDLE ProcessInputStream_None::getHandle() const {
-    return GetStdHandle(STD_INPUT_HANDLE);
+FileDescriptor_t ProcessInputStream_None::getFD() const {
+    return STDIN_FILENO;
 }
 
+#if 0
 void ProcessInputStream_String::beforeStart() {
     SECURITY_ATTRIBUTES securityAttributes {
             sizeof(SECURITY_ATTRIBUTES),
@@ -71,15 +71,15 @@ HANDLE ProcessInputStream_FromFile::getHandle() const {
 // ///////////////////////////////////////////////////////////////
 // ////////////////////// OUTPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
-
-HANDLE ProcessOutputStream_Keep::getHandle() const {
-    return GetStdHandle( STD_OUTPUT_HANDLE);
+#endif
+FileDescriptor_t ProcessOutputStream_Keep::getFD() const {
+    return STDOUT_FILENO;
 }
 
-HANDLE ProcessErrorStream_Keep::getHandle() const {
-    return GetStdHandle( STD_ERROR_HANDLE);
+FileDescriptor_t ProcessErrorStream_Keep::getFD() const {
+    return STDERR_FILENO;
 }
-
+#if 0
 void ProcessOutputStream_Kill::beforeStart() {
     nulHandle = CreateFile(
             TEXT("NUL"),
@@ -185,6 +185,10 @@ void CommandRunner::internalStart() {
             }
             argv[arguments->size() + 1] = static_cast<char *>(nullptr);
         }
+
+        dup2(processInputStream->getFD(), STDIN_FILENO);
+        dup2(processOutputStream->getFD(), STDOUT_FILENO);
+        dup2(processErrorStream->getFD(), STDERR_FILENO);
 
         /*
          * Using "Exec VP" because I want the shell to find the executable according to usual rules,
