@@ -6,6 +6,8 @@
 
 #include "UnixAPIHelper.hpp"
 #include "CommandHelper.hpp"
+#include <csignal>
+#include <sys/wait.h>
 
 static constexpr unsigned int BUFFER_LENGTH = 4096;
 
@@ -166,84 +168,47 @@ HANDLE ProcessOutputStream_Retrieve::getHandle() const {
 // ////////////////////// COMMAND RUNNER /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
+#endif
+
 void CommandRunner::internalStart() {
-// Define all parameters required by the CreateProcess function.
-    auto lpApplicationName = executable->c_str();
-    TCHAR* lpCommandLine;
-    {
-        // Fill the "Command line" string
-        File::OSStream_t osStream;
-        for (const auto& arg : *arguments) {
-            osStream << arg << " ";
-        }
-        auto streamOutput = osStream.str();
 
-        const TCHAR* commandStringPointer = streamOutput.c_str();
-        lpCommandLine = new TCHAR[streamOutput.size() + 1];
-        auto copyResult = StringCchCopy(lpCommandLine, streamOutput.size() + 1, commandStringPointer);
+    forkResult = fork();
 
-        if ( FAILED(copyResult) ) {
-            if (copyResult == STRSAFE_E_INVALID_PARAMETER) {
-                Windows_ShowErrorMessage("StringCchCopy <invalid param>");
-            } else {
-                Windows_ShowErrorMessage("StringCchCopy <insufficient buffer>");
+    if (forkResult == 0) {
+        // Child process
+        const char* file = executable->c_str();
+        const char** const argv = new const char* [arguments->size() + 2];
+        {
+            argv[0] = file;
+            for (std::size_t i = 0; i < arguments->size(); i++) {
+                argv[i + 1] = (*arguments)[i].c_str();
             }
+            argv[arguments->size() + 1] = static_cast<char *>(nullptr);
         }
-    }
-    LPSECURITY_ATTRIBUTES lpProcessAttributes = nullptr; // No specific security attribute
-    LPSECURITY_ATTRIBUTES lpThreadAttributes = nullptr; // No specific security attribute
-    bool bInheritHandles = true; // Handles are inherited
-    DWORD dwCreationFlags = 0; // Creation flags
-    LPVOID lpEnvironment = nullptr; // We use the parent's environment
-    const TCHAR* lpCurrentDirectory = nullptr; // We use the parent's current working directory
-    STARTUPINFO startupinfo;
-    PROCESS_INFORMATION processInformation;
-    LPSTARTUPINFO lpStartupInfo = &startupinfo;
-    LPPROCESS_INFORMATION lpProcessInformation = &processInformation;
-    {
-        ZeroMemory(&startupinfo, sizeof(startupinfo));
-        startupinfo.cb = sizeof(startupinfo);
-        startupinfo.dwFlags |= STARTF_USESTDHANDLES;
-        startupinfo.hStdOutput = processOutputStream->getHandle();
-        startupinfo.hStdError = processErrorStream->getHandle();
-        startupinfo.hStdInput = processInputStream->getHandle();
-        ZeroMemory(&processInformation, sizeof(processInformation));
-        // By default, we have nothing in these structs
-    }
 
-    // TODO Use the right handles
+        /*
+         * Using "Exec VP" because I want the shell to find the executable according to usual rules,
+         * and I cannot use variadic functions because the number of arguments is only known at runtime.
+         */
+        int execvpResult = execvp(file, const_cast<char *const *>(argv));
+        if (execvpResult == -1) {
+            // TODO handle error
+        }
+    } else {
+        // Parent process
 
-    bool createProcessResult = CreateProcess(
-            lpApplicationName,
-            lpCommandLine,
-            lpProcessAttributes,
-            lpThreadAttributes,
-            bInheritHandles,
-            dwCreationFlags,
-            lpEnvironment,
-            lpCurrentDirectory,
-            lpStartupInfo,
-            lpProcessInformation
-    );
-    if (!createProcessResult) {
-        Windows_ShowErrorMessage("CreateProcess");
-        // TODO remove later
     }
-
-    processHandle = processInformation.hProcess;
-    CloseHandle(processInformation.hThread);
 }
 
 void CommandRunner::internalStop() {
-    Windows_WaitForProcess(processHandle);
+    kill(forkResult, SIGTERM);
 }
 
 int CommandRunner::internalGetStatusCode() {
-    return Windows_GetExitCodeCommand(processHandle);
+    int status;
+    waitpid(forkResult, &status, WNOHANG);
+    return WIFEXITED(status) ? WEXITSTATUS(status) : 44; // TODO handle unfinished process
 }
 
-void CommandRunner::internalOSCleanUp() {
-    CloseHandle(processHandle);
-}
-#endif
+void CommandRunner::internalOSCleanUp() {}
 #endif

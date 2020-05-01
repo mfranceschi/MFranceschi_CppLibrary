@@ -9,6 +9,7 @@
 #if defined(_WIN32)
 #   include <Windows.h>
 #else
+#   include <unistd.h>
 #endif
 
 // Declarations
@@ -193,6 +194,7 @@ private:
 #if defined(_WIN32)
     HANDLE processHandle = INVALID_HANDLE_VALUE;
 #else
+    pid_t forkResult = -1;
 #endif
 };
 
