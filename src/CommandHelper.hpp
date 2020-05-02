@@ -205,6 +205,7 @@ public:
 protected:
     FD_t readPipeFD = -1;
     FD_t writeToPipeFD = -1;
+    FILE* readPipeStream = nullptr;
 #endif
 };
 

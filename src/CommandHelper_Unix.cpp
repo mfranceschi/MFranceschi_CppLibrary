@@ -9,6 +9,7 @@
 #include <csignal>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <cassert>
 
 static constexpr unsigned int BUFFER_LENGTH = 4096;
 
@@ -104,29 +105,45 @@ void ProcessOutputStream_Retrieve::beforeStart() {
     readPipeFD = fd[0];
     writeToPipeFD = fd[1];
     fcntl(readPipeFD, F_SETFD, FD_CLOEXEC);
-    fcntl(readPipeFD, F_SETFL, O_NONBLOCK);
+    //fcntl(readPipeFD, F_SETFL, O_NONBLOCK);
+    readPipeStream = fdopen(readPipeFD, "r");
 }
 
 void ProcessOutputStream_Retrieve::beforeStop() {
-    char chBuf[BUFFER_LENGTH];
+    /*char chBuf[BUFFER_LENGTH];
     ssize_t readResult = read(readPipeFD, chBuf, BUFFER_LENGTH);
+    if (readResult == -1) {
+        printf("Errno of readResult: %d\n", errno);
+    }
 
     if (readResult > 0) {
         chBuf[readResult] = '\0';
         oss << chBuf;
-    }
+    }*/
 }
 
 void ProcessOutputStream_Retrieve::afterStop() {
-    char chBuf[BUFFER_LENGTH];
+    /*
+    char chBuf[BUFFER_LENGTH] = {0};
     ssize_t readResult;
 
     while ((readResult = read(readPipeFD, chBuf, BUFFER_LENGTH)) > 0) {
+        printf("Errno of readResult: %d\n", errno);
         chBuf[readResult] = '\0';
         oss << chBuf;
     }
+    printf("Errno of readResult: %d\n", errno);
+    */
+    char chBuf[BUFFER_LENGTH] = {0};
+
+    if (fgets(chBuf, BUFFER_LENGTH, readPipeStream) == nullptr) {
+        printf("Errno of fgets: %d\n", errno);
+    } else {
+        oss << chBuf;
+    }
+
     close(writeToPipeFD);
-    close(readPipeFD);
+    fclose(readPipeStream);
 }
 
 std::string ProcessOutputStream_Retrieve::retrieveOutput() {
@@ -157,9 +174,9 @@ void CommandRunner::internalStart() {
             argv[arguments->size() + 1] = static_cast<char *>(nullptr);
         }
 
-        dup2(processInputStream->getFD(), STDIN_FILENO);
+        dup2(processInputStream->getFD(),  STDIN_FILENO);
         dup2(processOutputStream->getFD(), STDOUT_FILENO);
-        dup2(processErrorStream->getFD(), STDERR_FILENO);
+        dup2(processErrorStream->getFD(),  STDERR_FILENO);
 
         /*
          * Using "Exec VP" because I want the shell to find the executable according to usual rules,
@@ -168,6 +185,7 @@ void CommandRunner::internalStart() {
         int execvpResult = execvp(file, const_cast<char *const *>(argv));
         if (execvpResult == -1) {
             // TODO handle error
+            exit(44);
         }
     } else {
         // Parent process
@@ -182,6 +200,11 @@ void CommandRunner::internalStop() {
 int CommandRunner::internalGetStatusCode() {
     int status;
     waitpid(forkResult, &status, 0);
+    std::printf("%d\n", WTERMSIG(status));
+    assert ( ! WIFSIGNALED(status));
+    assert ( ! WIFSTOPPED(status));
+
+
     return WIFEXITED(status) ? WEXITSTATUS(status) : 44; // TODO handle unfinished process
 }
 
