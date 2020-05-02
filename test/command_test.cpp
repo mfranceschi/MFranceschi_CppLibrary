@@ -8,23 +8,29 @@ class Commands : public ::testing::Test {
 protected:
     CommandCall commandCall;
     CommandReturn commandReturn;
+    static const File::Filename_t filename;
 };
+const File::Filename_t Commands::filename = MAKE_FILE_NAME "pwd";
 
 TEST_F(Commands, PWD_Simple) {
-    commandCall.executable = File::MakeFilename(true, false, 4, MAKE_FILE_NAME "C:", MAKE_FILE_NAME "cygwin64", MAKE_FILE_NAME "bin", MAKE_FILE_NAME "pwd.exe");// R"(C:\cygwin64\bin\pwd.exe)";
+    commandCall.executable = filename;
     Command(commandCall, commandReturn);
     EXPECT_EQ(0, commandReturn.returnCode);
+    EXPECT_TRUE(commandReturn.outputText.empty());
+    EXPECT_TRUE(commandReturn.errorText.empty());
 }
 
 TEST_F(Commands, PWD_KilledOutput) {
-    commandCall.executable = File::MakeFilename(true, false, 4, MAKE_FILE_NAME "C:", MAKE_FILE_NAME "cygwin64", MAKE_FILE_NAME "bin", MAKE_FILE_NAME "pwd.exe");// R"(C:\cygwin64\bin\pwd.exe)";
+    commandCall.executable = filename;
     commandCall.outputChoice = OutputChoice::KILL;
     Command(commandCall, commandReturn);
     EXPECT_EQ(0, commandReturn.returnCode);
+    EXPECT_TRUE(commandReturn.outputText.empty());
+    EXPECT_TRUE(commandReturn.errorText.empty());
 }
 
 TEST_F(Commands, PWD_RetrieveAllOutputs) {
-    commandCall.executable = File::MakeFilename(true, false, 4, MAKE_FILE_NAME "C:", MAKE_FILE_NAME "cygwin64", MAKE_FILE_NAME "bin", MAKE_FILE_NAME "pwd.exe");// R"(C:\cygwin64\bin\pwd.exe)";
+    commandCall.executable = filename;
     commandCall.outputChoice = OutputChoice::RETRIEVE;
     commandCall.errorsChoice = ErrorChoice::RETRIEVE;
     Command(commandCall, commandReturn);

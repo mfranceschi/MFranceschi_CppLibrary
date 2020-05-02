@@ -10,7 +10,7 @@
 #   include <Windows.h>
 #else
 #   include <unistd.h>
-using FileDescriptor_t = int;
+using FD_t = int;
 #endif
 
 // Declarations
@@ -53,7 +53,7 @@ public:
 #if defined(_WIN32)
     virtual HANDLE getHandle() const = 0;
 #else
-    virtual FileDescriptor_t getFD() const = 0;
+    virtual FD_t getFD() const = 0;
 #endif
 };
 
@@ -62,7 +62,7 @@ public:
 #if defined(_WIN32)
     HANDLE getHandle() const override;
 #else
-    FileDescriptor_t getFD() const override;
+    FD_t getFD() const override;
 #endif
 };
 
@@ -81,6 +81,13 @@ public:
 protected:
     HANDLE readPipeHandle = nullptr;
     HANDLE writeToPipeHandle = nullptr;
+#else
+public:
+    FD_t getFD() const override;
+
+protected:
+    FD_t readPipeFD = -1;
+    FD_t writeToPipeFD = -1;
 #endif
 };
 
@@ -97,6 +104,12 @@ public:
     HANDLE getHandle() const override;
 protected:
     HANDLE fileHandle = nullptr;
+#else
+public:
+    FD_t getFD() const override;
+
+protected:
+    FD_t fileFD = -1;
 #endif
 };
 
@@ -110,7 +123,7 @@ public:
 #if defined(_WIN32)
     virtual HANDLE getHandle() const = 0;
 #else
-    virtual FileDescriptor_t getFD() const = 0;
+    virtual FD_t getFD() const = 0;
 #endif
 };
 
@@ -119,7 +132,7 @@ public:
 #if defined(_WIN32)
     HANDLE getHandle() const override;
 #else
-    FileDescriptor_t getFD() const override;
+    FD_t getFD() const override;
 #endif
 };
 
@@ -128,7 +141,7 @@ public:
 #if defined(_WIN32)
     HANDLE getHandle() const override;
 #else
-    FileDescriptor_t getFD() const override;
+    FD_t getFD() const override;
 #endif
 };
 
@@ -140,6 +153,11 @@ public:
     HANDLE getHandle() const override;
 protected:
     HANDLE nulHandle = nullptr;
+#else
+public:
+    FD_t getFD() const override;
+protected:
+    FD_t fileFD = -1;
 #endif
 };
 
@@ -149,12 +167,21 @@ public:
     explicit ProcessOutputStream_Export(bool append, const File::SFilename_t& filename);
     void beforeStart() override;
     void afterStop() override;
+
+protected:
+    const File::SFilename_t& filename;
 #if defined(_WIN32)
+public:
     HANDLE getHandle() const override;
 protected:
     HANDLE fileHandle = nullptr;
+#else
+public:
+    FD_t getFD() const override;
+protected:
+    FD_t fileFD = -1;
 #endif
-    const File::SFilename_t& filename;
+
 };
 
 class ProcessOutputStream_Retrieve : public ProcessOutputStream {
@@ -163,12 +190,21 @@ public:
     void beforeStop() override;
     void afterStop() override;
     std::string retrieveOutput() override;
+protected:
+    std::ostringstream oss;
+
 #if defined(_WIN32)
+public:
     HANDLE getHandle() const override;
 protected:
     HANDLE readPipeHandle = nullptr;
     HANDLE writeToPipeHandle = nullptr;
-    std::ostringstream oss;
+#else
+public:
+    FD_t getFD() const override;
+protected:
+    FD_t readPipeFD = -1;
+    FD_t writeToPipeFD = -1;
 #endif
 };
 

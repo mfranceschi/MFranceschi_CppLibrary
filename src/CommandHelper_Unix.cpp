@@ -8,6 +8,7 @@
 #include "CommandHelper.hpp"
 #include <csignal>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 static constexpr unsigned int BUFFER_LENGTH = 4096;
 
@@ -15,160 +16,130 @@ static constexpr unsigned int BUFFER_LENGTH = 4096;
 // /////////////////////// INPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-FileDescriptor_t ProcessInputStream_None::getFD() const {
+FD_t ProcessInputStream_None::getFD() const {
     return STDIN_FILENO;
 }
 
-#if 0
 void ProcessInputStream_String::beforeStart() {
-    SECURITY_ATTRIBUTES securityAttributes {
-            sizeof(SECURITY_ATTRIBUTES),
-            nullptr,
-            true
-    };
-    CreatePipe(&readPipeHandle, &writeToPipeHandle, &securityAttributes, BUFFER_LENGTH);
-    Windows_MakeHandleInheritable(readPipeHandle);
+    FD_t fd[2];
+    pipe(fd);
+    readPipeFD = fd[0];
+    writeToPipeFD = fd[1];
+    fcntl(writeToPipeFD, F_SETFD, FD_CLOEXEC);
 }
 
 void ProcessInputStream_String::afterStart() {
-    DWORD lpWritten;
     std::string temp;
-    temp.reserve(999);
-    for (std::size_t i = 0; i < inputString.length(); i += 999) {
-        temp = inputString.substr(i, 999);
-        WriteFile(writeToPipeHandle, temp.c_str(), 999, &lpWritten, nullptr);
+    temp.reserve(500);
+    for (std::size_t i = 0; i < inputString.length(); i += 500) {
+        temp = inputString.substr(i, 500);
+        write(writeToPipeFD, temp.c_str(), std::min(temp.length(), static_cast<std::size_t>(500)));
     }
 }
 
 void ProcessInputStream_String::afterStop() {
-    CloseHandle(writeToPipeHandle);
-    CloseHandle(readPipeHandle);
+    close(readPipeFD);
+    close(writeToPipeFD);
 }
 
-HANDLE ProcessInputStream_String::getHandle() const {
-    return readPipeHandle;
+FD_t ProcessInputStream_String::getFD() const {
+    return readPipeFD;
 }
 
 void ProcessInputStream_FromFile::beforeStart() {
-    fileHandle = CreateFile(
-            filename.c_str(),
-            FILE_GENERIC_READ,
-            FILE_SHARE_READ,
-            &securityAttributesForInheritableHandles,
-            OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL,
-            nullptr);
+    fileFD = open(filename.c_str(), O_RDONLY);
 }
 
 void ProcessInputStream_FromFile::afterStop() {
-    CloseHandle(fileHandle);
+    close(fileFD);
 }
 
-HANDLE ProcessInputStream_FromFile::getHandle() const {
-    return fileHandle;
+FD_t ProcessInputStream_FromFile::getFD() const {
+    return fileFD;
 }
 
 // ///////////////////////////////////////////////////////////////
 // ////////////////////// OUTPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
-#endif
-FileDescriptor_t ProcessOutputStream_Keep::getFD() const {
+FD_t ProcessOutputStream_Keep::getFD() const {
     return STDOUT_FILENO;
 }
 
-FileDescriptor_t ProcessErrorStream_Keep::getFD() const {
+FD_t ProcessErrorStream_Keep::getFD() const {
     return STDERR_FILENO;
 }
-#if 0
+
 void ProcessOutputStream_Kill::beforeStart() {
-    nulHandle = CreateFile(
-            TEXT("NUL"),
-            FILE_GENERIC_WRITE,
-            FILE_SHARE_READ,
-            &securityAttributesForInheritableHandles,
-            OPEN_ALWAYS,
-            FILE_ATTRIBUTE_DEVICE,
-            nullptr);
+    fileFD = open("/dev/null", O_WRONLY);
 }
 
 void ProcessOutputStream_Kill::afterStop() {
-    CloseHandle(nulHandle);
+    close(fileFD);
 }
 
-HANDLE ProcessOutputStream_Kill::getHandle() const {
-    return nulHandle;
+FD_t ProcessOutputStream_Kill::getFD() const {
+    return fileFD;
 }
 
 void ProcessOutputStream_Export::beforeStart() {
-    fileHandle = CreateFile(
-            filename.c_str(),
-            FILE_GENERIC_WRITE,
-            FILE_SHARE_READ,
-            &securityAttributesForInheritableHandles,
-            OPEN_ALWAYS,
-            FILE_ATTRIBUTE_NORMAL,
-            nullptr);
-
+    int flags = O_WRONLY;
     if (APPEND) {
-        SetFilePointer(fileHandle, 0, nullptr, FILE_END);
+        flags |= O_APPEND;
     }
+    mode_t mode = S_IRWXO;
+    fileFD = open(filename.c_str(), flags, mode);
 }
 
 void ProcessOutputStream_Export::afterStop() {
-    CloseHandle(fileHandle);
+    close(fileFD);
 }
 
-HANDLE ProcessOutputStream_Export::getHandle() const {
-    return fileHandle;
+FD_t ProcessOutputStream_Export::getFD() const {
+    return fileFD;
 }
 
 void ProcessOutputStream_Retrieve::beforeStart() {
-    DWORD dwMode = PIPE_NOWAIT;
-    SECURITY_ATTRIBUTES securityAttributes {
-        sizeof(SECURITY_ATTRIBUTES),
-        nullptr,
-        true
-    };
-    CreatePipe(&readPipeHandle, &writeToPipeHandle, &securityAttributes, BUFFER_LENGTH);
-    Windows_MakeHandleInheritable(writeToPipeHandle);
-    SetNamedPipeHandleState(readPipeHandle, &dwMode, nullptr, nullptr);
+    FD_t fd[2];
+    pipe(fd);
+    readPipeFD = fd[0];
+    writeToPipeFD = fd[1];
+    fcntl(readPipeFD, F_SETFD, FD_CLOEXEC);
+    fcntl(readPipeFD, F_SETFL, O_NONBLOCK);
 }
 
 void ProcessOutputStream_Retrieve::beforeStop() {
-    DWORD dwRead;
-    CHAR chBuf[BUFFER_LENGTH];
+    char chBuf[BUFFER_LENGTH];
+    ssize_t readResult = read(readPipeFD, chBuf, BUFFER_LENGTH);
 
-    if (ReadFile(readPipeHandle, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
-        chBuf[dwRead] = '\0';
+    if (readResult > 0) {
+        chBuf[readResult] = '\0';
         oss << chBuf;
     }
 }
 
 void ProcessOutputStream_Retrieve::afterStop() {
-    DWORD dwRead;
-    CHAR chBuf[BUFFER_LENGTH];
+    char chBuf[BUFFER_LENGTH];
+    ssize_t readResult;
 
-    while (ReadFile(readPipeHandle, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
-        chBuf[dwRead] = '\0';
+    while ((readResult = read(readPipeFD, chBuf, BUFFER_LENGTH)) > 0) {
+        chBuf[readResult] = '\0';
         oss << chBuf;
     }
-    CloseHandle(writeToPipeHandle);
-    CloseHandle(readPipeHandle);
+    close(writeToPipeFD);
+    close(readPipeFD);
 }
 
 std::string ProcessOutputStream_Retrieve::retrieveOutput() {
     return oss.str();
 }
 
-HANDLE ProcessOutputStream_Retrieve::getHandle() const {
-    return writeToPipeHandle;
+FD_t ProcessOutputStream_Retrieve::getFD() const {
+    return writeToPipeFD;
 }
 
 // ///////////////////////////////////////////////////////////////
 // ////////////////////// COMMAND RUNNER /////////////////////////
 // ///////////////////////////////////////////////////////////////
-
-#endif
 
 void CommandRunner::internalStart() {
 
@@ -205,12 +176,12 @@ void CommandRunner::internalStart() {
 }
 
 void CommandRunner::internalStop() {
-    kill(forkResult, SIGTERM);
+    //kill(forkResult, SIGTERM);
 }
 
 int CommandRunner::internalGetStatusCode() {
     int status;
-    waitpid(forkResult, &status, WNOHANG);
+    waitpid(forkResult, &status, 0);
     return WIFEXITED(status) ? WEXITSTATUS(status) : 44; // TODO handle unfinished process
 }
 

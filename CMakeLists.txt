@@ -16,7 +16,7 @@ if (NOT Threads_FOUND)
 endif()
 add_compile_definitions(
         Threads_FOUND=$<BOOL:${Threads_FOUND}>
-        I_Want_Mem_Leaks=1
+        # I_Want_Mem_Leaks=1
 )
 
 if (MF_Lib_WantUnicode OR UNICODE)
