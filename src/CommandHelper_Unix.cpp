@@ -105,45 +105,33 @@ void ProcessOutputStream_Retrieve::beforeStart() {
     readPipeFD = fd[0];
     writeToPipeFD = fd[1];
     fcntl(readPipeFD, F_SETFD, FD_CLOEXEC);
-    //fcntl(readPipeFD, F_SETFL, O_NONBLOCK);
-    readPipeStream = fdopen(readPipeFD, "r");
+    fcntl(readPipeFD, F_SETFL, O_NONBLOCK);
+    fcntl(writeToPipeFD, F_SETFL, O_NONBLOCK);
 }
 
-void ProcessOutputStream_Retrieve::beforeStop() {
-    /*char chBuf[BUFFER_LENGTH];
-    ssize_t readResult = read(readPipeFD, chBuf, BUFFER_LENGTH);
-    if (readResult == -1) {
-        printf("Errno of readResult: %d\n", errno);
-    }
-
-    if (readResult > 0) {
-        chBuf[readResult] = '\0';
-        oss << chBuf;
-    }*/
-}
+void ProcessOutputStream_Retrieve::beforeStop() {}
 
 void ProcessOutputStream_Retrieve::afterStop() {
-    /*
     char chBuf[BUFFER_LENGTH] = {0};
-    ssize_t readResult;
+    bool bContinue = true;
+    ssize_t nbRead;
 
-    while ((readResult = read(readPipeFD, chBuf, BUFFER_LENGTH)) > 0) {
-        printf("Errno of readResult: %d\n", errno);
-        chBuf[readResult] = '\0';
-        oss << chBuf;
+    printf("Errno before read: %d\n", errno);
+
+    while (bContinue) {
+        nbRead = read(readPipeFD, chBuf, BUFFER_LENGTH - 1);
+        printf("Errno of read: %d\n", errno);
+
+        if (nbRead > 0) {
+            oss << chBuf;
+        } else if (nbRead == -1) {
+            bContinue = false;
+        } else {
+            bContinue = false;
+        }
     }
-    printf("Errno of readResult: %d\n", errno);
-    */
-    char chBuf[BUFFER_LENGTH] = {0};
-
-    if (fgets(chBuf, BUFFER_LENGTH, readPipeStream) == nullptr) {
-        printf("Errno of fgets: %d\n", errno);
-    } else {
-        oss << chBuf;
-    }
-
+    close(readPipeFD);
     close(writeToPipeFD);
-    fclose(readPipeStream);
 }
 
 std::string ProcessOutputStream_Retrieve::retrieveOutput() {
@@ -177,6 +165,7 @@ void CommandRunner::internalStart() {
         dup2(processInputStream->getFD(),  STDIN_FILENO);
         dup2(processOutputStream->getFD(), STDOUT_FILENO);
         dup2(processErrorStream->getFD(),  STDERR_FILENO);
+        write(STDOUT_FILENO, "coucou", 6); // TODO remove
 
         /*
          * Using "Exec VP" because I want the shell to find the executable according to usual rules,
@@ -195,15 +184,13 @@ void CommandRunner::internalStart() {
 
 void CommandRunner::internalStop() {
     //kill(forkResult, SIGTERM);
+    std::printf("Errno at line %d: %d\n", __LINE__, errno);
 }
 
 int CommandRunner::internalGetStatusCode() {
     int status;
     waitpid(forkResult, &status, 0);
-    std::printf("%d\n", WTERMSIG(status));
-    assert ( ! WIFSIGNALED(status));
-    assert ( ! WIFSTOPPED(status));
-
+    std::printf("Termination signal: %d\n", WTERMSIG(status));
 
     return WIFEXITED(status) ? WEXITSTATUS(status) : 44; // TODO handle unfinished process
 }

@@ -33,7 +33,7 @@ void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
             break;
     }
 
-    switch (commandCall.errorsChoice) {
+    switch (commandCall.errorChoice) {
         case ErrorChoice::KEEP:
             break;
         case ErrorChoice::KILL:
@@ -68,7 +68,7 @@ void Command(const CommandCall& commandCall, CommandReturn& commandReturn) {
     if (commandCall.outputChoice == OutputChoice::RETRIEVE) {
         commandReturn.outputText = runner.getOutput();
     }
-    if (commandCall.errorsChoice == ErrorChoice::RETRIEVE) {
+    if (commandCall.errorChoice == ErrorChoice::RETRIEVE) {
         commandReturn.errorText = runner.getError();
     }
     commandReturn.returnCode = runner.getStatusCode();

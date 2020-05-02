@@ -51,7 +51,7 @@ struct CommandCall {
     File::SFilename_t outputFile; // [?] File in which to write outputs
     OutputChoice outputChoice = OutputChoice::KEEP; // Choice for outputs
     File::SFilename_t errorFile; // [?] File in which to write errors
-    ErrorChoice errorsChoice = ErrorChoice::KEEP; // Choice for errors
+    ErrorChoice errorChoice = ErrorChoice::KEEP; // Choice for errors
     File::SFilename_t inputString; // [?] String as input
     File::SFilename_t inputFile; // [?] File as input
     InputChoice inputChoice = InputChoice::NONE; // Choice for inputs

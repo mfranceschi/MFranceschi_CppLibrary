@@ -16,3 +16,13 @@ set(TEST_CASES file_tests.cpp date_tests.cpp main_of_tests.cpp command_test.cpp)
 add_executable(Google_Tests_run)
 target_sources(Google_Tests_run PRIVATE ${TEST_CASES})
 target_link_libraries(Google_Tests_run gtest ${MF_Lib_Libname})
+
+function(AddTestExec Name)
+    set(Name_Target "TestExec_${Name}")
+    add_executable(TestExec_${Name} EXCLUDE_FROM_ALL executables/${Name}.cpp)
+    add_compile_definitions(${Name}_Executable="$<TARGET_FILE:TestExec_${Name}>")
+    add_dependencies(Google_Tests_run TestExec_${Name})
+endfunction()
+
+AddTestExec(OneForEachStream)
+AddTestExec(ReturnNbArgs)
