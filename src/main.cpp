@@ -30,7 +30,7 @@ int main() {
     int fd[2];
     pipe(fd);
     fcntl(fd[0], F_SETFD, FD_CLOEXEC);
-    fcntl(fd[0], F_SETFL, O_NONBLOCK);
+    //fcntl(fd[0], F_SETFL, O_NONBLOCK);
 
     pid_t forkResult = fork();
     if ( ! forkResult) {

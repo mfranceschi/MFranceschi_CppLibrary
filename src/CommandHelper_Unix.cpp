@@ -17,6 +17,8 @@ static constexpr unsigned int BUFFER_LENGTH = 4096;
 // /////////////////////// INPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
+void ProcessStream::closeOnFork() {}
+
 StreamItem ProcessInputStream_None::getStreamItem() const {
     return STDIN_FILENO;
 }
@@ -47,6 +49,11 @@ StreamItem ProcessInputStream_String::getStreamItem() const {
     return readStream;
 }
 
+void ProcessInputStream_String::closeOnFork() {
+    close(readStream);
+    close(writeToStream);
+}
+
 void ProcessInputStream_FromFile::beforeStart() {
     fileStream = open(filename.c_str(), O_RDONLY);
 }
@@ -57,6 +64,10 @@ void ProcessInputStream_FromFile::afterStop() {
 
 StreamItem ProcessInputStream_FromFile::getStreamItem() const {
     return fileStream;
+}
+
+void ProcessInputStream_FromFile::closeOnFork() {
+    close(fileStream);
 }
 
 // ///////////////////////////////////////////////////////////////
@@ -94,14 +105,18 @@ StreamItem ProcessOutputStream_Export::getStreamItem() const {
     return fileStream;
 }
 
+void ProcessOutputStream_Export::closeOnFork() {
+    close(fileStream);
+}
+
 void ProcessOutputStream_Retrieve::beforeStart() {
     FD_t fd[2];
     pipe(fd);
     readStream = fd[0];
     writeStream = fd[1];
     fcntl(readStream, F_SETFD, FD_CLOEXEC);
-    fcntl(readStream, F_SETFL, O_NONBLOCK);
-    fcntl(writeStream, F_SETFL, O_NONBLOCK);
+    //fcntl(readStream, F_SETFL, O_NONBLOCK);
+    //fcntl(writeStream, F_SETFL, O_NONBLOCK);
 }
 
 void ProcessOutputStream_Retrieve::beforeStop() {}
@@ -137,6 +152,11 @@ StreamItem ProcessOutputStream_Retrieve::getStreamItem() const {
     return writeStream;
 }
 
+void ProcessOutputStream_Retrieve::closeOnFork() {
+    close(readStream);
+    close(writeStream);
+}
+
 // ///////////////////////////////////////////////////////////////
 // ////////////////////// COMMAND RUNNER /////////////////////////
 // ///////////////////////////////////////////////////////////////
@@ -158,19 +178,20 @@ void CommandRunner::internalStart() {
         }
 
         dup2(processInputStream->getStreamItem(),  STDIN_FILENO);
+        processInputStream->closeOnFork();
         dup2(processOutputStream->getStreamItem(), STDOUT_FILENO);
+        processOutputStream->closeOnFork();
         dup2(processErrorStream->getStreamItem(),  STDERR_FILENO);
+        processErrorStream->closeOnFork();
         write(STDOUT_FILENO, "coucou", 6); // TODO remove
 
         /*
          * Using "Exec VP" because I want the shell to find the executable according to usual rules,
          * and I cannot use variadic functions because the number of arguments is only known at runtime.
          */
-        int execvpResult = execvp(file, const_cast<char *const *>(argv));
-        if (execvpResult == -1) {
-            // TODO handle error
-            exit(44);
-        }
+        execvp(file, const_cast<char *const *>(argv));
+        // TODO handle error
+        exit(44);
     } else {
         // Parent process
 

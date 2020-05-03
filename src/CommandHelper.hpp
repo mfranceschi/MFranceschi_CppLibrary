@@ -50,14 +50,20 @@ public:
     virtual ~CommandComponent() = default;
 };
 
+class ProcessStream : public CommandComponent {
+public:
+    virtual StreamItem getStreamItem() const = 0;
+
+#if !defined(_WIN32)
+    virtual void closeOnFork();
+#endif
+};
+
 // ///////////////////////////////////////////////////////////////
 // /////////////////////// INPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-class ProcessInputStream : public CommandComponent {
-public:
-    virtual StreamItem getStreamItem() const = 0;
-};
+class ProcessInputStream : public ProcessStream {};
 
 class ProcessInputStream_None : public ProcessInputStream {
 public:
@@ -71,6 +77,7 @@ public:
     void afterStart() override;
     void afterStop() override;
     StreamItem getStreamItem() const override;
+    void closeOnFork() override;
 protected:
     const File::SFilename_t& inputString;
     StreamItem readStream = STREAM_ITEM_DEFAULT;
@@ -83,6 +90,7 @@ public:
     void beforeStart() override;
     void afterStop() override;
     StreamItem getStreamItem() const override;
+    void closeOnFork() override;
 protected:
     const File::SFilename_t& filename;
     StreamItem fileStream = STREAM_ITEM_DEFAULT;
@@ -92,10 +100,9 @@ protected:
 // ////////////////////// OUTPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-class ProcessOutputStream : public CommandComponent {
+class ProcessOutputStream : public ProcessStream {
 public:
     virtual std::string retrieveOutput();
-    virtual StreamItem getStreamItem() const = 0;
 };
 
 class ProcessOutputStream_Keep : public ProcessOutputStream {
@@ -115,6 +122,7 @@ public:
     void beforeStart() override;
     void afterStop() override;
     StreamItem getStreamItem() const override;
+    void closeOnFork() override;
 
 protected:
     const File::SFilename_t& filename;
@@ -134,6 +142,7 @@ public:
     void afterStop() override;
     std::string retrieveOutput() override;
     StreamItem getStreamItem() const override;
+    void closeOnFork() override;
 protected:
     std::ostringstream oss;
     StreamItem readStream = STREAM_ITEM_DEFAULT;
