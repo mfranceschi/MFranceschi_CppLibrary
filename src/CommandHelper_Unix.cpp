@@ -17,16 +17,16 @@ static constexpr unsigned int BUFFER_LENGTH = 4096;
 // /////////////////////// INPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-FD_t ProcessInputStream_None::getFD() const {
+StreamItem ProcessInputStream_None::getStreamItem() const {
     return STDIN_FILENO;
 }
 
 void ProcessInputStream_String::beforeStart() {
     FD_t fd[2];
     pipe(fd);
-    readPipeFD = fd[0];
-    writeToPipeFD = fd[1];
-    fcntl(writeToPipeFD, F_SETFD, FD_CLOEXEC);
+    readStream = fd[0];
+    writeToStream = fd[1];
+    fcntl(writeToStream, F_SETFD, FD_CLOEXEC);
 }
 
 void ProcessInputStream_String::afterStart() {
@@ -34,52 +34,47 @@ void ProcessInputStream_String::afterStart() {
     temp.reserve(500);
     for (std::size_t i = 0; i < inputString.length(); i += 500) {
         temp = inputString.substr(i, 500);
-        write(writeToPipeFD, temp.c_str(), std::min(temp.length(), static_cast<std::size_t>(500)));
+        write(writeToStream, temp.c_str(), std::min(temp.length(), static_cast<std::size_t>(500)));
     }
 }
 
 void ProcessInputStream_String::afterStop() {
-    close(readPipeFD);
-    close(writeToPipeFD);
+    close(readStream);
+    close(writeToStream);
 }
 
-FD_t ProcessInputStream_String::getFD() const {
-    return readPipeFD;
+StreamItem ProcessInputStream_String::getStreamItem() const {
+    return readStream;
 }
 
 void ProcessInputStream_FromFile::beforeStart() {
-    fileFD = open(filename.c_str(), O_RDONLY);
+    fileStream = open(filename.c_str(), O_RDONLY);
 }
 
 void ProcessInputStream_FromFile::afterStop() {
-    close(fileFD);
+    close(fileStream);
 }
 
-FD_t ProcessInputStream_FromFile::getFD() const {
-    return fileFD;
+StreamItem ProcessInputStream_FromFile::getStreamItem() const {
+    return fileStream;
 }
 
 // ///////////////////////////////////////////////////////////////
 // ////////////////////// OUTPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
-FD_t ProcessOutputStream_Keep::getFD() const {
+StreamItem ProcessOutputStream_Keep::getStreamItem() const {
     return STDOUT_FILENO;
 }
 
-FD_t ProcessErrorStream_Keep::getFD() const {
+StreamItem ProcessErrorStream_Keep::getStreamItem() const {
     return STDERR_FILENO;
 }
 
+ProcessOutputStream_Kill::ProcessOutputStream_Kill() :
+    ProcessOutputStream_Export(false, "/dev/null") {}
+
 void ProcessOutputStream_Kill::beforeStart() {
-    fileFD = open("/dev/null", O_WRONLY);
-}
-
-void ProcessOutputStream_Kill::afterStop() {
-    close(fileFD);
-}
-
-FD_t ProcessOutputStream_Kill::getFD() const {
-    return fileFD;
+    fileStream = open(filename.c_str(), O_WRONLY);
 }
 
 void ProcessOutputStream_Export::beforeStart() {
@@ -88,25 +83,25 @@ void ProcessOutputStream_Export::beforeStart() {
         flags |= O_APPEND;
     }
     mode_t mode = S_IRWXO;
-    fileFD = open(filename.c_str(), flags, mode);
+    fileStream = open(filename.c_str(), flags, mode);
 }
 
 void ProcessOutputStream_Export::afterStop() {
-    close(fileFD);
+    close(fileStream);
 }
 
-FD_t ProcessOutputStream_Export::getFD() const {
-    return fileFD;
+StreamItem ProcessOutputStream_Export::getStreamItem() const {
+    return fileStream;
 }
 
 void ProcessOutputStream_Retrieve::beforeStart() {
     FD_t fd[2];
     pipe(fd);
-    readPipeFD = fd[0];
-    writeToPipeFD = fd[1];
-    fcntl(readPipeFD, F_SETFD, FD_CLOEXEC);
-    fcntl(readPipeFD, F_SETFL, O_NONBLOCK);
-    fcntl(writeToPipeFD, F_SETFL, O_NONBLOCK);
+    readStream = fd[0];
+    writeStream = fd[1];
+    fcntl(readStream, F_SETFD, FD_CLOEXEC);
+    fcntl(readStream, F_SETFL, O_NONBLOCK);
+    fcntl(writeStream, F_SETFL, O_NONBLOCK);
 }
 
 void ProcessOutputStream_Retrieve::beforeStop() {}
@@ -119,7 +114,7 @@ void ProcessOutputStream_Retrieve::afterStop() {
     printf("Errno before read: %d\n", errno);
 
     while (bContinue) {
-        nbRead = read(readPipeFD, chBuf, BUFFER_LENGTH - 1);
+        nbRead = read(readStream, chBuf, BUFFER_LENGTH - 1);
         printf("Errno of read: %d\n", errno);
 
         if (nbRead > 0) {
@@ -130,16 +125,16 @@ void ProcessOutputStream_Retrieve::afterStop() {
             bContinue = false;
         }
     }
-    close(readPipeFD);
-    close(writeToPipeFD);
+    close(readStream);
+    close(writeStream);
 }
 
 std::string ProcessOutputStream_Retrieve::retrieveOutput() {
     return oss.str();
 }
 
-FD_t ProcessOutputStream_Retrieve::getFD() const {
-    return writeToPipeFD;
+StreamItem ProcessOutputStream_Retrieve::getStreamItem() const {
+    return writeStream;
 }
 
 // ///////////////////////////////////////////////////////////////
@@ -148,9 +143,9 @@ FD_t ProcessOutputStream_Retrieve::getFD() const {
 
 void CommandRunner::internalStart() {
 
-    forkResult = fork();
+    childProcessItem = fork();
 
-    if (forkResult == 0) {
+    if (childProcessItem == 0) {
         // Child process
         const char* file = executable->c_str();
         const char** const argv = new const char* [arguments->size() + 2];
@@ -162,9 +157,9 @@ void CommandRunner::internalStart() {
             argv[arguments->size() + 1] = static_cast<char *>(nullptr);
         }
 
-        dup2(processInputStream->getFD(),  STDIN_FILENO);
-        dup2(processOutputStream->getFD(), STDOUT_FILENO);
-        dup2(processErrorStream->getFD(),  STDERR_FILENO);
+        dup2(processInputStream->getStreamItem(),  STDIN_FILENO);
+        dup2(processOutputStream->getStreamItem(), STDOUT_FILENO);
+        dup2(processErrorStream->getStreamItem(),  STDERR_FILENO);
         write(STDOUT_FILENO, "coucou", 6); // TODO remove
 
         /*
@@ -189,11 +184,12 @@ void CommandRunner::internalStop() {
 
 int CommandRunner::internalGetStatusCode() {
     int status;
-    waitpid(forkResult, &status, 0);
+    waitpid(childProcessItem, &status, 0);
     std::printf("Termination signal: %d\n", WTERMSIG(status));
 
     return WIFEXITED(status) ? WEXITSTATUS(status) : 44; // TODO handle unfinished process
 }
 
 void CommandRunner::internalOSCleanUp() {}
+
 #endif

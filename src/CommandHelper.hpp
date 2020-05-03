@@ -8,9 +8,15 @@
 #include "File.hpp"
 #if defined(_WIN32)
 #   include <Windows.h>
+using StreamItem = HANDLE;
+using ProcessItem = HANDLE;
+constexpr StreamItem StreamItemDefault = nullptr;
 #else
 #   include <unistd.h>
 using FD_t = int;
+using StreamItem = int;
+using ProcessItem = pid_t;
+constexpr StreamItem STREAM_ITEM_DEFAULT = -1;
 #endif
 
 // Declarations
@@ -50,20 +56,12 @@ public:
 
 class ProcessInputStream : public CommandComponent {
 public:
-#if defined(_WIN32)
-    virtual HANDLE getHandle() const = 0;
-#else
-    virtual FD_t getFD() const = 0;
-#endif
+    virtual StreamItem getStreamItem() const = 0;
 };
 
 class ProcessInputStream_None : public ProcessInputStream {
 public:
-#if defined(_WIN32)
-    HANDLE getHandle() const override;
-#else
-    FD_t getFD() const override;
-#endif
+    StreamItem getStreamItem() const override;
 };
 
 class ProcessInputStream_String : public ProcessInputStream {
@@ -72,23 +70,11 @@ public:
     void beforeStart() override;
     void afterStart() override;
     void afterStop() override;
+    StreamItem getStreamItem() const override;
 protected:
     const File::SFilename_t& inputString;
-
-#if defined(_WIN32)
-public:
-    HANDLE getHandle() const override;
-protected:
-    HANDLE readPipeHandle = nullptr;
-    HANDLE writeToPipeHandle = nullptr;
-#else
-public:
-    FD_t getFD() const override;
-
-protected:
-    FD_t readPipeFD = -1;
-    FD_t writeToPipeFD = -1;
-#endif
+    StreamItem readStream = STREAM_ITEM_DEFAULT;
+    StreamItem writeToStream = STREAM_ITEM_DEFAULT;
 };
 
 class ProcessInputStream_FromFile : public ProcessInputStream {
@@ -96,21 +82,10 @@ public:
     explicit ProcessInputStream_FromFile(const File::SFilename_t& filename);
     void beforeStart() override;
     void afterStop() override;
+    StreamItem getStreamItem() const override;
 protected:
     const File::SFilename_t& filename;
-
-#if defined(_WIN32)
-public:
-    HANDLE getHandle() const override;
-protected:
-    HANDLE fileHandle = nullptr;
-#else
-public:
-    FD_t getFD() const override;
-
-protected:
-    FD_t fileFD = -1;
-#endif
+    StreamItem fileStream = STREAM_ITEM_DEFAULT;
 };
 
 // ///////////////////////////////////////////////////////////////
@@ -120,45 +95,17 @@ protected:
 class ProcessOutputStream : public CommandComponent {
 public:
     virtual std::string retrieveOutput();
-#if defined(_WIN32)
-    virtual HANDLE getHandle() const = 0;
-#else
-    virtual FD_t getFD() const = 0;
-#endif
+    virtual StreamItem getStreamItem() const = 0;
 };
 
 class ProcessOutputStream_Keep : public ProcessOutputStream {
 public:
-#if defined(_WIN32)
-    HANDLE getHandle() const override;
-#else
-    FD_t getFD() const override;
-#endif
+    StreamItem getStreamItem() const override;
 };
 
 class ProcessErrorStream_Keep : public ProcessOutputStream {
 public:
-#if defined(_WIN32)
-    HANDLE getHandle() const override;
-#else
-    FD_t getFD() const override;
-#endif
-};
-
-class ProcessOutputStream_Kill : public ProcessOutputStream {
-public:
-    void beforeStart() override;
-    void afterStop() override;
-#if defined(_WIN32)
-    HANDLE getHandle() const override;
-protected:
-    HANDLE nulHandle = nullptr;
-#else
-public:
-    FD_t getFD() const override;
-protected:
-    FD_t fileFD = -1;
-#endif
+    StreamItem getStreamItem() const override;
 };
 
 class ProcessOutputStream_Export : public ProcessOutputStream {
@@ -167,21 +114,17 @@ public:
     explicit ProcessOutputStream_Export(bool append, const File::SFilename_t& filename);
     void beforeStart() override;
     void afterStop() override;
+    StreamItem getStreamItem() const override;
 
 protected:
     const File::SFilename_t& filename;
-#if defined(_WIN32)
-public:
-    HANDLE getHandle() const override;
-protected:
-    HANDLE fileHandle = nullptr;
-#else
-public:
-    FD_t getFD() const override;
-protected:
-    FD_t fileFD = -1;
-#endif
+    StreamItem fileStream = STREAM_ITEM_DEFAULT;
+};
 
+class ProcessOutputStream_Kill : public ProcessOutputStream_Export {
+public:
+    ProcessOutputStream_Kill();
+    void beforeStart() override;
 };
 
 class ProcessOutputStream_Retrieve : public ProcessOutputStream {
@@ -190,22 +133,11 @@ public:
     void beforeStop() override;
     void afterStop() override;
     std::string retrieveOutput() override;
+    StreamItem getStreamItem() const override;
 protected:
     std::ostringstream oss;
-
-#if defined(_WIN32)
-public:
-    HANDLE getHandle() const override;
-protected:
-    HANDLE readPipeHandle = nullptr;
-    HANDLE writeToPipeHandle = nullptr;
-#else
-public:
-    FD_t getFD() const override;
-protected:
-    FD_t readPipeFD = -1;
-    FD_t writeToPipeFD = -1;
-#endif
+    StreamItem readStream = STREAM_ITEM_DEFAULT;
+    StreamItem writeStream = STREAM_ITEM_DEFAULT;
 };
 
 // ///////////////////////////////////////////////////////////////
@@ -238,11 +170,7 @@ protected:
 
 private:
     void internalOSCleanUp();
-#if defined(_WIN32)
-    HANDLE processHandle = INVALID_HANDLE_VALUE;
-#else
-    pid_t forkResult = -1;
-#endif
+    ProcessItem childProcessItem = static_cast<ProcessItem>(-1);
 };
 
 #endif //MFRANCESCHI_CPPLIBRARIES_COMMANDHELPER_HPP
