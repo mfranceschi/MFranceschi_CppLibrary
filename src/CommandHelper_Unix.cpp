@@ -208,7 +208,7 @@ int CommandRunner::internalGetStatusCode() {
     waitpid(childProcessItem, &status, 0);
     std::printf("Termination signal: %d\n", WTERMSIG(status));
 
-    return WIFEXITED(status) ? WEXITSTATUS(status) : 44; // TODO handle unfinished process
+    return WIFEXITED(status) ? WEXITSTATUS(status) : 55; // TODO handle unfinished process
 }
 
 void CommandRunner::internalOSCleanUp() {}
