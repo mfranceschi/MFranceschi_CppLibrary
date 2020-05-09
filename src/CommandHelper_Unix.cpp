@@ -114,8 +114,8 @@ void ProcessOutputStream_Retrieve::beforeStart() {
     readStream = fd[0];
     writeStream = fd[1];
     fcntl(readStream, F_SETFD, FD_CLOEXEC);
-    //fcntl(readStream, F_SETFL, O_NONBLOCK);
-    //fcntl(writeStream, F_SETFL, O_NONBLOCK);
+    fcntl(readStream, F_SETFL, O_NONBLOCK);
+    fcntl(writeStream, F_SETFL, O_NONBLOCK);
 }
 
 void ProcessOutputStream_Retrieve::beforeStop() {}
@@ -152,7 +152,7 @@ StreamItem ProcessOutputStream_Retrieve::getStreamItem() const {
 }
 
 void ProcessOutputStream_Retrieve::closeOnFork() {
-    close(readStream);
+    //close(readStream);
     close(writeStream);
 }
 
@@ -171,18 +171,23 @@ void CommandRunner::internalStart() {
         {
             argv[0] = file;
             for (std::size_t i = 0; i < arguments->size(); i++) {
-                argv[i + 1] = (*arguments)[i].c_str();
+                const std::string& current = (*arguments)[i];
+                if (current[0] == '\"' && current[current.size() - 1] == '\"') {
+                    argv[i + 1] = current.substr(1, current.size() - 2).c_str();
+                } else {
+                    argv[i + 1] = (*arguments)[i].c_str();
+                }
             }
             argv[arguments->size() + 1] = static_cast<char *>(nullptr);
         }
 
         dup2(processInputStream->getStreamItem(),  STDIN_FILENO);
-        processInputStream->closeOnFork();
         dup2(processOutputStream->getStreamItem(), STDOUT_FILENO);
-        processOutputStream->closeOnFork();
         dup2(processErrorStream->getStreamItem(),  STDERR_FILENO);
-        processErrorStream->closeOnFork();
-        write(STDOUT_FILENO, "coucou", 6); // TODO remove
+        /*processInputStream->closeOnFork();
+        processOutputStream->closeOnFork();
+        processErrorStream->closeOnFork();*/
+        //write(STDOUT_FILENO, "coucou", 6); // TODO remove
 
         /*
          * Using "Exec VP" because I want the shell to find the executable according to usual rules,
@@ -205,7 +210,9 @@ void CommandRunner::internalStop() {
 int CommandRunner::internalGetStatusCode() {
     int status;
     waitpid(childProcessItem, &status, 0);
-    std::printf("Termination signal: %d\n", WTERMSIG(status));
+    if (WIFSIGNALED(status)) {
+        std::printf("Termination signal: %d\n", WTERMSIG(status));
+    }
 
     return WIFEXITED(status) ? WEXITSTATUS(status) : 55; // TODO handle unfinished process
 }
