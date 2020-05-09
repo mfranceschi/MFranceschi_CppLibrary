@@ -10,7 +10,7 @@
 #   include <Windows.h>
 using StreamItem = HANDLE;
 using ProcessItem = HANDLE;
-constexpr StreamItem StreamItemDefault = nullptr;
+constexpr StreamItem STREAM_ITEM_DEFAULT = nullptr;
 #else
 #   include <unistd.h>
 using FD_t = int;
@@ -77,7 +77,9 @@ public:
     void afterStart() override;
     void afterStop() override;
     StreamItem getStreamItem() const override;
+#if !defined(_WIN32)
     void closeOnFork() override;
+#endif
 protected:
     const File::SFilename_t& inputString;
     StreamItem readStream = STREAM_ITEM_DEFAULT;
@@ -90,7 +92,9 @@ public:
     void beforeStart() override;
     void afterStop() override;
     StreamItem getStreamItem() const override;
+#if !defined(_WIN32)
     void closeOnFork() override;
+#endif
 protected:
     const File::SFilename_t& filename;
     StreamItem fileStream = STREAM_ITEM_DEFAULT;
@@ -122,7 +126,9 @@ public:
     void beforeStart() override;
     void afterStop() override;
     StreamItem getStreamItem() const override;
+#if !defined(_WIN32)
     void closeOnFork() override;
+#endif
 
 protected:
     const File::SFilename_t& filename;
@@ -142,7 +148,9 @@ public:
     void afterStop() override;
     std::string retrieveOutput() override;
     StreamItem getStreamItem() const override;
+#if !defined(_WIN32)
     void closeOnFork() override;
+#endif
 protected:
     std::ostringstream oss;
     StreamItem readStream = STREAM_ITEM_DEFAULT;
@@ -179,7 +187,7 @@ protected:
 
 private:
     void internalOSCleanUp();
-    ProcessItem childProcessItem = static_cast<ProcessItem>(-1);
+    ProcessItem childProcessItem = (void*)(-1);
 };
 
 #endif //MFRANCESCHI_CPPLIBRARIES_COMMANDHELPER_HPP

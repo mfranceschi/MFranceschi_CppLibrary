@@ -26,3 +26,5 @@ endfunction()
 
 AddTestExec(OneForEachStream)
 AddTestExec(ReturnNbArgs)
+AddTestExec(LengthOfFirstArg)
+AddTestExec(LengthOfInput)

@@ -22,7 +22,7 @@ static constexpr unsigned int BUFFER_LENGTH = 4096;
 // /////////////////////// INPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-HANDLE ProcessInputStream_None::getHandle() const {
+StreamItem ProcessInputStream_None::getStreamItem() const {
     return GetStdHandle(STD_INPUT_HANDLE);
 }
 
@@ -32,8 +32,8 @@ void ProcessInputStream_String::beforeStart() {
             nullptr,
             true
     };
-    CreatePipe(&readPipeHandle, &writeToPipeHandle, &securityAttributes, BUFFER_LENGTH);
-    Windows_MakeHandleInheritable(readPipeHandle);
+    CreatePipe(&readStream, &writeToStream, &securityAttributes, BUFFER_LENGTH);
+    Windows_MakeHandleInheritable(readStream);
 }
 
 void ProcessInputStream_String::afterStart() {
@@ -42,21 +42,21 @@ void ProcessInputStream_String::afterStart() {
     temp.reserve(999);
     for (std::size_t i = 0; i < inputString.length(); i += 999) {
         temp = inputString.substr(i, 999);
-        WriteFile(writeToPipeHandle, temp.c_str(), 999, &lpWritten, nullptr);
+        WriteFile(writeToStream, temp.c_str(), 999, &lpWritten, nullptr);
     }
 }
 
 void ProcessInputStream_String::afterStop() {
-    CloseHandle(writeToPipeHandle);
-    CloseHandle(readPipeHandle);
+    CloseHandle(writeToStream);
+    CloseHandle(readStream);
 }
 
-HANDLE ProcessInputStream_String::getHandle() const {
-    return readPipeHandle;
+StreamItem ProcessInputStream_String::getStreamItem() const {
+    return readStream;
 }
 
 void ProcessInputStream_FromFile::beforeStart() {
-    fileHandle = CreateFile(
+    fileStream = CreateFile(
             filename.c_str(),
             FILE_GENERIC_READ,
             FILE_SHARE_READ,
@@ -67,28 +67,31 @@ void ProcessInputStream_FromFile::beforeStart() {
 }
 
 void ProcessInputStream_FromFile::afterStop() {
-    CloseHandle(fileHandle);
+    CloseHandle(fileStream);
 }
 
-HANDLE ProcessInputStream_FromFile::getHandle() const {
-    return fileHandle;
+StreamItem ProcessInputStream_FromFile::getStreamItem() const {
+    return fileStream;
 }
 
 // ///////////////////////////////////////////////////////////////
 // ////////////////////// OUTPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
 
-HANDLE ProcessOutputStream_Keep::getHandle() const {
+StreamItem ProcessOutputStream_Keep::getStreamItem() const {
     return GetStdHandle( STD_OUTPUT_HANDLE);
 }
 
-HANDLE ProcessErrorStream_Keep::getHandle() const {
+StreamItem ProcessErrorStream_Keep::getStreamItem() const {
     return GetStdHandle( STD_ERROR_HANDLE);
 }
 
+ProcessOutputStream_Kill::ProcessOutputStream_Kill() :
+    ProcessOutputStream_Export(false, TEXT("NUL")) {}
+
 void ProcessOutputStream_Kill::beforeStart() {
-    nulHandle = CreateFile(
-            TEXT("NUL"),
+    fileStream = CreateFile(
+            filename.c_str(),
             FILE_GENERIC_WRITE,
             FILE_SHARE_READ,
             &securityAttributesForInheritableHandles,
@@ -97,16 +100,8 @@ void ProcessOutputStream_Kill::beforeStart() {
             nullptr);
 }
 
-void ProcessOutputStream_Kill::afterStop() {
-    CloseHandle(nulHandle);
-}
-
-HANDLE ProcessOutputStream_Kill::getHandle() const {
-    return nulHandle;
-}
-
 void ProcessOutputStream_Export::beforeStart() {
-    fileHandle = CreateFile(
+    fileStream = CreateFile(
             filename.c_str(),
             FILE_GENERIC_WRITE,
             FILE_SHARE_READ,
@@ -116,16 +111,16 @@ void ProcessOutputStream_Export::beforeStart() {
             nullptr);
 
     if (APPEND) {
-        SetFilePointer(fileHandle, 0, nullptr, FILE_END);
+        SetFilePointer(fileStream, 0, nullptr, FILE_END);
     }
 }
 
 void ProcessOutputStream_Export::afterStop() {
-    CloseHandle(fileHandle);
+    CloseHandle(fileStream);
 }
 
-HANDLE ProcessOutputStream_Export::getHandle() const {
-    return fileHandle;
+StreamItem ProcessOutputStream_Export::getStreamItem() const {
+    return fileStream;
 }
 
 void ProcessOutputStream_Retrieve::beforeStart() {
@@ -135,16 +130,16 @@ void ProcessOutputStream_Retrieve::beforeStart() {
         nullptr,
         true
     };
-    CreatePipe(&readPipeHandle, &writeToPipeHandle, &securityAttributes, BUFFER_LENGTH);
-    Windows_MakeHandleInheritable(writeToPipeHandle);
-    SetNamedPipeHandleState(readPipeHandle, &dwMode, nullptr, nullptr);
+    CreatePipe(&readStream, &writeStream, &securityAttributes, BUFFER_LENGTH);
+    Windows_MakeHandleInheritable(writeStream);
+    SetNamedPipeHandleState(readStream, &dwMode, nullptr, nullptr);
 }
 
 void ProcessOutputStream_Retrieve::beforeStop() {
     DWORD dwRead;
     CHAR chBuf[BUFFER_LENGTH];
 
-    if (ReadFile(readPipeHandle, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
+    if (ReadFile(readStream, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
         chBuf[dwRead] = '\0';
         oss << chBuf;
     }
@@ -154,20 +149,20 @@ void ProcessOutputStream_Retrieve::afterStop() {
     DWORD dwRead;
     CHAR chBuf[BUFFER_LENGTH];
 
-    while (ReadFile(readPipeHandle, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
+    while (ReadFile(readStream, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
         chBuf[dwRead] = '\0';
         oss << chBuf;
     }
-    CloseHandle(writeToPipeHandle);
-    CloseHandle(readPipeHandle);
+    CloseHandle(writeStream);
+    CloseHandle(readStream);
 }
 
 std::string ProcessOutputStream_Retrieve::retrieveOutput() {
     return oss.str();
 }
 
-HANDLE ProcessOutputStream_Retrieve::getHandle() const {
-    return writeToPipeHandle;
+StreamItem ProcessOutputStream_Retrieve::getStreamItem() const {
+    return writeStream;
 }
 
 // ///////////////////////////////////////////////////////////////
@@ -176,13 +171,18 @@ HANDLE ProcessOutputStream_Retrieve::getHandle() const {
 
 void CommandRunner::internalStart() {
 // Define all parameters required by the CreateProcess function.
-    auto lpApplicationName = executable->c_str();
+    LPCTCH lpApplicationName = nullptr;
     TCHAR* lpCommandLine;
     {
         // Fill the "Command line" string
         File::OSStream_t osStream;
-        for (const auto& arg : *arguments) {
-            osStream << arg << " ";
+
+        osStream << executable->c_str();
+        if ( ! arguments->empty()) {
+            osStream << " ";
+            for (const auto &arg : *arguments) {
+                osStream << arg << " ";
+            }
         }
         auto streamOutput = osStream.str();
 
@@ -212,9 +212,9 @@ void CommandRunner::internalStart() {
         ZeroMemory(&startupinfo, sizeof(startupinfo));
         startupinfo.cb = sizeof(startupinfo);
         startupinfo.dwFlags |= STARTF_USESTDHANDLES;
-        startupinfo.hStdOutput = processOutputStream->getHandle();
-        startupinfo.hStdError = processErrorStream->getHandle();
-        startupinfo.hStdInput = processInputStream->getHandle();
+        startupinfo.hStdOutput = processOutputStream->getStreamItem();
+        startupinfo.hStdError = processErrorStream->getStreamItem();
+        startupinfo.hStdInput = processInputStream->getStreamItem();
         ZeroMemory(&processInformation, sizeof(processInformation));
         // By default, we have nothing in these structs
     }
@@ -238,19 +238,19 @@ void CommandRunner::internalStart() {
         // TODO remove later
     }
 
-    processHandle = processInformation.hProcess;
+    childProcessItem = processInformation.hProcess;
     CloseHandle(processInformation.hThread);
 }
 
 void CommandRunner::internalStop() {
-    Windows_WaitForProcess(processHandle);
+    Windows_WaitForProcess(childProcessItem);
 }
 
 int CommandRunner::internalGetStatusCode() {
-    return Windows_GetExitCodeCommand(processHandle);
+    return Windows_GetExitCodeCommand(childProcessItem);
 }
 
 void CommandRunner::internalOSCleanUp() {
-    CloseHandle(processHandle);
+    CloseHandle(childProcessItem);
 }
 #endif
