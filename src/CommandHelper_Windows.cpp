@@ -86,7 +86,7 @@ StreamItem ProcessErrorStream_Keep::getStreamItem() const {
     return GetStdHandle( STD_ERROR_HANDLE);
 }
 
-const File::Filename_t ProcessOutputStream_Kill::KILL_FILENAME = MAKE_FILE_NAME "NUL";
+File::Filename_t ProcessOutputStream_Kill::KILL_FILENAME = MAKE_FILE_NAME "NUL";
 
 void ProcessOutputStream_Kill::beforeStart() {
     fileStream = CreateFile(

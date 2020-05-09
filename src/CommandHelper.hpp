@@ -141,7 +141,7 @@ public:
     void beforeStart() override;
 
 private:
-    static const File::Filename_t KILL_FILENAME;
+    static File::Filename_t KILL_FILENAME;
 };
 
 class ProcessOutputStream_Retrieve : public ProcessOutputStream {
@@ -190,7 +190,7 @@ protected:
 
 private:
     void internalOSCleanUp();
-    ProcessItem childProcessItem = (void*)(-1);
+    ProcessItem childProcessItem = (ProcessItem)(-1);
 };
 
 #endif //MFRANCESCHI_CPPLIBRARIES_COMMANDHELPER_HPP

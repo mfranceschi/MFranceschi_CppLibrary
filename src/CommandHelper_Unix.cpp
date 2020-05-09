@@ -81,8 +81,7 @@ StreamItem ProcessErrorStream_Keep::getStreamItem() const {
     return STDERR_FILENO;
 }
 
-ProcessOutputStream_Kill::ProcessOutputStream_Kill() :
-    ProcessOutputStream_Export(false, "/dev/null") {}
+File::Filename_t ProcessOutputStream_Kill::KILL_FILENAME = "/dev/null";
 
 void ProcessOutputStream_Kill::beforeStart() {
     fileStream = open(filename.c_str(), O_WRONLY);
