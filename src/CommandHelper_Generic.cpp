@@ -34,6 +34,9 @@ std::string ProcessOutputStream::retrieveOutput() {
 ProcessOutputStream_Export::ProcessOutputStream_Export(bool append, const File::SFilename_t& filename)  :
         APPEND(append), filename(filename) {}
 
+ProcessOutputStream_Kill::ProcessOutputStream_Kill() :
+        ProcessOutputStream_Export(false, KILL_FILENAME) {}
+
 // ///////////////////////////////////////////////////////////////
 // ////////////////////// COMMAND RUNNER /////////////////////////
 // ///////////////////////////////////////////////////////////////

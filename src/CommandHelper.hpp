@@ -139,6 +139,9 @@ class ProcessOutputStream_Kill : public ProcessOutputStream_Export {
 public:
     ProcessOutputStream_Kill();
     void beforeStart() override;
+
+private:
+    static const File::Filename_t KILL_FILENAME;
 };
 
 class ProcessOutputStream_Retrieve : public ProcessOutputStream {

@@ -86,12 +86,11 @@ StreamItem ProcessErrorStream_Keep::getStreamItem() const {
     return GetStdHandle( STD_ERROR_HANDLE);
 }
 
-ProcessOutputStream_Kill::ProcessOutputStream_Kill() :
-    ProcessOutputStream_Export(false, TEXT("NUL")) {}
+const File::Filename_t ProcessOutputStream_Kill::KILL_FILENAME = MAKE_FILE_NAME "NUL";
 
 void ProcessOutputStream_Kill::beforeStart() {
     fileStream = CreateFile(
-            filename.c_str(),
+            KILL_FILENAME, // weirdly it does not work otherwise
             FILE_GENERIC_WRITE,
             FILE_SHARE_READ,
             &securityAttributesForInheritableHandles,

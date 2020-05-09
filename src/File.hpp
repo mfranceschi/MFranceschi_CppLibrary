@@ -49,8 +49,10 @@ namespace File
 
 #if defined(_WIN32)
 #   define FILE_SEPARATOR MAKE_FILE_NAME "\\"
+#   define LINE_END "\r\n"
 #else
 #   define FILE_SEPARATOR MAKE_FILE_NAME "/"
+#   define LINE_END "\n"
 #endif
 
 //////////////////////////////////////////////////////////////////  PUBLIC
