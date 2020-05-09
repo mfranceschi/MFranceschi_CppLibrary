@@ -133,9 +133,7 @@ void ProcessOutputStream_Retrieve::afterStop() {
 
         if (nbRead > 0) {
             oss << chBuf;
-        } else if (nbRead == -1) {
-            bContinue = false;
-        } else {
+        } else { // TODO handle case -1
             bContinue = false;
         }
     }
@@ -175,7 +173,7 @@ void CommandRunner::internalStart() {
                 if (current[0] == '\"' && current[current.size() - 1] == '\"') {
                     argv[i + 1] = current.substr(1, current.size() - 2).c_str();
                 } else {
-                    argv[i + 1] = (*arguments)[i].c_str();
+                    argv[i + 1] = current.c_str();
                 }
             }
             argv[arguments->size() + 1] = static_cast<char *>(nullptr);

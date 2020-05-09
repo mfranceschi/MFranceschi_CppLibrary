@@ -37,10 +37,6 @@ int main() {
         // child
         dup2(fd[1], STDOUT_FILENO);
 
-        /*
-         * Using "Exec VP" because I want the shell to find the executable according to usual rules,
-         * and I cannot use variadic functions because the number of arguments is only known at runtime.
-         */
         if (execlp(executable, executable, nullptr)) {
             cout << "sniff i could not execl" << endl;
         }
