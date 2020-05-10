@@ -13,6 +13,14 @@
 
 static constexpr unsigned int BUFFER_LENGTH = 4096;
 
+static inline int makePipe(int& read, int& write) {
+    int fd[2];
+    int pipeResult = pipe(fd);
+    read = fd[0];
+    write = fd[1];
+    return pipeResult;
+}
+
 // ///////////////////////////////////////////////////////////////
 // /////////////////////// INPUT STREAMS /////////////////////////
 // ///////////////////////////////////////////////////////////////
@@ -24,10 +32,7 @@ StreamItem ProcessInputStream_None::getStreamItem() const {
 }
 
 void ProcessInputStream_String::beforeStart() {
-    FD_t fd[2];
-    pipe(fd);
-    readStream = fd[0];
-    writeToStream = fd[1];
+    makePipe(readStream, writeToStream);
     fcntl(writeToStream, F_SETFD, FD_CLOEXEC);
 }
 
@@ -109,10 +114,7 @@ void ProcessOutputStream_Export::closeOnFork() {
 }
 
 void ProcessOutputStream_Retrieve::beforeStart() {
-    FD_t fd[2];
-    pipe(fd);
-    readStream = fd[0];
-    writeStream = fd[1];
+    makePipe(readStream, writeStream);
     fcntl(readStream, F_SETFD, FD_CLOEXEC);
     fcntl(readStream, F_SETFL, O_NONBLOCK);
     fcntl(writeStream, F_SETFL, O_NONBLOCK);

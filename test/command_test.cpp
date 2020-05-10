@@ -93,7 +93,7 @@ TEST_F(Commands, LengthOfFirstArg) {
 }
 
 TEST_F(Commands, LengthOfInput) {
-        GTEST_SKIP();
+        //GTEST_SKIP();
     commandCall.executable = LengthOfInput_Executable;
 
     commandCall.inputChoice = InputChoice::STRING;
