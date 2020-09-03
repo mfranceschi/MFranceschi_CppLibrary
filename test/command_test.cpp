@@ -41,7 +41,7 @@ TEST_F(Commands, HelloWorld_KilledOutput) {
 TEST_F(Commands, HelloWorld_RetrieveAllOutputs) {
     commandCall.executable = HelloWorld_Executable;
     commandCall.outputChoice = OutputChoice::RETRIEVE;
-    commandCall.errorChoice = ErrorChoice::RETRIEVE;
+    //commandCall.errorChoice = ErrorChoice::RETRIEVE;
     cc();
     EXPECT_EQ(0, commandReturn.returnCode);
     EXPECT_FALSE(commandReturn.outputText.empty());
