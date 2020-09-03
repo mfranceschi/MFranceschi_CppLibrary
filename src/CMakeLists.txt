@@ -1,23 +1,34 @@
-set(My_Sources
-        Command.cpp Command.hpp
-        Date.cpp Date.hpp
-        File.cpp File.hpp
-        FileOpen.cpp FileOpen.hpp
-        GeoCoord.cpp GeoCoord.hpp
-        Toolbox.cpp Toolbox.hpp
-        WindowsAPIHelper.cpp WindowsAPIHelper.hpp
-        UnixAPIHelper.cpp UnixAPIHelper.hpp
-        StringSafePlaceHolder.hpp
-        CommandHelper_Generic.cpp CommandHelper_Windows.cpp CommandHelper_Unix.cpp CommandHelper.hpp
-        Security.cpp Security.hpp
-        )
 
 if (MINGW)
     set_source_files_properties(WindowsAPIHelper.cpp PROPERTIES COMPILE_FLAGS "-Wformat=0 -Wno-sign-compare")
 endif()
 
 add_library(${MF_Lib_Libname} STATIC)
-target_sources(${MF_Lib_Libname} PRIVATE ${My_Sources})
+target_sources(${MF_Lib_Libname}
+        PRIVATE
+        Command.cpp
+        Date.cpp
+        File.cpp
+        FileOpen.cpp
+        GeoCoord.cpp
+        Toolbox.cpp
+        WindowsAPIHelper.cpp WindowsAPIHelper.hpp
+        UnixAPIHelper.cpp UnixAPIHelper.hpp
+        StringSafePlaceHolder.hpp
+        CommandHelper_Generic.cpp CommandHelper_Windows.cpp CommandHelper_Unix.cpp CommandHelper.hpp
+        Security.cpp
+
+        PUBLIC
+        Array.hpp
+        Command.hpp
+        Date.hpp
+        File.hpp
+        FileOpen.hpp
+        GeoCoord.hpp
+        Toolbox.hpp
+        Security.hpp
+        )
+target_include_directories(${MF_Lib_Libname} PUBLIC ../includes)
 
 if (MSVC)
     target_compile_options(${MF_Lib_Libname} PRIVATE /W3)
