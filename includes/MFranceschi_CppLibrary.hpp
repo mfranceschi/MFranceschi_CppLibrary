@@ -11,5 +11,6 @@
 #include "../src/FileOpen.hpp"
 #include "../src/GeoCoord.hpp"
 #include "../src/Toolbox.hpp"
+#include "../src/Array.hpp"
 
 #endif //MFRANCESCHI_CPPLIBRARIES_MFRANCESCHI_CPPLIBRARY_HPP
