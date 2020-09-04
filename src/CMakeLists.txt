@@ -6,8 +6,9 @@ endif()
 add_library(${MF_Lib_Libname} STATIC)
 target_sources(${MF_Lib_Libname}
         PRIVATE
-        Command.cpp
+        Command.cpp CommandHelper_Generic.cpp CommandHelper_Windows.cpp CommandHelper_Unix.cpp CommandHelper.hpp
         Date.cpp
+        DynamicLibrary.cpp
         File.cpp
         FileOpen.cpp
         GeoCoord.cpp
@@ -15,13 +16,13 @@ target_sources(${MF_Lib_Libname}
         WindowsAPIHelper.cpp WindowsAPIHelper.hpp
         UnixAPIHelper.cpp UnixAPIHelper.hpp
         StringSafePlaceHolder.hpp
-        CommandHelper_Generic.cpp CommandHelper_Windows.cpp CommandHelper_Unix.cpp CommandHelper.hpp
         Security.cpp
 
         PUBLIC
         Array.hpp
         Command.hpp
         Date.hpp
+        DynamicLibrary.hpp
         File.hpp
         FileOpen.hpp
         GeoCoord.hpp

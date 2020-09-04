@@ -5,12 +5,13 @@
 #ifndef MFRANCESCHI_CPPLIBRARIES_MFRANCESCHI_CPPLIBRARY_HPP
 #define MFRANCESCHI_CPPLIBRARIES_MFRANCESCHI_CPPLIBRARY_HPP
 
+#include "../src/Array.hpp"
 #include "../src/Command.hpp"
 #include "../src/Date.hpp"
+#include "../src/DynamicLibrary.hpp"
 #include "../src/File.hpp"
 #include "../src/FileOpen.hpp"
 #include "../src/GeoCoord.hpp"
 #include "../src/Toolbox.hpp"
-#include "../src/Array.hpp"
 
 #endif //MFRANCESCHI_CPPLIBRARIES_MFRANCESCHI_CPPLIBRARY_HPP
