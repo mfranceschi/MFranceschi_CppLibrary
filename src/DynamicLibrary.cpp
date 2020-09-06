@@ -21,37 +21,13 @@ const char* DynamicLibrary::LocalExtension = ".dll";
 const char* DynamicLibrary::LocalExtension = ".so";
 #endif
 
-void DynamicLibrary::Open(const std::string& libName) {
-    _LOCK_t lockGuard(_mutex);
-    if (IsOpen()) {
-        throw library_opened_exception ("The current instance is already opened.");
-    }
-
-#if defined(_WIN32)
-    std::unique_ptr<const wchar_t[]> wLibName(Windows_ConvertString(libName.c_str()));
-    HANDLE hFile = nullptr;
-    DWORD dwFlags = LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
-    _library = LoadLibraryExW(wLibName.get(), hFile, dwFlags);
-#else
-    library = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-#endif
-
-    if (IsOpen()) {
-        return; // We can add stuff there
-    }
-    else {
-        throw element_not_found_exception ("The requested library could not be found: " + libName);
-    }
-}
-
 void* DynamicLibrary::GetFunction(const std::string& functionName) {
-    _LOCK_t lockGuard(_mutex);
-    throwIfNotOpen();
+    LOCK_t lockGuard(_mutex);
 
     void* functionAddress;
 
 #if defined(_WIN32)
-    functionAddress = static_cast<void*>(GetProcAddress(_GetLibraryPointer, functionName.c_str()));
+    functionAddress = reinterpret_cast<void*>(GetProcAddress(_GetLibraryPointer, functionName.c_str()));
     if (functionAddress == nullptr) {
         throw element_not_found_exception ("Unable to find given function: " + functionName);
     }
@@ -59,29 +35,11 @@ void* DynamicLibrary::GetFunction(const std::string& functionName) {
     (void)dlerror(); // Clear any previous error.
     functionAddress = dlsym(library, functionName.c_str());
     if (dlerror()) {
+        // We must run this check because the "functionAddress" value may be null but still valid.
         throw element_not_found_exception ("Unable to find given function: " + functionName);
     }
 #endif
     return functionAddress;
-}
-
-void DynamicLibrary::Free() {
-    _LOCK_t lockGuard(_mutex);
-    throwIfNotOpen();
-
-    bool success;
-#if defined(_WIN32)
-    success = FreeLibrary(_GetLibraryPointer);
-#else
-    success = !dlclose(library);
-#endif
-
-    if (success) {
-        _library = nullptr;
-    }
-    else {
-        // TODO handle error
-    }
 }
 
 void DynamicLibrary::AddToSearchPaths(const std::string& path) {
@@ -107,17 +65,39 @@ void DynamicLibrary::AddToSearchPaths(const std::string& path) {
 }
 
 DynamicLibrary::~DynamicLibrary() {
-    if (IsOpen()) {
-        Free();
+    LOCK_t lockGuard(_mutex);
+
+    bool success;
+#if defined(_WIN32)
+    success = FreeLibrary(_GetLibraryPointer);
+#else
+    success = !dlclose(library);
+#endif
+
+    if (success) {
+        _library = nullptr;
+    }
+    else {
+        // TODO handle error
     }
 }
 
-void DynamicLibrary::throwIfNotOpen() const {
-    if (!IsOpen()) {
-        throw library_not_opened_exception("No library opened in current instance.");
-    }
-}
+DynamicLibrary::DynamicLibrary(const std::string &libName) {
+    LOCK_t lockGuard(_mutex);
 
-DynamicLibrary::DynamicLibrary(const std::string &libName) : DynamicLibrary() {
-    Open(libName);
+#if defined(_WIN32)
+    std::unique_ptr<const wchar_t[]> wLibName(Windows_ConvertString(libName.c_str()));
+    static constexpr HANDLE hFile = nullptr;
+    static constexpr DWORD dwFlags = LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
+    _library = LoadLibraryExW(wLibName.get(), hFile, dwFlags);
+#else
+    library = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+#endif
+
+    if (_library != nullptr) {
+        return; // We can add stuff there
+    }
+    else {
+        throw element_not_found_exception ("The requested library could not be found: " + libName);
+    }
 }

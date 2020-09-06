@@ -1,29 +1,36 @@
-//
-// Created by mfran on 04/09/2020.
-//
 
-#ifndef MFRANCESCHI_CPPLIBRARIES_DYNAMICLIBRARY_HPP
-#define MFRANCESCHI_CPPLIBRARIES_DYNAMICLIBRARY_HPP
+//---------- Interface of class <DynamicLibrary> (file DynamicLibrary.hpp) ----------------
+#if ! defined ( DYNAMIC_LIBRARY_H )
+#define DYNAMIC_LIBRARY_H
 
+//--------------------------------------------------------------- Includes
 #include <exception>
 #include <mutex>
 #include <string>
 
-class DynamicLibrary {
+//------------------------------------------------------------------ Types
+
+// Role of DynamicLibrary:
+// Wrapper for calls to a Dynamic Library.
+// An instance holds a system handle for a
+class DynamicLibrary
+{
+    //----------------------------------------------------------------- PUBLIC
 public:
     using element_not_found_exception = std::invalid_argument;
-    using library_not_opened_exception = std::logic_error;
-    using library_opened_exception = std::logic_error;
 
-    /** Has value ".dll" or ".so" depending on the OS. */
-    static const char* LocalExtension;
+    //------------------------------------------------------- Static utilities
+
+    static const char* LocalExtension; // Has value ".dll" or ".so" depending on the OS.
 
     /**
-     * Opens the given library by its name (relative or absolute path are allowed).
-     * Throws a "library_opened_exception" if "IsOpen()".
-     * Throws an "element_not_found_exception" if the library could not be found.
+     * Adds the given path to the list of paths which the system uses to find the library.
+     * No-op if "path.length() < 2".
+     * No return value nor error.
      */
-    void Open(const std::string& libName);
+    static void AddToSearchPaths(const std::string& path);
+
+    //--------------------------------------------------------- Public methods
 
     /**
      * Returns a function pointer to the procedure requested in "functionName".
@@ -36,52 +43,69 @@ public:
     /**
      * Casts the result of "GetFunction".
      */
-    template <typename R, typename ... A>
-    R (*GetFunctionT(const std::string& functionName)) (A...) {
-        return static_cast<R(*)(A...)>(GetFunction(functionName));
+    template <typename FuncType>
+    FuncType operator[](const std::string& functionName) {
+        return reinterpret_cast<FuncType>(GetFunction(functionName));
     }
 
     /**
-     * Returns true if the current instance is associated with a currently opened library.
+     * Gets the underlying system item.
      */
-    bool IsOpen() const noexcept { return _library; }
+    inline void* GetSystemItem() const noexcept;
 
-    /**
-     * Releases all resources used by the library.
-     * Throws a "library_not_opened_exception" if not "IsOpen()".
-     */
-    void Free();
+    //-------------------------------------------------- Operator overloadings
 
-    /**
-     * Adds the given path to the list of paths which the system uses to find the library.
-     * No-op if "path.length() < 2".
-     * No return value nor error.
-     */
-    static void AddToSearchPaths(const std::string& path);
+    // Comparison operators.
+    inline bool operator== (const DynamicLibrary& b) const;
+    inline bool operator!= (const DynamicLibrary& b) const;
 
-    /**
-     * Creates an empty instance.
-     */
-    DynamicLibrary() = default;
+    // Assignation (deleted)
+    DynamicLibrary& operator=(const DynamicLibrary&) = delete;
+    DynamicLibrary& operator=(DynamicLibrary&&) = delete;
 
+//---------------------------------------------- Constructors - destructor
+
+    // Unique constructor
     /**
-     * Creates an instance with "libName" sent to "Open(libName)". Same exceptions...
+     * Opens the given library by its name (relative or absolute path are allowed).
+     * Throws an "element_not_found_exception" if the library could not be found.
      */
     explicit DynamicLibrary(const std::string& libName);
 
-    /**
-     * Calls "Free()" if necessary.
-     */
-    ~DynamicLibrary();
+    // Deleted constructors
+    DynamicLibrary() = delete;
+    DynamicLibrary(const DynamicLibrary&) = delete;
+    DynamicLibrary(DynamicLibrary&&) = delete;
+
+    // Destructor. Frees the resource.
+    virtual ~DynamicLibrary();
+
+//---------------------------------------------------------------- PRIVATE
 
 protected:
-    using _mutex_t = std::mutex;
-    using _LOCK_t = std::lock_guard<_mutex_t>;
-    void throwIfNotOpen() const; // Helper function.
+    using MUTEX_t = std::mutex;
+    using LOCK_t = std::lock_guard<MUTEX_t>;
+
+//------------------------------------------------------ Protected methods
+
+//--------------------------------------------------- Protected attributes
 
     void* _library = nullptr; // Handle of the library. UNIX uses "void*", Win32 uses a HMODULE which is similar enough.
-    _mutex_t _mutex; // For thread-safety.
+    MUTEX_t _mutex; // For thread-safety.
+
 };
 
+//------------------------------------------------------ Other definitions
 
-#endif //MFRANCESCHI_CPPLIBRARIES_DYNAMICLIBRARY_HPP
+inline bool DynamicLibrary::operator== (const DynamicLibrary& b) const {
+    return _library == b._library;
+}
+inline bool DynamicLibrary::operator!= (const DynamicLibrary& b) const {
+    return ! this->operator==(b);
+}
+
+inline void* DynamicLibrary::GetSystemItem() const noexcept {
+    return _library;
+}
+
+#endif //DYNAMIC_LIBRARY_H
