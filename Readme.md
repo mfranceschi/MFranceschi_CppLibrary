@@ -19,6 +19,7 @@ target_link_libraries(YourProjectName PUBLIC ${MF_Lib_Libname})
 To include stuff, just use the header file inside the `includes/` directory.
 
 ## Modules
+- __"Array"__: re-implementation of `std::array` from the STL but with everything `constexpr`.
 - __"Command"__: **NOT FINISHED YET** highly-customizable shell command executor, and many more (PowerShell script call, output redirections, call a function when script is over...). Some settings require threads, if threads are not available then these functions are without effect.
 - __"CSVParser"__: **NOT FINISHED YET** simple tool to get a whole CSV file into a standard library container.
 - __"Date"__: **NOT FINISHED YET** extends the `struct tm` from the C standard library with milliseconds, and overloads some operators such as comparison, +, -, etc.
