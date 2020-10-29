@@ -94,10 +94,7 @@ namespace detail {
 }
 
 template<typename T, std::size_t N>
-class Array {
-protected:
-    T _array[N];
-public:
+struct Array {
 
     // ----- MEMBER TYPES ----- //
     using value_type = T;
@@ -162,6 +159,7 @@ public:
         // TODO
     }
 
+    T _array[N];
 };
 
 // ----- NON-MEMBER FUNCTIONS ----- //

@@ -77,14 +77,19 @@ namespace Toolbox
         using std::cout;
         using std::endl;
 
+#ifdef NDEBUG
         if (!condition) {
             cout << "Fatal failure. ";
             if (message) {
                 cout << "Details: " << message;
             }
             cout << endl;
-            exit(EXIT_FAILURE);
+            std::abort();
         }
+#else
+        (void)condition;
+        (void)message;
+#endif
 	}
 
 	void Win_CheckForMemoryLeaks(const std::function<void()>& func, size_t iterations) {

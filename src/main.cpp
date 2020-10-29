@@ -4,10 +4,10 @@
 
 #include <iostream>
 #include <MFranceschi_CppLibrary.hpp>
-#include <unistd.h>
-#include <fcntl.h>
+// #include <unistd.h>
+// #include <fcntl.h>
 #include <cassert>
-#include <sys/wait.h>
+//#include <sys/wait.h>
 
 using namespace std;
 
@@ -26,7 +26,7 @@ int main() {
     Toolbox::PressAnyKeyToContinue();
     */
 
-    const char* executable = "pwd";
+    /*const char* executable = "pwd";
     int fd[2];
     pipe(fd);
     fcntl(fd[0], F_SETFD, FD_CLOEXEC);
@@ -75,6 +75,6 @@ int main() {
             cout << "Errno for close fd 1: " << errno << endl;
         }
 
-    }
+    }*/
     return EXIT_SUCCESS;
 }

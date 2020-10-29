@@ -80,6 +80,9 @@ namespace Toolbox
 	inline void PressAnyKeyToContinue();
 
 	// Like normal <cassert> assertion, but displays a more pretty (and optional) message on failure.
+	// It may always evaluates the condition.
+	// No abort nor output if "NDEBUG" macro is defined.
+	// Unfortunately, it does not print the __FILE__ and __LINE__ information.
 	void PrettyAssertion(bool condition, const char* message = nullptr);
 
 	// Runs the given code "iterations" times and dumps the memory leaks if there are some in the debug output.

@@ -12,7 +12,7 @@
 
 // Role of DynamicLibrary:
 // Wrapper for calls to a Dynamic Library.
-// An instance holds a system handle for a
+// An instance holds a valid system handle for one specific shared library object.
 class DynamicLibrary
 {
     //----------------------------------------------------------------- PUBLIC
