@@ -25,7 +25,7 @@ endif()
 
 set(MF_Lib_Libname MFranceschi_CppLibrary)
 
-include_directories(includes)
+include_directories(include)
 add_subdirectory(src)
 
 if (NOT MF_Lib_RemoveTests)

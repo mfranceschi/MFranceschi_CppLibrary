@@ -5,8 +5,8 @@
 #if Threads_FOUND
 #   include <thread>
 #endif
-#include "File.hpp"
-#include "Command.hpp"
+#include "MF/File.hpp"
+#include "MF/Command.hpp"
 #include "CommandHelper.hpp"
 
 // PUBLIC DEFINITIONS

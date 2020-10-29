@@ -6,9 +6,9 @@
 #define MYWORKS_TEST0_WINDOWSAPIHELPER_HPP
 
 #include <string>
-#include "File.hpp"
-#include "FileOpen.hpp"
-#include "Command.hpp"
+#include "MF/File.hpp"
+#include "MF/FileOpen.hpp"
+#include "MF/Command.hpp"
 
 /**
  * Displays a message box with the error explanation, then terminates the program.

@@ -12,7 +12,7 @@
 #   include <signal.h>
 #endif
 
-#include "DynamicLibrary.hpp"
+#include "MF/DynamicLibrary.hpp"
 
 #if defined(_WIN32)
 const char* DynamicLibrary::LocalExtension = ".dll";

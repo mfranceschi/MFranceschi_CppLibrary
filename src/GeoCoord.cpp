@@ -7,7 +7,7 @@
 #include <cstring>
 #include <cstdlib>
 
-#include "GeoCoord.hpp"
+#include "MF/GeoCoord.hpp"
 
 double GeoCoord::DistanceFrom(const GeoCoord &other, double radius) {
     double distance_angular = std::acos(

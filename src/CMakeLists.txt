@@ -19,17 +19,17 @@ target_sources(${MF_Lib_Libname}
         Security.cpp
 
         PUBLIC
-        Array.hpp
-        Command.hpp
-        Date.hpp
-        DynamicLibrary.hpp
-        File.hpp
-        FileOpen.hpp
-        GeoCoord.hpp
-        Toolbox.hpp
-        Security.hpp
+        ../include/MF/Array.hpp
+        ../include/MF/Command.hpp
+        ../include/MF/Date.hpp
+        ../include/MF/DynamicLibrary.hpp
+        ../include/MF/File.hpp
+        ../include/MF/FileOpen.hpp
+        ../include/MF/GeoCoord.hpp
+        ../include/MF/Toolbox.hpp
+        ../include/MF/Security.hpp
         )
-target_include_directories(${MF_Lib_Libname} PUBLIC ../includes)
+target_include_directories(${MF_Lib_Libname} PUBLIC ../include)
 
 if (MSVC)
     target_compile_options(${MF_Lib_Libname} PRIVATE /W3)
