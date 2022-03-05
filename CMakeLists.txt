@@ -36,3 +36,11 @@ endif()
 
 add_subdirectory(Commons)
 add_subdirectory(Filesystem)
+
+add_library(MF_ALL INTERFACE)
+target_link_libraries(
+        MF_ALL
+        INTERFACE
+            MF_Commons
+            MF_Filesystem
+)
