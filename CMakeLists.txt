@@ -4,6 +4,7 @@ project(MFranceschi_CppLibraries
 
 set(CMAKE_CXX_STANDARD 14)
 
+# ----- GET THE THREADS LIBRARY ----- #
 if (NOT Threads_FOUND)
     if (MINGW AND NOT MF_Lib_ForceUseThreads)
         # The user does not want to force the use of a threading library.
@@ -19,11 +20,14 @@ add_compile_definitions(
         # I_Want_Mem_Leaks=1
 )
 
+# ----- WINDOWS UNICODE ----- #
 if (MF_Lib_WantUnicode OR UNICODE)
     add_compile_definitions(UNICODE=1)
 endif()
 
 set(MF_Lib_Libname MFranceschi_CppLibrary)
+
+add_subdirectory(Filesystem)
 
 include_directories(include)
 add_subdirectory(src)
