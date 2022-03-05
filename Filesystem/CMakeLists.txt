@@ -19,3 +19,5 @@ target_sources(
             ${local_INCLUDE_DIR}/MF/File.hpp
             ${local_INCLUDE_DIR}/MF/FileOpen.hpp
 )
+
+add_subdirectory(tests)
