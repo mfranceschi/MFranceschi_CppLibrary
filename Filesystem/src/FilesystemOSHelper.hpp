@@ -8,24 +8,37 @@
 #include "MF/Filesystem.hpp"
 
 namespace MF {
-    namespace File {
-        bool osDeleteFile(File::Filename_t filename);
+    namespace Filesystem {
+        bool osDeleteFile(Filename_t filename);
 
-        bool osDeleteFileOrDirectory(File::Filename_t filename);
+        bool osDeleteFileOrDirectory(Filename_t filename);
 
-        bool osFileExists(File::Filename_t filename);
+        bool osFileExists(Filename_t filename);
 
-        bool osDirectoryExists(File::Filename_t filename);
+        bool osDirectoryExists(Filename_t filename);
 
-        int osReadFileToBuffer(File::Filename_t filename, char *buffer, File::Filesize_t bufferSize);
+        int osReadFileToBuffer(Filename_t filename, char *buffer, Filesize_t bufferSize);
 
-        Filesize_t osGetFileSize(File::Filename_t filename);
+        Filesize_t osGetFileSize(Filename_t filename);
 
-        bool osCreateDirectory(File::Filename_t directoryName);
+        bool osCreateDirectory(Filename_t directoryName);
 
         SFilename_t osGetCWD();
 
-        void osGetDirectoryContents(File::Filename_t directoryName, std::vector<File::SFilename_t> &result);
+        void osGetDirectoryContents(Filename_t directoryName, std::vector<SFilename_t> &result);
+
+        /**
+         * Opens the given file and returns a pointer to a ReadFileData structure.
+         * @param filename Name of the file to open.
+         * @return A new structure, or nullptr if anything failed.
+         */
+        const ReadFileData *osOpenFile(Filename_t filename);
+
+        /**
+         * Releases the memory associated with the file opened there.
+         * @param readFileData A Windows ReadFileData to close ; its memory will also be freed.
+         */
+        void osCloseReadFileData(const ReadFileData *readFileData);
     }
 }
 

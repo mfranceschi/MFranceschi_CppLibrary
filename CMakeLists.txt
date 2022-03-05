@@ -36,6 +36,7 @@ endif()
 
 add_subdirectory(Commons)
 add_subdirectory(Filesystem)
+add_subdirectory(Windows)
 
 add_library(MF_ALL INTERFACE)
 target_link_libraries(

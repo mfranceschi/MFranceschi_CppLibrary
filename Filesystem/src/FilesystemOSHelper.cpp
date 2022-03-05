@@ -2,6 +2,8 @@
 // Created by MartinF on 05/03/2022.
 //
 
+#include <cassert>
+
 #include "FilesystemOSHelper.hpp"
 
 #if MF_OS_IS_WINDOWS
@@ -15,8 +17,8 @@
 #endif
 
 namespace MF {
-    namespace File {
-        bool osDeleteFile(File::Filename_t filename) {
+    namespace Filesystem {
+        bool osDeleteFile(Filename_t filename) {
 #if MF_OS_IS_WINDOWS
             return DeleteFile(filename);
 #else
@@ -24,7 +26,7 @@ namespace MF {
 #endif
         }
 
-        bool osDeleteFileOrDirectory(File::Filename_t name) {
+        bool osDeleteFileOrDirectory(Filename_t name) {
 #if MF_OS_IS_WINDOWS
             return DeleteFile(name) ? true : RemoveDirectory(name);
 #else
@@ -32,7 +34,7 @@ namespace MF {
 #endif
         }
 
-        bool osFileExists(File::Filename_t filename) {
+        bool osFileExists(Filename_t filename) {
 #if MF_OS_IS_WINDOWS
             DWORD attr = GetFileAttributes(filename);
             return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
@@ -42,7 +44,7 @@ namespace MF {
 #endif
         }
 
-        bool osDirectoryExists(File::Filename_t filename) {
+        bool osDirectoryExists(Filename_t filename) {
 #if MF_OS_IS_WINDOWS
             DWORD attr = GetFileAttributes(filename);
             return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
@@ -52,7 +54,7 @@ namespace MF {
 #endif
         }
 
-        int osReadFileToBuffer(File::Filename_t filename, char *buffer, File::Filesize_t bufferSize) {
+        int osReadFileToBuffer(Filename_t filename, char *buffer, Filesize_t bufferSize) {
 #if MF_OS_IS_WINDOWS
             HANDLE fileHandle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
                                            FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -77,7 +79,7 @@ namespace MF {
 #endif
         }
 
-        Filesize_t osGetFileSize(File::Filename_t filename) {
+        Filesize_t osGetFileSize(Filename_t filename) {
 #if MF_OS_IS_WINDOWS
             HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
                                      FILE_ATTRIBUTE_NORMAL,
@@ -86,7 +88,7 @@ namespace MF {
             LARGE_INTEGER res;
             GetFileSizeEx(file, &res);
             CloseHandle(file);
-            return static_cast<File::Filesize_t>(res.QuadPart);
+            return static_cast<Filesize_t>(res.QuadPart);
 #else
             struct stat t{};
             if (stat(filename, &t)) return 0;
@@ -94,7 +96,7 @@ namespace MF {
 #endif
         }
 
-        bool osCreateDirectory(File::Filename_t directoryName) {
+        bool osCreateDirectory(Filename_t directoryName) {
 #if MF_OS_IS_WINDOWS
             return CreateDirectory(directoryName, nullptr);
 #else
@@ -108,7 +110,7 @@ namespace MF {
             auto lpBuffer = static_cast<LPTSTR>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY,
                                                           nBufferLength * sizeof(TCHAR)));
             GetCurrentDirectory(nBufferLength, lpBuffer);
-            File::SFilename_t returnValue(lpBuffer);
+            SFilename_t returnValue(lpBuffer);
             HeapFree(GetProcessHeap(), 0, lpBuffer);
             return returnValue;
 #else
@@ -126,14 +128,14 @@ namespace MF {
 
         }
 
-        void osGetDirectoryContents(File::Filename_t directoryName, std::vector<File::SFilename_t> &result) {
+        void osGetDirectoryContents(Filename_t directoryName, std::vector<SFilename_t> &result) {
 #if MF_OS_IS_WINDOWS
-            File::SFilename_t tempFilename;
-            static File::Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
-            static File::Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
+            SFilename_t tempFilename;
+            static Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
+            static Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
             WIN32_FIND_DATA wfd;
             HANDLE hFind;
-            File::SFilename_t tempFolderName = directoryName;
+            SFilename_t tempFolderName = directoryName;
             tempFolderName += MAKE_FILE_NAME "*";
             hFind = FindFirstFile(tempFolderName.c_str(), &wfd);
             if (hFind != INVALID_HANDLE_VALUE) {
@@ -156,8 +158,8 @@ namespace MF {
             }
 #else
             File::SFilename_t tempFilename;
-            static File::Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
-            static File::Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
+            static Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
+            static Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
             DIR * d;
             dirent * dir_entry;
             d = opendir(directoryName);
@@ -173,6 +175,93 @@ namespace MF {
                 }
                 closedir(d);
             }
+#endif
+        }
+
+#if MF_OS_IS_WINDOWS
+        struct Windows_ReadFileData : public ReadFileData {
+            HANDLE fileHandle = nullptr;
+            HANDLE mappingHandle = nullptr;
+        };
+        using osReadFileData_t = Windows_ReadFileData;
+#else
+        struct Unix_ReadFileData : public File::ReadFileData {
+            int fd = -1;
+        };
+        using osReadFileData_t = Unix_ReadFileData;
+#endif
+
+        const ReadFileData *osOpenFile(Filename_t filename) {
+#if MF_OS_IS_WINDOWS
+            auto rfd = static_cast<Windows_ReadFileData *>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY,
+                                                                     sizeof(Windows_ReadFileData)));
+            rfd->size = osGetFileSize(filename);
+            if (rfd->size == 0) {
+                HeapFree(GetProcessHeap(), 0, rfd);
+                return nullptr;
+            }
+
+            rfd->fileHandle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+                                         FILE_ATTRIBUTE_NORMAL, nullptr);
+            if (rfd->fileHandle == INVALID_HANDLE_VALUE) {
+                HeapFree(GetProcessHeap(), 0, rfd);
+                return nullptr;
+            }
+
+            rfd->mappingHandle = CreateFileMapping(rfd->fileHandle, nullptr, PAGE_READONLY, 0, 0, nullptr);
+            if (rfd->mappingHandle == nullptr || GetLastError() == ERROR_ALREADY_EXISTS) {
+                CloseHandle(rfd->fileHandle);
+                HeapFree(GetProcessHeap(), 0, rfd);
+                return nullptr;
+            }
+
+            rfd->contents = (const char *) MapViewOfFile(rfd->mappingHandle, FILE_MAP_READ, 0, 0, 0);
+            if (rfd->contents == nullptr) {
+                CloseHandle(rfd->mappingHandle);
+                CloseHandle(rfd->fileHandle);
+                HeapFree(GetProcessHeap(), 0, rfd);
+                return nullptr;
+            }
+
+            return rfd;
+#else
+            auto rfd = new Unix_ReadFileData;
+
+            if ((rfd->fd = open(filename, O_RDONLY)) == -1) {
+                delete rfd;
+                return nullptr;
+            }
+
+            struct stat st;
+            if (fstat(rfd->fd, &st) == 0) {
+                rfd->size = st.st_size;
+            } else {
+                delete rfd;
+                return nullptr;
+            }
+
+            rfd->contents = (const char*)mmap(nullptr, rfd->size, PROT_READ, MAP_PRIVATE, rfd->fd, 0);
+            if (rfd->contents == MAP_FAILED) {
+                delete rfd;
+                return nullptr;
+            }
+
+            return rfd;
+#endif
+        }
+
+        void osCloseReadFileData(const ReadFileData *readFileData1) {
+            const auto *readFileData = static_cast<const osReadFileData_t *>(readFileData1);
+            assert(readFileData);
+
+#if MF_OS_IS_WINDOWS
+            UnmapViewOfFile(readFileData->contents);
+            CloseHandle(readFileData->mappingHandle);
+            CloseHandle(readFileData->fileHandle);
+            HeapFree(GetProcessHeap(), 0, (void *) readFileData);
+#else
+            close(readFileData->fd);
+            delete readFileData;
 #endif
         }
 

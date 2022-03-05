@@ -38,7 +38,7 @@ using Soss_t = std::ostringstream;
 #endif
 
 namespace MF {
-    namespace File {
+    namespace Filesystem {
 /////////////////////////////////////////////////////////////////  PRIVATE
 
 //------------------------------------------------------------------ Types
@@ -60,7 +60,7 @@ namespace MF {
 
         SFilename_t MakeFilename(bool absolute, bool isDirectory, int number, ...) {
             (void) (absolute);
-            using ArgumentsType = File::Filename_t;
+            using ArgumentsType = Filename_t;
             Soss_t oss;
             va_list argsList;
             va_start(argsList, number);
@@ -118,7 +118,7 @@ namespace MF {
                   Encoding_t encoding) {
             ifs.close();
             if (encoding == Encoding_e::ENC_ERROR)
-                encoding = File::Encoding(filename);
+                encoding = Encoding(filename);
 
             if (encoding == Encoding_e::ENC_UTF8) {
                 ifs.open(filename);
@@ -147,7 +147,7 @@ namespace MF {
             int readResult = osReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
 
             if (readResult != NBR_BITS_TO_READ_ENCODING) {
-                forReturn = File::Encoding_e::ENC_ERROR;
+                forReturn = Encoding_e::ENC_ERROR;
             } else if (bits[0] == '\xff' && bits[1] == '\xfe') {
                 forReturn = Encoding_e::ENC_UTF16LE;
             } else if (bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf') {
@@ -184,8 +184,8 @@ namespace MF {
             return osGetCWD();
         }
 
-        std::vector<File::SFilename_t> FilesInDirectory(Filename_t folder) {
-            std::vector<File::SFilename_t> result;
+        std::vector<SFilename_t> FilesInDirectory(Filename_t folder) {
+            std::vector<SFilename_t> result;
             osGetDirectoryContents(folder, result);
             return result;
         }

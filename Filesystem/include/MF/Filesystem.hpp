@@ -8,7 +8,7 @@
  */
 
 //---------- Interface of module <File> (file File.h) 
-#if ! defined ( FILE_H )
+#if !defined ( FILE_H )
 #define FILE_H
 
 //--------------------------------------------------------------- Includes
@@ -17,7 +17,7 @@
 #include <vector>
 
 namespace MF {
-    namespace File {
+    namespace Filesystem {
         // Represents a file encoding.
         // It is an implementation detail that may change. Please use "..._t" instead.
         enum class Encoding_e {
@@ -135,7 +135,38 @@ namespace MF {
          * @param folder Name or path to the folder. It must end with a PATH_SEPARATOR character.
          * @return List of files and directories names, or empty vector if anything failed.
          */
-        std::vector<File::SFilename_t> FilesInDirectory(Filename_t folder);
+        std::vector<SFilename_t> FilesInDirectory(Filename_t folder);
+
+        /// Data structure used to store information about files opened with Open.
+        struct ReadFileData {
+            const char *contents = nullptr;
+            Filesize_t size = 0ul;
+
+            virtual ~ReadFileData() = default; // For polymorphic reasons.
+        };
+
+        /**
+         * Stores the entire contents of file "filename" in a read-only C-string.
+         * Also, that C-string does not end with '\0'.
+         * It is advised to use an "InCharArrayStream".
+         * To clean up memory, please call "Read_Close" with the structure returned from there.
+         * The structure must remain a pointer (in reality, it is an instance of a subclass of ReadFileData).
+         * The purpose of this function is to offer the fastest way to read an entire file.
+         * @param filename Name of the file to open.
+         * @return "nullptr" if anything failed or the file is empty, or a new structure.
+         */
+        const ReadFileData *Read(Filename_t filename);
+
+        /// Please use this simple tool to clean up any memory associated with something returned by "Read".
+        void Read_Close(const ReadFileData *content);
+
+        /**
+         * Wrapper function: fills a C++ string with the whole file contents, internally using the Read function.
+         * @param filename Name of the file to read.
+         * @param string A string with the whole contents of the file, not modified if an error occurred.
+         * @return True on success, false on error.
+         */
+        bool ReadToString(Filename_t filename, std::string &string);
     }
 
 //------------------------------------------------------ Other definitions

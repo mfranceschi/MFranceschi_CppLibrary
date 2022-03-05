@@ -2,38 +2,26 @@
 // Created by mfran on 24/04/2020.
 //
 
-#include "MF/FileOpen.hpp"
+#include "MF/Filesystem.hpp"
 
-#if defined(_WIN32)
-#   include "WindowsAPIHelper.hpp"
-#else
-#   include "UnixAPIHelper.hpp"
-#endif
+#include "FilesystemOSHelper.hpp"
 
 namespace MF {
-    namespace File {
+    namespace Filesystem {
         const ReadFileData *Read(Filename_t filename) {
-#ifdef _WIN32
-            return Windows_OpenFile(filename);
-#else
-            return Unix_OpenFile(filename);
-#endif
+            return osOpenFile(filename);
         }
 
         void Read_Close(const ReadFileData *content) {
-#if defined(_WIN32)
-            return Windows_CloseReadFileData(content);
-#else
-            return Unix_CloseReadFileData(content);
-#endif
+            return osCloseReadFileData(content);
         }
 
         bool ReadToString(Filename_t filename, std::string &string) {
-            auto fileContents = File::Read(filename);
+            auto fileContents = Read(filename);
             if (fileContents) {
                 const char *contents = fileContents->contents;
                 string.assign(contents, fileContents->size);
-                File::Read_Close(fileContents);
+                Read_Close(fileContents);
                 return true;
             } else {
                 return false;

@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "MF/Filesystem.hpp"
-#include "MF/FileOpen.hpp"
 #include "tests_data.hpp"
 
 #if defined(UNICODE)
@@ -25,7 +24,7 @@
 // First settings : file names, (Win) memory leaks check.
 #if 1
 
-namespace File = MF::File;
+namespace File = MF::Filesystem;
 
 const File::SFilename_t FILENAME_MIDDLE_SIZE = File::MakeFilename(false, false, 2, TEST_FILES_DIR_PREFIX,
                                                                   MIDDLE_SIZE_RAW);
@@ -259,7 +258,7 @@ TEST(Delete, Unexisting) {
 
 TEST(Read, ManyReads) {
     File::SFilename_t file = fid_middle_size.name;
-    constexpr long iterations = 1e3l; // A thousand times (100ms approx).
+    constexpr long iterations = 1e1l; // A thousand times (100ms approx).
     for (long i = 0; i < iterations; ++i) {
         auto filedata = File::Read(file.c_str());
         ASSERT_NE(filedata, nullptr) << "Failed to OPEN at iteration " << i;
@@ -295,6 +294,6 @@ TEST(FilesInDirectory, UsualTest) {
 #endif
 
 TEST(GetCwd, itWorks) {
-    MF::File::SFilename_t cwd = File::GetCWD();
+    File::SFilename_t cwd = File::GetCWD();
     ASSERT_FALSE(cwd.empty());
 }
