@@ -15,6 +15,7 @@
 #   include <crtdbg.h>
 #endif
 
-#define ASSERT_LIST_CONTAINS(container, item) ASSERT_TRUE(std::find(container.cbegin(), container.cend(), item) != container.cend())
+#define ASSERT_LIST_CONTAINS(container, item) ASSERT_TRUE(std::find(container.cbegin(), container.cend(), item) != container.cend()) << "Container does not contain '" << #item << "'"
+#define EXPECT_LIST_CONTAINS(container, item) EXPECT_TRUE(std::find(container.cbegin(), container.cend(), item) != container.cend()) << "Container does not contain '" << #item << "'"
 
 #endif //MYWORKS_TEST0_TESTS_DATAS_HPP
