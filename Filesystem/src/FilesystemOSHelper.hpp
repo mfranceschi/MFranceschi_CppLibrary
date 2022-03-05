@@ -27,18 +27,7 @@ namespace MF {
 
         void osGetDirectoryContents(Filename_t directoryName, std::vector<SFilename_t> &result);
 
-        /**
-         * Opens the given file and returns a pointer to a ReadFileData structure.
-         * @param filename Name of the file to open.
-         * @return A new structure, or nullptr if anything failed.
-         */
-        const ReadFileData *osOpenFile(Filename_t filename);
-
-        /**
-         * Releases the memory associated with the file opened there.
-         * @param readFileData A Windows ReadFileData to close ; its memory will also be freed.
-         */
-        void osCloseReadFileData(const ReadFileData *readFileData);
+        std::unique_ptr<const ReadFileData> osOpenFile(Filename_t filename);
     }
 }
 

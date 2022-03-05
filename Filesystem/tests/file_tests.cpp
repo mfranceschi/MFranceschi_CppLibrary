@@ -258,11 +258,11 @@ TEST(Delete, Unexisting) {
 
 TEST(Read, ManyReads) {
     File::SFilename_t file = fid_middle_size.name;
-    constexpr long iterations = 1e1l; // A thousand times (100ms approx).
+    constexpr long iterations = 1e3l; // A thousand times (100ms approx).
     for (long i = 0; i < iterations; ++i) {
         auto filedata = File::Read(file.c_str());
         ASSERT_NE(filedata, nullptr) << "Failed to OPEN at iteration " << i;
-        File::Read_Close(filedata);
+        // File::Read_Close(filedata);
     }
 }
 

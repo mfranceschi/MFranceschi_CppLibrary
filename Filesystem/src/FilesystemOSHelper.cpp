@@ -179,10 +179,20 @@ namespace MF {
         }
 
 #if MF_OS_IS_WINDOWS
-        struct Windows_ReadFileData : public ReadFileData {
+
+        struct Windows_ReadFileData_Dummy : public ReadFileData {
             HANDLE fileHandle = nullptr;
             HANDLE mappingHandle = nullptr;
         };
+
+        struct Windows_ReadFileData : public Windows_ReadFileData_Dummy {
+            ~Windows_ReadFileData() override {
+                UnmapViewOfFile(contents);
+                CloseHandle(mappingHandle);
+                CloseHandle(fileHandle);
+            }
+        };
+
         using osReadFileData_t = Windows_ReadFileData;
 #else
         struct Unix_ReadFileData : public File::ReadFileData {
@@ -191,27 +201,24 @@ namespace MF {
         using osReadFileData_t = Unix_ReadFileData;
 #endif
 
-        const ReadFileData *osOpenFile(Filename_t filename) {
+        std::unique_ptr<const ReadFileData> osOpenFile(Filename_t filename) {
 #if MF_OS_IS_WINDOWS
-            auto rfd = new Windows_ReadFileData;
+            auto rfd = std::make_unique<Windows_ReadFileData_Dummy>();
 
             rfd->size = osGetFileSize(filename);
             if (rfd->size == 0) {
-                HeapFree(GetProcessHeap(), 0, rfd);
                 return nullptr;
             }
 
             rfd->fileHandle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
                                          FILE_ATTRIBUTE_NORMAL, nullptr);
             if (rfd->fileHandle == INVALID_HANDLE_VALUE) {
-                HeapFree(GetProcessHeap(), 0, rfd);
                 return nullptr;
             }
 
             rfd->mappingHandle = CreateFileMapping(rfd->fileHandle, nullptr, PAGE_READONLY, 0, 0, nullptr);
             if (rfd->mappingHandle == nullptr || GetLastError() == ERROR_ALREADY_EXISTS) {
                 CloseHandle(rfd->fileHandle);
-                HeapFree(GetProcessHeap(), 0, rfd);
                 return nullptr;
             }
 
@@ -219,7 +226,6 @@ namespace MF {
             if (rfd->contents == nullptr) {
                 CloseHandle(rfd->mappingHandle);
                 CloseHandle(rfd->fileHandle);
-                HeapFree(GetProcessHeap(), 0, rfd);
                 return nullptr;
             }
 

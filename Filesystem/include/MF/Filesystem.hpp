@@ -15,6 +15,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace MF {
     namespace Filesystem {
@@ -149,16 +150,12 @@ namespace MF {
          * Stores the entire contents of file "filename" in a read-only C-string.
          * Also, that C-string does not end with '\0'.
          * It is advised to use an "InCharArrayStream".
-         * To clean up memory, please call "Read_Close" with the structure returned from there.
          * The structure must remain a pointer (in reality, it is an instance of a subclass of ReadFileData).
          * The purpose of this function is to offer the fastest way to read an entire file.
          * @param filename Name of the file to open.
          * @return "nullptr" if anything failed or the file is empty, or a new structure.
          */
-        const ReadFileData *Read(Filename_t filename);
-
-        /// Please use this simple tool to clean up any memory associated with something returned by "Read".
-        void Read_Close(const ReadFileData *content);
+        std::unique_ptr<const ReadFileData> Read(Filename_t filename);
 
         /**
          * Wrapper function: fills a C++ string with the whole file contents, internally using the Read function.
