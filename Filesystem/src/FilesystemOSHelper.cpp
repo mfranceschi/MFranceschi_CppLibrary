@@ -193,8 +193,8 @@ namespace MF {
 
         const ReadFileData *osOpenFile(Filename_t filename) {
 #if MF_OS_IS_WINDOWS
-            auto rfd = static_cast<Windows_ReadFileData *>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY,
-                                                                     sizeof(Windows_ReadFileData)));
+            auto rfd = new Windows_ReadFileData;
+
             rfd->size = osGetFileSize(filename);
             if (rfd->size == 0) {
                 HeapFree(GetProcessHeap(), 0, rfd);
@@ -251,14 +251,14 @@ namespace MF {
         }
 
         void osCloseReadFileData(const ReadFileData *readFileData1) {
-            const auto *readFileData = static_cast<const osReadFileData_t *>(readFileData1);
+            const auto *readFileData = dynamic_cast<const osReadFileData_t *>(readFileData1);
             assert(readFileData);
 
 #if MF_OS_IS_WINDOWS
             UnmapViewOfFile(readFileData->contents);
             CloseHandle(readFileData->mappingHandle);
             CloseHandle(readFileData->fileHandle);
-            HeapFree(GetProcessHeap(), 0, (void *) readFileData);
+            delete readFileData;
 #else
             close(readFileData->fd);
             delete readFileData;
