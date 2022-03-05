@@ -35,8 +35,10 @@ if (TRUE OR MF_Lib_EnableTests)
 endif()
 
 add_subdirectory(Commons)
-add_subdirectory(Filesystem)
 add_subdirectory(Windows)
+
+add_subdirectory(Filesystem)
+add_subdirectory(System)
 
 add_library(MF_ALL INTERFACE)
 target_link_libraries(
