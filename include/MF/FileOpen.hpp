@@ -5,13 +5,14 @@
 #ifndef MFRANCESCHI_CPPLIBRARIES_FILEOPEN_HPP
 #define MFRANCESCHI_CPPLIBRARIES_FILEOPEN_HPP
 
-#include "MF/File.hpp"
+#include "MF/Filesystem.hpp"
 
 namespace File {
     /// Data structure used to store information about files opened with Open.
     struct ReadFileData {
-        const char* contents = nullptr;
+        const char *contents = nullptr;
         Filesize_t size = 0ul;
+
         virtual ~ReadFileData() = default; // For polymorphic reasons.
     };
 
@@ -25,10 +26,10 @@ namespace File {
      * @param filename Name of the file to open.
      * @return "nullptr" if anything failed or the file is empty, or a new structure.
      */
-    const ReadFileData* Read(Filename_t filename);
+    const ReadFileData *Read(Filename_t filename);
 
     /// Please use this simple tool to clean up any memory associated with something returned by "Read".
-    void Read_Close(const ReadFileData* content);
+    void Read_Close(const ReadFileData *content);
 
     /**
      * Wrapper function: fills a C++ string with the whole file contents, internally using the Read function.
@@ -36,7 +37,7 @@ namespace File {
      * @param string A string with the whole contents of the file, not modified if an error occurred.
      * @return True on success, false on error.
      */
-    bool ReadToString(Filename_t filename, std::string& string);
+    bool ReadToString(Filename_t filename, std::string &string);
 }
 
 
