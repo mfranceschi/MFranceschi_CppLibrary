@@ -185,6 +185,9 @@ namespace MF {
         time.tm_sec = seconds;
         time.tm_isdst = dst_flag;
         microseconds_in = microseconds;
+        if ((timet = mktime(&time)) == time_t(-1)) {
+            throw DateError(DateError_e::WRONG_TIME_DATA, "Something is wrong with the given inputs!");
+        }
         ASSERT_OK();
     }
 
