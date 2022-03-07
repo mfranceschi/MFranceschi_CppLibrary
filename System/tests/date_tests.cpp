@@ -2,22 +2,27 @@
 // Created by mfran on 01/10/2019.
 //
 
-#if 0
-
-#include "tests_datas.hpp"
+#include "MF/Date.hpp"
+#include "tests_data.hpp"
 #include <chrono>
+
+using MF::Date;
+using MF::DateError;
+using MF::DateError_e;
+using namespace MF::DateTypes;
+using namespace MF::DateUtils;
 
 class GetterSetterTests : public ::testing::Test {
 protected:
     Date d1;
     Date d1_original;
     const static int year = 2019 - 1900;
-    const static int month = Date::SEPTEMBER;
+    const static int month = SEPTEMBER;
     const static int monthday = 16;
     const static int hour = 17;
     const static int minutes = 41;
     const static int seconds = 37;
-    const static int dst_flag = Date::DST_ON;
+    const static int dst_flag = DST_ON;
 
     inline void SetUp() override;
 };
@@ -31,51 +36,51 @@ namespace StaticMethodsTesting {
     using clock = std::chrono::system_clock;
 
     TEST(IsLeapYear, EffectiveLeapYears) {
-        EXPECT_TRUE(Date::IsLeapYear(0));
-        EXPECT_TRUE(Date::IsLeapYear(2000));
-        EXPECT_TRUE(Date::IsLeapYear(2004));
+        EXPECT_TRUE(IsLeapYear(0));
+        EXPECT_TRUE(IsLeapYear(2000));
+        EXPECT_TRUE(IsLeapYear(2004));
     }
 
     TEST(IsLeapYear, NotLeapYears) {
-        EXPECT_FALSE(Date::IsLeapYear(1));
-        EXPECT_FALSE(Date::IsLeapYear(2));
-        EXPECT_FALSE(Date::IsLeapYear(3));
-        EXPECT_FALSE(Date::IsLeapYear(100));
-        EXPECT_FALSE(Date::IsLeapYear(2100));
+        EXPECT_FALSE(IsLeapYear(1));
+        EXPECT_FALSE(IsLeapYear(2));
+        EXPECT_FALSE(IsLeapYear(3));
+        EXPECT_FALSE(IsLeapYear(100));
+        EXPECT_FALSE(IsLeapYear(2100));
     }
 
     TEST(DaysInMonth, OtherMonths) {
 // Months of 31 days.
-        EXPECT_EQ(Date::DaysInMonth(Date::JANUARY), 31);
-        EXPECT_EQ(Date::DaysInMonth(Date::MARCH), 31);
-        EXPECT_EQ(Date::DaysInMonth(Date::MAY), 31);
-        EXPECT_EQ(Date::DaysInMonth(Date::MAY), 31);
-        EXPECT_EQ(Date::DaysInMonth(Date::JULY), 31);
-        EXPECT_EQ(Date::DaysInMonth(Date::AUGUST), 31);
-        EXPECT_EQ(Date::DaysInMonth(Date::OCTOBER), 31);
-        EXPECT_EQ(Date::DaysInMonth(Date::DECEMBER), 31);
+        EXPECT_EQ(DaysInMonth(JANUARY), 31);
+        EXPECT_EQ(DaysInMonth(MARCH), 31);
+        EXPECT_EQ(DaysInMonth(MAY), 31);
+        EXPECT_EQ(DaysInMonth(MAY), 31);
+        EXPECT_EQ(DaysInMonth(JULY), 31);
+        EXPECT_EQ(DaysInMonth(AUGUST), 31);
+        EXPECT_EQ(DaysInMonth(OCTOBER), 31);
+        EXPECT_EQ(DaysInMonth(DECEMBER), 31);
 
 // Months of 30 days.
-        EXPECT_EQ(Date::DaysInMonth(Date::APRIL), 30);
-        EXPECT_EQ(Date::DaysInMonth(Date::JUNE), 30);
-        EXPECT_EQ(Date::DaysInMonth(Date::SEPTEMBER), 30);
-        EXPECT_EQ(Date::DaysInMonth(Date::NOVEMBER), 30);
+        EXPECT_EQ(DaysInMonth(APRIL), 30);
+        EXPECT_EQ(DaysInMonth(JUNE), 30);
+        EXPECT_EQ(DaysInMonth(SEPTEMBER), 30);
+        EXPECT_EQ(DaysInMonth(NOVEMBER), 30);
     }
 
     TEST(DaysInMonth, WrongInput) {
-        EXPECT_EQ(Date::DaysInMonth(-1), 0);
-        EXPECT_EQ(Date::DaysInMonth(-2), 0);
-        EXPECT_EQ(Date::DaysInMonth(12), 0);
-        EXPECT_EQ(Date::DaysInMonth(123), 0);
+        EXPECT_EQ(DaysInMonth(-1), 0);
+        EXPECT_EQ(DaysInMonth(-2), 0);
+        EXPECT_EQ(DaysInMonth(12), 0);
+        EXPECT_EQ(DaysInMonth(123), 0);
     }
 
     TEST(DaysInMonth, February) {
-        EXPECT_EQ(Date::DaysInMonth(Date::FEBRUARY, 0), 29); // Leap year
-        EXPECT_EQ(Date::DaysInMonth(Date::FEBRUARY, 1), 28); // Non-leap year
+        EXPECT_EQ(DaysInMonth(FEBRUARY, 0), 29); // Leap year
+        EXPECT_EQ(DaysInMonth(FEBRUARY, 1), 28); // Non-leap year
     }
 
     TEST(Now_Timestamp, FullTest) {
-        time_t now_to_check = Date::Now_Timestamp();
+        time_t now_to_check = Now_Timestamp();
         time_t now_from_chrono = clock::to_time_t(clock::now());
         time_t distance = now_from_chrono - now_to_check;
         if (distance < 0) distance *= -1;
@@ -119,16 +124,16 @@ TEST_F(GetterSetterTests, TestOperatorsBasic) {
 }
 
 TEST_F(GetterSetterTests, TestSetterDST) {
-    EXPECT_EQ(d1.dst(Date::DST_UNKNOWN), dst_flag); // unknown is generally not accepted by mktime.
-    EXPECT_EQ(d1.dst(Date::DST_ON), dst_flag);
-    EXPECT_EQ(d1.dst(Date::DST_OFF), dst_flag);
+    EXPECT_EQ(d1.dst(DST_UNKNOWN), dst_flag); // unknown is generally not accepted by mktime.
+    EXPECT_EQ(d1.dst(DST_ON), dst_flag);
+    EXPECT_EQ(d1.dst(DST_OFF), dst_flag);
 
     try {
         d1.dst(123);
         FAIL() << "expected wrong time data";
     }
-    catch (DateError de) {
-        EXPECT_EQ(de, DateError::WRONG_TIME_DATA);
+    catch (const DateError &de) {
+        EXPECT_EQ(de.ERROR_VALUE, DateError_e::WRONG_TIME_DATA);
     }
     EXPECT_EQ(d1.dst(), dst_flag); // ensure stable state
 }
@@ -142,17 +147,15 @@ TEST_F(GetterSetterTests, TestSetterSeconds) {
         d1.seconds(123);
         FAIL() << "expected wrong time data";
     }
-    catch (DateError de) {
-        EXPECT_EQ(de, DateError::WRONG_TIME_DATA);
+    catch (const DateError &de) {
+        EXPECT_EQ(de.ERROR_VALUE, DateError_e::WRONG_TIME_DATA);
     }
     try {
         d1.seconds(-5);
         FAIL() << "expected wrong time data";
     }
-    catch (DateError de) {
-        EXPECT_EQ(de, DateError::WRONG_TIME_DATA);
+    catch (const DateError &de) {
+        EXPECT_EQ(de.ERROR_VALUE, DateError_e::WRONG_TIME_DATA);
     }
     EXPECT_EQ(d1.seconds(), 0); // ensure stable state
 }
-
-#endif // bool of whether to consider this file or not

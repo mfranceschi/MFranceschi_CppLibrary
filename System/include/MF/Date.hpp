@@ -139,8 +139,6 @@ namespace MF {
 
         explicit Date(tm, int microseconds = 0);
 
-        explicit Date(time_t, int microseconds = 0);
-
         explicit Date(const std::string &, const char *pattern, int microseconds = 0);
 
         explicit Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag,
@@ -228,7 +226,7 @@ namespace MF {
     inline Date Date::FromTime_t(const time_t time1, int microseconds) {
         std::tm tm1{0};
         DateUtils::Gmtime(time1, tm1);
-        return Date(tm1);
+        return Date(tm1, microseconds);
     }
 
     inline std::ostream &operator<<(std::ostream &os, const Date &d) { return os << std::string(d); }

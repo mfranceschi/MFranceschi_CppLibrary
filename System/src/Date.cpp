@@ -34,7 +34,7 @@ namespace MF {
         return returnValue;
     }
 
-#define ASSERT_OK assert((timet = mktime(&time)) != static_cast<time_t>(-1)); /* Ensures the instance is in a valid state or fail assertion. */
+#define ASSERT_OK() assert((timet = mktime(&time)) != static_cast<time_t>(-1)) /* Ensures the instance is in a valid state or fail assertion. */
 
 //----------------------------------------------------------------- PUBLIC
 
@@ -50,7 +50,8 @@ namespace MF {
         using namespace std::chrono;
         using clock = system_clock;
         clock::time_point now_point = clock::now();
-        Date newDate(clock::to_time_t(now_point));
+        Date newDate = Date::FromTime_t(clock::to_time_t(now_point));
+
         using mics = std::chrono::microseconds;
         mics::rep current_microseconds_count = duration_cast<mics>(now_point.time_since_epoch()).count();
         newDate.microseconds(static_cast<int>(current_microseconds_count - 1000000 * time_t(newDate)));
@@ -94,7 +95,7 @@ namespace MF {
     int Date::year(int newvalue) {
         if (newvalue < MAX_YEAR && newvalue > -MAX_YEAR - 1) {
             time.tm_year = newvalue;
-            ASSERT_OK;
+            ASSERT_OK();
             return time.tm_year;
         } else
             throw DateError(DateError_e::WRONG_TIME_DATA,
@@ -104,7 +105,7 @@ namespace MF {
     int Date::dst(int newvalue) {
         if (newvalue == DST_UNKNOWN || newvalue == DST_OFF || newvalue == DST_ON) {
             time.tm_isdst = newvalue;
-            ASSERT_OK;
+            ASSERT_OK();
             return time.tm_isdst;
         } else
             throw DateError(DateError_e::WRONG_TIME_DATA,
@@ -184,7 +185,11 @@ namespace MF {
         time.tm_sec = seconds;
         time.tm_isdst = dst_flag;
         microseconds_in = microseconds;
-        ASSERT_OK;
+        ASSERT_OK();
+    }
+
+    Date::Date(tm tm1, int microseconds) : time(tm1), microseconds_in(microseconds) {
+        ASSERT_OK();
     }
 
 //---------------------------------------------------------------- PRIVATE
@@ -201,7 +206,7 @@ namespace MF {
                 throw DateError(DateError_e::WRONG_TIME_DATA, "Internal error in QuickSetter");
             }
 
-            ASSERT_OK;
+            ASSERT_OK();
             return field;
         }
     }

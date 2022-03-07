@@ -3,6 +3,7 @@ add_library(MF_Windows STATIC EXCLUDE_FROM_ALL)
 target_sources(
         MF_Windows
         PUBLIC
+            include/MF/LightWindows.hpp
             include/MF/StringSafePlaceHolder.hpp
             include/MF/Windows.hpp
         PRIVATE

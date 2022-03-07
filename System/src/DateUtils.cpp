@@ -2,6 +2,14 @@
 // Created by MartinF on 07/03/2022.
 //
 
+#include <ctime>
+
+#if MF_OS_IS_WINDOWS
+
+#   include "MF/LightWindows.hpp"
+
+#endif
+
 #include "MF/DateUtils.hpp"
 
 namespace MF {
@@ -47,9 +55,9 @@ namespace MF {
 
         long Timezone() {
 #if MF_OS_IS_WINDOWS
-            long result;
-            _get_timezone(&result);
-            return result;
+            DYNAMIC_TIME_ZONE_INFORMATION dynamicTimeZoneInformation;
+            GetDynamicTimeZoneInformation(&dynamicTimeZoneInformation);
+            return long(dynamicTimeZoneInformation.Bias);
 #else
             return timezone;
 #endif
