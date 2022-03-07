@@ -5,6 +5,8 @@
 #ifndef MFRANCESCHI_CPPLIBRARIES_DATEUTILS_HPP
 #define MFRANCESCHI_CPPLIBRARIES_DATEUTILS_HPP
 
+#include <ctime>
+
 namespace MF {
     namespace DateUtils {
         namespace internal {
@@ -36,18 +38,18 @@ namespace MF {
 
         constexpr static int NBR_SECONDS_IN_DAY = 24 * 60 * 60; // Number of seconds in a single day.
 
-        const static int MAX_YEAR = 0; // Max possible year on this computer.
+        extern const int MAX_YEAR; // Max possible year on this computer.
 
         constexpr static int MS_MAX = 1000000; // No more than 1M microseconds to be stored!
         constexpr static char NO_MS = '\x00'; // Use this in ms_sep if you don't want to represent microseconds in string.
 
         /** Returns true if the given year is a leap year. */
-        static constexpr bool IsLeapYear(int year) noexcept {
+        constexpr bool IsLeapYear(int year) noexcept {
             return (!(year & 0b11) && (year % 100)) || !(year % 400);
         }
 
         /** Returns [28 - 31] or 0 if month is not valid. */
-        static constexpr int DaysInMonth(int month, int year = 0) noexcept {
+        constexpr int DaysInMonth(int month, int year = 0) noexcept {
             switch (month) {
                 case JANUARY:
                 case MARCH:
@@ -70,21 +72,34 @@ namespace MF {
         }
 
         // Input checking utilities.
-        static constexpr bool ValidateMicroseconds(int value) noexcept { return value >= 0 && value < MS_MAX; }
+        constexpr bool ValidateMicroseconds(int value) noexcept { return value >= 0 && value < MS_MAX; }
 
-        static constexpr bool ValidateSeconds(int value) noexcept { return value >= 0 && value <= 60; }
+        constexpr bool ValidateSeconds(int value) noexcept { return value >= 0 && value <= 60; }
 
-        static constexpr bool ValidateMinutes(int value) noexcept { return value >= 0 && value <= 60; }
+        constexpr bool ValidateMinutes(int value) noexcept { return value >= 0 && value <= 60; }
 
-        static constexpr bool ValidateHours(int value) noexcept { return value >= 0 && value <= 24; }
+        constexpr bool ValidateHours(int value) noexcept { return value >= 0 && value <= 24; }
 
-        static constexpr bool ValidateMonths(int value) noexcept { return value >= JANUARY && value <= DECEMBER; }
+        constexpr bool ValidateMonths(int value) noexcept { return value >= JANUARY && value <= DECEMBER; }
 
-        static constexpr bool ValidateDays(int days, int month) noexcept {
+        constexpr bool ValidateDays(int days, int month) noexcept {
             auto daysInMonth = ValidateMonths(month) ? days <= DaysInMonth(month) : 31;
             return days >= 1 && days <= daysInMonth;
         }
 
+        /** Returns now as UTC timestamp. */
+        inline time_t Now_Timestamp() {
+            return time(nullptr);
+        }
+
+        /** Thread-safe version of Localtime. */
+        bool Localtime(const std::time_t &src, struct std::tm &dest);
+
+        /** Thread-safe version of Gmtime. */
+        bool Gmtime(const std::time_t &src, struct std::tm &dest);
+
+        /** Returns the difference in seconds between UTC and local time. */
+        long Timezone();
     }
 }
 
