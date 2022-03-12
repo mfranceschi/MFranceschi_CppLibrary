@@ -2,7 +2,7 @@
 // Created by mfran on 13/04/2020.
 //
 
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
 
 #include "MF/StringSafePlaceHolder.hpp"
 #include "MF/Windows.hpp"

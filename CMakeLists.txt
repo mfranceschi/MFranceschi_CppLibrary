@@ -32,6 +32,8 @@ add_subdirectory(Windows)
 
 add_subdirectory(Filesystem)
 add_subdirectory(System)
+add_subdirectory(Async)
+add_subdirectory(Containers)
 
 add_library(MF_ALL INTERFACE)
 target_link_libraries(
@@ -39,4 +41,7 @@ target_link_libraries(
         INTERFACE
             MF_Commons
             MF_Filesystem
+            MF_Windows
+            MF_Async
+            MF_System
 )
