@@ -5,9 +5,12 @@ target_link_libraries(MF_Containers PUBLIC MF_Commons)
 target_sources(
         MF_Containers
         PRIVATE
+            src/hhh.cpp
         PUBLIC
             include/MF/Array.hpp
 )
 
-add_executable(MF_Containers_Main hhh.cpp)
-target_link_libraries(MF_Containers_Main PUBLIC MF_Containers MF_Commons_Tests)
+# add_executable(MF_Containers_Main hhh.cpp)
+# target_link_libraries(MF_Containers_Main PUBLIC MF_Containers MF_Commons_Tests)
+
+add_subdirectory(tests)

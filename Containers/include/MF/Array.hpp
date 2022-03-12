@@ -150,7 +150,7 @@ struct Array {
 
     // ----- CAPACITY
 
-    constexpr bool empty() const noexcept { return N != 0; }
+    constexpr bool empty() const noexcept { return N == 0; }
 
     constexpr size_type size() const noexcept { return N; }
 
