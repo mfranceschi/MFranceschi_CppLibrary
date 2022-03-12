@@ -25,14 +25,7 @@ if (MF_Lib_WantUnicode OR UNICODE)
     add_compile_definitions(UNICODE=1)
 endif()
 
-if (TRUE OR MF_Lib_EnableTests)
-    enable_testing()
-    if (NOT MINGW)
-        # Unfortunately, the designated version of Google Test has a #include issue with MinGW.
-        add_subdirectory(test)
-        add_test(NAME Testing_MFranceschi_CppLibraries COMMAND Google_Tests_run)
-    endif()
-endif()
+enable_testing()
 
 add_subdirectory(Commons)
 add_subdirectory(Windows)

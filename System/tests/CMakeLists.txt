@@ -12,3 +12,6 @@ target_sources(
         PRIVATE
             date_tests.cpp
 )
+
+include(GoogleTest)
+gtest_discover_tests(MF_System_Tests)

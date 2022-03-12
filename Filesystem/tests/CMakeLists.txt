@@ -13,3 +13,6 @@ target_sources(
         PRIVATE
         file_tests.cpp
 )
+
+include(GoogleTest)
+gtest_discover_tests(MF_Filesystem_Tests)

@@ -4,7 +4,8 @@
 
 #include <ctime>
 
-#if MF_OS_IS_WINDOWS
+
+#if MF_WINDOWS
 
 #   include "MF/LightWindows.hpp"
 
@@ -16,7 +17,7 @@ namespace MF {
     namespace DateUtils {
 
         bool Localtime(const time_t &src, struct tm &dest) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             /* Win32-style Localtime_S is available. */
             return !localtime_s(&dest, &src);
 
@@ -35,7 +36,7 @@ namespace MF {
         }
 
         bool Gmtime(const time_t &src, struct tm &dest) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             /* Win32-style Gmtime_S is available. */
             return !gmtime_s(&dest, &src);
 
@@ -54,7 +55,7 @@ namespace MF {
         }
 
         long Timezone() {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             DYNAMIC_TIME_ZONE_INFORMATION dynamicTimeZoneInformation;
             GetDynamicTimeZoneInformation(&dynamicTimeZoneInformation);
             return long(dynamicTimeZoneInformation.Bias);

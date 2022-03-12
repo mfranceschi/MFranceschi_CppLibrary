@@ -8,7 +8,7 @@
 #include "gtest/gtest.h"
 #include <algorithm>
 
-// Turn on Memory Leaks detection (Win32 only)
+// Turn on Memory Leaks detection (Win32 and MSVC only)
 #if defined(_MSC_VER) && defined(I_Want_Mem_Leaks)
 #   define _CRTDBG_MAP_ALLOC
 #   include <cstdlib>

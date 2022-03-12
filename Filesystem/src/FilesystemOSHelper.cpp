@@ -6,12 +6,14 @@
 
 #include "FilesystemOSHelper.hpp"
 
-#if MF_OS_IS_WINDOWS
-#   define WIN32_LEAN_AND_MEAN 1
+#if MF_WINDOWS
 
-#   include <Windows.h>
+#   include "MF/LightWindows.hpp"
 
 #else
+#   include <dirent.h>
+#   include <fcntl.h>
+#   include <sys/mman.h>
 #   include <sys/stat.h>
 #   include <unistd.h>
 #endif
@@ -19,7 +21,7 @@
 namespace MF {
     namespace Filesystem {
         bool osDeleteFile(Filename_t filename) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             return DeleteFile(filename);
 #else
             return !unlink(filename);
@@ -27,7 +29,7 @@ namespace MF {
         }
 
         bool osDeleteFileOrDirectory(Filename_t name) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             return DeleteFile(name) ? true : RemoveDirectory(name);
 #else
             return !remove(name);
@@ -35,7 +37,7 @@ namespace MF {
         }
 
         bool osFileExists(Filename_t filename) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             DWORD attr = GetFileAttributes(filename);
             return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));
 #else
@@ -45,17 +47,17 @@ namespace MF {
         }
 
         bool osDirectoryExists(Filename_t filename) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             DWORD attr = GetFileAttributes(filename);
             return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
 #else
             struct stat s{};
-            return !stat(directoryName, &s) & S_ISDIR(s.st_mode);
+            return !stat(filename, &s) & S_ISDIR(s.st_mode);
 #endif
         }
 
         int osReadFileToBuffer(Filename_t filename, char *buffer, Filesize_t bufferSize) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             HANDLE fileHandle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
                                            FILE_ATTRIBUTE_NORMAL, nullptr);
             if (fileHandle == INVALID_HANDLE_VALUE) {
@@ -80,7 +82,7 @@ namespace MF {
         }
 
         Filesize_t osGetFileSize(Filename_t filename) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
                                      FILE_ATTRIBUTE_NORMAL,
                                      nullptr);
@@ -92,12 +94,12 @@ namespace MF {
 #else
             struct stat t{};
             if (stat(filename, &t)) return 0;
-            return static_cast<File::Filesize_t>(t.st_size);
+            return static_cast<Filesize_t>(t.st_size);
 #endif
         }
 
         bool osCreateDirectory(Filename_t directoryName) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             return CreateDirectory(directoryName, nullptr);
 #else
             !mkdir(directoryName, S_IRWXU | S_IRWXG | S_IRWXO);
@@ -105,7 +107,7 @@ namespace MF {
         }
 
         SFilename_t osGetCWD() {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             DWORD nBufferLength = GetCurrentDirectory(0, nullptr);
             auto lpBuffer = static_cast<LPTSTR>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY,
                                                           nBufferLength * sizeof(TCHAR)));
@@ -114,22 +116,22 @@ namespace MF {
             HeapFree(GetProcessHeap(), 0, lpBuffer);
             return returnValue;
 #else
-            char* syscall_return;
+            char *syscall_return;
 #   if defined(_GNU_SOURCE)
             syscall_return = get_current_dir_name();
 #   else
             syscall_return = static_cast<char *>(malloc(PATH_MAX));
             getcwd(syscall_return, PATH_MAX);
 #   endif
-            File::SFilename_t to_return(syscall_return);
-            free((void*)syscall_return);
+            SFilename_t to_return(syscall_return);
+            free((void *) syscall_return);
             return to_return;
 #endif
 
         }
 
         void osGetDirectoryContents(Filename_t directoryName, std::vector<SFilename_t> &result) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             SFilename_t tempFilename;
             static Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
             static Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
@@ -157,18 +159,18 @@ namespace MF {
                 FindClose(hFind);
             }
 #else
-            File::SFilename_t tempFilename;
+            SFilename_t tempFilename;
             static Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
             static Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
-            DIR * d;
-            dirent * dir_entry;
+            DIR *d;
+            dirent *dir_entry;
             d = opendir(directoryName);
             if (d) {
                 while ((dir_entry = readdir(d)) != nullptr) {
                     tempFilename = dir_entry->d_name;
                     if (tempFilename == CURRENT_FOLDER || tempFilename == PARENT_FOLDER) {
                         continue;
-                    } else if (File::IsDir((std::string(directoryName) + tempFilename).c_str())) {
+                    } else if (IsDir((std::string(directoryName) + tempFilename).c_str())) {
                         tempFilename.append(FILE_SEPARATOR);
                     }
                     result.emplace_back(tempFilename);
@@ -178,7 +180,7 @@ namespace MF {
 #endif
         }
 
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
 
         struct Windows_ReadFileData_Dummy : public ReadFileData {
             HANDLE fileHandle = nullptr;
@@ -195,14 +197,14 @@ namespace MF {
 
         using osReadFileData_t = Windows_ReadFileData;
 #else
-        struct Unix_ReadFileData : public File::ReadFileData {
+        struct Unix_ReadFileData : public ReadFileData {
             int fd = -1;
         };
         using osReadFileData_t = Unix_ReadFileData;
 #endif
 
         std::unique_ptr<const ReadFileData> osOpenFile(Filename_t filename) {
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             auto rfd = std::make_unique<Windows_ReadFileData_Dummy>();
 
             rfd->size = osGetFileSize(filename);
@@ -231,24 +233,21 @@ namespace MF {
 
             return rfd;
 #else
-            auto rfd = new Unix_ReadFileData;
+            auto rfd = std::make_unique<Unix_ReadFileData>();
 
             if ((rfd->fd = open(filename, O_RDONLY)) == -1) {
-                delete rfd;
                 return nullptr;
             }
 
-            struct stat st;
+            struct stat st{};
             if (fstat(rfd->fd, &st) == 0) {
                 rfd->size = st.st_size;
             } else {
-                delete rfd;
                 return nullptr;
             }
 
-            rfd->contents = (const char*)mmap(nullptr, rfd->size, PROT_READ, MAP_PRIVATE, rfd->fd, 0);
+            rfd->contents = (const char *) mmap(nullptr, rfd->size, PROT_READ, MAP_PRIVATE, rfd->fd, 0);
             if (rfd->contents == MAP_FAILED) {
-                delete rfd;
                 return nullptr;
             }
 
@@ -260,7 +259,7 @@ namespace MF {
             const auto *readFileData = dynamic_cast<const osReadFileData_t *>(readFileData1);
             assert(readFileData);
 
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
             UnmapViewOfFile(readFileData->contents);
             CloseHandle(readFileData->mappingHandle);
             CloseHandle(readFileData->fileHandle);
@@ -271,7 +270,7 @@ namespace MF {
 #endif
         }
 
-#if MF_OS_IS_WINDOWS
+#if MF_WINDOWS
 #else
 #endif
 

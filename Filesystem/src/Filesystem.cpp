@@ -7,21 +7,18 @@
 #include <sstream>
 #include "MF/Filesystem.hpp"
 #include "FilesystemOSHelper.hpp"
-#include <sys/stat.h>
 
-#if defined(_WIN32)
+
+#if MF_WINDOWS
 #   if defined(_MSC_VER)
 #       pragma warning( disable: 26444) // Warning that occurs when using imbue.
 #   endif
 #   if defined(UNICODE)
 #       include "Toolbox.hpp"
 #   endif
-// #   include "WindowsAPIHelper.hpp"
 #else
-#   include "UnixAPIHelper.hpp"
-#   include <dirent.h>
 #   include <sys/mman.h>
-#   include <unistd.h>
+#   include <sys/stat.h>
 #endif
 
 using std::string;
@@ -31,7 +28,7 @@ using std::ios_base;
 
 constexpr static size_t NBR_BITS_TO_READ_ENCODING = 3;
 
-#if defined(_WIN32) && defined(UNICODE)
+#if MF_WINDOWS && defined(UNICODE)
 using Soss_t = std::wostringstream;
 #else
 using Soss_t = std::ostringstream;
@@ -63,7 +60,7 @@ namespace MF {
             using ArgumentsType = Filename_t;
             Soss_t oss;
             va_list argsList;
-            va_start(argsList, number);
+                    va_start(argsList, number);
             ArgumentsType currentArg;
 
 #if !MF_OS_IS_WINDOWS

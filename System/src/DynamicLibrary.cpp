@@ -10,9 +10,11 @@
 #   include "MF/Windows.hpp"
 
 #else
+
 #   include <dlfcn.h>
 #   include <cstring>
-#   include <signal.h>
+#   include <csignal>
+
 #endif
 
 #include "MF/DynamicLibrary.hpp"
@@ -23,7 +25,7 @@ namespace MF {
         const char *DynamicLibrary::LocalExtension = ".dll";
 #define _GetLibraryPointer static_cast<HMODULE>(_library)
 #else
-        const char* DynamicLibrary::LocalExtension = ".so";
+        const char *DynamicLibrary::LocalExtension = ".so";
 #endif
 
         void *DynamicLibrary::GetFunction(const std::string &functionName) {
@@ -37,11 +39,11 @@ namespace MF {
                 throw element_not_found_exception("Unable to find given function: " + functionName);
             }
 #else
-            (void)dlerror(); // Clear any previous error.
-            functionAddress = dlsym(library, functionName.c_str());
+            (void) dlerror(); // Clear any previous error.
+            functionAddress = dlsym(_library, functionName.c_str());
             if (dlerror()) {
                 // We must run this check because the "functionAddress" value may be null but still valid.
-                throw element_not_found_exception ("Unable to find given function: " + functionName);
+                throw element_not_found_exception("Unable to find given function: " + functionName);
             }
 #endif
             return functionAddress;
@@ -56,12 +58,13 @@ namespace MF {
             auto wPath = Windows::ConvertString(path.c_str());
             AddDllDirectory(wPath.data());
 #else
-            char* ldLibraryPath = getenv("LD_LIBRARY_PATH");
-            char* newLdLibraryPath = (char*) calloc(
-                (ldLibraryPath ? strlen(ldLibraryPath) + 1 : 0) + // Length of the environment variable, if any, + ":" separator
-                path.length() + // Length of the value to add
-                1, // End of string
-                1);
+            char *ldLibraryPath = getenv("LD_LIBRARY_PATH");
+            char *newLdLibraryPath = (char *) calloc(
+                    (ldLibraryPath ? strlen(ldLibraryPath) + 1 : 0) +
+                    // Length of the environment variable, if any, + ":" separator
+                    path.length() + // Length of the value to add
+                    1, // End of string
+                    1);
             strcpy(newLdLibraryPath, ldLibraryPath);
             strcat(newLdLibraryPath, ":");
             strcat(newLdLibraryPath, path.c_str());
@@ -76,7 +79,7 @@ namespace MF {
 #if defined(_WIN32)
             success = FreeLibrary(_GetLibraryPointer);
 #else
-            success = !dlclose(library);
+            success = !dlclose(_library);
 #endif
 
             if (success) {
@@ -95,7 +98,7 @@ namespace MF {
             static constexpr DWORD dwFlags = LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
             _library = LoadLibraryExW(wLibName.data(), hFile, dwFlags);
 #else
-            library = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+            _library = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 #endif
 
             if (_library != nullptr) {
