@@ -23,7 +23,7 @@ jobs:
       - name: SETUP - Set up build tools
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          apt update && apt-get install valgrind
+          sudo apt update && sudo apt-get install valgrind
 
       - name: BUILD - CMake configure
         run: |
@@ -56,7 +56,7 @@ jobs:
       - name: SETUP - Install dependencies
         id: install-dependencies
         run: |
-          sudo apt update && apt-get install clang-tidy
+          sudo apt update && sudo apt-get install clang-tidy
           pip install cmakelint
 
       - name: SETUP - CMake configure
