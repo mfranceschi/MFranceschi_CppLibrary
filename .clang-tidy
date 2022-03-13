@@ -1,0 +1,7 @@
+# Reference = https://releases.llvm.org/10.0.0/tools/clang/tools/extra/docs/clang-tidy/index.html
+
+Checks: '-*,cppcoreguidelines-*,misc-*,performance-*,portability-*,readability-*'
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*'
+FormatStyle: none
+User: user
