@@ -20,3 +20,7 @@ AlignAfterOpenBracket: AlwaysBreak
 BinPackParameters: false
 
 AlignTrailingComments: false
+
+IndentPPDirectives: AfterHash
+
+SpacesBeforeTrailingComments: 1
