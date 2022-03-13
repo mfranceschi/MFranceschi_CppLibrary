@@ -23,7 +23,7 @@ jobs:
       - name: SETUP - Set up build tools
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          sudo apt-get install valgrind
+          apt update && apt-get install valgrind
 
       - name: BUILD - CMake configure
         run: |
@@ -56,7 +56,7 @@ jobs:
       - name: SETUP - Install dependencies
         id: install-dependencies
         run: |
-          sudo apt-get install clang-tidy
+          sudo apt update && apt-get install clang-tidy
           pip install cmakelint
 
       - name: SETUP - CMake configure
@@ -70,19 +70,8 @@ jobs:
 
       - name: CHECK - Clang-Tidy (static analysis, NOT on tests)
         if: ${{ steps.cmake-configure.outcome == 'success' }}
-        run: find ./InjectMe/ -name "*.cpp" -o -name "*.hpp" | xargs clang-tidy -p=${{ env.BUILD_DIR }} --header-filter='^\.\/InjectMe/.*\.hpp$' --warnings-as-errors=*
+        run: find ./ -name "*.cpp" -o -name "*.hpp" | xargs clang-tidy -p=${{ env.BUILD_DIR }} --header-filter='^\.\/InjectMe/.*\.hpp$' --warnings-as-errors=*
 
       - name: CHECK - CMakeLint
         if: ${{ steps.install-dependencies.outcome == 'success' }}
-        run: find ./InjectMe/ ./tests/ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100
-
-  misc-checks:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Git repo
-        uses: actions/checkout@v2
-
-      - name: CHECKS - Ensure no iostream
-        run: "! grep -Rl 'iostream' --include=*.py"
-        working-directory: ./InjectMe/
+        run: find ./ ./tests/ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100
