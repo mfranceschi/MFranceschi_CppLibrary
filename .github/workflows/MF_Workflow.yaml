@@ -38,6 +38,38 @@ jobs:
         run: |
           ctest -j10 -C ${{ matrix.CMake_Config }} -T test --output-on-failure
 
+  code-quality-no-build-needed:
+    runs-on: ubuntu-latest
+
+    env:
+      BUILD_DIR: ./build/
+      CLANG_VERSION: 10
+      CMake_Config: Debug
+
+      CC: /usr/bin/clang
+      CXX: /usr/bin/clang++
+
+    steps:
+      - name: SETUP - Checkout git repo
+        uses: actions/checkout@v2
+
+      - name: SETUP - Install dependencies
+        id: install-dependencies
+        run: |
+          pip install cmakelint
+
+      - name: CHECK - Clang-Format (formatting)
+        uses: DoozyX/clang-format-lint-action@v0.13
+        continue-on-error: true
+        with:
+          source: '.'
+          clangFormatVersion: 12
+
+      - name: CHECK - CMakeLint
+        if: ${{ steps.install-dependencies.outcome == 'success' }}
+        run: find ./ ./tests/ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100
+
+
   code-quality:
     runs-on: ubuntu-latest
 
@@ -64,14 +96,7 @@ jobs:
         if: ${{ steps.install-dependencies.outcome == 'success' }}
         run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMake_Config }} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Werror=dev -Werror=deprecated -S . -B ${{ env.BUILD_DIR }}
 
-      - name: CHECK - Clang-Format (formatting)
-        if: ${{ steps.install-dependencies.outcome == 'success' }}
-        run: bash ./.github/helpers/clang-format-all .
-
       - name: CHECK - Clang-Tidy (static analysis, NOT on tests)
         if: ${{ steps.cmake-configure.outcome == 'success' }}
-        run: find ./ -name "*.cpp" -o -name "*.hpp" | xargs clang-tidy -p=${{ env.BUILD_DIR }} --header-filter='^\.\/InjectMe/.*\.hpp$' --warnings-as-errors=*
-
-      - name: CHECK - CMakeLint
-        if: ${{ steps.install-dependencies.outcome == 'success' }}
-        run: find ./ ./tests/ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100
+        run: find ./ -name "*.cpp" -o -name "*.hpp" | xargs clang-tidy -p=${{ env.BUILD_DIR }} --warnings-as-errors=*
+        # --header-filter='^\.\/InjectMe/.*\.hpp$' --warnings-as-errors=*
