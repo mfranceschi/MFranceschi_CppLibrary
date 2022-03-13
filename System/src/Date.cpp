@@ -14,6 +14,14 @@
 
 //-------------------------------------------------------------- Constants
 
+// static functions
+template<typename type = long long>
+static constexpr int Sign(type nbr) {
+    return !nbr ? 0 :
+           nbr < static_cast<type>(0) ?
+           -1 : +1;
+}
+
 namespace MF {
 
     using namespace DateUtils;
@@ -62,7 +70,7 @@ namespace MF {
     }
 
     int Date::Compare(const Date &d) const {
-        return internal::Sign(Timedelta(d));
+        return ::Sign(Timedelta(d));
     }
 
     Interval Date::Timedelta(const Date &param) const {

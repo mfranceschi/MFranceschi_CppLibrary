@@ -9,15 +9,6 @@
 
 namespace MF {
     namespace DateUtils {
-        namespace internal {
-            template<typename type = long long>
-            constexpr int Sign(type nbr) {
-                return !nbr ? 0 :
-                       nbr < static_cast<type>(0) ?
-                       -1 : +1;
-            }
-        }
-
         // Months (to be used with the Month getter and/or setter.)
         constexpr static int
                 JANUARY = 0, FEBRUARY = 1,

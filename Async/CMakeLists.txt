@@ -19,6 +19,4 @@ target_sources(
             include/MF/Timer.hpp
 )
 
-add_executable(MF_Async_Main hhh.cpp)
-target_link_libraries(MF_Async_Main PUBLIC MF_Async MF_Commons_Tests)
-# add_subdirectory(tests)
+add_subdirectory(tests)
