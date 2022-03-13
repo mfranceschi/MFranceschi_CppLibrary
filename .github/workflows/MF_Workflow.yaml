@@ -23,7 +23,8 @@ jobs:
       - name: SETUP - Set up build tools
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          sudo apt update && sudo apt-get install valgrind
+          sudo apt update
+          sudo apt-get install valgrind
 
       - name: BUILD - CMake configure
         run: |
@@ -53,21 +54,16 @@ jobs:
       - name: SETUP - Checkout git repo
         uses: actions/checkout@v2
 
-      - name: SETUP - Install dependencies
-        id: install-dependencies
-        run: |
-          pip install cmakelint
-
       - name: CHECK - Clang-Format (formatting)
-        uses: DoozyX/clang-format-lint-action@v0.13
-        continue-on-error: true
+        uses: RafikFarhad/clang-format-github-action@v2.0.0
         with:
-          source: '.'
-          clangFormatVersion: 12
+          sources: "**/*.hpp,**/*.cpp"
 
       - name: CHECK - CMakeLint
-        if: ${{ steps.install-dependencies.outcome == 'success' }}
-        run: find ./ ./tests/ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100
+        if: ${{ always() }}
+        run: |
+          pip install cmakelint
+          find ./ ./tests/ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100
 
 
   code-quality:
@@ -99,4 +95,3 @@ jobs:
       - name: CHECK - Clang-Tidy (static analysis, NOT on tests)
         if: ${{ steps.cmake-configure.outcome == 'success' }}
         run: find ./ -name "*.cpp" -o -name "*.hpp" | xargs clang-tidy -p=${{ env.BUILD_DIR }} --warnings-as-errors=*
-        # --header-filter='^\.\/InjectMe/.*\.hpp$' --warnings-as-errors=*
