@@ -9,7 +9,7 @@
 #include <vector>
 #include <functional>
 
-#include "MF/Filesystem.hpp."
+#include "MF/Filesystem.hpp"
 
 namespace MF {
     namespace Command {
