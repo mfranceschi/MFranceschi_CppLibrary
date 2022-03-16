@@ -2,10 +2,11 @@
 // Created by mfran on 01/10/2019.
 //
 
-#include "MF/Date.hpp"
-#include "tests_data.hpp"
 #include <chrono>
 #include <cmath>
+
+#include "MF/Date.hpp"
+#include "tests_data.hpp"
 
 using MF::Date;
 using MF::DateError;
@@ -14,7 +15,7 @@ using namespace MF::DateTypes;
 using namespace MF::DateUtils;
 
 class GetterSetterTests : public ::testing::Test {
-protected:
+   protected:
     Date d1;
     Date d1_original;
     const int year = 2019 - 1900;
@@ -33,7 +34,8 @@ void GetterSetterTests::SetUp() {
     d1_original = d1;
 }
 
-namespace StaticMethodsTesting {
+namespace StaticMethodsTesting
+{
     using clock = std::chrono::system_clock;
 
     TEST(IsLeapYear, EffectiveLeapYears) {
@@ -51,7 +53,7 @@ namespace StaticMethodsTesting {
     }
 
     TEST(DaysInMonth, OtherMonths) {
-// Months of 31 days.
+        // Months of 31 days.
         EXPECT_EQ(DaysInMonth(JANUARY), 31);
         EXPECT_EQ(DaysInMonth(MARCH), 31);
         EXPECT_EQ(DaysInMonth(MAY), 31);
@@ -61,7 +63,7 @@ namespace StaticMethodsTesting {
         EXPECT_EQ(DaysInMonth(OCTOBER), 31);
         EXPECT_EQ(DaysInMonth(DECEMBER), 31);
 
-// Months of 30 days.
+        // Months of 30 days.
         EXPECT_EQ(DaysInMonth(APRIL), 30);
         EXPECT_EQ(DaysInMonth(JUNE), 30);
         EXPECT_EQ(DaysInMonth(SEPTEMBER), 30);
@@ -97,7 +99,7 @@ namespace StaticMethodsTesting {
         time_t distance = std::abs(now_from_chrono - now_to_check);
         EXPECT_LE(distance, 1);
     }
-}
+} // namespace StaticMethodsTesting
 
 TEST_F(GetterSetterTests, TestGetters) {
     EXPECT_EQ(d1.year(), year);
@@ -110,12 +112,15 @@ TEST_F(GetterSetterTests, TestGetters) {
 }
 
 TEST_F(GetterSetterTests, TestOperatorsBasic) {
-    GTEST_SKIP_("This tests is broken! Might need tweaking in order to integrate with the Timezone module.");
-// Operator time_t
+    GTEST_SKIP_(
+        "This tests is broken! Might need tweaking in order to integrate with the Timezone "
+        "module.");
+    // Operator time_t
     EXPECT_EQ(time_t(d1), 1568648497);
-    // Apparently it depends on the timezone because mktime uses the local machine's timezone (from TZ env variable).
+    // Apparently it depends on the timezone because mktime uses the local machine's timezone (from
+    // TZ env variable).
 
-// Operator struct tm
+    // Operator struct tm
     struct tm md1 = tm(d1);
     EXPECT_EQ(md1.tm_year, year);
     EXPECT_EQ(md1.tm_mon, month);
@@ -136,9 +141,8 @@ TEST_F(GetterSetterTests, TestSetterDST) {
     try {
         d1.dst(123);
         FAIL() << "expected wrong time data";
-    }
-    catch (const DateError &de) {
-        EXPECT_EQ(de.ERROR_VALUE, DateError_e::WRONG_TIME_DATA);
+    } catch (const DateError &de) {
+        EXPECT_EQ(de.getErrorValue(), DateError_e::WRONG_TIME_DATA);
     }
     EXPECT_EQ(d1.dst(), dst_flag); // ensure stable state
 }
@@ -151,16 +155,14 @@ TEST_F(GetterSetterTests, TestSetterSeconds) {
     try {
         d1.seconds(123);
         FAIL() << "expected wrong time data";
-    }
-    catch (const DateError &de) {
-        EXPECT_EQ(de.ERROR_VALUE, DateError_e::WRONG_TIME_DATA);
+    } catch (const DateError &de) {
+        EXPECT_EQ(de.getErrorValue(), DateError_e::WRONG_TIME_DATA);
     }
     try {
         d1.seconds(-5);
         FAIL() << "expected wrong time data";
-    }
-    catch (const DateError &de) {
-        EXPECT_EQ(de.ERROR_VALUE, DateError_e::WRONG_TIME_DATA);
+    } catch (const DateError &de) {
+        EXPECT_EQ(de.getErrorValue(), DateError_e::WRONG_TIME_DATA);
     }
     EXPECT_EQ(d1.seconds(), 0); // ensure stable state
 }

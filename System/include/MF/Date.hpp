@@ -1,6 +1,6 @@
 //---------- Interface of class <Date> (file Date.h) ----------------
-#if !defined ( DATE_H )
-#define DATE_H
+#ifndef MFRANCESCHI_CPPLIBRARIES_DATE_HPP
+#define MFRANCESCHI_CPPLIBRARIES_DATE_HPP
 
 //--------------------------------------------------------------- Includes
 #include <ctime> /* for tm and time_t */
@@ -11,18 +11,22 @@
 #include "MF/DateTypes.hpp"
 #include "MF/DateUtils.hpp"
 
-namespace MF {
+namespace MF
+{
 
-//------------------------------------------------------------------ Types
+    //------------------------------------------------------------------ Types
 
-    typedef double Interval; // Time distance between two dates, in seconds.
+    /**
+     * Time distance between two dates, in seconds.
+     * // TODO use Interval data type.
+     */
+    typedef double Interval;
 
-    // Role of Date:
-    // Simple extension of the C struct tm with microseconds and operators overloading.
+    /** Simple extension of the C struct tm with microseconds and operators overloading. */
     class Date {
         //----------------------------------------------------------------- PUBLIC
 
-    public:
+       public:
         //------------------------------------------------------- Static utilities
 
         static int ms_tolerance() noexcept;
@@ -35,13 +39,15 @@ namespace MF {
 
         //--------------------------------------------------------- Public methods
 
-        // Compares the current date with the given one.
-        // Returns Dates::INFERIOR if "this" is before "param",
-        // same idea for Dates::EQUAL and Dates::SUPERIOR.
-        // The "tolerance" variable is used here.
+        /**
+         * Compares the current date with the given one.
+         * Returns Dates::INFERIOR if "this" is before "param",
+         * same idea for Dates::EQUAL and Dates::SUPERIOR.
+         * The "tolerance" variable is used here.
+         */
         int Compare(const Date &) const;
 
-        // Returns (this) - (param) in seconds.
+        /** Returns (this) - (param) in seconds. */
         Interval Timedelta(const Date &) const;
 
         // Getters and setters.
@@ -90,25 +96,26 @@ namespace MF {
 
         int dst(int);
 
-        static const char *str_pattern(const char *pattern = ""); // Refers to Date::pattern. Empty string = getter.
+        /** Refers to Date::pattern. Empty string = getter. */
+        static const char *str_pattern(const char *pattern = "");
 
         //-------------------------------------------------- Operator overloadings
 
         // Comparison operators.
-        bool operator==(const Date &b) const;
+        bool operator==(const Date &other) const;
 
-        inline bool operator!=(const Date &b) const;
+        inline bool operator!=(const Date &other) const;
 
-        inline bool operator<(const Date &b) const;
+        inline bool operator<(const Date &other) const;
 
-        inline bool operator>(const Date &b) const;
+        inline bool operator>(const Date &other) const;
 
-        inline bool operator<=(const Date &b) const;
+        inline bool operator<=(const Date &other) const;
 
-        inline bool operator>=(const Date &b) const;
+        inline bool operator>=(const Date &other) const;
 
         // Returns interval.
-        inline Interval operator%(const Date &b) const;
+        inline Interval operator%(const Date &other) const;
 
         inline Interval operator-(const Date &b) const;
 
@@ -133,7 +140,7 @@ namespace MF {
 
         inline friend std::ostream &operator<<(std::ostream &, const Date &);
 
-//---------------------------------------------- Constructors - destructor
+        //---------------------------------------------- Constructors - destructor
 
         Date(const Date &) = default;
 
@@ -141,8 +148,15 @@ namespace MF {
 
         explicit Date(const std::string &, const char *pattern, int microseconds = 0);
 
-        explicit Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag,
-                      int microseconds = 0);
+        explicit Date(
+            int year,
+            int month,
+            int monthday,
+            int hour,
+            int minutes,
+            int seconds,
+            int dst_flag,
+            int microseconds = 0);
 
         explicit Date(const std::string &, const char *pattern);
 
@@ -155,58 +169,103 @@ namespace MF {
 
         virtual ~Date() = default;
 
-//---------------------------------------------------------------- PRIVATE
+        //---------------------------------------------------------------- PRIVATE
 
-    protected:
-//------------------------------------------------------ Protected methods
+       private:
+        //------------------------------------------------------ Protected methods
 
-        // If newvalue < max: sets field then returns it.
-        // If newvalue == -1: returns field.
-        // Else throw DateError_e::WRONG_TIME_DATA.
-        int quickSetter(int newvalue, int min, int max, int &field);
-//--------------------------------------------------- Protected attributes
+        /** If newValue < max: sets field then returns it.
+         * If newValue == -1: returns field.
+         * Else throw DateError_e::WRONG_TIME_DATA. */
+        int quickSetter(int newValue, int min, int max, int &field);
+        //--------------------------------------------------- Protected attributes
 
-        tm time{}; // tm struct that holds the current date.
-        time_t timet; // time_t that holds the current date.
-        static const char *pattern; // String pattern based on strftime. No microseconds here.
-        static Date lastCallToNow; // All default-constructed Date instances will have this value. Updated on each call to Now.
+        /** tm struct that holds the current date. */
+        tm time{};
 
-        int microseconds_in; // Instance field that holds microseconds.
-        static int tolerance; // Tolerance in microseconds. Initial value of MS_MAX.
-        static char msSepChar; // Separator for normal datetime and mics in strings. Initial value of NO_MS.
+        /** time_t that holds the current date. */
+        time_t timet;
+
+        /** String pattern based on strftime. No microseconds here. */
+        static const char *pattern;
+
+        /** All default-constructed Date instances will have this value.
+         * Updated on each call to Now. */
+        static Date lastCallToNow;
+
+        /** Instance field that holds microseconds. */
+        int microseconds_in{};
+
+        /** Tolerance in microseconds.
+         * Initial value of MS_MAX. */
+        static int tolerance;
+
+        /** Separator for normal datetime and mics in strings.
+         * Initial value of NO_MS. */
+        static char msSepChar;
     };
 
-//------------------------------------------------------ Other definitions
+    //------------------------------------------------------ Other definitions
 
-    inline int Date::seconds() const { return time.tm_sec; }
+    inline int Date::seconds() const {
+        return time.tm_sec;
+    }
 
-    inline int Date::minutes() const { return time.tm_min; }
+    inline int Date::minutes() const {
+        return time.tm_min;
+    }
 
-    inline int Date::hours() const { return time.tm_hour; }
+    inline int Date::hours() const {
+        return time.tm_hour;
+    }
 
-    inline int Date::day_month() const { return time.tm_mday; }
+    inline int Date::day_month() const {
+        return time.tm_mday;
+    }
 
-    inline int Date::month() const { return time.tm_mon; }
+    inline int Date::month() const {
+        return time.tm_mon;
+    }
 
-    inline int Date::day_week() const { return time.tm_wday; }
+    inline int Date::day_week() const {
+        return time.tm_wday;
+    }
 
-    inline int Date::day_year() const { return time.tm_yday; }
+    inline int Date::day_year() const {
+        return time.tm_yday;
+    }
 
-    inline int Date::year() const { return time.tm_year; }
+    inline int Date::year() const {
+        return time.tm_year;
+    }
 
-    inline int Date::dst() const { return time.tm_isdst; }
+    inline int Date::dst() const {
+        return time.tm_isdst;
+    }
 
-    inline bool Date::operator!=(const Date &b) const { return !(*this == b); }
+    inline bool Date::operator!=(const Date &other) const {
+        return !(*this == other);
+    }
 
-    inline bool Date::operator<(const Date &b) const { return Compare(b) == -1; }
+    inline bool Date::operator<(const Date &other) const {
+        return Compare(other) == -1;
+    }
 
-    inline bool Date::operator>(const Date &b) const { return Compare(b) == +1; }
+    inline bool Date::operator>(const Date &other) const {
+        return Compare(other) == +1;
+    }
 
-    inline bool Date::operator<=(const Date &b) const { return Compare(b) != +1; }
+    inline bool Date::operator<=(const Date &other) const {
+        return Compare(other) != +1;
+    }
 
-    inline bool Date::operator>=(const Date &b) const { return Compare(b) != -1; }
+    inline bool Date::operator>=(const Date &other) const {
+        return Compare(other) != -1;
+    }
 
-    inline Interval Date::operator%(const Date &b) const { return Timedelta(b); }
+    inline Interval Date::operator%(const Date &other) const {
+        return Timedelta(other);
+    }
 
     inline Date &Date::operator++() {
         seconds(seconds() + 1);
@@ -219,17 +278,23 @@ namespace MF {
         return tmp;
     }
 
-    inline Date::operator struct tm() const { return time; }
+    inline Date::operator struct tm() const {
+        return time;
+    }
 
-    inline Date::operator time_t() const { return timet; }
+    inline Date::operator time_t() const {
+        return timet;
+    }
 
     inline Date Date::FromTime_t(const time_t time1, int microseconds) {
         std::tm tm1{0};
-        DateUtils::Gmtime(time1, tm1);
+        ::MF::DateUtils::Gmtime(time1, tm1);
         return Date(tm1, microseconds);
     }
 
-    inline std::ostream &operator<<(std::ostream &os, const Date &d) { return os << std::string(d); }
+    inline std::ostream &operator<<(std::ostream &ostream, const Date &date) {
+        return ostream << std::string(date);
+    }
 
-}
-#endif // DATE_H
+} // namespace MF
+#endif // MFRANCESCHI_CPPLIBRARIES_DATE_HPP

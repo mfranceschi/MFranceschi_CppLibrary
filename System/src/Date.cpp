@@ -1,28 +1,26 @@
-//---------- Implementation of class <Date> (file Date.cpp) 
+//---------- Implementation of class <Date> (file Date.cpp)
 
 //---------------------------------------------------------------- INCLUDE
+#include "MF/Date.hpp"
+
 #include <cassert>
 #include <chrono>
 #include <cstring>
-#include <sstream>
 #include <functional>
 #include <iomanip>
 #include <mutex>
-
-#include "MF/Date.hpp"
-
+#include <sstream>
 
 //-------------------------------------------------------------- Constants
 
 // static functions
-template<typename type = long long>
+template <typename type = long long>
 static constexpr int Sign(type nbr) {
-    return !nbr ? 0 :
-           nbr < static_cast<type>(0) ?
-           -1 : +1;
+    return !nbr ? 0 : nbr < static_cast<type>(0) ? -1 : +1;
 }
 
-namespace MF {
+namespace MF
+{
 
     using namespace DateUtils;
 
@@ -33,28 +31,39 @@ namespace MF {
 
     Date Date::lastCallToNow = Date::Now();
 
-// Mutexes for static variables access.
+    // Mutexes for static variables access.
     static std::mutex tolerance_mutex, pattern_mutex, msSep_mutex;
 
-// Template function for getter and setter of static variables access.
-    template<typename T>
-    static T set_static_value(T newValue, std::mutex &mutex_i, T &stored_value, std::function<bool(T)> isReadOnly) {
+    // Template function for getter and setter of static variables access.
+    template <typename T>
+    static T set_static_value(
+        T newValue, std::mutex &mutex_i, T &stored_value, std::function<bool(T)> isReadOnly) {
         mutex_i.lock();
         T returnValue = isReadOnly(newValue) ? stored_value : (stored_value = newValue);
         mutex_i.unlock();
         return returnValue;
     }
 
-#define ASSERT_OK() assert((timet = mktime(&time)) != static_cast<time_t>(-1)) /* Ensures the instance is in a valid state or fail assertion. */
+    /**
+     * Attempts to put the "time_t" and "tm" values in a valid state.
+     * In DEBUG, also assert the time_t is valid.
+     * */
+    static inline void assertInstanceIsValid(time_t &timet, struct tm &time) {
+        constexpr time_t ERROR_VALUE = static_cast<time_t>(-1);
+        timet = mktime(&time);
+        // TODO don't C-assert but throw.
+        assert(timet != ERROR_VALUE);
+    }
 
-//----------------------------------------------------------------- PUBLIC
+    //----------------------------------------------------------------- PUBLIC
 
-//--------------------------------------------------------- Public methods
+    //--------------------------------------------------------- Public methods
 
     const char *Date::str_pattern(const char *npattern) {
-        return set_static_value<decltype(Date::pattern)>(npattern, pattern_mutex, Date::pattern, [](const char *newp) {
-            return newp != nullptr && strlen(newp) == 0;
-        });
+        return set_static_value<decltype(Date::pattern)>(
+            npattern, pattern_mutex, Date::pattern, [](const char *newp) {
+                return newp != nullptr && strlen(newp) == 0;
+            });
     }
 
     Date Date::Now() noexcept {
@@ -64,8 +73,10 @@ namespace MF {
         Date newDate = Date::FromTime_t(clock::to_time_t(now_point));
 
         using mics = std::chrono::microseconds;
-        mics::rep current_microseconds_count = duration_cast<mics>(now_point.time_since_epoch()).count();
-        newDate.microseconds(static_cast<int>(current_microseconds_count - 1000000 * time_t(newDate)));
+        mics::rep current_microseconds_count =
+            duration_cast<mics>(now_point.time_since_epoch()).count();
+        newDate.microseconds(
+            static_cast<int>(current_microseconds_count - 1000000 * time_t(newDate)));
         return newDate;
     }
 
@@ -75,11 +86,12 @@ namespace MF {
 
     Interval Date::Timedelta(const Date &param) const {
         auto result = difftime(timet, param.timet);
-        result += static_cast<Interval>(double(microseconds_in - param.microseconds_in) / double(MS_MAX));
+        result +=
+            static_cast<Interval>(double(microseconds_in - param.microseconds_in) / double(MS_MAX));
         return result;
     }
 
-// Getters and setters.
+    // Getters and setters.
 
     int Date::seconds(int newvalue) {
         return quickSetter(newvalue, 0, 60, time.tm_sec);
@@ -94,8 +106,7 @@ namespace MF {
     }
 
     int Date::day_month(int newvalue) {
-        if (!newvalue)
-            newvalue = -2;
+        if (!newvalue) newvalue = -2;
         return quickSetter(newvalue, 1, DaysInMonth(newvalue, time.tm_year - 1900), time.tm_mday);
     }
 
@@ -106,21 +117,23 @@ namespace MF {
     int Date::year(int newvalue) {
         if (newvalue < MAX_YEAR && newvalue > -MAX_YEAR - 1) {
             time.tm_year = newvalue;
-            ASSERT_OK();
+            assertInstanceIsValid(timet, time);
             return time.tm_year;
         } else
-            throw DateError(DateError_e::WRONG_TIME_DATA,
-                            "Year is not between -1 and " + std::to_string(MAX_YEAR) + ".");
+            throw DateError(
+                DateError_e::WRONG_TIME_DATA,
+                "Year is not between -1 and " + std::to_string(MAX_YEAR) + ".");
     } // TODO
 
     int Date::dst(int newvalue) {
         if (newvalue == DST_UNKNOWN || newvalue == DST_OFF || newvalue == DST_ON) {
             time.tm_isdst = newvalue;
-            ASSERT_OK();
+            assertInstanceIsValid(timet, time);
             return time.tm_isdst;
         } else
-            throw DateError(DateError_e::WRONG_TIME_DATA,
-                            "Error while setting the DST flag, value is invalid: " + std::to_string(newvalue));
+            throw DateError(
+                DateError_e::WRONG_TIME_DATA,
+                "Error while setting the DST flag, value is invalid: " + std::to_string(newvalue));
     }
 
     int Date::microseconds(int newms) {
@@ -142,40 +155,44 @@ namespace MF {
         });
     }
 
-//-------------------------------------------------- Operator overloadings
-    bool Date::operator==(const Date &b) const {
+    //-------------------------------------------------- Operator overloadings
+    bool Date::operator==(const Date &other) const {
         using temp_type = long;
-        temp_type current = temp_type(timet) * MS_MAX + microseconds_in;
-        temp_type other = temp_type(b.timet) * MS_MAX + b.microseconds_in;
-        return abs(current - other) <= temp_type(tolerance);
+
+        temp_type currentMicrosecondsTime = temp_type(timet) * MS_MAX + microseconds_in;
+        temp_type otherMicrosecondsTime = temp_type(other.timet) * MS_MAX + other.microseconds_in;
+        return std::abs(currentMicrosecondsTime - otherMicrosecondsTime) <= temp_type(tolerance);
     }
 
     Date::operator std::string() const {
-        if (pattern == nullptr)
+        if (pattern == nullptr) {
             throw DateError(DateError_e::NO_PATTERN, "Pattern string is nullptr.");
+        }
 
         std::ostringstream oss;
         oss << std::put_time(&time, pattern);
 
-        if (msSepChar != NO_MS)
+        if (msSepChar != NO_MS) {
             oss << msSepChar << microseconds_in;
+        }
 
         return oss.str();
     }
 
+    //---------------------------------------------- Constructors - destructor
 
-//---------------------------------------------- Constructors - destructor
-
-    Date::Date() :
-            Date(Now()) {
+    Date::Date() : Date(Now()) {
     }
 
     Date::Date(const std::string &src, const char *npattern) {
         if (npattern == nullptr) {
-            if (Date::pattern != nullptr)
+            if (Date::pattern != nullptr) {
                 npattern = Date::pattern;
-            else
-                throw DateError(DateError_e::NO_PATTERN, "Pattern string is nullptr and this is not recoverable.");
+            } else {
+                throw DateError(
+                    DateError_e::NO_PATTERN,
+                    "Pattern string is nullptr and this is not recoverable.");
+            }
         }
 
         std::istringstream iss(src);
@@ -187,7 +204,15 @@ namespace MF {
         }
     }
 
-    Date::Date(int year, int month, int monthday, int hour, int minutes, int seconds, int dst_flag, int microseconds) {
+    Date::Date(
+        int year,
+        int month,
+        int monthday,
+        int hour,
+        int minutes,
+        int seconds,
+        int dst_flag,
+        int microseconds) {
         time.tm_year = year;
         time.tm_mon = month;
         time.tm_mday = monthday;
@@ -197,31 +222,32 @@ namespace MF {
         time.tm_isdst = dst_flag;
         microseconds_in = microseconds;
         if ((timet = mktime(&time)) == time_t(-1)) {
-            throw DateError(DateError_e::WRONG_TIME_DATA, "Something is wrong with the given inputs!");
+            throw DateError(
+                DateError_e::WRONG_TIME_DATA, "Something is wrong with the given inputs!");
         }
-        ASSERT_OK();
+        assertInstanceIsValid(timet, time);
     }
 
     Date::Date(tm tm1, int microseconds) : time(tm1), microseconds_in(microseconds) {
-        ASSERT_OK();
+        assertInstanceIsValid(timet, time);
     }
 
-//---------------------------------------------------------------- PRIVATE
+    //---------------------------------------------------------------- PRIVATE
 
-//------------------------------------------------------ Protected methods
+    //------------------------------------------------------ Protected methods
 
     int Date::quickSetter(int newvalue, int min, int max, int &field) {
-        if (newvalue == -1)
+        if (newvalue == -1) {
             return field;
-        else {
+        } else {
             if (newvalue >= min && newvalue <= max) {
                 field = newvalue;
             } else {
                 throw DateError(DateError_e::WRONG_TIME_DATA, "Internal error in QuickSetter");
             }
 
-            ASSERT_OK();
+            assertInstanceIsValid(timet, time);
             return field;
         }
     }
-}
+} // namespace MF

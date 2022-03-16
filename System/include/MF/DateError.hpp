@@ -7,24 +7,42 @@
 
 #include <stdexcept>
 
-namespace MF {
-    // Errors for this module. Don't use the integer values directly.
+namespace MF
+{
+    /** Errors for this module. */
     enum class DateError_e {
-        NO_PATTERN,            // No pattern was available to perform the Date<->string conversion.
-        WRONG_STRUCT_TM,    // Struct tm was corrupted.
-        WRONG_MS,            // The number of milliseconds was not acceptable (too high?).
-        WRONG_STRING,        // String could not be retrieved as Date using the given pattern.
-        WRONG_TIME_T,        // The given time_t could not be converted as date (value too high?).
-        WRONG_TIME_DATA        // Returned by setter functions if the parameter is not in the correct range.
+        /** No pattern was available to perform the Date<->string conversion. */
+        NO_PATTERN,
+
+        /** Struct tm was corrupted. */
+        WRONG_STRUCT_TM,
+
+        /** The number of milliseconds was not acceptable (too high?). */
+        WRONG_MS,
+
+        /** String could not be retrieved as Date using the given pattern. */
+        WRONG_STRING,
+
+        /** The given time_t could not be converted as date (value too high?). */
+        WRONG_TIME_T,
+
+        /** Returned by setter functions if the parameter is not in the correct range. */
+        WRONG_TIME_DATA
     };
 
     class DateError : public std::runtime_error {
-    public:
-        const DateError_e ERROR_VALUE;
+       private:
+        const DateError_e errorValue;
 
-        DateError(DateError_e enumValue, const std::string &errorText) : std::runtime_error(errorText),
-                                                                         ERROR_VALUE(enumValue) {}
+       public:
+        DateError(DateError_e enumValue, const std::string& errorText)
+            : std::runtime_error(errorText), errorValue(enumValue) {
+        }
+
+        const DateError_e& getErrorValue() const {
+            return errorValue;
+        }
     };
-}
+} // namespace MF
 
-#endif //MFRANCESCHI_CPPLIBRARIES_DATEERROR_HPP
+#endif // MFRANCESCHI_CPPLIBRARIES_DATEERROR_HPP
