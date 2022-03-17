@@ -5,8 +5,8 @@ project(MFranceschi_CppLibraries
 set(CMAKE_CXX_STANDARD 14)
 
 # ----- GET THE THREADS LIBRARY ----- #
-if (NOT Threads_FOUND)
-    if (MINGW AND NOT MF_Lib_ForceUseThreads)
+if(NOT Threads_FOUND)
+    if(MINGW AND NOT MF_Lib_ForceUseThreads)
         # The user does not want to force the use of a threading library.
         # In MinGW it does not work fine, so we force a dummy non-detection of the libraries.
         set(Threads_FOUND FALSE)
@@ -21,7 +21,7 @@ add_compile_definitions(
 )
 
 # ----- WINDOWS UNICODE ----- #
-if (MF_Lib_WantUnicode OR UNICODE)
+if(MF_Lib_WantUnicode OR UNICODE)
     add_compile_definitions(UNICODE=1)
 endif()
 
