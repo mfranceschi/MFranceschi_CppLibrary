@@ -5,7 +5,8 @@
 #ifndef MYWORKS_TEST0_TIMINGEXPERIENCE_H
 #define MYWORKS_TEST0_TIMINGEXPERIENCE_H
 
-namespace TimingExperience {
+namespace TimingExperience
+{
     void RunAll();
     void timingTimeThis();
     void timingTheFileExistence();
@@ -15,7 +16,6 @@ namespace TimingExperience {
     void timingCtimeFunctions();
 
     constexpr size_t NUMBER_OF_ITERATIONS = 10 * 1000;
-};
+}; // namespace TimingExperience
 
-
-#endif //MYWORKS_TEST0_TIMINGEXPERIENCE_H
+#endif // MYWORKS_TEST0_TIMINGEXPERIENCE_H

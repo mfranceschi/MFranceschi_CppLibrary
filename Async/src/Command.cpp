@@ -3,12 +3,13 @@
 //
 
 #include "MF/Command.hpp"
+
 #include "CommandHelper.hpp"
 
-// PUBLIC DEFINITIONS
-
-namespace MF {
-    namespace Command {
+namespace MF
+{
+    namespace Command
+    {
 
         void Command(const CommandCall &commandCall, CommandReturn &commandReturn) {
             CommandRunner runner;
@@ -72,5 +73,5 @@ namespace MF {
             }
             commandReturn.returnCode = runner.getStatusCode();
         }
-    }
-}
+    } // namespace Command
+} // namespace MF

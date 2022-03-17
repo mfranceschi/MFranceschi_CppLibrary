@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
 
     printf("%s\n", inputBuffer);
 
-    for (int i=1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         fprintf(stderr, "%d: %s\n", i, argv[i]);
     }
     return argc;

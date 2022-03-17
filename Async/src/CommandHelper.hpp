@@ -5,19 +5,20 @@
 #ifndef MFRANCESCHI_CPPLIBRARIES_COMMANDHELPER_HPP
 #define MFRANCESCHI_CPPLIBRARIES_COMMANDHELPER_HPP
 
-#include "MF/Filesystem.hpp"
 #include <sstream>
 
+#include "MF/Filesystem.hpp"
+
 #if MF_WINDOWS
-
-#   include "MF/LightWindows.hpp"
-
+#    include "MF/LightWindows.hpp"
 #else
-#   include <unistd.h>
+#    include <unistd.h>
 #endif
 
-namespace MF {
-    namespace Command {
+namespace MF
+{
+    namespace Command
+    {
         using namespace ::MF::Filesystem;
 
 #if MF_WINDOWS
@@ -31,8 +32,7 @@ namespace MF {
         constexpr StreamItem STREAM_ITEM_DEFAULT = -1;
 #endif
 
-
-// Declarations
+        // Declarations
         class CommandComponent;
 
         class CommandRunner;
@@ -57,12 +57,12 @@ namespace MF {
 
         class ProcessErrorStream_Keep;
 
-// ///////////////////////////////////////////////////////////////
-// ///////////// COMMAND COMPONENT interface /////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // ///////////// COMMAND COMPONENT interface /////////////////////
+        // ///////////////////////////////////////////////////////////////
 
         class CommandComponent {
-        public:
+           public:
             /// This will be called right before the command is started.
             virtual void beforeStart();
 
@@ -79,28 +79,27 @@ namespace MF {
         };
 
         class ProcessStream : public CommandComponent {
-        public:
+           public:
             virtual StreamItem getStreamItem() const = 0;
 
-#if !defined(_WIN32)
+#if MF_UNIX
             virtual void closeOnFork();
 #endif
         };
 
-// ///////////////////////////////////////////////////////////////
-// /////////////////////// INPUT STREAMS /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // /////////////////////// INPUT STREAMS /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
-        class ProcessInputStream : public ProcessStream {
-        };
+        class ProcessInputStream : public ProcessStream {};
 
         class ProcessInputStream_None : public ProcessInputStream {
-        public:
+           public:
             StreamItem getStreamItem() const override;
         };
 
         class ProcessInputStream_String : public ProcessInputStream {
-        public:
+           public:
             explicit ProcessInputStream_String(const SFilename_t &string);
 
             void beforeStart() override;
@@ -111,17 +110,17 @@ namespace MF {
 
             StreamItem getStreamItem() const override;
 
-#if !defined(_WIN32)
+#if MF_UNIX
             void closeOnFork() override;
 #endif
-        protected:
+           protected:
             const SFilename_t &inputString;
             StreamItem readStream = STREAM_ITEM_DEFAULT;
             StreamItem writeToStream = STREAM_ITEM_DEFAULT;
         };
 
         class ProcessInputStream_FromFile : public ProcessInputStream {
-        public:
+           public:
             explicit ProcessInputStream_FromFile(const SFilename_t &filename);
 
             void beforeStart() override;
@@ -130,35 +129,35 @@ namespace MF {
 
             StreamItem getStreamItem() const override;
 
-#if !defined(_WIN32)
+#if MF_UNIX
             void closeOnFork() override;
 #endif
-        protected:
+           protected:
             const SFilename_t &filename;
             StreamItem fileStream = STREAM_ITEM_DEFAULT;
         };
 
-// ///////////////////////////////////////////////////////////////
-// ////////////////////// OUTPUT STREAMS /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // ////////////////////// OUTPUT STREAMS /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
         class ProcessOutputStream : public ProcessStream {
-        public:
+           public:
             virtual std::string retrieveOutput();
         };
 
         class ProcessOutputStream_Keep : public ProcessOutputStream {
-        public:
+           public:
             StreamItem getStreamItem() const override;
         };
 
         class ProcessErrorStream_Keep : public ProcessOutputStream {
-        public:
+           public:
             StreamItem getStreamItem() const override;
         };
 
         class ProcessOutputStream_Export : public ProcessOutputStream {
-        public:
+           public:
             const bool APPEND;
 
             explicit ProcessOutputStream_Export(bool append, const SFilename_t &filename);
@@ -169,27 +168,27 @@ namespace MF {
 
             StreamItem getStreamItem() const override;
 
-#if !defined(_WIN32)
+#if MF_UNIX
             void closeOnFork() override;
 #endif
 
-        protected:
+           protected:
             const SFilename_t &filename;
             StreamItem fileStream = STREAM_ITEM_DEFAULT;
         };
 
         class ProcessOutputStream_Kill : public ProcessOutputStream_Export {
-        public:
+           public:
             ProcessOutputStream_Kill();
 
             void beforeStart() override;
 
-        private:
-            static Filesystem::Filename_t KILL_FILENAME;
+           private:
+            static const Filesystem::Filename_t KILL_FILENAME;
         };
 
         class ProcessOutputStream_Retrieve : public ProcessOutputStream {
-        public:
+           public:
             void beforeStart() override;
 
             void beforeStop() override;
@@ -200,21 +199,21 @@ namespace MF {
 
             StreamItem getStreamItem() const override;
 
-#if !defined(_WIN32)
+#if MF_UNIX
             void closeOnFork() override;
 #endif
-        protected:
+           protected:
             std::ostringstream oss;
             StreamItem readStream = STREAM_ITEM_DEFAULT;
             StreamItem writeStream = STREAM_ITEM_DEFAULT;
         };
 
-// ///////////////////////////////////////////////////////////////
-// ////////////////////// COMMAND RUNNER /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // ////////////////////// COMMAND RUNNER /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
         class CommandRunner {
-        public:
+           public:
             void setInput(ProcessInputStream *stream);
 
             void setOutput(ProcessOutputStream *stream);
@@ -236,7 +235,7 @@ namespace MF {
             const SFilename_t *executable = nullptr;
             const std::vector<SFilename_t> *arguments = nullptr;
 
-        protected:
+           protected:
             void internalStart();
 
             void internalStop();
@@ -247,12 +246,12 @@ namespace MF {
             ProcessOutputStream *processErrorStream = new ProcessErrorStream_Keep;
             ProcessInputStream *processInputStream = new ProcessInputStream_None;
 
-        private:
+           private:
             void internalOSCleanUp();
 
-            ProcessItem childProcessItem = (ProcessItem) (-1);
+            ProcessItem childProcessItem = (ProcessItem)(-1);
         };
-    }
-}
+    } // namespace Command
+} // namespace MF
 
-#endif //MFRANCESCHI_CPPLIBRARIES_COMMANDHELPER_HPP
+#endif // MFRANCESCHI_CPPLIBRARIES_COMMANDHELPER_HPP

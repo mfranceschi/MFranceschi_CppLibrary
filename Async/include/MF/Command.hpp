@@ -5,20 +5,22 @@
 #ifndef MYWORKS_TEST0_COMMAND_HPP
 #define MYWORKS_TEST0_COMMAND_HPP
 
+#include <functional>
 #include <string>
 #include <vector>
-#include <functional>
 
 #include "MF/Filesystem.hpp"
 
-namespace MF {
-    namespace Command {
+namespace MF
+{
+    namespace Command
+    {
 
         enum class OutputChoice {
             KEEP, // Let it on the console
             KILL, // Silent and ignore
             EXPORT, // Write outputs into the file "outputFile"
-            EXPORT_APPEND, // Appends outputs into the file "outputFile"
+            EXPORT_APPEND, // Append outputs into the file "outputFile"
             RETRIEVE // Get outputs as string in the return structure
         };
 
@@ -39,22 +41,24 @@ namespace MF {
         enum class InterruptChoice {
             NEVER, // No restriction for the execution
             AFTER_TIME, // Interrupts the execution after the given time
-            ON_DEMAND // Interrupts the execution when some function is called (returned in CommandReturn)
+            ON_DEMAND // Interrupts the execution when some function is called (returned in
+                      // CommandReturn)
         };
 
         struct CommandReturn {
             int returnCode = 0; // Return value of the command
             std::string outputText; // [?] Complete string of the outputs
             std::string errorText; // [?] Complete string of the errors
-            std::function<void()> callToTerminate; // [?] Call this to (try to) force the command to terminate
+            std::function<void()>
+                callToTerminate; // [?] Call this to (try to) force the command to terminate
         };
 
         using Filesystem::SFilename_t;
 
         struct CommandCall {
-
             SFilename_t executable; // Name or path to the executable
-            std::vector<SFilename_t> arguments; // List of arguments to the executable, they will be concatenated with " ".
+            std::vector<SFilename_t> arguments; // List of arguments to the executable, they will be
+                                                // concatenated with " ".
             SFilename_t outputFile; // [?] File in which to write outputs
             OutputChoice outputChoice = OutputChoice::KEEP; // Choice for outputs
             SFilename_t errorFile; // [?] File in which to write errors
@@ -69,20 +73,21 @@ namespace MF {
         };
 
         void Command(const CommandCall &call, CommandReturn &);
-// TODO implement
-// - Normal call
-// - CMD specific call
-// - PowerShell specific call
-// - Bash specific call
-// - Shell specific call
-// - ZSH specific call
-// - Script Bash
-// - Script PowerShell
-// - Script Shell
-// - Script Bash
-// - Get list of available stuff (bitfield: Bash, PowerShell, etc.)
-// - Common structure of parameters: quiet option, etc.
+        
+        // TODO implement
+        // - Normal call
+        // - CMD specific call
+        // - PowerShell specific call
+        // - Bash specific call
+        // - Shell specific call
+        // - ZSH specific call
+        // - Script Bash
+        // - Script PowerShell
+        // - Script Shell
+        // - Script Bash
+        // - Get list of available stuff (bitfield: Bash, PowerShell, etc.)
+        // - Common structure of parameters: quiet option, etc.
 
-    }
-}
-#endif //MYWORKS_TEST0_COMMAND_HPP
+    } // namespace Command
+} // namespace MF
+#endif // MYWORKS_TEST0_COMMAND_HPP

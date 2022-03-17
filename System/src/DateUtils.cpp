@@ -4,17 +4,16 @@
 
 #include <ctime>
 
-
 #if MF_WINDOWS
-
-#   include "MF/LightWindows.hpp"
-
+#    include "MF/LightWindows.hpp"
 #endif
 
 #include "MF/DateUtils.hpp"
 
-namespace MF {
-    namespace DateUtils {
+namespace MF
+{
+    namespace DateUtils
+    {
 
         bool Localtime(const time_t &src, struct tm &dest) {
 #if MF_WINDOWS
@@ -23,15 +22,15 @@ namespace MF {
 
 #elif defined __STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__ == 1
             /* Classic Localtime_S is available. */
-        return localtime_s(&src, &dest);
+            return localtime_s(&src, &dest);
 #else
-        /* Use POSIX-style Localtime_R. */
-        return localtime_r(&src, &dest);
+            /* Use POSIX-style Localtime_R. */
+            return localtime_r(&src, &dest);
 
-        /*
-         * To use basic "localtime", we should use mutexes to ensure there are no conflicts.
-         * I am not implementing it here.
-         */
+            /*
+             * To use basic "localtime", we should use mutexes to ensure there are no conflicts.
+             * I am not implementing it here.
+             */
 #endif
         }
 
@@ -42,15 +41,15 @@ namespace MF {
 
 #elif defined __STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__ == 1
             /* Classic Gmtime_S is available. */
-        return gmtime_s(&src, &dest);
+            return gmtime_s(&src, &dest);
 #else
-        /* Use POSIX-style Gmtime_R. */
-        return gmtime_r(&src, &dest);
+            /* Use POSIX-style Gmtime_R. */
+            return gmtime_r(&src, &dest);
 
-        /*
-         * To use basic "gmtime", we should use mutexes to ensure there are no conflicts.
-         * I am not implementing it here.
-         */
+            /*
+             * To use basic "gmtime", we should use mutexes to ensure there are no conflicts.
+             * I am not implementing it here.
+             */
 #endif
         }
 
@@ -63,5 +62,5 @@ namespace MF {
             return timezone;
 #endif
         }
-    }
-}
+    } // namespace DateUtils
+} // namespace MF

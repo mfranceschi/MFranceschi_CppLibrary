@@ -2,11 +2,12 @@
 // Created by mfran on 13/04/2020.
 //
 
-#if defined(_WIN32)
+#if MF_WINDOWS
 
-#include "MF/LightWindows.hpp"
-#include "WindowsAPIHelper.hpp"
-#include "MF/Windows.hpp"
+#    include "WindowsAPIHelper.hpp"
+
+#    include "MF/LightWindows.hpp"
+#    include "MF/Windows.hpp"
 
 // ///////////////////////////////////////////////////////////////
 // //////////////// COMMAND HANDLING API /////////////////////////

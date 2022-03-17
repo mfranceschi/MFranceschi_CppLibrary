@@ -4,26 +4,29 @@
 
 #include <memory>
 
-#if defined(_WIN32)
+#if MF_WINDOWS
 
-#   include <Windows.h>
-#   include "MF/Windows.hpp"
+#    include "MF/LightWindows.hpp"
+#    include "MF/Windows.hpp"
 
 #else
 
-#   include <dlfcn.h>
-#   include <cstring>
-#   include <csignal>
+#    include <dlfcn.h>
+
+#    include <csignal>
+#    include <cstring>
 
 #endif
 
 #include "MF/DynamicLibrary.hpp"
 
-namespace MF {
-    namespace System {
-#if defined(_WIN32)
+namespace MF
+{
+    namespace System
+    {
+#if MF_WINDOWS
         const char *DynamicLibrary::LocalExtension = ".dll";
-#define _GetLibraryPointer static_cast<HMODULE>(_library)
+#    define _GetLibraryPointer static_cast<HMODULE>(_library)
 #else
         const char *DynamicLibrary::LocalExtension = ".so";
 #endif
@@ -33,16 +36,18 @@ namespace MF {
 
             void *functionAddress;
 
-#if defined(_WIN32)
-            functionAddress = reinterpret_cast<void *>(GetProcAddress(_GetLibraryPointer, functionName.c_str()));
+#if MF_WINDOWS
+            functionAddress =
+                reinterpret_cast<void *>(GetProcAddress(_GetLibraryPointer, functionName.c_str()));
             if (functionAddress == nullptr) {
                 throw element_not_found_exception("Unable to find given function: " + functionName);
             }
 #else
-            (void) dlerror(); // Clear any previous error.
+            (void)dlerror(); // Clear any previous error.
             functionAddress = dlsym(_library, functionName.c_str());
             if (dlerror()) {
-                // We must run this check because the "functionAddress" value may be null but still valid.
+                // We must run this check because the "functionAddress" value may be null but still
+                // valid.
                 throw element_not_found_exception("Unable to find given function: " + functionName);
             }
 #endif
@@ -54,17 +59,17 @@ namespace MF {
                 return;
             }
 
-#if defined(_WIN32)
+#if MF_WINDOWS
             auto wPath = Windows::ConvertString(path.c_str());
             AddDllDirectory(wPath.data());
 #else
             char *ldLibraryPath = getenv("LD_LIBRARY_PATH");
-            char *newLdLibraryPath = (char *) calloc(
-                    (ldLibraryPath ? strlen(ldLibraryPath) + 1 : 0) +
+            char *newLdLibraryPath = (char *)calloc(
+                (ldLibraryPath ? strlen(ldLibraryPath) + 1 : 0) +
                     // Length of the environment variable, if any, + ":" separator
                     path.length() + // Length of the value to add
                     1, // End of string
-                    1);
+                1);
             strcpy(newLdLibraryPath, ldLibraryPath);
             strcat(newLdLibraryPath, ":");
             strcat(newLdLibraryPath, path.c_str());
@@ -76,7 +81,7 @@ namespace MF {
             LOCK_t lockGuard(_mutex);
 
             bool success;
-#if defined(_WIN32)
+#if MF_WINDOWS
             success = FreeLibrary(_GetLibraryPointer);
 #else
             success = !dlclose(_library);
@@ -92,7 +97,7 @@ namespace MF {
         DynamicLibrary::DynamicLibrary(const std::string &libName) {
             LOCK_t lockGuard(_mutex);
 
-#if defined(_WIN32)
+#if MF_WINDOWS
             auto wLibName = Windows::ConvertString(libName.c_str());
             static constexpr HANDLE hFile = nullptr;
             static constexpr DWORD dwFlags = LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
@@ -104,8 +109,9 @@ namespace MF {
             if (_library != nullptr) {
                 return; // We can add stuff there
             } else {
-                throw element_not_found_exception("The requested library could not be found: " + libName);
+                throw element_not_found_exception(
+                    "The requested library could not be found: " + libName);
             }
         }
-    }
-}
+    } // namespace System
+} // namespace MF

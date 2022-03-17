@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-int main () {
+int main() {
     std::cout << "Hello, world!"; // not even an end of line
     return 0;
 }

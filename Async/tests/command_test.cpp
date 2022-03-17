@@ -2,13 +2,14 @@
 // Created by mfran on 23/04/2020.
 //
 
-#include "tests_data.hpp"
 #include "MF/Command.hpp"
+
+#include "tests_data.hpp"
 
 using namespace ::MF::Command;
 
 class Commands : public ::testing::Test {
-protected:
+   protected:
     CommandCall commandCall;
     CommandReturn commandReturn;
 
@@ -45,7 +46,7 @@ TEST_F(Commands, HelloWorld_KilledOutput) {
 TEST_F(Commands, HelloWorld_RetrieveAllOutputs) {
     commandCall.executable = HelloWorld_Executable;
     commandCall.outputChoice = OutputChoice::RETRIEVE;
-    //commandCall.errorChoice = ErrorChoice::RETRIEVE;
+    // commandCall.errorChoice = ErrorChoice::RETRIEVE;
     cc();
     EXPECT_EQ(0, commandReturn.returnCode);
     EXPECT_FALSE(commandReturn.outputText.empty());
@@ -97,7 +98,7 @@ TEST_F(Commands, LengthOfFirstArg) {
 }
 
 TEST_F(Commands, LengthOfInput) {
-    //GTEST_SKIP();
+    // GTEST_SKIP();
     commandCall.executable = LengthOfInput_Executable;
 
     commandCall.inputChoice = InputChoice::STRING;

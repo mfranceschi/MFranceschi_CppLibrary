@@ -4,48 +4,59 @@
 
 #include "CommandHelper.hpp"
 
-namespace MF {
-    namespace Command {
+namespace MF
+{
+    namespace Command
+    {
 
-// ///////////////////////////////////////////////////////////////
-// ///////////// COMMAND COMPONENT interface /////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // ///////////// COMMAND COMPONENT interface /////////////////////
+        // ///////////////////////////////////////////////////////////////
 
-        void CommandComponent::beforeStart() {}
+        void CommandComponent::beforeStart() {
+        }
 
-        void CommandComponent::afterStart() {}
+        void CommandComponent::afterStart() {
+        }
 
-        void CommandComponent::beforeStop() {}
+        void CommandComponent::beforeStop() {
+        }
 
-        void CommandComponent::afterStop() {}
+        void CommandComponent::afterStop() {
+        }
 
-// ///////////////////////////////////////////////////////////////
-// /////////////////////// INPUT STREAMS /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // /////////////////////// INPUT STREAMS /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
-        ProcessInputStream_String::ProcessInputStream_String(const SFilename_t &str) :
-                inputString(str) {}
+        ProcessInputStream_String::ProcessInputStream_String(const SFilename_t &str)
+            : inputString(str) {
+        }
 
-        ProcessInputStream_FromFile::ProcessInputStream_FromFile(const SFilename_t &file_name) :
-                filename(file_name) {}
+        ProcessInputStream_FromFile::ProcessInputStream_FromFile(const SFilename_t &file_name)
+            : filename(file_name) {
+        }
 
-// ///////////////////////////////////////////////////////////////
-// ////////////////////// OUTPUT STREAMS /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // ////////////////////// OUTPUT STREAMS /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
         std::string ProcessOutputStream::retrieveOutput() {
             return std::string();
         }
 
-        ProcessOutputStream_Export::ProcessOutputStream_Export(bool append, const SFilename_t &filename) :
-                APPEND(append), filename(filename) {}
+        ProcessOutputStream_Export::ProcessOutputStream_Export(
+            bool append, const SFilename_t &filename)
+            : APPEND(append), filename(filename) {
+        }
 
-        ProcessOutputStream_Kill::ProcessOutputStream_Kill() :
-                ProcessOutputStream_Export(false, KILL_FILENAME) {}
+        ProcessOutputStream_Kill::ProcessOutputStream_Kill()
+            : ProcessOutputStream_Export(false, KILL_FILENAME) {
+        }
 
-// ///////////////////////////////////////////////////////////////
-// ////////////////////// COMMAND RUNNER /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // ////////////////////// COMMAND RUNNER /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
         void CommandRunner::setInput(ProcessInputStream *stream) {
             delete processInputStream;
@@ -105,5 +116,5 @@ namespace MF {
         int CommandRunner::getStatusCode() {
             return internalGetStatusCode();
         }
-    }
-}
+    } // namespace Command
+} // namespace MF

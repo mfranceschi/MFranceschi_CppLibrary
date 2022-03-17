@@ -7,8 +7,10 @@
 
 #include "DateTypes.hpp"
 
-namespace MF {
-    namespace Timezones {
+namespace MF
+{
+    namespace Timezones
+    {
         /**
          * Return the offset of the current timezone in regards to the UTC time zone.
          * Generally a number of hours, sometimes has a minutes part as well.
@@ -21,7 +23,7 @@ namespace MF {
          * Usually 1 hour. 0 if DST does not apply in the current timezone.
          */
         DateTypes::Interval_t getDstOffset();
-    }
-}
+    } // namespace Timezones
+} // namespace MF
 
-#endif //MFRANCESCHI_CPPLIBRARIES_TIMEZONES_HPP
+#endif // MFRANCESCHI_CPPLIBRARIES_TIMEZONES_HPP

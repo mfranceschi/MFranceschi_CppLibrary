@@ -2,8 +2,8 @@
  * RETURNS THE LENGTH (in bytes) OF THE FIRST LINE IN INPUT STREAM.
  */
 
-#include <string>
 #include <iostream>
+#include <string>
 
 int main() {
     std::string s;

@@ -2,12 +2,13 @@
 // Created by mfran on 13/04/2020.
 //
 
-#if !defined(MYWORKS_TEST0_WINDOWSAPIHELPER_HPP) && defined(_WIN32)
-#define MYWORKS_TEST0_WINDOWSAPIHELPER_HPP
+#if !defined(MYWORKS_TEST0_WINDOWSAPIHELPER_HPP) && MF_WINDOWS
+#    define MYWORKS_TEST0_WINDOWSAPIHELPER_HPP
 
-#include <string>
-#include "MF/Filesystem.hpp"
-#include "MF/Command.hpp"
+#    include <string>
+
+#    include "MF/Command.hpp"
+#    include "MF/Filesystem.hpp"
 
 // ///////////////////////////////////////////////////////////////
 // //////////////// COMMAND HANDLING API /////////////////////////
@@ -41,4 +42,4 @@ void Windows_ReturnLaterCommand(Windows_ProcessHandle &processHandle, unsigned i
  */
 void Windows_ReturnNowProcess(Windows_ProcessHandle &processHandle);
 
-#endif //MYWORKS_TEST0_WINDOWSAPIHELPER_HPP
+#endif // MYWORKS_TEST0_WINDOWSAPIHELPER_HPP

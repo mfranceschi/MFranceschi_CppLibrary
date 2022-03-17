@@ -10,8 +10,8 @@ target_sources(
             src/CommandHelper_Generic.cpp
             src/CommandHelper_Unix.cpp
             src/CommandHelper_Windows.cpp
-            src/UnixAPIHelper.cpp
-            src/UnixAPIHelper.hpp
+            # src/UnixAPIHelper.cpp
+            # src/UnixAPIHelper.hpp
             src/WindowsAPIHelper.cpp
             src/WindowsAPIHelper.hpp
         PUBLIC

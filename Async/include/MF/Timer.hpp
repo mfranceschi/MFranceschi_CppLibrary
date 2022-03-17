@@ -8,4 +8,4 @@
 // TODO
 // https://pubs.opengroup.org/onlinepubs/7908799/xsh/timer_create.html
 
-#endif //MFRANCESCHI_CPPLIBRARIES_TIMER_HPP
+#endif // MFRANCESCHI_CPPLIBRARIES_TIMER_HPP

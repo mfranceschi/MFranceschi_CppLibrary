@@ -5,7 +5,7 @@
 
 #include <string>
 
-int main (int argc, char** argv) {
+int main(int argc, char** argv) {
     if (argc >= 2) {
         return std::string(argv[1]).size();
     } else {

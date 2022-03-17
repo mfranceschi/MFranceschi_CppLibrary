@@ -4,39 +4,33 @@
 
 #if MF_WINDOWS
 
-#include "WindowsAPIHelper.hpp"
-#include "MF/StringSafePlaceHolder.hpp"
-#include "MF/Windows.hpp"
-#include "CommandHelper.hpp"
-#include "MF/Filesystem.hpp"
-#include <Windows.h>
+#    include "CommandHelper.hpp"
+#    include "MF/Filesystem.hpp"
+#    include "MF/StringSafePlaceHolder.hpp"
+#    include "MF/Windows.hpp"
+#    include "WindowsAPIHelper.hpp"
 
-namespace MF {
-    namespace Command {
+namespace MF
+{
+    namespace Command
+    {
 
-/// Use this handle as a sample for inheritable handles.
+        /// Use this handle as a sample for inheritable handles.
         static SECURITY_ATTRIBUTES securityAttributesForInheritableHandles{
-                sizeof(SECURITY_ATTRIBUTES),
-                nullptr,
-                true
-        };
+            sizeof(SECURITY_ATTRIBUTES), nullptr, true};
 
         static constexpr unsigned int BUFFER_LENGTH = 4096;
 
-// ///////////////////////////////////////////////////////////////
-// /////////////////////// INPUT STREAMS /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // /////////////////////// INPUT STREAMS /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
         StreamItem ProcessInputStream_None::getStreamItem() const {
             return GetStdHandle(STD_INPUT_HANDLE);
         }
 
         void ProcessInputStream_String::beforeStart() {
-            SECURITY_ATTRIBUTES securityAttributes{
-                    sizeof(SECURITY_ATTRIBUTES),
-                    nullptr,
-                    true
-            };
+            SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
             CreatePipe(&readStream, &writeToStream, &securityAttributes, BUFFER_LENGTH);
             MF::Windows::MakeHandleInheritable(readStream);
         }
@@ -62,13 +56,9 @@ namespace MF {
 
         void ProcessInputStream_FromFile::beforeStart() {
             fileStream = CreateFile(
-                    filename.c_str(),
-                    FILE_GENERIC_READ,
-                    FILE_SHARE_READ,
-                    &securityAttributesForInheritableHandles,
-                    OPEN_EXISTING,
-                    FILE_ATTRIBUTE_NORMAL,
-                    nullptr);
+                filename.c_str(), FILE_GENERIC_READ, FILE_SHARE_READ,
+                &securityAttributesForInheritableHandles, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+                nullptr);
         }
 
         void ProcessInputStream_FromFile::afterStop() {
@@ -79,9 +69,9 @@ namespace MF {
             return fileStream;
         }
 
-// ///////////////////////////////////////////////////////////////
-// ////////////////////// OUTPUT STREAMS /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // ////////////////////// OUTPUT STREAMS /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
         StreamItem ProcessOutputStream_Keep::getStreamItem() const {
             return GetStdHandle(STD_OUTPUT_HANDLE);
@@ -91,28 +81,21 @@ namespace MF {
             return GetStdHandle(STD_ERROR_HANDLE);
         }
 
-        MF::Filesystem::Filename_t ProcessOutputStream_Kill::KILL_FILENAME = MAKE_FILE_NAME "NUL";
+        const MF::Filesystem::Filename_t ProcessOutputStream_Kill::KILL_FILENAME =
+            MAKE_FILE_NAME "NUL";
 
         void ProcessOutputStream_Kill::beforeStart() {
             fileStream = CreateFile(
-                    KILL_FILENAME, // weirdly it does not work otherwise
-                    FILE_GENERIC_WRITE,
-                    FILE_SHARE_READ,
-                    &securityAttributesForInheritableHandles,
-                    OPEN_ALWAYS,
-                    FILE_ATTRIBUTE_DEVICE,
-                    nullptr);
+                KILL_FILENAME, // weirdly it does not work otherwise
+                FILE_GENERIC_WRITE, FILE_SHARE_READ, &securityAttributesForInheritableHandles,
+                OPEN_ALWAYS, FILE_ATTRIBUTE_DEVICE, nullptr);
         }
 
         void ProcessOutputStream_Export::beforeStart() {
             fileStream = CreateFile(
-                    filename.c_str(),
-                    FILE_GENERIC_WRITE,
-                    FILE_SHARE_READ,
-                    &securityAttributesForInheritableHandles,
-                    OPEN_ALWAYS,
-                    FILE_ATTRIBUTE_NORMAL,
-                    nullptr);
+                filename.c_str(), FILE_GENERIC_WRITE, FILE_SHARE_READ,
+                &securityAttributesForInheritableHandles, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL,
+                nullptr);
 
             if (APPEND) {
                 SetFilePointer(fileStream, 0, nullptr, FILE_END);
@@ -129,11 +112,7 @@ namespace MF {
 
         void ProcessOutputStream_Retrieve::beforeStart() {
             DWORD dwMode = PIPE_NOWAIT;
-            SECURITY_ATTRIBUTES securityAttributes{
-                    sizeof(SECURITY_ATTRIBUTES),
-                    nullptr,
-                    true
-            };
+            SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
             CreatePipe(&readStream, &writeStream, &securityAttributes, BUFFER_LENGTH);
             MF::Windows::MakeHandleInheritable(writeStream);
             SetNamedPipeHandleState(readStream, &dwMode, nullptr, nullptr);
@@ -153,7 +132,8 @@ namespace MF {
             DWORD dwRead;
             CHAR chBuf[BUFFER_LENGTH];
 
-            while (ReadFile(readStream, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) || (dwRead != 0)) {
+            while (ReadFile(readStream, chBuf, BUFFER_LENGTH - 1, &dwRead, nullptr) ||
+                   (dwRead != 0)) {
                 chBuf[dwRead] = '\0';
                 oss << chBuf;
             }
@@ -169,22 +149,23 @@ namespace MF {
             return writeStream;
         }
 
-// ///////////////////////////////////////////////////////////////
-// ////////////////////// COMMAND RUNNER /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // ////////////////////// COMMAND RUNNER /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
         void CommandRunner::internalStart() {
-// Define all parameters required by the CreateProcess function.
+            // Define all parameters required by the CreateProcess function.
             LPCTCH lpApplicationName = nullptr;
             TCHAR *lpCommandLine;
             {
                 // Fill the "Command line" string
-                std::basic_ostringstream<std::remove_pointer_t<decltype(executable)>::value_type> osStream;
+                std::basic_ostringstream<std::remove_pointer_t<decltype(executable)>::value_type>
+                    osStream;
 
                 osStream << executable->c_str();
                 if (!arguments->empty()) {
                     osStream << " ";
-                    for (const auto &arg: *arguments) {
+                    for (const auto &arg : *arguments) {
                         osStream << arg << " ";
                     }
                 }
@@ -192,7 +173,8 @@ namespace MF {
 
                 const TCHAR *commandStringPointer = streamOutput.c_str();
                 lpCommandLine = new TCHAR[streamOutput.size() + 1];
-                auto copyResult = StringCchCopy(lpCommandLine, streamOutput.size() + 1, commandStringPointer);
+                auto copyResult =
+                    StringCchCopy(lpCommandLine, streamOutput.size() + 1, commandStringPointer);
 
                 if (FAILED(copyResult)) {
                     if (copyResult == STRSAFE_E_INVALID_PARAMETER) {
@@ -207,7 +189,8 @@ namespace MF {
             bool bInheritHandles = true; // Handles are inherited
             DWORD dwCreationFlags = 0; // Creation flags
             LPVOID lpEnvironment = nullptr; // We use the parent's environment
-            const TCHAR *lpCurrentDirectory = nullptr; // We use the parent's current working directory
+            const TCHAR *lpCurrentDirectory =
+                nullptr; // We use the parent's current working directory
             STARTUPINFO startupinfo;
             PROCESS_INFORMATION processInformation;
             LPSTARTUPINFO lpStartupInfo = &startupinfo;
@@ -226,17 +209,9 @@ namespace MF {
             // TODO Use the right handles
 
             bool createProcessResult = CreateProcess(
-                    lpApplicationName,
-                    lpCommandLine,
-                    lpProcessAttributes,
-                    lpThreadAttributes,
-                    bInheritHandles,
-                    dwCreationFlags,
-                    lpEnvironment,
-                    lpCurrentDirectory,
-                    lpStartupInfo,
-                    lpProcessInformation
-            );
+                lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes,
+                bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo,
+                lpProcessInformation);
             if (!createProcessResult) {
                 MF::Windows::ShowErrorMessage("CreateProcess");
                 // TODO remove later
@@ -257,6 +232,6 @@ namespace MF {
         void CommandRunner::internalOSCleanUp() {
             CloseHandle(childProcessItem);
         }
-    }
-}
+    } // namespace Command
+} // namespace MF
 #endif

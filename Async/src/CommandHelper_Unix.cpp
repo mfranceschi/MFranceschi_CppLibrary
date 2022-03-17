@@ -4,32 +4,32 @@
 
 #if MF_UNIX
 
+#    include <fcntl.h>
+#    include <sys/wait.h>
 
-#include "UnixAPIHelper.hpp"
-#include "CommandHelper.hpp"
-#include <csignal>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <cassert>
+#    include "CommandHelper.hpp"
 
 static constexpr unsigned int BUFFER_LENGTH = 4096;
 
 static inline int makePipe(int &read, int &write) {
-    int fd[2];
-    int pipeResult = pipe(fd);
-    read = fd[0];
-    write = fd[1];
+    std::array<int, 2> fileDescriptors{};
+    int pipeResult = pipe(fileDescriptors.data());
+    read = fileDescriptors[0];
+    write = fileDescriptors[1];
     return pipeResult;
 }
 
-namespace MF {
-    namespace Command {
+namespace MF
+{
+    namespace Command
+    {
 
-// ///////////////////////////////////////////////////////////////
-// /////////////////////// INPUT STREAMS /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // /////////////////////// INPUT STREAMS /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
-        void ProcessStream::closeOnFork() {}
+        void ProcessStream::closeOnFork() {
+        }
 
         StreamItem ProcessInputStream_None::getStreamItem() const {
             return STDIN_FILENO;
@@ -45,7 +45,9 @@ namespace MF {
             temp.reserve(500);
             for (std::size_t i = 0; i < inputString.length(); i += 500) {
                 temp = inputString.substr(i, 500);
-                write(writeToStream, temp.c_str(), std::min(temp.length(), static_cast<std::size_t>(500)));
+                write(
+                    writeToStream, temp.c_str(),
+                    std::min(temp.length(), static_cast<std::size_t>(500)));
             }
         }
 
@@ -79,9 +81,9 @@ namespace MF {
             close(fileStream);
         }
 
-// ///////////////////////////////////////////////////////////////
-// ////////////////////// OUTPUT STREAMS /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // ////////////////////// OUTPUT STREAMS /////////////////////////
+        // ///////////////////////////////////////////////////////////////
         StreamItem ProcessOutputStream_Keep::getStreamItem() const {
             return STDOUT_FILENO;
         }
@@ -90,7 +92,7 @@ namespace MF {
             return STDERR_FILENO;
         }
 
-        Filename_t ProcessOutputStream_Kill::KILL_FILENAME = "/dev/null";
+        const Filename_t ProcessOutputStream_Kill::KILL_FILENAME = "/dev/null";
 
         void ProcessOutputStream_Kill::beforeStart() {
             fileStream = open(filename.c_str(), O_WRONLY);
@@ -124,7 +126,8 @@ namespace MF {
             fcntl(writeStream, F_SETFL, O_NONBLOCK);
         }
 
-        void ProcessOutputStream_Retrieve::beforeStop() {}
+        void ProcessOutputStream_Retrieve::beforeStop() {
+        }
 
         void ProcessOutputStream_Retrieve::afterStop() {
             char chBuf[BUFFER_LENGTH] = {0};
@@ -156,16 +159,15 @@ namespace MF {
         }
 
         void ProcessOutputStream_Retrieve::closeOnFork() {
-            //close(readStream);
+            // close(readStream);
             close(writeStream);
         }
 
-// ///////////////////////////////////////////////////////////////
-// ////////////////////// COMMAND RUNNER /////////////////////////
-// ///////////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////////////
+        // ////////////////////// COMMAND RUNNER /////////////////////////
+        // ///////////////////////////////////////////////////////////////
 
         void CommandRunner::internalStart() {
-
             childProcessItem = fork();
 
             if (childProcessItem == 0) {
@@ -191,23 +193,23 @@ namespace MF {
                 /*processInputStream->closeOnFork();
                 processOutputStream->closeOnFork();
                 processErrorStream->closeOnFork();*/
-                //write(STDOUT_FILENO, "coucou", 6); // TODO remove
+                // write(STDOUT_FILENO, "coucou", 6); // TODO remove
 
                 /*
-                 * Using "Exec VP" because I want the shell to find the executable according to usual rules,
-                 * and I cannot use variadic functions because the number of arguments is only known at runtime.
+                 * Using "Exec VP" because I want the shell to find the executable according to
+                 * usual rules, and I cannot use variadic functions because the number of arguments
+                 * is only known at runtime.
                  */
                 execvp(file, const_cast<char *const *>(argv));
                 // TODO handle error
                 exit(44);
             } else {
                 // Parent process
-
             }
         }
 
         void CommandRunner::internalStop() {
-            //kill(forkResult, SIGTERM);
+            // kill(forkResult, SIGTERM);
             std::printf("Errno at line %d: %d\n", __LINE__, errno);
         }
 
@@ -221,9 +223,10 @@ namespace MF {
             return WIFEXITED(status) ? WEXITSTATUS(status) : 55; // TODO handle unfinished process
         }
 
-        void CommandRunner::internalOSCleanUp() {}
+        void CommandRunner::internalOSCleanUp() {
+        }
 
-    }
-}
+    } // namespace Command
+} // namespace MF
 
 #endif
