@@ -97,7 +97,7 @@ namespace StaticMethodsTesting
         // The test = ensure the distance between both is no more than 1s.
         // We are in C++ so more than 1s between these 2 instructions is undoubtedly a failure.
         time_t distance = std::abs(now_from_chrono - now_to_check);
-        EXPECT_LE(distance, 1);
+        EXPECT_LE(distance, 1) << "Date::now() to time_t gives " << now_to_check << ", while clock::now() to time_t gives " << now_from_chrono;
     }
 } // namespace StaticMethodsTesting
 
