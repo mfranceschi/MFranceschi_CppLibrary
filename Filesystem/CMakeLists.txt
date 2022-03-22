@@ -8,7 +8,8 @@ target_sources(
             src/Filesystem.cpp
             src/FileRead.cpp
             src/FilesystemOSHelper.hpp
-            src/FilesystemOSHelper.cpp
+            src/FilesystemOSHelper_Unix.cpp
+            src/FilesystemOSHelper_Windows.cpp
         PUBLIC
             include/MF/Filesystem.hpp
 )

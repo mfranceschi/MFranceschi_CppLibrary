@@ -18,7 +18,7 @@ namespace MF
 
     /**
      * Time distance between two dates, in seconds.
-     * // TODO use Interval data type.
+     * TODO use Interval data type.
      */
     typedef double Interval;
 
@@ -288,7 +288,7 @@ namespace MF
 
     inline Date Date::FromTime_t(const time_t time1, int microseconds) {
         std::tm tm1{0};
-        ::MF::DateUtils::Gmtime(time1, tm1);
+        ::MF::DateUtils::Localtime(time1, tm1);
         return Date(tm1, microseconds);
     }
 

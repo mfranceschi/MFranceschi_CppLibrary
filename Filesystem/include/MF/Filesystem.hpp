@@ -1,5 +1,5 @@
 /* Martin Franceschi - MyWorks package - File module.
- * 
+ *
  * This module gives various information about a given file.
  * You can check if it exists, check its size and encoding.
  * You can also open it by applying automatically a locale
@@ -7,18 +7,20 @@
  * You are in charge of providing the right C-string filename (wide or not).
  */
 
-//---------- Interface of module <File> (file File.h) 
-#if !defined ( FILE_H )
-#define FILE_H
+//---------- Interface of module <File> (file File.h)
+#if !defined(FILE_H)
+#    define FILE_H
 
 //--------------------------------------------------------------- Includes
-#include <fstream>
-#include <string>
-#include <vector>
-#include <memory>
+#    include <fstream>
+#    include <memory>
+#    include <string>
+#    include <vector>
 
-namespace MF {
-    namespace Filesystem {
+namespace MF
+{
+    namespace Filesystem
+    {
         // Represents a file encoding.
         // It is an implementation detail that may change. Please use "..._t" instead.
         enum class Encoding_e {
@@ -34,26 +36,26 @@ namespace MF {
         // Type used to deal with file sizes of any weight (GBs are okay).
         using Filesize_t = unsigned long;
 
-#if defined(UNICODE)
-#   define MAKE_FILE_NAME L""
-        using Filename_t = const wchar_t*;
+#    if defined(UNICODE)
+#        define MAKE_FILE_NAME L""
+        using Filename_t = const wchar_t *;
         using SFilename_t = std::wstring;
-#else
-#   define MAKE_FILE_NAME ""
+#    else
+#        define MAKE_FILE_NAME ""
         using Filename_t = const char *;
         using SFilename_t = std::string;
-#endif
+#    endif
 
-#if defined(_WIN32)
-#   define FILE_SEPARATOR MAKE_FILE_NAME "\\"
-#   define LINE_END "\r\n"
-#else
-#   define FILE_SEPARATOR MAKE_FILE_NAME "/"
-#   define LINE_END "\n"
-#endif
+#    if MF_WINDOWS
+#        define FILE_SEPARATOR MAKE_FILE_NAME "\\"
+#        define LINE_END "\r\n"
+#    else
+#        define FILE_SEPARATOR MAKE_FILE_NAME "/"
+#        define LINE_END "\n"
+#    endif
 
-//////////////////////////////////////////////////////////////////  PUBLIC
-//------------------------------------------------------- Public functions
+        //////////////////////////////////////////////////////////////////  PUBLIC
+        //------------------------------------------------------- Public functions
 
         /**
          * Generates a file name by concatenating each argument from the list.
@@ -69,15 +71,18 @@ namespace MF {
 
         /**
          * This function removes the given file or directory.
-         * @param filename Name of the file or directory to remove. Often, directories require to be empty.
-         * @param fileOnly If true, the removal is done if and only if the "filename" points to a file.
+         * @param filename Name of the file or directory to remove. Often, directories require to be
+         * empty.
+         * @param fileOnly If true, the removal is done if and only if the "filename" points to a
+         * file.
          * @return True if something was removed successfully.
          */
         bool Delete(Filename_t filename, bool fileOnly = true);
 
         /**
-         * Determines the encoding of the file, accordingly to the first two or three bytes in the file.
-         * Special results: ENC_ERROR if reading the first three bytes failed; ENC_DEFAULT if no supported encoding could be determined.
+         * Determines the encoding of the file, accordingly to the first two or three bytes in the
+         * file. Special results: ENC_ERROR if reading the first three bytes failed; ENC_DEFAULT if
+         * no supported encoding could be determined.
          * @param filename Path to the file to test.
          * @return An "encoding_t" value.
          */
@@ -102,16 +107,18 @@ namespace MF {
          *
          * 1. It closes "ifs".
          * 2. If unknown, it calls "Encoding(filename)" to determine the encoding.
-         * 3. If the coding could be processed, we call "ifs.open(filename)" with a specific policy (locale, starting offset, etc.).
-         * In all cases, the function returns.
-         * @param ifs The stream to open with the given file and opening policy. It is closed before doing anything.
+         * 3. If the coding could be processed, we call "ifs.open(filename)" with a specific policy
+         * (locale, starting offset, etc.). In all cases, the function returns.
+         * @param ifs The stream to open with the given file and opening policy. It is closed before
+         * doing anything.
          * @param filename The path to the file to open.
          * @param encoding (optional) If you already know the encoding, you can set this parameter;
          *                            otherwise it will be determined inside the function.
-         * @return False if and only if trying to determine the encoding failed --> file cannot be processed correctly.
+         * @return False if and only if trying to determine the encoding failed --> file cannot be
+         * processed correctly.
          */
-        bool Open(std::ifstream &ifs, Filename_t filename,
-                  Encoding_t encoding = Encoding_e::ENC_ERROR);
+        bool Open(
+            std::ifstream &ifs, Filename_t filename, Encoding_t encoding = Encoding_e::ENC_ERROR);
 
         /// Returns the size of the file pointed by "filename" in bytes, or 0 if anything failed.
         Filesize_t Size(Filename_t filename);
@@ -130,9 +137,10 @@ namespace MF {
         SFilename_t GetCWD();
 
         /**
-         * Generates the complete list of files and directories that are direct children of the given folder.
-         * Names are returned relative to the "folder". Directories have an ending PATH_SEPARATOR.
-         * > FilesInDirectory("foldername/") -> ("file.txt", "image.png", "subfolder/")
+         * Generates the complete list of files and directories that are direct children of the
+         * given folder. Names are returned relative to the "folder". Directories have an ending
+         * PATH_SEPARATOR. > FilesInDirectory("foldername/") -> ("file.txt", "image.png",
+         * "subfolder/")
          * @param folder Name or path to the folder. It must end with a PATH_SEPARATOR character.
          * @return List of files and directories names, or empty vector if anything failed.
          */
@@ -150,22 +158,25 @@ namespace MF {
          * Stores the entire contents of file "filename" in a read-only C-string.
          * Also, that C-string does not end with '\0'.
          * It is advised to use an "InCharArrayStream".
-         * The structure must remain a pointer (in reality, it is an instance of a subclass of ReadFileData).
-         * The purpose of this function is to offer the fastest way to read an entire file.
+         * The structure must remain a pointer (in reality, it is an instance of a subclass of
+         * ReadFileData). The purpose of this function is to offer the fastest way to read an entire
+         * file.
          * @param filename Name of the file to open.
          * @return "nullptr" if anything failed or the file is empty, or a new structure.
          */
         std::unique_ptr<const ReadFileData> Read(Filename_t filename);
 
         /**
-         * Wrapper function: fills a C++ string with the whole file contents, internally using the Read function.
+         * Wrapper function: fills a C++ string with the whole file contents, internally using the
+         * Read function.
          * @param filename Name of the file to read.
-         * @param string A string with the whole contents of the file, not modified if an error occurred.
+         * @param string A string with the whole contents of the file, not modified if an error
+         * occurred.
          * @return True on success, false on error.
          */
         bool ReadToString(Filename_t filename, std::string &string);
-    }
+    } // namespace Filesystem
 
-//------------------------------------------------------ Other definitions
-}
+    //------------------------------------------------------ Other definitions
+} // namespace MF
 #endif // FILE_H

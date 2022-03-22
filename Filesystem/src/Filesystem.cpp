@@ -1,30 +1,31 @@
-//---------- Implementation of module <File> (file File.cpp) 
+//---------- Implementation of module <File> (file File.cpp)
 
 //--------------------------------------------------------------- Includes
 
-#include <cstdarg>
-#include <codecvt>
-#include <sstream>
 #include "MF/Filesystem.hpp"
+
+#include <codecvt>
+#include <cstdarg>
+#include <sstream>
+
 #include "FilesystemOSHelper.hpp"
 
-
 #if MF_WINDOWS
-#   if defined(_MSC_VER)
-#       pragma warning( disable: 26444) // Warning that occurs when using imbue.
-#   endif
-#   if defined(UNICODE)
-#       include "Toolbox.hpp"
-#   endif
+#    if defined(_MSC_VER)
+#        pragma warning(disable : 26444) // Warning that occurs when using imbue.
+#    endif
+#    if defined(UNICODE)
+#        include "Toolbox.hpp"
+#    endif
 #else
-#   include <sys/mman.h>
-#   include <sys/stat.h>
+#    include <sys/mman.h>
+#    include <sys/stat.h>
 #endif
 
-using std::string;
-using std::locale;
 using std::ifstream;
 using std::ios_base;
+using std::locale;
+using std::string;
 
 constexpr static size_t NBR_BITS_TO_READ_ENCODING = 3;
 
@@ -34,36 +35,41 @@ using Soss_t = std::wostringstream;
 using Soss_t = std::ostringstream;
 #endif
 
-namespace MF {
-    namespace Filesystem {
-/////////////////////////////////////////////////////////////////  PRIVATE
+namespace MF
+{
+    namespace Filesystem
+    {
+        /////////////////////////////////////////////////////////////////  PRIVATE
 
-//------------------------------------------------------------------ Types
+        //------------------------------------------------------------------ Types
 
-//-------------------------------------------------------------- Constants
+        //-------------------------------------------------------------- Constants
 
         const static locale LOCALE_UTF8("");
         const static locale LOCALE_UTF16LE(
-                locale(""),
-                new std::codecvt_utf8_utf16<wchar_t, 0x10ffffUL, std::little_endian>()
-        ); // I can call "new" because the locale's destructors deletes the facet.
+            locale(""),
+            new std::codecvt_utf8_utf16<
+                wchar_t,
+                0x10ffffUL,
+                std::little_endian>()); // I can call "new" because the locale's destructors deletes
+                                        // the facet.
 
-//------------------------------------------------------- Static variables
+        //------------------------------------------------------- Static variables
 
-//------------------------------------------------------ Private functions
+        //------------------------------------------------------ Private functions
 
-//////////////////////////////////////////////////////////////////  PUBLIC
-//------------------------------------------------------- Public functions
+        //////////////////////////////////////////////////////////////////  PUBLIC
+        //------------------------------------------------------- Public functions
 
         SFilename_t MakeFilename(bool absolute, bool isDirectory, int number, ...) {
-            (void) (absolute);
+            (void)(absolute);
             using ArgumentsType = Filename_t;
             Soss_t oss;
-            va_list argsList;
-                    va_start(argsList, number);
+            va_list argsList = nullptr;
+            va_start(argsList, number);
             ArgumentsType currentArg;
 
-#if !MF_OS_IS_WINDOWS
+#if MF_UNIX
             // On UNIX, if the given path is intended to be absolute,
             // we prepend a FILE_SEPARATOR.
             if (absolute) {
@@ -111,11 +117,9 @@ namespace MF {
             }
         }
 
-        bool Open(ifstream &ifs, Filename_t filename,
-                  Encoding_t encoding) {
+        bool Open(ifstream &ifs, Filename_t filename, Encoding_t encoding) {
             ifs.close();
-            if (encoding == Encoding_e::ENC_ERROR)
-                encoding = Encoding(filename);
+            if (encoding == Encoding_e::ENC_ERROR) encoding = Encoding(filename);
 
             if (encoding == Encoding_e::ENC_UTF8) {
                 ifs.open(filename);
@@ -186,5 +190,5 @@ namespace MF {
             osGetDirectoryContents(folder, result);
             return result;
         }
-    }
-}
+    } // namespace Filesystem
+} // namespace MF
