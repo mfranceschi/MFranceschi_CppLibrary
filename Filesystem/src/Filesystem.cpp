@@ -65,7 +65,7 @@ namespace MF
             (void)(absolute);
             using ArgumentsType = Filename_t;
             Soss_t oss;
-            va_list argsList = nullptr;
+            va_list argsList;
             va_start(argsList, number);
             ArgumentsType currentArg;
 

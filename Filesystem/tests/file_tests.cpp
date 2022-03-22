@@ -247,6 +247,9 @@ TEST(IsDir, Unexisting) {
 
 TEST(IsDir, NewFolder) {
     const File::SFilename_t &filename = FILENAME_TEMP;
+
+    ASSERT_FALSE(File::IsDir(filename.c_str()));
+
     ASSERT_TRUE(File::CreateFolder(filename.c_str()));
     EXPECT_TRUE(File::IsDir(filename.c_str()));
     ASSERT_TRUE(File::Delete(filename.c_str(), false));
@@ -260,9 +263,9 @@ TEST(Read, ManyReads) {
     File::SFilename_t file = fid_middle_size.name;
     constexpr long iterations = 1e3l; // A thousand times (100ms approx).
     for (long i = 0; i < iterations; ++i) {
-        auto filedata = File::Read(file.c_str());
-        ASSERT_NE(filedata, nullptr) << "Failed to OPEN at iteration " << i;
-        // File::Read_Close(filedata);
+        auto fileData = File::Read(file.c_str());
+        ASSERT_NE(fileData, nullptr) << "Failed to OPEN at iteration " << i;
+        // File::Read_Close(fileData);
     }
 }
 

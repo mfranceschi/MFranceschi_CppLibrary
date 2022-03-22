@@ -15,83 +15,97 @@
 #    include <unistd.h>
 
 #    include <cassert>
+#    include <functional>
 
 #    include "FilesystemOSHelper.hpp"
+
+template <typename Int_t>
+static constexpr bool successOnZero(Int_t value) {
+    return value == Int_t(0);
+}
 
 namespace MF
 {
     namespace Filesystem
     {
         bool osDeleteFile(Filename_t filename) {
-            return !unlink(filename);
+            return successOnZero(unlink(filename));
         }
 
         bool osDeleteFileOrDirectory(Filename_t name) {
-            return !remove(name);
+            return successOnZero(remove(name));
         }
 
         bool osFileExists(Filename_t filename) {
             struct stat s {};
-            return !stat(filename, &s);
+            return successOnZero(stat(filename, &s));
         }
 
         bool osDirectoryExists(Filename_t filename) {
             struct stat s {};
-            return !stat(filename, &s) & S_ISDIR(s.st_mode);
+            return successOnZero(stat(filename, &s)) && S_ISDIR(s.st_mode);
         }
 
         int osReadFileToBuffer(Filename_t filename, char *buffer, Filesize_t bufferSize) {
-            int fd = open(filename, O_RDONLY);
-            if (fd == -1) {
+            int fileDescriptor = open(filename, O_RDONLY);
+            if (fileDescriptor == -1) {
                 return -1;
             }
 
-            int bytesRead = read(fd, buffer, bufferSize);
-            close(fd);
+            int bytesRead = read(fileDescriptor, buffer, bufferSize);
+            close(fileDescriptor);
             return bytesRead;
         }
 
         Filesize_t osGetFileSize(Filename_t filename) {
             struct stat t {};
-            if (stat(filename, &t)) return 0;
+            if (stat(filename, &t) == 0) {
+                return 0;
+            }
             return static_cast<Filesize_t>(t.st_size);
         }
 
         bool osCreateDirectory(Filename_t directoryName) {
-            !mkdir(directoryName, S_IRWXU | S_IRWXG | S_IRWXO);
+            return successOnZero(mkdir(directoryName, S_IRWXU | S_IRWXG | S_IRWXO));
         }
 
         SFilename_t osGetCWD() {
-            char *syscall_return;
+            using deleter_t = std::function<void(char *)>;
+            static const auto deleter = [](char *pointer) {
+                std::free(pointer);
+            };
+            std::unique_ptr<char[], deleter_t> syscallReturn(nullptr, deleter);
+
 #    if defined(_GNU_SOURCE)
-            syscall_return = get_current_dir_name();
+            syscallReturn.reset(get_current_dir_name());
 #    else
-            syscall_return = static_cast<char *>(malloc(PATH_MAX));
-            getcwd(syscall_return, PATH_MAX);
+            syscallReturn.reset(static_cast<char *>(malloc(PATH_MAX)));
+            getcwd(syscallReturn.get(), PATH_MAX);
 #    endif
-            SFilename_t to_return(syscall_return);
-            free((void *)syscall_return);
-            return to_return;
+            return syscallReturn.get();
         }
 
         void osGetDirectoryContents(Filename_t directoryName, std::vector<SFilename_t> &result) {
             SFilename_t tempFilename;
             static Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
             static Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
-            DIR *d;
-            dirent *dir_entry;
-            d = opendir(directoryName);
-            if (d) {
-                while ((dir_entry = readdir(d)) != nullptr) {
+            DIR *dirStream = nullptr;
+            dirent *dir_entry = nullptr;
+            dirStream = opendir(directoryName);
+
+            if (dirStream != nullptr) {
+                while ((dir_entry = readdir(dirStream)) != nullptr) {
                     tempFilename = dir_entry->d_name;
                     if (tempFilename == CURRENT_FOLDER || tempFilename == PARENT_FOLDER) {
                         continue;
-                    } else if (IsDir((std::string(directoryName) + tempFilename).c_str())) {
+                    }
+
+                    if (IsDir((std::string(directoryName) + tempFilename).c_str())) {
                         tempFilename.append(FILE_SEPARATOR);
                     }
                     result.emplace_back(tempFilename);
                 }
-                closedir(d);
+                closedir(dirStream);
             }
         }
 
