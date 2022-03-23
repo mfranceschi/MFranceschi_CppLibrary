@@ -38,13 +38,13 @@ namespace MF
         }
 
         bool osFileExists(Filename_t filename) {
-            struct stat s {};
-            return successOnZero(stat(filename, &s));
+            struct stat statOfFile {};
+            return successOnZero(stat(filename, &statOfFile));
         }
 
         bool osDirectoryExists(Filename_t filename) {
-            struct stat s {};
-            return successOnZero(stat(filename, &s)) && S_ISDIR(s.st_mode);
+            struct stat statOfFile {};
+            return successOnZero(stat(filename, &statOfFile)) && S_ISDIR(statOfFile.st_mode);
         }
 
         int osReadFileToBuffer(Filename_t filename, char *buffer, Filesize_t bufferSize) {
@@ -59,11 +59,11 @@ namespace MF
         }
 
         Filesize_t osGetFileSize(Filename_t filename) {
-            struct stat t {};
-            if (stat(filename, &t) == 0) {
+            struct stat statOfFile {};
+            if (stat(filename, &statOfFile) == 0) {
                 return 0;
             }
-            return static_cast<Filesize_t>(t.st_size);
+            return static_cast<Filesize_t>(statOfFile.st_size);
         }
 
         bool osCreateDirectory(Filename_t directoryName) {
@@ -90,12 +90,11 @@ namespace MF
             SFilename_t tempFilename;
             static Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
             static Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
-            DIR *dirStream = nullptr;
+            std::unique_ptr<DIR, decltype(&closedir)> dirStream(opendir(directoryName), closedir);
             dirent *dir_entry = nullptr;
-            dirStream = opendir(directoryName);
 
-            if (dirStream != nullptr) {
-                while ((dir_entry = readdir(dirStream)) != nullptr) {
+            if (dirStream) {
+                while ((dir_entry = readdir(dirStream.get())) != nullptr) {
                     tempFilename = dir_entry->d_name;
                     if (tempFilename == CURRENT_FOLDER || tempFilename == PARENT_FOLDER) {
                         continue;
@@ -106,7 +105,7 @@ namespace MF
                     }
                     result.emplace_back(tempFilename);
                 }
-                closedir(dirStream);
+                // closedir(dirStream);
             }
         }
 
@@ -122,9 +121,9 @@ namespace MF
                 return nullptr;
             }
 
-            struct stat st {};
-            if (fstat(rfd->fd, &st) == 0) {
-                rfd->size = st.st_size;
+            struct stat statOfFile {};
+            if (fstat(rfd->fd, &statOfFile) == 0) {
+                rfd->size = statOfFile.st_size;
             } else {
                 return nullptr;
             }

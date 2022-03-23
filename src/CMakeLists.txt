@@ -1,5 +1,5 @@
 
-if (MINGW)
+if(MINGW)
     set_source_files_properties(WindowsAPIHelper.cpp PROPERTIES COMPILE_FLAGS "-Wformat=0 -Wno-sign-compare")
 endif()
 
@@ -31,15 +31,15 @@ target_sources(${MF_Lib_Libname}
         )
 target_include_directories(${MF_Lib_Libname} PUBLIC ../include)
 
-if (MSVC)
+if(MSVC)
     target_compile_options(${MF_Lib_Libname} PRIVATE /W3)
 else()
     target_compile_options(${MF_Lib_Libname} PRIVATE -Wall -Wextra)
 endif()
 
 set(MFranceschi_CppLibrary_LinkLibs "")
-if (Threads_FOUND)
-    STRING(APPEND MFranceschi_CppLibrary_LinkLibs "${CMAKE_THREAD_LIBS_INIT}")
+if(Threads_FOUND)
+    string(APPEND MFranceschi_CppLibrary_LinkLibs "${CMAKE_THREAD_LIBS_INIT}")
 endif()
 target_link_libraries(MFranceschi_CppLibrary PUBLIC
         ${MFranceschi_CppLibrary_LinkLibs})

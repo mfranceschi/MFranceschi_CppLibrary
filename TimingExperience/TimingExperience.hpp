@@ -18,6 +18,6 @@ namespace TimingExperience
     void timingCtimeFunctions();
 
     constexpr std::size_t NUMBER_OF_ITERATIONS = 10 * 1000;
-}; // namespace TimingExperience
+} // namespace TimingExperience
 
 #endif // MYWORKS_TEST0_TIMINGEXPERIENCE_H
