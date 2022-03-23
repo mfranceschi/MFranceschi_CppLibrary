@@ -74,6 +74,7 @@ add_subdirectory(Windows)
 
 add_subdirectory(Filesystem)
 add_subdirectory(System)
+add_subdirectory(Datetime)
 add_subdirectory(Async)
 add_subdirectory(Containers)
 
