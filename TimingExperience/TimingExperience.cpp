@@ -4,8 +4,6 @@
 
 #include "TimingExperience.hpp"
 
-#include <sys/stat.h>
-
 #include <ctime>
 #include <functional>
 #include <iostream>
@@ -17,6 +15,8 @@
 #    include <Shlwapi.h>
 #    include <fcntl.h>
 #    include <io.h>
+#else
+#    include <sys/stat.h>
 #endif
 
 using std::cout;

@@ -149,7 +149,7 @@ namespace MF
         /// Data structure used to store information about files opened with Open.
         struct ReadFileData {
             const char *contents = nullptr;
-            Filesize_t size = 0ul;
+            Filesize_t size = 0UL;
 
             virtual ~ReadFileData() = default; // For polymorphic reasons.
         };
