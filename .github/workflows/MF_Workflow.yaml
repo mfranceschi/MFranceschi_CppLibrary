@@ -63,7 +63,7 @@ jobs:
         if: ${{ always() }}
         run: |
           pip install cmakelint
-          find ./ ./tests/ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100
+          find ./ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100
 
 
   code-quality:

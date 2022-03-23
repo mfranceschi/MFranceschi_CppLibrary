@@ -7,8 +7,10 @@
 
 #include "MF/Filesystem.hpp"
 
-namespace MF {
-    namespace Filesystem {
+namespace MF
+{
+    namespace Filesystem
+    {
         bool osDeleteFile(Filename_t filename);
 
         bool osDeleteFileOrDirectory(Filename_t filename);
@@ -28,7 +30,7 @@ namespace MF {
         void osGetDirectoryContents(Filename_t directoryName, std::vector<SFilename_t> &result);
 
         std::unique_ptr<const ReadFileData> osOpenFile(Filename_t filename);
-    }
-}
+    } // namespace Filesystem
+} // namespace MF
 
-#endif //MFRANCESCHI_CPPLIBRARIES_FILESYSTEMOSHELPER_HPP
+#endif // MFRANCESCHI_CPPLIBRARIES_FILESYSTEMOSHELPER_HPP

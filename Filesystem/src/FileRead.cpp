@@ -2,12 +2,13 @@
 // Created by mfran on 24/04/2020.
 //
 
+#include "FilesystemOSHelper.hpp"
 #include "MF/Filesystem.hpp"
 
-#include "FilesystemOSHelper.hpp"
-
-namespace MF {
-    namespace Filesystem {
+namespace MF
+{
+    namespace Filesystem
+    {
         std::unique_ptr<const ReadFileData> Read(Filename_t filename) {
             return osOpenFile(filename);
         }
@@ -15,12 +16,11 @@ namespace MF {
         bool ReadToString(Filename_t filename, std::string &string) {
             auto fileContents = Read(filename);
             if (fileContents) {
-                auto contents = fileContents->contents;
-                string.assign(contents, fileContents->size);
+                string.assign(fileContents->contents, fileContents->size);
                 return true;
-            } else {
-                return false;
             }
+
+            return false;
         }
-    }
-}
+    } // namespace Filesystem
+} // namespace MF

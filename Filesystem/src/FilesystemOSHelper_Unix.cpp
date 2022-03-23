@@ -19,6 +19,7 @@
 
 #    include "FilesystemOSHelper.hpp"
 
+/** Helper method. Returns true if value is zero. */
 template <typename Int_t>
 static constexpr bool successOnZero(Int_t value) {
     return value == Int_t(0);
@@ -128,8 +129,8 @@ namespace MF
                 return nullptr;
             }
 
-            rfd->contents =
-                (const char *)mmap(nullptr, rfd->size, PROT_READ, MAP_PRIVATE, rfd->fd, 0);
+            rfd->contents = static_cast<const char *>(
+                mmap(nullptr, rfd->size, PROT_READ, MAP_PRIVATE, rfd->fd, 0));
             if (rfd->contents == MAP_FAILED) {
                 return nullptr;
             }
@@ -139,7 +140,7 @@ namespace MF
 
         void osCloseReadFileData(const ReadFileData *readFileData1) {
             const auto *readFileData = dynamic_cast<const osReadFileData_t *>(readFileData1);
-            assert(readFileData);
+            assert(readFileData != nullptr);
 
             close(readFileData->fd);
             delete readFileData;
