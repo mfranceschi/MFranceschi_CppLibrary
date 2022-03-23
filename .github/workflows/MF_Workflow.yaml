@@ -59,12 +59,11 @@ jobs:
         with:
           sources: "**/*.hpp,**/*.cpp"
 
-      - name: CHECK - CMakeLint
+      - name: CHECK - CMake linting
         if: ${{ always() }}
         run: |
           pip install cmakelint
-          find ./ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100
-
+          find ./ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100 --filter=-readability/wonkycase
 
   code-quality:
     runs-on: ubuntu-latest
