@@ -81,8 +81,16 @@ jobs:
       - name: SETUP - Checkout git repo
         uses: actions/checkout@v2
 
+      - name: SETUP - Install dependencies
+        if: ${{ false }}
+        id: install-dependencies
+        run: |
+          sudo apt update && sudo apt-get install clang-tidy
+          pip install cmakelint
+
       - name: SETUP - CMake configure
         id: cmake-configure
+        if: ${{ steps.install-dependencies.outcome == 'success' }}
         run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMake_Config }} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Werror=dev -Werror=deprecated -S . -B ${{ env.BUILD_DIR }}
 
       - name: CHECK - Clang-Tidy (static analysis, NOT on tests)

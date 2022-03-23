@@ -12,7 +12,7 @@ target_sources(MF_Datetime
             include/MF/DateTypes.hpp
             include/MF/DateUtils.hpp
 )
-target_link_libraries(MF_Datetime PUBLIC MF_Commons) # MF_Windows)
+target_link_libraries(MF_Datetime PUBLIC MF_Commons MF_Windows)
 target_include_directories(MF_Datetime PUBLIC include)
 
 if(MF_IN_DEV)
