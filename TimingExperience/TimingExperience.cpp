@@ -2,33 +2,39 @@
 // Created by mfran on 25/12/2019.
 //
 
+#include "TimingExperience.hpp"
+
+#include <sys/stat.h>
+
 #include <ctime>
-#include <MFranceschi_CppLibrary.hpp>
 #include <functional>
 #include <iostream>
 #include <string>
-#include <sys/stat.h>
-#include "TimingExperience.hpp"
 
-#if defined(_WIN32)
-#include <fcntl.h>
-#include <io.h>
-#include <Shlwapi.h>
+#include "MFranceschi_CppLibrary.hpp"
+
+#if MF_WINDOWS
+#    include <Shlwapi.h>
+#    include <fcntl.h>
+#    include <io.h>
 #endif
 
 using std::cout;
 using std::endl;
 
-static constexpr const char *file_name = ".." FILE_SEPARATOR "test" FILE_SEPARATOR "files" FILE_SEPARATOR "aom_v.scx";
+static constexpr const char *file_name =
+    ".." FILE_SEPARATOR "test" FILE_SEPARATOR "files" FILE_SEPARATOR "aom_v.scx";
 #ifdef _WIN32
-static constexpr File::Filename_t file_L = MAKE_FILE_NAME ".." FILE_SEPARATOR "tests" FILE_SEPARATOR "files" FILE_SEPARATOR "aom_v.scx";
+static constexpr File::Filename_t file_L =
+    MAKE_FILE_NAME ".." FILE_SEPARATOR "tests" FILE_SEPARATOR "files" FILE_SEPARATOR "aom_v.scx";
 #endif
 
-static inline double TimeWithRepetition(const std::function<void()>& func) {
+static inline double TimeWithRepetition(const std::function<void()> &func) {
     return Toolbox::TimeThis(TimingExperience::NUMBER_OF_ITERATIONS, func);
 }
 
-namespace TimingExperience {
+namespace TimingExperience
+{
     void RunAll() {
         timingTimeThis();
         timingTheFileExistence();
@@ -40,7 +46,8 @@ namespace TimingExperience {
 
     void timingTimeThis() {
         cout << "The duration of the execution of 'TimeThis' itself, without anything to do, is: ";
-        cout << TimeWithRepetition([]() {}) << endl;
+        cout << TimeWithRepetition([]() {
+        }) << endl;
         cout << endl;
     }
 
@@ -48,7 +55,7 @@ namespace TimingExperience {
         cout << "Timing the file existence functions !" << endl;
 
         cout << "Time for stat: " << TimeWithRepetition([]() {
-            struct stat d{};
+            struct stat d {};
             stat(file_name, &d);
         }) << endl;
 
@@ -81,21 +88,21 @@ namespace TimingExperience {
 
         cout << "Time for stat: ";
         cout << TimeWithRepetition([]() {
-            struct stat st{};
+            struct stat st {};
             stat(file_name, &st);
         }) << endl;
 
 #if defined _WIN32
         cout << "Time for GetFileAttributesEx: ";
         cout << TimeWithRepetition([]() {
-             WIN32_FILE_ATTRIBUTE_DATA fileInfo;
-             GetFileAttributesEx(file_L, GetFileExInfoStandard, (void *) &fileInfo);
-         }) << endl;
+            WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+            GetFileAttributesEx(file_L, GetFileExInfoStandard, (void *)&fileInfo);
+        }) << endl;
 
         cout << "Time for GetFileSizeEx: ";
         cout << TimeWithRepetition([]() {
-            HANDLE file = CreateFile(file_L, GENERIC_READ, FILE_SHARE_WRITE,
-                                     nullptr, OPEN_EXISTING, NULL, nullptr);
+            HANDLE file = CreateFile(
+                file_L, GENERIC_READ, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr);
             LARGE_INTEGER res;
             GetFileSizeEx(file, &res);
             CloseHandle(file);
@@ -139,8 +146,7 @@ namespace TimingExperience {
         cout << "Time for FILE* with fgetc: ";
         cout << TimeWithRepetition([&buffer]() {
             FILE *file = fopen(file_name, "r");
-            for (int i = 0; i < 5; ++i)
-                buffer[i] = static_cast<char>(fgetc(file));
+            for (int i = 0; i < 5; ++i) buffer[i] = static_cast<char>(fgetc(file));
             buffer[5] = '\0';
             fclose(file);
         }) << endl;
@@ -155,8 +161,7 @@ namespace TimingExperience {
         cout << "Time for ifstream with get: ";
         cout << TimeWithRepetition([&buffer]() {
             std::ifstream ifs(file_name);
-            for (int i = 0; i < 5; ++i)
-                buffer[i] = ifs.get();
+            for (int i = 0; i < 5; ++i) buffer[i] = ifs.get();
             buffer[5] = '\0';
             ifs.close();
         }) << endl;
@@ -188,12 +193,12 @@ namespace TimingExperience {
 
 #if defined __STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__ == 1
         cout << "Time for localtime_s: ";
-        cout << TimeWithRepetition([&timet, &tmt] () {
+        cout << TimeWithRepetition([&timet, &tmt]() {
             localtime_s(&tmt, &timet);
         }) << endl;
 
         cout << "Time for gmtime_s: ";
-        cout << TimeWithRepetition([&timet, &tmt] () {
+        cout << TimeWithRepetition([&timet, &tmt]() {
             gmtime_s(&tmt, &timet);
         }) << endl;
 #endif
@@ -213,7 +218,7 @@ namespace TimingExperience {
             timet = mktime(&tmt);
         }) << endl;
     }
-}
+} // namespace TimingExperience
 
 int main() {
     TimingExperience::RunAll();

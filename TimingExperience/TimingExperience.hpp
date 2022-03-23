@@ -5,6 +5,8 @@
 #ifndef MYWORKS_TEST0_TIMINGEXPERIENCE_H
 #define MYWORKS_TEST0_TIMINGEXPERIENCE_H
 
+#include <cstdlib>
+
 namespace TimingExperience
 {
     void RunAll();
@@ -15,7 +17,7 @@ namespace TimingExperience
     void timingFileReading();
     void timingCtimeFunctions();
 
-    constexpr size_t NUMBER_OF_ITERATIONS = 10 * 1000;
+    constexpr std::size_t NUMBER_OF_ITERATIONS = 10 * 1000;
 }; // namespace TimingExperience
 
 #endif // MYWORKS_TEST0_TIMINGEXPERIENCE_H
