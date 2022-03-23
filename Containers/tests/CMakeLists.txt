@@ -12,5 +12,4 @@ target_sources(
             array_tests.cpp
 )
 
-include(GoogleTest)
 gtest_discover_tests(MF_Containers_Tests)

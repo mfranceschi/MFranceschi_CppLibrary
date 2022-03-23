@@ -13,4 +13,6 @@ target_compile_definitions(
 )
 target_sources(MF_Commons PRIVATE src/dummy.cpp)
 
-add_subdirectory(tests)
+if(MF_IN_DEV)
+    add_subdirectory(tests)
+endif()

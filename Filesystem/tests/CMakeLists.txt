@@ -15,8 +15,7 @@ target_compile_definitions(
 target_sources(
         MF_Filesystem_Tests
         PRIVATE
-        file_tests.cpp
+            file_tests.cpp
 )
 
-include(GoogleTest)
 gtest_discover_tests(MF_Filesystem_Tests)

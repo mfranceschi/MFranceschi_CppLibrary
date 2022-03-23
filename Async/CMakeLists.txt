@@ -19,4 +19,6 @@ target_sources(
             include/MF/Timer.hpp
 )
 
-add_subdirectory(tests)
+if(MF_IN_DEV)
+    add_subdirectory(tests)
+endif()

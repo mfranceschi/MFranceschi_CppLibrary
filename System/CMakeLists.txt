@@ -18,4 +18,6 @@ target_sources(MF_System
 target_link_libraries(MF_System PUBLIC MF_Commons MF_Windows)
 target_include_directories(MF_System PUBLIC include)
 
-add_subdirectory(tests)
+if(MF_IN_DEV)
+    add_subdirectory(tests)
+endif()
