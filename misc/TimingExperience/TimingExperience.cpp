@@ -24,6 +24,7 @@
 
 #ifdef _MSC_VER
 #    define stat _stat
+#    pragma comment(lib, "Shlwapi.lib")
 #endif
 
 using std::cout;
