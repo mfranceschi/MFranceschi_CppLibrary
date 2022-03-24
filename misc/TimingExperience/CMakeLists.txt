@@ -1,5 +1,5 @@
 add_executable(TimingExperience TimingExperience.hpp TimingExperience.cpp)
-target_link_libraries(TimingExperience PRIVATE ${MF_Lib_Libname} "Shlwapi.dll")
+target_link_libraries(TimingExperience PRIVATE MF_ALL "Shlwapi.dll")
 
 if(MINGW)
     set_source_files_properties(

@@ -4,19 +4,25 @@
 
 #include "TimingExperience.hpp"
 
+#include <sys/stat.h>
+
+#include <array>
+#include <chrono>
 #include <ctime>
 #include <functional>
 #include <iostream>
 #include <string>
 
-#include "MFranceschi_CppLibrary.hpp"
+#include "MF/Filesystem.hpp"
 
 #if MF_WINDOWS
 #    include <Shlwapi.h>
 #    include <fcntl.h>
 #    include <io.h>
-#else
-#    include <sys/stat.h>
+#endif
+
+#ifdef _MSC_VER
+#    define stat _stat
 #endif
 
 using std::cout;
@@ -25,13 +31,47 @@ using std::endl;
 static constexpr const char *file_name =
     ".." FILE_SEPARATOR "test" FILE_SEPARATOR "files" FILE_SEPARATOR "aom_v.scx";
 #ifdef _WIN32
-static constexpr File::Filename_t file_L =
+static constexpr MF::Filesystem::Filename_t file_L =
     MAKE_FILE_NAME ".." FILE_SEPARATOR "tests" FILE_SEPARATOR "files" FILE_SEPARATOR "aom_v.scx";
 #endif
 
-static inline double TimeWithRepetition(const std::function<void()> &func) {
-    return Toolbox::TimeThis(TimingExperience::NUMBER_OF_ITERATIONS, func);
+// Returns the execution time for the given function.
+// It runs "iter" times and returns (total_time/iter).
+static inline double TimeThis(size_t iter, const std::function<void(void)> &func) {
+    using namespace std::chrono;
+    high_resolution_clock::time_point beginning = high_resolution_clock::now();
+    for (size_t i = 0; i < iter; i++) {
+        func();
+    }
+    return (duration<double>(high_resolution_clock::now() - beginning).count()) / double(iter);
 }
+
+static inline double TimeWithRepetition(const std::function<void()> &func) {
+    return TimeThis(TimingExperience::NUMBER_OF_ITERATIONS, func);
+}
+
+// Returns the same C-string but converted in wchar_t*.
+// It is created using new[] --> please use delete[] after use!
+// Returns nullptr in case of failure.
+static inline wchar_t *ToWchar_t(const char *source) {
+    size_t length = strlen(source);
+    std::unique_ptr<wchar_t[]> destination = std::make_unique<wchar_t[]>(length + 1);
+    size_t retValue = 0;
+
+#if defined _MSC_VER || \
+    (defined __STDC_LIB_EXT1__ && defined __STDC_WANT_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__ == 1)
+    mbstowcs_s(&retValue, destination.get(), length + 1, source, length);
+#else
+    retValue = mbstowcs(destination.get(), source, length) - length;
+#endif
+
+    if (retValue == 0U) {
+        destination.reset();
+    }
+    return destination.release();
+}
+
+using PtrFILE = std::unique_ptr<std::FILE, decltype(&std::fclose)>;
 
 namespace TimingExperience
 {
@@ -55,11 +95,11 @@ namespace TimingExperience
         cout << "Timing the file existence functions !" << endl;
 
         cout << "Time for stat: " << TimeWithRepetition([]() {
-            struct stat d {};
-            stat(file_name, &d);
+            struct stat statStruct {};
+            stat(file_name, &statStruct);
         }) << endl;
 
-#if defined _WIN32
+#if MF_WINDOWS
         cout << "Time for PathFileExists: ";
         cout << TimeWithRepetition([]() {
             PathFileExists(file_L);
@@ -80,19 +120,18 @@ namespace TimingExperience
         cout << "Time for fseek : ";
         cout << TimeWithRepetition([]() {
 #pragma warning(suppress : 4996)
-            FILE *f = fopen(file_name, "r");
-            fseek(f, 0, SEEK_END);
-            ftell(f);
-            fclose(f);
+            PtrFILE theFile(std::fopen(file_name, "r"), std::fclose);
+            fseek(theFile.get(), 0, SEEK_END);
+            ftell(theFile.get());
         }) << endl;
 
         cout << "Time for stat: ";
         cout << TimeWithRepetition([]() {
-            struct stat st {};
-            stat(file_name, &st);
+            struct stat statStruct {};
+            stat(file_name, &statStruct);
         }) << endl;
 
-#if defined _WIN32
+#if MF_WINDOWS
         cout << "Time for GetFileAttributesEx: ";
         cout << TimeWithRepetition([]() {
             WIN32_FILE_ATTRIBUTE_DATA fileInfo;
@@ -114,18 +153,16 @@ namespace TimingExperience
 
     void timingWchar_tConversion() {
         cout << "Timing char to wchar_t conversion functions!" << endl;
-        const wchar_t *newptr = nullptr;
 
         cout << "Time for mbstowcs_s: ";
-        cout << TimeWithRepetition([&newptr]() {
-            newptr = Toolbox::ToWchar_t(file_name);
+        cout << TimeWithRepetition([]() {
+            std::unique_ptr<wchar_t[]> newptr(ToWchar_t(file_name));
         }) << endl;
-        delete[] newptr;
 
         cout << "Time for wstring creation: ";
-        cout << TimeWithRepetition([&newptr]() {
-            std::string s = file_name;
-            newptr = std::wstring(s.cbegin(), s.cend()).c_str();
+        cout << TimeWithRepetition([]() {
+            std::string temp = file_name;
+            std::wstring wideTemp = std::wstring(temp.cbegin(), temp.cend());
         }) << endl;
 
         cout << endl;
@@ -134,35 +171,38 @@ namespace TimingExperience
     void timingFileReading() {
 #pragma warning(disable : 4996)
         cout << "Timing functions for reading 5 chars in a file!" << endl;
-        char *buffer = new char[6];
+        static constexpr std::size_t BUFFER_SIZE = 6;
+        std::array<char, BUFFER_SIZE> buffer{};
 
         cout << "Time for FILE* with fgets: ";
         cout << TimeWithRepetition([&buffer]() {
-            FILE *file = fopen(file_name, "r");
-            fgets(buffer, 6, file);
-            fclose(file);
+            PtrFILE theFile(std::fopen(file_name, "r"), std::fclose);
+            fgets(buffer.data(), BUFFER_SIZE, theFile.get());
         }) << endl;
 
         cout << "Time for FILE* with fgetc: ";
         cout << TimeWithRepetition([&buffer]() {
-            FILE *file = fopen(file_name, "r");
-            for (int i = 0; i < 5; ++i) buffer[i] = static_cast<char>(fgetc(file));
-            buffer[5] = '\0';
-            fclose(file);
+            PtrFILE theFile(std::fopen(file_name, "r"), std::fclose);
+            for (std::size_t i = 0; i < BUFFER_SIZE; ++i) {
+                buffer.at(i) = static_cast<char>(fgetc(theFile.get()));
+            }
+            buffer[BUFFER_SIZE - 1] = '\0';
         }) << endl;
 
         cout << "Time for ifstream with getline: ";
         cout << TimeWithRepetition([&buffer]() {
             std::ifstream ifs(file_name);
-            ifs.getline(buffer, 6);
+            ifs.getline(buffer.data(), BUFFER_SIZE);
             ifs.close();
         }) << endl;
 
         cout << "Time for ifstream with get: ";
         cout << TimeWithRepetition([&buffer]() {
             std::ifstream ifs(file_name);
-            for (int i = 0; i < 5; ++i) buffer[i] = ifs.get();
-            buffer[5] = '\0';
+            for (int i = 0; i < BUFFER_SIZE; ++i) {
+                buffer.at(i) = static_cast<char>(ifs.get());
+            }
+            buffer[BUFFER_SIZE - 1] = '\0';
             ifs.close();
         }) << endl;
 
@@ -171,10 +211,10 @@ namespace TimingExperience
         cout << TimeWithRepetition([&buffer]() {
             int file;
             _sopen_s(&file, file_name, _O_RDONLY, _SH_DENYNO, _S_IREAD);
-            auto tmp = _read(file, buffer, 5);
+            auto tmp = _read(file, buffer.data(), BUFFER_SIZE - 1);
             _close(file);
         }) << endl;
-#endif // WIN32
+#endif // _MSC_VER
 
         cout << endl;
 #pragma warning(default : 4996)
