@@ -10,6 +10,7 @@ target_sources(
         MF_Containers_Tests
         PRIVATE
             array_tests.cpp
+            streams_tests.cpp
 )
 
 gtest_discover_tests(MF_Containers_Tests)

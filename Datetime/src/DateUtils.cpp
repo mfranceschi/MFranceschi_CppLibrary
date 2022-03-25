@@ -8,11 +8,11 @@
 #    include "MF/LightWindows.hpp"
 #endif
 
-#include "MF/DateUtils.hpp"
+#include "MF/Datetime.hpp"
 
 namespace MF
 {
-    namespace DateUtils
+    namespace Datetime
     {
 
         bool Localtime(const time_t &src, struct tm &dest) {
@@ -62,5 +62,5 @@ namespace MF
             return timezone;
 #endif
         }
-    } // namespace DateUtils
+    } // namespace Datetime
 } // namespace MF

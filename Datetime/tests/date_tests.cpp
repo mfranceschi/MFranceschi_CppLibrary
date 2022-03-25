@@ -5,14 +5,10 @@
 #include <chrono>
 #include <cmath>
 
-#include "MF/Date.hpp"
+#include "MF/Datetime.hpp"
 #include "tests_data.hpp"
 
-using MF::Date;
-using MF::DateError;
-using MF::DateError_e;
-using namespace MF::DateTypes;
-using namespace MF::DateUtils;
+using namespace MF::Datetime;
 
 class GetterSetterTests : public ::testing::Test {
    protected:
@@ -86,7 +82,9 @@ namespace StaticMethodsTesting
         time_t now_to_check = Now_Timestamp();
         time_t now_from_chrono = clock::to_time_t(clock::now());
         time_t distance = now_from_chrono - now_to_check;
-        if (distance < 0) distance *= -1;
+        if (distance < 0) {
+            distance *= -1;
+        }
         EXPECT_TRUE(distance <= 1);
     }
 
@@ -97,7 +95,8 @@ namespace StaticMethodsTesting
         // The test = ensure the distance between both is no more than 1s.
         // We are in C++ so more than 1s between these 2 instructions is undoubtedly a failure.
         time_t distance = std::abs(now_from_chrono - now_to_check);
-        EXPECT_LE(distance, 1) << "Date::now() to time_t gives " << now_to_check << ", while clock::now() to time_t gives " << now_from_chrono;
+        EXPECT_LE(distance, 1) << "Date::now() to time_t gives " << now_to_check
+                               << ", while clock::now() to time_t gives " << now_from_chrono;
     }
 } // namespace StaticMethodsTesting
 
@@ -162,7 +161,7 @@ TEST_F(GetterSetterTests, TestSetterSeconds) {
         EXPECT_EQ(de.getErrorValue(), DateError_e::WRONG_TIME_DATA);
     }
     try {
-        d1.seconds(-5);
+        d1.seconds(-2);
         FAIL() << "expected wrong time data";
     } catch (const DateError &de) {
         EXPECT_EQ(de.getErrorValue(), DateError_e::WRONG_TIME_DATA);

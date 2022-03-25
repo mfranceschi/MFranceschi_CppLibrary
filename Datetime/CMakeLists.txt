@@ -7,10 +7,7 @@ target_sources(MF_Datetime
             src/DateUtils.cpp
             src/DateUtils_MaxYear.cpp
         PUBLIC
-            include/MF/Date.hpp
-            include/MF/DateError.hpp
-            include/MF/DateTypes.hpp
-            include/MF/DateUtils.hpp
+            include/MF/Datetime.hpp
 )
 target_link_libraries(MF_Datetime PUBLIC MF_Commons MF_Windows)
 target_include_directories(MF_Datetime PUBLIC include)

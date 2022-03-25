@@ -9,7 +9,7 @@
 
 class AutoArrayTest : public ::testing::Test {
    protected:
-    MF::Array<int, 9> mfArray = {1, 3, 5, 7, 9, 11, 13, 15, 17};
+    MF::Containers::Array<int, 9> mfArray = {1, 3, 5, 7, 9, 11, 13, 15, 17};
     std::array<int, 9> stdArray{1, 3, 5, 7, 9, 11, 13, 15, 17};
 };
 

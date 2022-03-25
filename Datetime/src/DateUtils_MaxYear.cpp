@@ -4,11 +4,11 @@
 
 #include <limits>
 
-#include "MF/DateUtils.hpp"
+#include "MF/Datetime.hpp"
 
 namespace MF
 {
-    namespace DateUtils
+    namespace Datetime
     {
 #if MF_WINDOWS
 #    pragma warning(disable : 4127 4309 4365)
@@ -31,5 +31,5 @@ namespace MF
 #if MF_WINDOWS
 #    pragma warning(default : 4127 4309 4365)
 #endif
-    } // namespace DateUtils
+    } // namespace Datetime
 } // namespace MF
