@@ -17,7 +17,7 @@ namespace MF
         namespace Streams
         {
             template <typename T>
-            using ElementProcessor_t = const std::function<void(const T &)> &;
+            using ElementProcessor_t = std::function<void(const T &)>;
 
             template <typename T>
             using Predicate_t = std::function<bool(const T &)>;
@@ -47,21 +47,16 @@ namespace MF
         template <typename T>
         struct Stream {
            public:
-            using ElementProcessor_t = const std::function<void(const T &)> &;
-            using Predicate_t = std::function<bool(const T &)>;
-            template <typename Target>
-            using Mapper_t = std::function<Target(const T &)>;
-
-            virtual StreamPtr<T> filter(const typename Stream<T>::Predicate_t &predicate) = 0;
+            virtual StreamPtr<T> filter(const Streams::Predicate_t<T> &predicate) = 0;
 
             template <typename Target>
-            inline StreamPtr<Target> map(const typename Stream<T>::Mapper_t<Target> &mapper);
+            inline StreamPtr<Target> map(const Streams::Mapper_t<T, Target> &mapper);
 
             virtual std::vector<T> collectToVector() = 0;
 
             virtual std::size_t size() = 0;
 
-            virtual void browse(ElementProcessor_t elementProcessor) = 0;
+            virtual void browse(const Streams::ElementProcessor_t<T> &elementProcessor) = 0;
 
             virtual ~Stream() = default;
         };
@@ -76,7 +71,7 @@ namespace MF
                 return result;
             }
 
-            StreamPtr<T> filter(const typename Stream<T>::Predicate_t &predicate) override {
+            StreamPtr<T> filter(const Streams::Predicate_t<T> &predicate) override {
                 return std::make_shared<StreamFromFilter<T>>(this, predicate);
             }
 
@@ -92,29 +87,27 @@ namespace MF
         template <typename T>
         struct StreamFromFilter : public StreamImpl<T> {
            protected:
-            using _Predicate_t = typename Stream<T>::Predicate_t;
-
            public:
-            StreamFromFilter(Stream<T> *source, const _Predicate_t &predicate)
+            StreamFromFilter(Stream<T> *source, const Streams::Predicate_t<T> &predicate)
                 : previous(source), predicate(predicate) {
             }
 
-            void browse(typename Stream<T>::ElementProcessor_t elementProcessor) override {
+            void browse(const Streams::ElementProcessor_t<T> &elementProcessor) override {
                 const auto &_pred = this->predicate;
                 const auto &_proc = elementProcessor;
 
-                typename Stream<T>::ElementProcessor_t nestedElementProcessor =
-                    [&_pred, &_proc](const T &element) {
-                        if (_pred(element)) {
-                            _proc(element);
-                        }
-                    };
+                Streams::ElementProcessor_t<T> nestedElementProcessor = [&_pred,
+                                                                         &_proc](const T &element) {
+                    if (_pred(element)) {
+                        _proc(element);
+                    }
+                };
                 previous->browse(nestedElementProcessor);
             }
 
            private:
             Stream<T> *const previous;
-            const _Predicate_t predicate;
+            const Streams::Predicate_t<T> predicate;
         };
 
         template <typename Target, typename Source>
@@ -127,11 +120,11 @@ namespace MF
                 : previous(source), mapper(mapper) {
             }
 
-            void browse(typename Stream<Target>::ElementProcessor_t elementProcessor) override {
+            void browse(const Streams::ElementProcessor_t<Target> &elementProcessor) override {
                 const auto &_mapper = this->mapper;
                 const auto &_proc = elementProcessor;
 
-                typename Stream<Target>::ElementProcessor_t nestedElementProcessor =
+                Streams::ElementProcessor_t<Target> nestedElementProcessor =
                     [&_mapper, &_proc](const Target &element) {
                         _proc(_mapper(element));
                     };
@@ -146,11 +139,10 @@ namespace MF
         template <typename T, typename Collection_t>
         struct StreamFromCollection;
 
-        template <typename Source>
+        template <typename T>
         template <typename Target>
-        StreamPtr<Target> Stream<Source>::map(
-            const typename Stream<Source>::Mapper_t<Target> &mapper) {
-            return std::make_shared<StreamFromMap<Target, Source>>(this, mapper);
+        StreamPtr<Target> Stream<T>::map(const Streams::Mapper_t<T, Target> &mapper) {
+            return std::make_shared<StreamFromMap<Target, T>>(this, mapper);
         }
 
         template <typename T, typename Collection_t>
@@ -167,7 +159,7 @@ namespace MF
                 return collection.size();
             }
 
-            void browse(typename Stream<T>::ElementProcessor_t elementProcessor) override {
+            void browse(const Streams::ElementProcessor_t<T> &elementProcessor) override {
                 for (const auto &element : collection) {
                     elementProcessor(element);
                 }
@@ -175,29 +167,6 @@ namespace MF
 
            protected:
             const Collection_t &collection;
-        };
-
-        template <typename T>
-        struct StreamFromEmbeddedCollection : public StreamImpl<T> {
-            StreamFromEmbeddedCollection(const std::vector<T> &collection)
-                : actualCollection(collection), underlyingStream(StreamFromCollection(collection)) {
-            }
-
-            std::vector<T> collectToVector() override {
-                return actualCollection;
-            }
-
-            std::size_t size() override {
-                return actualCollection.size();
-            }
-
-            void browse(typename Stream<T>::ElementProcessor_t elementProcessor) override {
-                return underlyingStream.browse(elementProcessor);
-            }
-
-           protected:
-            const std::vector<T> actualCollection;
-            const StreamFromCollection<T, std::vector<T>> underlyingStream;
         };
 
         namespace Streams

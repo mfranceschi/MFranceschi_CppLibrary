@@ -16,14 +16,14 @@ double convertToDoubleAndInvert(int input) {
 }
 
 template <typename T>
-std::ostream &operator<<(std::ostream &os, const std::vector<T> &v) {
-    os << "Vector"
-       << "[";
-    for (const auto &value : v) {
-        os << value << ", ";
+std::ostream &operator<<(std::ostream &theOstream, const std::vector<T> &data) {
+    theOstream << "Vector"
+               << "[";
+    for (const auto &value : data) {
+        theOstream << value << ", ";
     }
-    os << "]";
-    return os;
+    theOstream << "]";
+    return theOstream;
 }
 
 TEST(UnpolishedTest, FromAnotherRepo) {
