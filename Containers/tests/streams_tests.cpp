@@ -32,24 +32,24 @@ TEST(UnpolishedTest, FromAnotherRepo) {
 
     std::vector<int> vecint{2, 22, 7, 987, -2, 0};
 
-    StreamPtr<int> a = Streams::fromCollection(vecint);
-    ASSERT_EQ(a->collectToVector().size(), 6);
+    StreamPtr<int> streamA = Streams::fromCollection(vecint);
+    ASSERT_EQ(streamA->collectToVector().size(), 6);
 
-    StreamPtr<int> b = a->filter(isIntPair);
-    auto bVector = b->collectToVector();
+    StreamPtr<int> streamB = streamA->filter(isIntPair);
+    auto bVector = streamB->collectToVector();
     ASSERT_LIST_CONTAINS(bVector, 2);
     ASSERT_LIST_CONTAINS(bVector, 22);
     ASSERT_LIST_CONTAINS(bVector, -2);
     ASSERT_LIST_CONTAINS(bVector, 0);
     ASSERT_EQ(bVector.size(), 4);
 
-    StreamPtr<int> c = b->filter(isIntNonZero);
-    auto cVector = c->collectToVector();
+    StreamPtr<int> streamC = streamB->filter(isIntNonZero);
+    auto cVector = streamC->collectToVector();
     ASSERT_LIST_CONTAINS(cVector, 2);
     ASSERT_LIST_CONTAINS(cVector, 22);
     ASSERT_LIST_CONTAINS(cVector, -2);
     ASSERT_EQ(cVector.size(), 3);
 
-    StreamPtr<double> d = c->map<double>(convertToDoubleAndInvert);
-    ASSERT_EQ(d->collectToVector().size(), 3);
+    StreamPtr<double> streamD = streamC->map<double>(convertToDoubleAndInvert);
+    ASSERT_EQ(streamD->collectToVector().size(), 3);
 }
