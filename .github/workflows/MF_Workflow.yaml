@@ -1,0 +1,96 @@
+on: [ push ]
+
+env:
+  BUILD_DIR: build
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+
+    env:
+      BUILD_DIR: ./build/
+
+    strategy:
+      matrix:
+        CMake_Config: [ Debug, Release ]
+        os: [ ubuntu-latest, windows-latest ]
+      fail-fast: false
+
+    steps:
+      - name: SETUP - Checkout git repo
+        uses: actions/checkout@v2
+
+      - name: SETUP - Set up build tools
+        if: ${{ false }} # ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          sudo apt update
+          sudo apt-get install valgrind
+
+      - name: BUILD - CMake configure
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.CMake_Config }} -DMF_IN_DEV=ON -S . -B ${{ env.BUILD_DIR }}
+
+      - name: BUILD - CMake build
+        run: |
+          cmake --build ${{ env.BUILD_DIR }} -j10 --config=${{ matrix.CMake_Config}} 
+
+      - name: TEST - CTest
+        working-directory: ${{ env.BUILD_DIR }}
+        run: |
+          ctest -j10 -C ${{ matrix.CMake_Config }} -T test --output-on-failure
+
+  code-quality-no-build-needed:
+    runs-on: ubuntu-latest
+
+    env:
+      BUILD_DIR: ./build/
+      CLANG_VERSION: 10
+      CMake_Config: Debug
+
+      CC: /usr/bin/clang
+      CXX: /usr/bin/clang++
+
+    steps:
+      - name: SETUP - Checkout git repo
+        uses: actions/checkout@v2
+
+      - name: CHECK - Clang-Format (formatting)
+        uses: RafikFarhad/clang-format-github-action@v2.0.0
+        with:
+          sources: "**/*.hpp,**/*.cpp"
+
+      - name: CHECK - CMake linting
+        if: ${{ always() }}
+        run: |
+          pip install cmakelint
+          find ./ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100 --filter=-readability/wonkycase
+
+  code-quality:
+    runs-on: ubuntu-latest
+
+    env:
+      BUILD_DIR: ./build/
+      CLANG_VERSION: 10
+      CMake_Config: Debug
+
+      CC: /usr/bin/clang
+      CXX: /usr/bin/clang++
+
+    steps:
+      - name: SETUP - Checkout git repo
+        uses: actions/checkout@v2
+
+      - name: SETUP - Install dependencies
+        id: install-dependencies
+        run: |
+          sudo apt update && sudo apt-get install clang-tidy
+          pip install cmakelint
+
+      - name: SETUP - CMake configure
+        id: cmake-configure
+        if: ${{ steps.install-dependencies.outcome == 'success' }}
+        run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMake_Config }} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Werror=dev -Werror=deprecated -S . -B ${{ env.BUILD_DIR }}
+
+      - name: CHECK - Clang-Tidy (static analysis, NOT on tests)
+        if: ${{ steps.cmake-configure.outcome == 'success' }}
+        run: find ./ -name "*.cpp" -o -name "*.hpp" -o \( -name "misc" -o -name "build" -o -name "cmake-build-debug" \) -prune | xargs clang-tidy -p=${{ env.BUILD_DIR }} --warnings-as-errors=*

@@ -1,0 +1,26 @@
+# Reference = https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+
+BasedOnStyle: Google
+
+IndentWidth: 4
+
+NamespaceIndentation: All
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterNamespace: true
+
+ColumnLimit: 100
+
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Never
+AllowShortLambdasOnASingleLine: None
+
+AlignAfterOpenBracket: AlwaysBreak
+BinPackParameters: false
+
+AlignTrailingComments: false
+
+IndentPPDirectives: AfterHash
+
+SpacesBeforeTrailingComments: 1
