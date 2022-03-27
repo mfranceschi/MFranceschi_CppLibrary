@@ -16,6 +16,9 @@ target_sources(
         MF_Filesystem_Tests
         PRIVATE
             file_tests.cpp
+            Filesystem_tests_commons.hpp
+            Filesystem_ListFilesInDirectory_tests.cpp
+            Filesystem_ReadWholeFile_tests.cpp
 )
 
 gtest_discover_tests(MF_Filesystem_Tests)

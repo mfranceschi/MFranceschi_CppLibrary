@@ -53,7 +53,7 @@ namespace MF
                 return -1;
             }
 
-            int bytesRead = read(fileDescriptor, buffer, bufferSize);
+            ssize_t bytesRead = read(fileDescriptor, buffer, bufferSize);
             close(fileDescriptor);
             return bytesRead;
         }
@@ -71,11 +71,10 @@ namespace MF
         }
 
         SFilename_t osGetCWD() {
-            using deleter_t = std::function<void(char *)>;
             static const auto deleter = [](char *pointer) {
                 std::free(pointer);
             };
-            std::unique_ptr<char[], deleter_t> syscallReturn(nullptr, deleter);
+            std::unique_ptr<char[], decltype(deleter)> syscallReturn(nullptr, deleter);
 
 #    if defined(_GNU_SOURCE)
             syscallReturn.reset(get_current_dir_name());

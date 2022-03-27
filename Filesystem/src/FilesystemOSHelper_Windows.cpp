@@ -120,7 +120,7 @@ namespace MF
 
         using osReadFileData_t = Windows_ReadFileData;
 
-        std::unique_ptr<const WholeFileData> osOpenFile(Filename_t filename) {
+        std::unique_ptr<const WholeFileData> osReadWholeFile(Filename_t filename) {
             auto rfd = std::make_unique<Windows_ReadFileData_Dummy>();
 
             rfd->size = osGetFileSize(filename);
