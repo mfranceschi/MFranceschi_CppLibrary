@@ -79,6 +79,12 @@ namespace MF
          */
         bool Delete(Filename_t filename, bool fileOnly = true);
 
+        /// Deletes a file.
+        bool DeleteFile(Filename_t filename);
+
+        /// Deletes an empty directory.
+        bool DeleteDirectory(Filename_t filename);
+
         /**
          * Determines the encoding of the file, accordingly to the first two or three bytes in the
          * file. Special results: ENC_ERROR if reading the first three bytes failed; ENC_DEFAULT if
@@ -100,7 +106,7 @@ namespace MF
          * @param charsToRead Number of bytes to read. If <= 0, we simply return "Exist(filename)".
          * @return True if it was a success, false if we could not read exactly "charsToRead" bytes.
          */
-        bool IsFileReadable(Filename_t filename, int charsToRead = 3);
+        bool IsFileReadable(Filename_t filename, Filesize_t charsToRead = 3);
 
         /**
          * Extraordinary function.
@@ -127,7 +133,7 @@ namespace MF
         Filesize_t GetDirectorySize(Filename_t filename);
 
         /// Simple helper function, for use during debugging.
-        std::ostream &operator<<(std::ostream &os, const Encoding_t &enc);
+        std::ostream &operator<<(std::ostream &theOstream, const Encoding_t &enc);
 
         /**
          * Creates an empty directory. No particular setting (such as permissions) is applied.

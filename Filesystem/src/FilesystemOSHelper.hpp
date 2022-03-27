@@ -15,6 +15,8 @@ namespace MF
 
         bool osDeleteFileOrDirectory(Filename_t filename);
 
+        bool osDeleteDirectory(Filename_t filename);
+
         bool osFileExists(Filename_t filename);
 
         bool osDirectoryExists(Filename_t filename);

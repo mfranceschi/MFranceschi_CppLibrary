@@ -37,6 +37,10 @@ namespace MF
             return successOnZero(remove(name));
         }
 
+        bool osDeleteDirectory(Filename_t filename) {
+            return successOnZero(rmdir(filename));
+        }
+
         bool osFileExists(Filename_t filename) {
             struct stat statOfFile {};
             return successOnZero(stat(filename, &statOfFile));
@@ -74,7 +78,7 @@ namespace MF
             static const auto deleter = [](char *pointer) {
                 std::free(pointer);
             };
-            std::unique_ptr<char[], decltype(deleter)> syscallReturn(nullptr, deleter);
+            std::unique_ptr<char, decltype(deleter)> syscallReturn(nullptr, deleter);
 
 #    if defined(_GNU_SOURCE)
             syscallReturn.reset(get_current_dir_name());

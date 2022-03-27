@@ -25,6 +25,10 @@ namespace MF
             return DeleteFile(name) ? true : RemoveDirectory(name);
         }
 
+        bool osDeleteDirectory(Filename_t name) {
+            return RemoveDirectory(name);
+        }
+
         bool osFileExists(Filename_t filename) {
             DWORD attr = GetFileAttributes(filename);
             return !(attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY));

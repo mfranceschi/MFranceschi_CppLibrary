@@ -54,9 +54,11 @@ class TestFile : public ::testing::Test {
         if (!fid.exists) {
             EXPECT_FALSE(IsFileReadable(fid.name.c_str(), 1));
             EXPECT_FALSE(IsFileReadable(fid.name.c_str()));
+
+            // TODO maybe delete the following
             EXPECT_FALSE(IsFileReadable(fid.name.c_str(), -1));
         } else {
-            // Max nbr of chars that will be readed.
+            // Max nbr of chars that will be read.
             unsigned int chars_max = std::min(static_cast<Filesize_t>(5), fid.size / 10);
 
             // Try to read an invalid number of chars.
@@ -69,10 +71,11 @@ class TestFile : public ::testing::Test {
                 EXPECT_TRUE(IsFileReadable(fid.name.c_str(), i))
                     << "Fail of \"Read a few times\" with index " << i;
             }
-            if (fid.size < 3 /* Value of default param. */)
+            if (fid.size < 3 /* Value of default param. */) {
                 EXPECT_FALSE(IsFileReadable(fid.name.c_str()));
-            else
+            } else {
                 EXPECT_TRUE(IsFileReadable(fid.name.c_str()));
+            }
         }
     }
 
@@ -87,10 +90,11 @@ class TestFile : public ::testing::Test {
     }
 
     void TearDown() override {
-        if (fid.exists)
+        if (fid.exists) {
             ASSERT_TRUE(IsFile(fid.name.c_str()));
-        else
+        } else {
             ASSERT_FALSE(IsFile(fid.name.c_str()));
+        }
     }
 };
 
