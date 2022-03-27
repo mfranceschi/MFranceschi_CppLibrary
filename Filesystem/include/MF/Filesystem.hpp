@@ -36,7 +36,7 @@ namespace MF
         // Type used to deal with file sizes of any weight (GBs are okay).
         using Filesize_t = unsigned long;
 
-#    if defined(UNICODE)
+#    if MF_WINDOWS && defined(UNICODE)
 #        define MAKE_FILE_NAME L""
         using Filename_t = const wchar_t *;
         using SFilename_t = std::wstring;
@@ -86,10 +86,10 @@ namespace MF
          * @param filename Path to the file to test.
          * @return An "encoding_t" value.
          */
-        Encoding_t Encoding(Filename_t filename);
+        Encoding_t GetFileEncoding(Filename_t filename);
 
         /// Returns true if "filename" points to an existing file, false otherwise.
-        bool Exists(Filename_t filename);
+        bool IsFile(Filename_t filename);
 
         /// Returns true if "filename" points to an existing directory, false otherwise.
         bool IsDir(Filename_t filename);
@@ -100,13 +100,13 @@ namespace MF
          * @param charsToRead Number of bytes to read. If <= 0, we simply return "Exist(filename)".
          * @return True if it was a success, false if we could not read exactly "charsToRead" bytes.
          */
-        bool CanReadFile(Filename_t filename, int charsToRead = 3);
+        bool IsFileReadable(Filename_t filename, int charsToRead = 3);
 
         /**
          * Extraordinary function.
          *
          * 1. It closes "ifs".
-         * 2. If unknown, it calls "Encoding(filename)" to determine the encoding.
+         * 2. If unknown, it calls "GetFileEncoding(filename)" to determine the encoding.
          * 3. If the coding could be processed, we call "ifs.open(filename)" with a specific policy
          * (locale, starting offset, etc.). In all cases, the function returns.
          * @param ifs The stream to open with the given file and opening policy. It is closed before
@@ -117,21 +117,30 @@ namespace MF
          * @return False if and only if trying to determine the encoding failed --> file cannot be
          * processed correctly.
          */
-        bool Open(
+        bool OpenFile(
             std::ifstream &ifs, Filename_t filename, Encoding_t encoding = Encoding_e::ENC_ERROR);
 
         /// Returns the size of the file pointed by "filename" in bytes, or 0 if anything failed.
-        Filesize_t Size(Filename_t filename);
+        Filesize_t GetFileSize(Filename_t filename);
+
+        /// Returns the cumulated size of all regular files of the given directory.
+        Filesize_t GetDirectorySize(Filename_t filename);
 
         /// Simple helper function, for use during debugging.
         std::ostream &operator<<(std::ostream &os, const Encoding_t &enc);
 
         /**
          * Creates an empty directory. No particular setting (such as permissions) is applied.
-         * @param filename Name of the folder to create.
-         * @return True if the folder actually got created.
+         * @param filename Name of the directory to create.
+         * @return True if the directory actually got created.
          */
-        bool CreateFolder(Filename_t filename);
+        bool CreateDirectory(Filename_t filename);
+
+        bool CreateFile(Filename_t filename, Filesize_t sizeToAllocate = 0);
+
+        inline bool TouchFile(Filename_t filename) {
+            return CreateFile(filename);
+        }
 
         /// Returns the "Current Working Directory" as a folder path. It ends with a FILE_SEPARATOR.
         SFilename_t GetCWD();
@@ -139,19 +148,19 @@ namespace MF
         /**
          * Generates the complete list of files and directories that are direct children of the
          * given folder. Names are returned relative to the "folder". Directories have an ending
-         * PATH_SEPARATOR. > FilesInDirectory("foldername/") -> ("file.txt", "image.png",
+         * PATH_SEPARATOR. > ListFilesInDirectory("foldername/") -> ("file.txt", "image.png",
          * "subfolder/")
          * @param folder Name or path to the folder. It must end with a PATH_SEPARATOR character.
          * @return List of files and directories names, or empty vector if anything failed.
          */
-        std::vector<SFilename_t> FilesInDirectory(Filename_t folder);
+        std::vector<SFilename_t> ListFilesInDirectory(Filename_t folder);
 
-        /// Data structure used to store information about files opened with Open.
-        struct ReadFileData {
+        /// Data structure used to store information about files opened with OpenFile.
+        struct WholeFileData {
             const char *contents = nullptr;
             Filesize_t size = 0UL;
 
-            virtual ~ReadFileData() = default; // For polymorphic reasons.
+            virtual ~WholeFileData() = default; // For polymorphic reasons.
         };
 
         /**
@@ -159,12 +168,12 @@ namespace MF
          * Also, that C-string does not end with '\0'.
          * It is advised to use an "InCharArrayStream".
          * The structure must remain a pointer (in reality, it is an instance of a subclass of
-         * ReadFileData). The purpose of this function is to offer the fastest way to read an entire
-         * file.
+         * WholeFileData). The purpose of this function is to offer the fastest way to read an
+         * entire file.
          * @param filename Name of the file to open.
          * @return "nullptr" if anything failed or the file is empty, or a new structure.
          */
-        std::unique_ptr<const ReadFileData> Read(Filename_t filename);
+        std::unique_ptr<const WholeFileData> ReadWholeFile(Filename_t filename);
 
         /**
          * Wrapper function: fills a C++ string with the whole file contents, internally using the
@@ -174,9 +183,7 @@ namespace MF
          * occurred.
          * @return True on success, false on error.
          */
-        bool ReadToString(Filename_t filename, std::string &string);
+        bool ReadWholeFileToString(Filename_t filename, std::string &string);
     } // namespace Filesystem
-
-    //------------------------------------------------------ Other definitions
 } // namespace MF
 #endif // FILE_H

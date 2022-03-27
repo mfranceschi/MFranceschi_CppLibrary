@@ -98,7 +98,7 @@ namespace MF
                 return osDeleteFileOrDirectory(filename);
         }
 
-        bool Exists(Filename_t filename) {
+        bool IsFile(Filename_t filename) {
             return osFileExists(filename);
         }
 
@@ -106,7 +106,7 @@ namespace MF
             return osDirectoryExists(filename);
         }
 
-        bool CanReadFile(Filename_t filename, int charsToRead) {
+        bool IsFileReadable(Filename_t filename, int charsToRead) {
             if (charsToRead > 0) {
                 char *buffer = new char[charsToRead];
                 int bytesRead = osReadFileToBuffer(filename, buffer, charsToRead);
@@ -117,9 +117,9 @@ namespace MF
             }
         }
 
-        bool Open(ifstream &ifs, Filename_t filename, Encoding_t encoding) {
+        bool OpenFile(ifstream &ifs, Filename_t filename, Encoding_t encoding) {
             ifs.close();
-            if (encoding == Encoding_e::ENC_ERROR) encoding = Encoding(filename);
+            if (encoding == Encoding_e::ENC_ERROR) encoding = GetFileEncoding(filename);
 
             if (encoding == Encoding_e::ENC_UTF8) {
                 ifs.open(filename);
@@ -134,15 +134,15 @@ namespace MF
             } else if (encoding == Encoding_e::ENC_DEFAULT) {
                 ifs.open(filename, ios_base::binary);
                 return true;
-            } else // Encoding is unknown
+            } else // GetFileEncoding is unknown
                 return false;
         }
 
-        Filesize_t Size(Filename_t filename) {
+        Filesize_t GetFileSize(Filename_t filename) {
             return osGetFileSize(filename);
         }
 
-        Encoding_t Encoding(Filename_t filename) {
+        Encoding_t GetFileEncoding(Filename_t filename) {
             char bits[NBR_BITS_TO_READ_ENCODING];
             Encoding_t forReturn;
             int readResult = osReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
@@ -159,7 +159,7 @@ namespace MF
             return forReturn;
         }
 
-        bool CreateFolder(Filename_t filename) {
+        bool CreateDirectory(Filename_t filename) {
             return osCreateDirectory(filename);
         }
 
@@ -185,7 +185,7 @@ namespace MF
             return osGetCWD();
         }
 
-        std::vector<SFilename_t> FilesInDirectory(Filename_t folder) {
+        std::vector<SFilename_t> ListFilesInDirectory(Filename_t folder) {
             std::vector<SFilename_t> result;
             osGetDirectoryContents(folder, result);
             return result;

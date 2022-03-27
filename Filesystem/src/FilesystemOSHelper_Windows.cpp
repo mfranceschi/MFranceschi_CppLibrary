@@ -105,7 +105,7 @@ namespace MF
             }
         }
 
-        struct Windows_ReadFileData_Dummy : public ReadFileData {
+        struct Windows_ReadFileData_Dummy : public WholeFileData {
             HANDLE fileHandle = nullptr;
             HANDLE mappingHandle = nullptr;
         };
@@ -120,7 +120,7 @@ namespace MF
 
         using osReadFileData_t = Windows_ReadFileData;
 
-        std::unique_ptr<const ReadFileData> osOpenFile(Filename_t filename) {
+        std::unique_ptr<const WholeFileData> osOpenFile(Filename_t filename) {
             auto rfd = std::make_unique<Windows_ReadFileData_Dummy>();
 
             rfd->size = osGetFileSize(filename);
@@ -152,7 +152,7 @@ namespace MF
             return rfd;
         }
 
-        void osCloseReadFileData(const ReadFileData *readFileData1) {
+        void osCloseReadFileData(const WholeFileData *readFileData1) {
             const auto *readFileData = dynamic_cast<const osReadFileData_t *>(readFileData1);
             assert(readFileData);
 

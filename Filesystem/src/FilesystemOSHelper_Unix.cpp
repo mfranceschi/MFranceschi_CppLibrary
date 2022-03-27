@@ -109,40 +109,42 @@ namespace MF
             }
         }
 
-        struct Unix_ReadFileData : public ReadFileData {
-            int fd = -1;
+        struct Unix_ReadFileData : public WholeFileData {
+            ~Unix_ReadFileData() {
+                assert(munmap((void *)contents, size) == 0);
+            }
         };
         using osReadFileData_t = Unix_ReadFileData;
 
-        std::unique_ptr<const ReadFileData> osOpenFile(Filename_t filename) {
+        std::unique_ptr<const WholeFileData> osReadWholeFile(Filename_t filename) {
+            const int fileDescriptor = open(filename, O_RDONLY);
+            if (fileDescriptor == -1) {
+                return nullptr;
+            }
+
+            // Declare it as a unique pointer
+            // to take advantage of the auto-closing resource feature.
+            static const auto fdCloseProcedure = [](const int *theFd) {
+                close(*theFd);
+            };
+            std::unique_ptr<decltype(fileDescriptor), decltype(fdCloseProcedure)> fdAutoClose(
+                &fileDescriptor, fdCloseProcedure);
+
             auto rfd = std::make_unique<Unix_ReadFileData>();
 
-            if ((rfd->fd = open(filename, O_RDONLY)) == -1) {
-                return nullptr;
-            }
-
             struct stat statOfFile {};
-            if (fstat(rfd->fd, &statOfFile) == 0) {
-                rfd->size = statOfFile.st_size;
-            } else {
+            if (fstat(fileDescriptor, &statOfFile) != 0) {
                 return nullptr;
             }
+            rfd->size = statOfFile.st_size;
 
-            rfd->contents = static_cast<const char *>(
-                mmap(nullptr, rfd->size, PROT_READ, MAP_PRIVATE, rfd->fd, 0));
-            if (rfd->contents == MAP_FAILED) {
+            void *mmapResult = mmap(nullptr, rfd->size, PROT_READ, MAP_PRIVATE, fileDescriptor, 0);
+            if (mmapResult == MAP_FAILED) {
                 return nullptr;
             }
+            rfd->contents = static_cast<const char *>(mmapResult);
 
             return rfd;
-        }
-
-        void osCloseReadFileData(const ReadFileData *readFileData1) {
-            const auto *readFileData = dynamic_cast<const osReadFileData_t *>(readFileData1);
-            assert(readFileData != nullptr);
-
-            close(readFileData->fd);
-            delete readFileData;
         }
 
     } // namespace Filesystem

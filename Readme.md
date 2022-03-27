@@ -27,7 +27,7 @@ target_link_libraries(YourLib PRIVATE MF_Filesystem)
 // ...
 using namespace MF::Filesystem;
 
-const Filesize_t sizeOfFile = Size("./Foo.txt");
+const Filesize_t sizeOfFile = GetFileSize("./Foo.txt");
 const SFilename_t currentWorkingDirectory = GetCWD();
 ```
 

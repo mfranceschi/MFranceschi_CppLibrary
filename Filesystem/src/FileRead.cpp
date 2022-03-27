@@ -9,12 +9,12 @@ namespace MF
 {
     namespace Filesystem
     {
-        std::unique_ptr<const ReadFileData> Read(Filename_t filename) {
-            return osOpenFile(filename);
+        std::unique_ptr<const WholeFileData> ReadWholeFile(Filename_t filename) {
+            return osReadWholeFile(filename);
         }
 
-        bool ReadToString(Filename_t filename, std::string &string) {
-            auto fileContents = Read(filename);
+        bool ReadWholeFileToString(Filename_t filename, std::string &string) {
+            auto fileContents = ReadWholeFile(filename);
             if (fileContents) {
                 string.assign(fileContents->contents, fileContents->size);
                 return true;
