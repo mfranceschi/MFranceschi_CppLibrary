@@ -21,8 +21,8 @@
 #endif
 
 #define TEST_FILES_DIR_PREFIX \
-    FILES_DIR // MAKE_FILE_NAME ".." FILE_SEPARATOR ".." FILE_SEPARATOR "test" FILE_SEPARATOR
-              // "files" FILE_SEPARATOR
+    TEST_FILES_DIR // MAKE_FILE_NAME ".." FILE_SEPARATOR ".." FILE_SEPARATOR "test" FILE_SEPARATOR
+// "files" FILE_SEPARATOR
 
 // First settings : file names, (Win) memory leaks check.
 #if 1
