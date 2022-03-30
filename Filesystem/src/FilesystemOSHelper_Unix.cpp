@@ -64,7 +64,7 @@ namespace MF
 
         Filesize_t osGetFileSize(Filename_t filename) {
             struct stat statOfFile {};
-            if (stat(filename, &statOfFile) == 0) {
+            if (stat(filename, &statOfFile) != 0) {
                 return 0;
             }
             return static_cast<Filesize_t>(statOfFile.st_size);

@@ -8,7 +8,7 @@ using namespace MF::Filesystem;
 
 TEST(ReadWholeFile, ManyReads) {
     SFilename_t file = fid_middle_size.name;
-    constexpr long iterations = 1e4l;
+    constexpr long iterations = 1e3l;
     for (long i = 0; i < iterations; ++i) {
         auto fileData = ReadWholeFile(file.c_str());
         ASSERT_NE(fileData, nullptr) << "Failed to ReadWholeFile at iteration " << i;

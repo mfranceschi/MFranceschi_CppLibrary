@@ -16,9 +16,6 @@ class TestFile : public ::testing::Test {
 
     void CheckSize() const {
         Filesize_t size = GetFileSize(fid.name.c_str());
-        if (fid.size > 0) {
-            ASSERT_NE(size, 0);
-        }
         EXPECT_EQ(size, fid.size);
     }
 
@@ -61,7 +58,9 @@ class TestFile : public ::testing::Test {
             // Try to read an invalid number of chars.
             // Effect: check that the file exists.
             EXPECT_TRUE(IsFileReadable(fid.name.c_str(), 0));
-            EXPECT_TRUE(IsFileReadable(fid.name.c_str(), -1));
+            if (fid.size >= std::numeric_limits<unsigned char>::max()) {
+                EXPECT_TRUE(IsFileReadable(fid.name.c_str(), -1));
+            }
 
             // Read a few times.
             for (unsigned int i = 1; i < chars_max; ++i) {
