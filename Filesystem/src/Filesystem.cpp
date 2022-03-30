@@ -110,8 +110,8 @@ namespace MF
             return osDirectoryExists(filename);
         }
 
-        bool IsFileReadable(Filename_t filename, Filesize_t charsToRead) {
-            if (charsToRead <= 0) {
+        bool IsFileReadable(Filename_t filename, unsigned char charsToRead) {
+            if (charsToRead == 0) {
                 return osFileExists(filename);
             }
 

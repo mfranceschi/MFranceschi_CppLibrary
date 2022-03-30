@@ -20,22 +20,15 @@
 #    define TEMP_RAW "I_AM_TEMP"
 #endif
 
-#define TEST_FILES_DIR_PREFIX \
-    TEST_FILES_DIR // MAKE_FILE_NAME ".." FILE_SEPARATOR ".." FILE_SEPARATOR "test" FILE_SEPARATOR
-// "files" FILE_SEPARATOR
-
 // First settings : file names, (Win) memory leaks check.
 #if 1
 
 using namespace MF::Filesystem;
 
-const SFilename_t FILENAME_MIDDLE_SIZE =
-    MakeFilename(false, false, 2, TEST_FILES_DIR_PREFIX, MIDDLE_SIZE_RAW);
-const SFilename_t FILENAME_NOT_EXISTING =
-    MakeFilename(false, false, 2, TEST_FILES_DIR_PREFIX, NOT_EXISTING_RAW);
-const SFilename_t FILENAME_SMALL_UTF16LE =
-    MakeFilename(false, false, 2, TEST_FILES_DIR_PREFIX, SMALL_UTF16LE_RAW);
-const SFilename_t FILENAME_TEMP = MakeFilename(false, false, 2, TEST_FILES_DIR_PREFIX, TEMP_RAW);
+const SFilename_t FILENAME_MIDDLE_SIZE = MAKE_FILE_NAME MF_FILESYSTEM_TESTS_FILE_MEDIUM;
+const SFilename_t FILENAME_NOT_EXISTING = MAKE_FILE_NAME MF_FILESYSTEM_TESTS_NON_EXISTING;
+const SFilename_t FILENAME_SMALL_UTF16LE = MAKE_FILE_NAME MF_FILESYSTEM_TESTS_FILE_SMALL_UTF16LE;
+const SFilename_t FILENAME_TEMP = MAKE_FILE_NAME MF_FILESYSTEM_TESTS_TEMP;
 
 #endif
 

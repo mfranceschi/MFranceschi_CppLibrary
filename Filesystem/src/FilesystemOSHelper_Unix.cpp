@@ -71,7 +71,7 @@ namespace MF
         }
 
         bool osCreateDirectory(Filename_t directoryName) {
-            return successOnZero(mkdir(directoryName, S_IRWXU | S_IRWXG | S_IRWXO));
+            return successOnZero(mkdir(directoryName, S_IRWXU));
         }
 
         SFilename_t osGetCWD() {

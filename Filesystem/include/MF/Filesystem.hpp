@@ -106,7 +106,7 @@ namespace MF
          * @param charsToRead Number of bytes to read. If <= 0, we simply return "Exist(filename)".
          * @return True if it was a success, false if we could not read exactly "charsToRead" bytes.
          */
-        bool IsFileReadable(Filename_t filename, Filesize_t charsToRead = 3);
+        bool IsFileReadable(Filename_t filename, unsigned char charsToRead = 3);
 
         /**
          * Extraordinary function.

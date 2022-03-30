@@ -16,16 +16,19 @@ class TestFile : public ::testing::Test {
 
     void CheckSize() const {
         Filesize_t size = GetFileSize(fid.name.c_str());
-        if (fid.size) ASSERT_NE(size, 0);
+        if (fid.size > 0) {
+            ASSERT_NE(size, 0);
+        }
         EXPECT_EQ(size, fid.size);
     }
 
     void CheckExists() const {
         bool result = IsFile(fid.name.c_str());
-        if (fid.exists)
+        if (fid.exists) {
             EXPECT_TRUE(result);
-        else
+        } else {
             EXPECT_FALSE(result);
+        }
     }
 
     void CheckEncoding() const {
@@ -51,13 +54,7 @@ class TestFile : public ::testing::Test {
     }
 
     void CheckIsEmpty() const {
-        if (!fid.exists) {
-            EXPECT_FALSE(IsFileReadable(fid.name.c_str(), 1));
-            EXPECT_FALSE(IsFileReadable(fid.name.c_str()));
-
-            // TODO maybe delete the following
-            EXPECT_FALSE(IsFileReadable(fid.name.c_str(), -1));
-        } else {
+        if (fid.exists) {
             // Max nbr of chars that will be read.
             unsigned int chars_max = std::min(static_cast<Filesize_t>(5), fid.size / 10);
 
@@ -76,6 +73,12 @@ class TestFile : public ::testing::Test {
             } else {
                 EXPECT_TRUE(IsFileReadable(fid.name.c_str()));
             }
+        } else {
+            EXPECT_FALSE(IsFileReadable(fid.name.c_str(), 1));
+            EXPECT_FALSE(IsFileReadable(fid.name.c_str()));
+
+            // TODO maybe delete the following
+            EXPECT_FALSE(IsFileReadable(fid.name.c_str(), -1));
         }
     }
 
@@ -188,7 +191,7 @@ TEST_F(SmallFileUTF16LE, VerifyIsEmpty) {
 // Individual test cases
 #if 1
 TEST(IsDir, ActualFolder) {
-    ASSERT_TRUE(IsDir(TEST_FILES_DIR_PREFIX));
+    ASSERT_TRUE(IsDir(MAKE_FILE_NAME MF_FILESYSTEM_TESTS_FILES_DIR));
 }
 
 TEST(IsDir, IsAFile) {
@@ -203,10 +206,10 @@ TEST(IsDir, Unexisting) {
 
 TEST(IsDir, NewFolder) {
     const SFilename_t &filename = FILENAME_TEMP;
-
     ASSERT_FALSE(IsDir(filename.c_str()));
 
     ASSERT_TRUE(CreateDirectory(filename.c_str()));
+
     EXPECT_TRUE(IsDir(filename.c_str()));
     ASSERT_TRUE(Delete(filename.c_str(), false));
 }

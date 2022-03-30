@@ -6,10 +6,13 @@
 
 TEST(ListFilesInDirectory, UsualTest) {
     std::vector<SFilename_t> expected = {
-        MAKE_FILE_NAME "Small_utf16le.txt", MAKE_FILE_NAME "aom_v.scx",
-        MAKE_FILE_NAME "EmptyFolder" FILE_SEPARATOR};
+        MAKE_FILE_NAME "aom_v.scx",
+        MAKE_FILE_NAME "EmptyFolder" FILE_SEPARATOR,
+        MAKE_FILE_NAME "Small_utf16le.txt",
+    };
 
-    std::vector<SFilename_t> ret = ListFilesInDirectory(TEST_FILES_DIR_PREFIX FILE_SEPARATOR);
+    std::vector<SFilename_t> ret =
+        ListFilesInDirectory(MAKE_FILE_NAME MF_FILESYSTEM_TESTS_FILES_DIR FILE_SEPARATOR);
 
     EXPECT_THAT(ret, ::testing::ContainerEq(expected));
 }
