@@ -23,7 +23,6 @@ namespace MF
         class FileAttributes {
            public:
             using Type = unsigned long;
-            static_assert(sizeof(Type) == 4, "Size of DWORD should be 4 bytes!");
 
             FileAttributes();
             FileAttributes(Type value);
