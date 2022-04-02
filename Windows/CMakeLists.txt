@@ -7,7 +7,12 @@ target_sources(
             include/MF/StringSafePlaceHolder.hpp
             include/MF/Windows.hpp
         PRIVATE
+            src/FileAttributes.cpp
             src/Windows.cpp
 )
 target_include_directories(MF_Windows PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(MF_Windows PUBLIC MF_Commons)
+
+if(MF_IN_DEV)
+    add_subdirectory(tests)
+endif()

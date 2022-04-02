@@ -8,6 +8,7 @@
 #include "MF/Filesystem.hpp"
 #include "tests_data.hpp"
 
+/*
 #if defined(UNICODE)
 #    define MIDDLE_SIZE_RAW L"aom_v.scx"
 #    define NOT_EXISTING_RAW L"not_existing._tut"
@@ -19,6 +20,7 @@
 #    define SMALL_UTF16LE_RAW "Small_utf16le.txt"
 #    define TEMP_RAW "I_AM_TEMP"
 #endif
+*/
 
 // First settings : file names, (Win) memory leaks check.
 #if 1
@@ -42,16 +44,11 @@ struct file_info_data {
     size_t offset = 0;
 };
 
-// ////////////////////////////////////////////////////////////////////////////////////////////// //
-//                             ALL TESTS FOR THE File MODULE                                      //
-// ////////////////////////////////////////////////////////////////////////////////////////////// //
-
-// All information for files being used.
-static file_info_data fid_middle_size{287815, FILENAME_MIDDLE_SIZE,   'l', '\xEF',
-                                      true,   Encoding_e::ENC_DEFAULT};
-static file_info_data fid_not_existing{0,     FILENAME_NOT_EXISTING, 0, 0,
-                                       false, Encoding_e::ENC_ERROR};
-static file_info_data fid_smallfile_utf16le{38,   FILENAME_SMALL_UTF16LE,  '\xFF', '\x00',
-                                            true, Encoding_e::ENC_UTF16LE, 2};
+static const file_info_data fid_middle_size{287815, FILENAME_MIDDLE_SIZE,   'l', '\xEF',
+                                            true,   Encoding_e::ENC_DEFAULT};
+static const file_info_data fid_not_existing{0,     FILENAME_NOT_EXISTING, 0, 0,
+                                             false, Encoding_e::ENC_ERROR};
+static const file_info_data fid_smallfile_utf16le{38,   FILENAME_SMALL_UTF16LE,  '\xFF', '\x00',
+                                                  true, Encoding_e::ENC_UTF16LE, 2};
 
 #endif // MFRANCESCHI_CPPLIBRARIES_FILESYSTEM_TESTS_COMMONS_HPP

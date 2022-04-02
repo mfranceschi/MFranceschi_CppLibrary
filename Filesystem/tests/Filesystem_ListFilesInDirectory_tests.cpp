@@ -27,7 +27,8 @@ TEST(ListFilesInDirectory, EmptyDirectory) {
     SFilename_t name = FILENAME_TEMP;
     ASSERT_TRUE(CreateDirectory(name.c_str()));
 
-    std::vector<SFilename_t> ret = ListFilesInDirectory(name.c_str());
+    std::vector<SFilename_t> ret =
+        ListFilesInDirectory((name + MAKE_FILE_NAME FILE_SEPARATOR).c_str());
     EXPECT_THAT(ret, ::testing::IsEmpty());
 
     ASSERT_TRUE(DeleteDirectory(name.c_str()));

@@ -1,3 +1,5 @@
+#include <cstdint>
+#include <stdexcept>
 #include <string>
 
 namespace MF
@@ -17,5 +19,34 @@ namespace MF
 
         /// Sets or unsets the "inherit" flag to the given handle.
         void MakeHandleInheritable(void *handle, bool inherit = true);
+
+        class FileAttributes {
+           public:
+            using Type = unsigned long;
+            static_assert(sizeof(Type) == 4, "Size of DWORD should be 4 bytes!");
+
+            FileAttributes();
+            FileAttributes(Type value);
+
+            Type get() const;
+            FileAttributes &set(Type value);
+
+            bool isInvalid() const;
+            bool isValid() const;
+
+            bool isDirectory() const;
+            bool isFile() const; /// defined as "not a directory"
+
+           private:
+            Type dWord;
+        };
+
+        static inline FileAttributes makeFileAttributes(FileAttributes::Type value) {
+            FileAttributes instance(value);
+            if (instance.isInvalid()) {
+                throw std::invalid_argument("Provided file attributes are invalid");
+            }
+            return instance;
+        }
     } // namespace Windows
 } // namespace MF
