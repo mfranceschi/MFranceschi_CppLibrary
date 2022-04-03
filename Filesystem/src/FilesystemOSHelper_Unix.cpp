@@ -89,16 +89,19 @@ namespace MF
             return syscallReturn.get();
         }
 
-        void osGetDirectoryContents(Filename_t directoryName, std::vector<SFilename_t> &result) {
-            SFilename_t tempFilename;
+        void osGetDirectoryContents(
+            const SFilename_t &directoryName, std::vector<SFilename_t> &result) {
             static Filename_t CURRENT_FOLDER = MAKE_FILE_NAME ".";
             static Filename_t PARENT_FOLDER = MAKE_FILE_NAME "..";
-            std::unique_ptr<DIR, decltype(&closedir)> dirStream(opendir(directoryName), closedir);
-            dirent *dir_entry = nullptr;
+            std::unique_ptr<DIR, decltype(&closedir)> dirStream(
+                opendir(directoryName.c_str()), closedir);
 
             if (dirStream) {
+                dirent *dir_entry = nullptr;
+                SFilename_t tempFilename;
+
                 while ((dir_entry = readdir(dirStream.get())) != nullptr) {
-                    tempFilename = dir_entry->d_name;
+                    tempFilename = static_cast<const char *>(dir_entry->d_name);
                     if (tempFilename == CURRENT_FOLDER || tempFilename == PARENT_FOLDER) {
                         continue;
                     }
@@ -108,7 +111,6 @@ namespace MF
                     }
                     result.emplace_back(tempFilename);
                 }
-                // closedir(dirStream);
             }
         }
 

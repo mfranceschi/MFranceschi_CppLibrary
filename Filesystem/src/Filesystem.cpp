@@ -4,6 +4,8 @@
 
 #include "MF/Filesystem.hpp"
 
+#include <algorithm>
+#include <array>
 #include <codecvt>
 #include <cstdarg>
 #include <sstream>
@@ -150,21 +152,18 @@ namespace MF
         }
 
         Encoding_t GetFileEncoding(Filename_t filename) {
-            char bits[NBR_BITS_TO_READ_ENCODING];
-            Encoding_t forReturn;
-            int readResult =
-                osReadFileToBuffer(filename, (char *)(&bits), NBR_BITS_TO_READ_ENCODING);
+            std::array<char, NBR_BITS_TO_READ_ENCODING> bits{};
+            int readResult = osReadFileToBuffer(filename, bits.data(), NBR_BITS_TO_READ_ENCODING);
 
             if (readResult != NBR_BITS_TO_READ_ENCODING) {
-                forReturn = Encoding_e::ENC_ERROR;
+                return Encoding_e::ENC_ERROR;
             } else if (bits[0] == '\xff' && bits[1] == '\xfe') {
-                forReturn = Encoding_e::ENC_UTF16LE;
+                return Encoding_e::ENC_UTF16LE;
             } else if (bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf') {
-                forReturn = Encoding_e::ENC_UTF8;
+                return Encoding_e::ENC_UTF8;
             } else {
-                forReturn = Encoding_e::ENC_DEFAULT;
+                return Encoding_e::ENC_DEFAULT;
             }
-            return forReturn;
         }
 
         bool CreateDirectory(Filename_t filename) {
@@ -194,8 +193,14 @@ namespace MF
         }
 
         std::vector<SFilename_t> ListFilesInDirectory(Filename_t folder) {
+            SFilename_t directoryName(folder);
+            if (*(--directoryName.cend()) != *FILE_SEPARATOR) {
+                directoryName.append(FILE_SEPARATOR);
+            }
+
             std::vector<SFilename_t> result;
             osGetDirectoryContents(folder, result);
+            std::sort(result.begin(), result.end());
             return result;
         }
 

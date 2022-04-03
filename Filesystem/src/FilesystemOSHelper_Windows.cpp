@@ -129,11 +129,12 @@ namespace MF
             return buffer.data();
         }
 
-        void osGetDirectoryContents(Filename_t directoryName, std::vector<SFilename_t> &result) {
+        void osGetDirectoryContents(
+            const SFilename_t &directoryName, std::vector<SFilename_t> &result) {
             static Filename_t CURRENT_DIR = MAKE_FILE_NAME ".";
             static Filename_t PARENT_DIR = MAKE_FILE_NAME "..";
 
-            SFilename_t tempFolderName = directoryName + SFilename_t(MAKE_FILE_NAME "*");
+            SFilename_t tempFolderName = directoryName + MAKE_FILE_NAME "*";
 
             WIN32_FIND_DATA wfd;
 

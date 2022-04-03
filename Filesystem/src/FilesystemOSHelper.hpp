@@ -29,7 +29,8 @@ namespace MF
 
         SFilename_t osGetCWD();
 
-        void osGetDirectoryContents(Filename_t directoryName, std::vector<SFilename_t> &result);
+        void osGetDirectoryContents(
+            const SFilename_t &directoryName, std::vector<SFilename_t> &result);
 
         std::unique_ptr<const WholeFileData> osReadWholeFile(Filename_t filename);
     } // namespace Filesystem

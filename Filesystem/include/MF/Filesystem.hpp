@@ -154,8 +154,8 @@ namespace MF
         /**
          * Generates the complete list of files and directories that are direct children of the
          * given folder. Names are returned relative to the "folder". Directories have an ending
-         * PATH_SEPARATOR. > ListFilesInDirectory("foldername/") -> ("file.txt", "image.png",
-         * "subfolder/")
+         * PATH_SEPARATOR.
+         * > ListFilesInDirectory("myFolder/") -> ("file.txt", "image.png", "subfolder/")
          * @param folder Name or path to the folder. It must end with a PATH_SEPARATOR character.
          * @return List of files and directories names, or empty vector if anything failed.
          */

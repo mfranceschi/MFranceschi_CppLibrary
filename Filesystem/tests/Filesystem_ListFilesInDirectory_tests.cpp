@@ -6,9 +6,9 @@
 
 TEST(ListFilesInDirectory, UsualTest) {
     std::vector<SFilename_t> expected = {
-        MAKE_FILE_NAME "aom_v.scx",
         MAKE_FILE_NAME "EmptyFolder" FILE_SEPARATOR,
         MAKE_FILE_NAME "Small_utf16le.txt",
+        MAKE_FILE_NAME "aom_v.scx",
     };
 
     std::vector<SFilename_t> ret =
