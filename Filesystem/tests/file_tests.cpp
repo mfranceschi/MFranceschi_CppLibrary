@@ -86,7 +86,7 @@ class TestFile : public ::testing::Test {
             ASSERT_TRUE(IsFile(fid.name.c_str())) << GetCWD() << std::endl << fid.name;
         } else {
             if (IsFile(fid.name.c_str())) {
-                Delete(fid.name.c_str(), true);
+                DeleteFile(fid.name.c_str());
             }
         }
     }
@@ -213,8 +213,8 @@ TEST(IsDir, NewFolder) {
     ASSERT_TRUE(Delete(filename.c_str(), false));
 }
 
-TEST(Delete, Unexisting) {
-    ASSERT_FALSE(Delete(FILENAME_NOT_EXISTING.c_str()));
+TEST(DeleteFile, Unexisting) {
+    ASSERT_FALSE(DeleteFile(FILENAME_NOT_EXISTING.c_str()));
 }
 
 #endif

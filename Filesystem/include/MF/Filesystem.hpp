@@ -129,9 +129,6 @@ namespace MF
         /// Returns the size of the file pointed by "filename" in bytes, or 0 if anything failed.
         Filesize_t GetFileSize(Filename_t filename);
 
-        /// Returns the cumulated size of all regular files of the given directory.
-        Filesize_t GetDirectorySize(Filename_t filename);
-
         /// Simple helper function, for use during debugging.
         std::ostream &operator<<(std::ostream &theOstream, const Encoding_t &enc);
 
@@ -141,12 +138,6 @@ namespace MF
          * @return True if the directory actually got created.
          */
         bool CreateDirectory(Filename_t filename);
-
-        bool CreateFile(Filename_t filename, Filesize_t sizeToAllocate = 0);
-
-        inline bool TouchFile(Filename_t filename) {
-            return CreateFile(filename);
-        }
 
         /// Returns the "Current Working Directory" as a folder path. It ends with a FILE_SEPARATOR.
         SFilename_t GetCWD();
