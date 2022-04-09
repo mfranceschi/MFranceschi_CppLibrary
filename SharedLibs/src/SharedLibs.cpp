@@ -18,21 +18,18 @@
 
 #endif
 
-#include "MF/DynamicLibrary.hpp"
+#include "MF/SharedLibs.hpp"
 
 namespace MF
 {
-    namespace System
+    namespace SharedLibs
     {
 #if MF_WINDOWS
-        const char *DynamicLibrary::LocalExtension = ".dll";
-#    define _GetLibraryPointer static_cast<HMODULE>(_library)
-#else
-        const char *DynamicLibrary::LocalExtension = ".so";
+#    define _GetLibraryPointer static_cast<HMODULE>(libHandle)
 #endif
 
-        void *DynamicLibrary::GetFunction(const std::string &functionName) {
-            LOCK_t lockGuard(_mutex);
+        void *SharedLib::GetFunction(const std::string &functionName) {
+            LOCK_t lockGuard(mutex);
 
             void *functionAddress;
 
@@ -44,7 +41,7 @@ namespace MF
             }
 #else
             (void)dlerror(); // Clear any previous error.
-            functionAddress = dlsym(_library, functionName.c_str());
+            functionAddress = dlsym(libHandle, functionName.c_str());
             if (dlerror()) {
                 // We must run this check because the "functionAddress" value may be null but still
                 // valid.
@@ -54,7 +51,7 @@ namespace MF
             return functionAddress;
         }
 
-        void DynamicLibrary::AddToSearchPaths(const std::string &path) {
+        void AddToSearchPaths(const std::string &path) {
             if (path.size() < 2) {
                 return;
             }
@@ -77,41 +74,41 @@ namespace MF
 #endif
         }
 
-        DynamicLibrary::~DynamicLibrary() {
-            LOCK_t lockGuard(_mutex);
+        SharedLib::~SharedLib() {
+            LOCK_t lockGuard(mutex);
 
             bool success;
 #if MF_WINDOWS
             success = FreeLibrary(_GetLibraryPointer);
 #else
-            success = !dlclose(_library);
+            success = !dlclose(libHandle);
 #endif
 
             if (success) {
-                _library = nullptr;
+                libHandle = nullptr;
             } else {
                 // TODO handle error
             }
         }
 
-        DynamicLibrary::DynamicLibrary(const std::string &libName) {
-            LOCK_t lockGuard(_mutex);
+        SharedLib::SharedLib(const std::string &libName) {
+            LOCK_t lockGuard(mutex);
 
 #if MF_WINDOWS
             auto wLibName = Windows::ConvertString(libName.c_str());
             static constexpr HANDLE hFile = nullptr;
             static constexpr DWORD dwFlags = LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
-            _library = LoadLibraryExW(wLibName.data(), hFile, dwFlags);
+            libHandle = LoadLibraryExW(wLibName.data(), hFile, dwFlags);
 #else
-            _library = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+            libHandle = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 #endif
 
-            if (_library != nullptr) {
+            if (libHandle != nullptr) {
                 return; // We can add stuff there
             } else {
                 throw element_not_found_exception(
                     "The requested library could not be found: " + libName);
             }
         }
-    } // namespace System
+    } // namespace SharedLibs
 } // namespace MF

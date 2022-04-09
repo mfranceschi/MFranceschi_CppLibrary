@@ -73,7 +73,7 @@ add_subdirectory(Commons)
 add_subdirectory(Windows)
 
 add_subdirectory(Filesystem)
-add_subdirectory(System)
+add_subdirectory(SharedLibs)
 add_subdirectory(Datetime)
 add_subdirectory(Async)
 add_subdirectory(Containers)
@@ -86,7 +86,7 @@ target_link_libraries(
             MF_Filesystem
             MF_Windows
             MF_Async
-            MF_System
+            MF_SharedLibs
 )
 
 add_subdirectory(misc/TimingExperience)
