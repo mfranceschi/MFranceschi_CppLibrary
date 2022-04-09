@@ -4,6 +4,8 @@
 
 #include "MF/Filesystem.hpp"
 
+#include <algorithm>
+#include <array>
 #include <codecvt>
 #include <cstdarg>
 #include <sstream>
@@ -19,7 +21,6 @@
 #    endif
 #else
 #    include <sys/mman.h>
-#    include <sys/stat.h>
 #endif
 
 using std::ifstream;
@@ -92,13 +93,18 @@ namespace MF
         }
 
         bool Delete(Filename_t filename, bool fileOnly) {
-            if (fileOnly)
-                return osDeleteFile(filename);
-            else
-                return osDeleteFileOrDirectory(filename);
+            return fileOnly ? osDeleteFile(filename) : osDeleteFileOrDirectory(filename);
         }
 
-        bool Exists(Filename_t filename) {
+        bool DeleteFile(Filename_t filename) {
+            return osDeleteFile(filename);
+        }
+
+        bool DeleteDirectory(Filename_t filename) {
+            return osDeleteDirectory(filename);
+        }
+
+        bool IsFile(Filename_t filename) {
             return osFileExists(filename);
         }
 
@@ -106,20 +112,21 @@ namespace MF
             return osDirectoryExists(filename);
         }
 
-        bool CanReadFile(Filename_t filename, int charsToRead) {
-            if (charsToRead > 0) {
-                char *buffer = new char[charsToRead];
-                int bytesRead = osReadFileToBuffer(filename, buffer, charsToRead);
-                delete[] buffer;
-                return bytesRead == charsToRead;
-            } else {
+        bool IsFileReadable(Filename_t filename, unsigned char charsToRead) {
+            if (charsToRead == 0) {
                 return osFileExists(filename);
             }
+
+            std::vector<char> buffer(charsToRead);
+            int bytesRead = osReadFileToBuffer(filename, buffer.data(), charsToRead);
+            return bytesRead == charsToRead;
         }
 
-        bool Open(ifstream &ifs, Filename_t filename, Encoding_t encoding) {
+        bool OpenFile(ifstream &ifs, Filename_t filename, Encoding_t encoding) {
             ifs.close();
-            if (encoding == Encoding_e::ENC_ERROR) encoding = Encoding(filename);
+            if (encoding == Encoding_e::ENC_ERROR) {
+                encoding = GetFileEncoding(filename);
+            }
 
             if (encoding == Encoding_e::ENC_UTF8) {
                 ifs.open(filename);
@@ -134,61 +141,81 @@ namespace MF
             } else if (encoding == Encoding_e::ENC_DEFAULT) {
                 ifs.open(filename, ios_base::binary);
                 return true;
-            } else // Encoding is unknown
+            } else {
+                // GetFileEncoding is unknown
                 return false;
+            }
         }
 
-        Filesize_t Size(Filename_t filename) {
+        Filesize_t GetFileSize(Filename_t filename) {
             return osGetFileSize(filename);
         }
 
-        Encoding_t Encoding(Filename_t filename) {
-            char bits[NBR_BITS_TO_READ_ENCODING];
-            Encoding_t forReturn;
-            int readResult = osReadFileToBuffer(filename, bits, NBR_BITS_TO_READ_ENCODING);
+        Encoding_t GetFileEncoding(Filename_t filename) {
+            std::array<char, NBR_BITS_TO_READ_ENCODING> bits{};
+            int readResult = osReadFileToBuffer(filename, bits.data(), NBR_BITS_TO_READ_ENCODING);
 
             if (readResult != NBR_BITS_TO_READ_ENCODING) {
-                forReturn = Encoding_e::ENC_ERROR;
+                return Encoding_e::ENC_ERROR;
             } else if (bits[0] == '\xff' && bits[1] == '\xfe') {
-                forReturn = Encoding_e::ENC_UTF16LE;
+                return Encoding_e::ENC_UTF16LE;
             } else if (bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf') {
-                forReturn = Encoding_e::ENC_UTF8;
+                return Encoding_e::ENC_UTF8;
             } else {
-                forReturn = Encoding_e::ENC_DEFAULT;
+                return Encoding_e::ENC_DEFAULT;
             }
-            return forReturn;
         }
 
-        bool CreateFolder(Filename_t filename) {
+        bool CreateDirectory(Filename_t filename) {
             return osCreateDirectory(filename);
         }
 
-        std::ostream &operator<<(std::ostream &os, const Encoding_t &enc) {
+        std::ostream &operator<<(std::ostream &theOstream, const Encoding_t &enc) {
             switch (enc) {
                 case Encoding_e::ENC_UTF16LE:
-                    os << "UTF-16LE";
+                    theOstream << "UTF-16LE";
                     break;
                 case Encoding_e::ENC_UTF8:
-                    os << "UTF-8";
+                    theOstream << "UTF-8";
                     break;
                 case Encoding_e::ENC_ERROR:
-                    os << "<encoding-error>";
+                    theOstream << "<encoding-error>";
                     break;
                 case Encoding_e::ENC_DEFAULT:
-                    os << "<encoding-unknown>";
+                    theOstream << "<encoding-unknown>";
                     break;
             }
-            return os;
+            return theOstream;
         }
 
         SFilename_t GetCWD() {
             return osGetCWD();
         }
 
-        std::vector<SFilename_t> FilesInDirectory(Filename_t folder) {
+        std::vector<SFilename_t> ListFilesInDirectory(Filename_t folder) {
+            SFilename_t directoryName(folder);
+            if (*(--directoryName.cend()) != *FILE_SEPARATOR) {
+                directoryName.append(FILE_SEPARATOR);
+            }
+
             std::vector<SFilename_t> result;
             osGetDirectoryContents(folder, result);
+            std::sort(result.begin(), result.end());
             return result;
+        }
+
+        std::unique_ptr<const WholeFileData> ReadWholeFile(Filename_t filename) {
+            return osReadWholeFile(filename);
+        }
+
+        bool ReadWholeFileToString(Filename_t filename, std::string &string) {
+            auto fileContents = ReadWholeFile(filename);
+            if (fileContents) {
+                string.assign(fileContents->contents, fileContents->size);
+                return true;
+            }
+
+            return false;
         }
     } // namespace Filesystem
 } // namespace MF

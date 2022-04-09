@@ -6,7 +6,6 @@ target_sources(
         MF_Filesystem
         PRIVATE
             src/Filesystem.cpp
-            src/FileRead.cpp
             src/FilesystemOSHelper.hpp
             src/FilesystemOSHelper_Unix.cpp
             src/FilesystemOSHelper_Windows.cpp

@@ -2,14 +2,12 @@
 // Created by mfran on 13/04/2020.
 //
 
-#if MF_WINDOWS
+#include "MF/Windows.hpp"
 
-#    include "MF/Windows.hpp"
+#include <memory>
 
-#    include <memory>
-
-#    include "MF/LightWindows.hpp"
-#    include "MF/StringSafePlaceHolder.hpp"
+#include "MF/LightWindows.hpp"
+#include "MF/StringSafePlaceHolder.hpp"
 
 namespace MF
 {
@@ -65,5 +63,3 @@ namespace MF
         }
     } // namespace Windows
 } // namespace MF
-
-#endif

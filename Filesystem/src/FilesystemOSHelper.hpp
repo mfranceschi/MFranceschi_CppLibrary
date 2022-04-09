@@ -15,6 +15,8 @@ namespace MF
 
         bool osDeleteFileOrDirectory(Filename_t filename);
 
+        bool osDeleteDirectory(Filename_t filename);
+
         bool osFileExists(Filename_t filename);
 
         bool osDirectoryExists(Filename_t filename);
@@ -27,9 +29,10 @@ namespace MF
 
         SFilename_t osGetCWD();
 
-        void osGetDirectoryContents(Filename_t directoryName, std::vector<SFilename_t> &result);
+        void osGetDirectoryContents(
+            const SFilename_t &directoryName, std::vector<SFilename_t> &result);
 
-        std::unique_ptr<const ReadFileData> osOpenFile(Filename_t filename);
+        std::unique_ptr<const WholeFileData> osReadWholeFile(Filename_t filename);
     } // namespace Filesystem
 } // namespace MF
 
