@@ -1,5 +1,5 @@
 
-add_library(MF_SharedLibs STATIC )
+add_library(MF_SharedLibs STATIC src/SharedLib_Windows.cpp)
 
 target_sources(MF_SharedLibs
         PRIVATE

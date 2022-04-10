@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 
 namespace MF
 {
@@ -12,6 +13,8 @@ namespace MF
          * Displays a message box with the given text, then terminates the program.
          */
         void ShowErrorMessage(const char *text);
+
+        std::system_error GetCurrentSystemError();
 
         /**
          * Generates a newly-allocated (using the "new" operator) wchar_t array from the given

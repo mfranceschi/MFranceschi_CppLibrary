@@ -52,7 +52,7 @@ const SFilename_t currentWorkingDirectory = GetCWD();
 - **Async**
     - Tools to help create processes and threads and monitor their execution.
 - **SharedLibs**
-    - Adds low-level tools related to the OS.
+    - Cross-platform helpers when working with shared libraries.
 - **Windows**
     - Some tools that are helpful when working with the Windows ecosystem.
     - It's non-breaking and empty when the OS is not Windows.

@@ -28,7 +28,7 @@ namespace MF
 #    define _GetLibraryPointer static_cast<HMODULE>(libHandle)
 #endif
 
-        void *SharedLib::GetFunction(const std::string &functionName) {
+        void *SharedLib_OLD::GetFunction(const std::string &functionName) {
             LOCK_t lockGuard(mutex);
 
             void *functionAddress;
@@ -51,9 +51,10 @@ namespace MF
             return functionAddress;
         }
 
+        /*
         void AddToSearchPaths(const std::string &path) {
-            if (path.size() < 2) {
-                return;
+            if (path.empty()) {
+                throw std::invalid_argument("Input parameter 'path' is empty.");
             }
 
 #if MF_WINDOWS
@@ -73,8 +74,8 @@ namespace MF
             setenv("LD_LIBRARY_PATH", newLdLibraryPath, true);
 #endif
         }
-
-        SharedLib::~SharedLib() {
+*/
+        SharedLib_OLD::~SharedLib_OLD() {
             LOCK_t lockGuard(mutex);
 
             bool success;
@@ -91,7 +92,7 @@ namespace MF
             }
         }
 
-        SharedLib::SharedLib(const std::string &libName) {
+        SharedLib_OLD::SharedLib_OLD(const std::string &libName) {
             LOCK_t lockGuard(mutex);
 
 #if MF_WINDOWS
