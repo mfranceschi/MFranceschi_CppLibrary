@@ -3,6 +3,7 @@
 //
 
 #include "MF/SharedLibs.hpp"
+#include "my_lib_1.hpp"
 #include "tests_data.hpp"
 
 using namespace MF::SharedLibs;
@@ -46,4 +47,43 @@ TEST(OpenSharedLib, it_can_open_successfully_with_correct_search_path) {
     AddToSearchPaths(MF_SAMPLE_LIB_1_FOLDER);
 
     EXPECT_NO_THROW(OpenExplicitly(MF_SAMPLE_LIB_1_NAME));
+
+    _cleanSearchPaths({MF_SAMPLE_LIB_1_FOLDER});
+}
+
+class SampleLib1Tests : public ::testing::Test {
+   protected:
+    std::shared_ptr<SharedLib> sharedLib;
+
+   public:
+    void SetUp() override {
+        AddToSearchPaths(MF_SAMPLE_LIB_1_FOLDER);
+
+        sharedLib = OpenExplicitly(MF_SAMPLE_LIB_1_NAME);
+    }
+
+    void TearDown() override {
+        RemoveFromSearchPaths(MF_SAMPLE_LIB_1_FOLDER);
+    }
+};
+
+TEST_F(SampleLib1Tests, it_can_get_and_use_function) {
+    auto return_true_retrieved = sharedLib->GetFunction<decltype(&return_true)>("return_true");
+
+    int result = return_true_retrieved();
+
+    ASSERT_EQ(result, 1);
+}
+
+TEST_F(SampleLib1Tests, it_can_return_the_system_item) {
+    auto systemItem = sharedLib->GetSystemItem();
+
+#if MF_WINDOWS
+    HMODULE hmodule = static_cast<HMODULE>(systemItem);
+    auto procAddress = GetProcAddress(hmodule, "dummy_request_1234");
+    EXPECT_EQ(procAddress, nullptr);
+    EXPECT_EQ(GetLastError(), ERROR_PROC_NOT_FOUND);
+#else
+#    error TODO
+#endif
 }

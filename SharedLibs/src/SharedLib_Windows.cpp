@@ -3,11 +3,8 @@
 //
 
 #if MF_WINDOWS
-#    include <map>
-
 #    include "MF/LightWindows.hpp"
 #    include "MF/SharedLibs.hpp"
-#    include "MF/Windows.hpp"
 
 namespace MF
 {
@@ -40,21 +37,12 @@ namespace MF
             }
         };
 
-        class DllDirectoryCookieCloser
-            : public ResourceCloser<DLL_DIRECTORY_COOKIE, decltype(&RemoveDllDirectory)> {
-           public:
-            DllDirectoryCookieCloser(DLL_DIRECTORY_COOKIE cookie)
-                : ResourceCloser<DLL_DIRECTORY_COOKIE, decltype(&RemoveDllDirectory)>(
-                      cookie, RemoveDllDirectory) {
-            }
-        };
-
         class SharedLib_Windows : public SharedLib {
            public:
             SharedLib_Windows(const HMODULE &hmodule) : hmoduleHolder(hmodule) {
             }
 
-            void *GetFunction(const std::string &functionName) override {
+            void *GetFunctionAsVoidPointer(const std::string &functionName) override {
                 LOCK_t lock(mutex);
 
                 FARPROC result = GetProcAddress(hmoduleHolder.get(), functionName.c_str());
@@ -89,40 +77,6 @@ namespace MF
             }
 
             return std::make_shared<SharedLib_Windows>(libHandle);
-        }
-
-        static std::map<std::string, DllDirectoryCookieCloser> addedSearchPaths;
-
-        void AddToSearchPaths(const std::string &path) {
-            if (path.empty()) {
-                throw std::invalid_argument("Input parameter 'path' is empty.");
-            }
-
-            if (addedSearchPaths.count(path) != 0) {
-                // No-op if already present.
-                return;
-            }
-
-            auto wPath = Windows::ConvertString(path.c_str());
-            DLL_DIRECTORY_COOKIE cookie = AddDllDirectory(wPath.c_str());
-
-            if (cookie == nullptr) {
-                const auto lastError = GetLastError();
-                throw std::runtime_error(
-                    "An error occurred when trying to add '" + path + "' to search paths.");
-            }
-
-            addedSearchPaths.insert({path, cookie});
-        }
-
-        void RemoveFromSearchPaths(const std::string &path) {
-            const auto iterator = addedSearchPaths.find(path);
-            if (iterator == addedSearchPaths.cend()) {
-                // No-op if missing.
-                return;
-            }
-
-            addedSearchPaths.erase(iterator);
         }
     } // namespace SharedLibs
 } // namespace MF

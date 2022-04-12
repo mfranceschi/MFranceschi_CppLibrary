@@ -1,9 +1,11 @@
 
-add_library(MF_SharedLibs STATIC src/SharedLib_Windows.cpp)
+add_library(MF_SharedLibs STATIC)
 
 target_sources(MF_SharedLibs
         PRIVATE
             src/SharedLibs.cpp
+            src/SharedLib_Windows.cpp
+            src/SharedLibs_SearchPaths_Windows.cpp
         PUBLIC
             include/MF/SharedLibs.hpp
             include/MF/SharedLibsMacros.hpp

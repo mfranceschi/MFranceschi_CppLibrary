@@ -100,20 +100,15 @@ namespace MF
             using element_not_found_exception = std::invalid_argument;
 
             /**
-             * Returns a function pointer to the procedure requested in "functionName".
+             * Returns a function pointer to the procedure designated by "functionName".
              * The return value is always a valid function pointer that you can cast.
-             * Throws a "library_not_opened_exception" if not "IsOpen()".
-             * Throws an "element_not_found_exception" if it failed because "functionName" does not
-             * refer to something valid in the DL.
-             */
-            virtual void *GetFunction(const std::string &functionName) = 0;
-
-            /**
-             * Casts the result of "GetFunction".
+             * Throws an "element_not_found_exception" if if the element is not found.
+             *
+             * Example: auto get_time_function = myLib->GetFunction<decltype(&get_time)>("get_time");
              */
             template <typename FuncType>
-            FuncType operator[](const std::string &functionName) {
-                return reinterpret_cast<FuncType>(GetFunction(functionName));
+            FuncType GetFunction(const std::string &functionName) {
+                return reinterpret_cast<FuncType>(GetFunctionAsVoidPointer(functionName));
             }
 
             /**
@@ -133,6 +128,13 @@ namespace MF
             virtual ~SharedLib() = default;
 
            protected:
+            /**
+             * Returns a function pointer to the procedure designated by "functionName".
+             * The return value is always a valid function pointer that you can cast.
+             * Throws an "element_not_found_exception" if if the element is not found.
+             */
+            virtual void *GetFunctionAsVoidPointer(const std::string &functionName) = 0;
+
             SharedLib() = default;
 
             friend std::shared_ptr<SharedLib> OpenExplicitly(const std::string &libName);
@@ -150,7 +152,6 @@ namespace MF
 #    endif
         }
     } // namespace SharedLibs
-
 } // namespace MF
 
 #endif // DYNAMIC_LIBRARY_H

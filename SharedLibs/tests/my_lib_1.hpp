@@ -13,14 +13,10 @@
 #    define MF_SHARED_LIB_DIRECTIVE MF_IMPORT
 #endif
 
-extern "C" {
-MF_SHARED_LIB_DIRECTIVE int return_true();
+extern "C" MF_SHARED_LIB_DIRECTIVE int return_true();
 
-MF_SHARED_LIB_DIRECTIVE int return_false();
+extern "C" MF_SHARED_LIB_DIRECTIVE int return_param(int param);
 
-MF_SHARED_LIB_DIRECTIVE int return_param(int param);
-
-MF_SHARED_LIB_DIRECTIVE int create_file(const char* filename);
-}
+extern "C" MF_SHARED_LIB_DIRECTIVE int create_file(const char* filename);
 
 #endif // MFRANCESCHI_CPPLIBRARIES_MY_LIB_1_H
