@@ -63,7 +63,7 @@ namespace MF
                     "An error occurred when trying to add '" + path + "' to search paths.");
             }
 
-            addedSearchPaths.insert({path, cookie});
+            addedSearchPaths.emplace(path, cookie);
         }
 
         void RemoveFromSearchPaths(const std::string &path) {
@@ -73,8 +73,7 @@ namespace MF
                 return;
             }
 
-            // addedSearchPaths.erase(iterator); // TODO enable again later. Currently it causes SEH
-            // exceptions.
+            addedSearchPaths.erase(iterator);
         }
 
     } // namespace SharedLibs
