@@ -6,6 +6,10 @@
 #include "my_lib_1.hpp"
 #include "tests_data.hpp"
 
+#if MF_UNIX
+#    include <dlfcn.h>
+#endif
+
 using namespace MF::SharedLibs;
 
 static void _cleanSearchPaths(const std::vector<std::string>& values) {
@@ -40,7 +44,7 @@ TEST(AddToSearchPaths, it_can_add_and_remove_absolute_path) {
 }
 
 TEST(OpenSharedLib, it_cannot_open_without_correct_search_path) {
-    EXPECT_NO_THROW(OpenExplicitly(MF_SAMPLE_LIB_1_NAME));
+    EXPECT_THROW(OpenExplicitly(MF_SAMPLE_LIB_1_NAME), std::invalid_argument);
 }
 
 TEST(OpenSharedLib, it_can_open_successfully_with_correct_search_path) {
@@ -76,14 +80,20 @@ TEST_F(SampleLib1Tests, it_can_get_and_use_function) {
 }
 
 TEST_F(SampleLib1Tests, it_can_return_the_system_item) {
+    static constexpr auto dummyFunctionName = "dummy_request_1234";
     auto systemItem = sharedLib->GetSystemItem();
 
 #if MF_WINDOWS
     HMODULE hmodule = static_cast<HMODULE>(systemItem);
-    auto procAddress = GetProcAddress(hmodule, "dummy_request_1234");
+    auto procAddress = GetProcAddress(hmodule, dummyFunctionName);
     EXPECT_EQ(procAddress, nullptr);
     EXPECT_EQ(GetLastError(), ERROR_PROC_NOT_FOUND);
 #else
-#    error TODO
+    // clear errors
+    dlerror();
+
+    void* result = dlsym(systemItem, dummyFunctionName);
+    EXPECT_EQ(result, nullptr);
+    EXPECT_NE(dlerror(), nullptr);
 #endif
 }

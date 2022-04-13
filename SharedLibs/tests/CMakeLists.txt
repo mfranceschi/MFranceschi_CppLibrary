@@ -15,7 +15,6 @@ target_sources(
 
 add_library(My_Lib_Shared_1 SHARED my_lib_1.hpp my_lib_1.cpp)
 target_link_libraries(My_Lib_Shared_1 PRIVATE MF_SharedLibs)
-# target_include_directories(My_Lib_Shared_1 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_compile_definitions(My_Lib_Shared_1 PRIVATE MF_EXPORT_ME_1=1)
 target_compile_definitions(
         MF_SharedLibs_Tests

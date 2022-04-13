@@ -4,6 +4,7 @@
 
 #    include <exception>
 #    include <functional>
+#    include <memory>
 #    include <mutex>
 #    include <string>
 
@@ -104,7 +105,8 @@ namespace MF
              * The return value is always a valid function pointer that you can cast.
              * Throws an "element_not_found_exception" if if the element is not found.
              *
-             * Example: auto get_time_function = myLib->GetFunction<decltype(&get_time)>("get_time");
+             * Example: auto get_time_function =
+             * myLib->GetFunction<decltype(&get_time)>("get_time");
              */
             template <typename FuncType>
             FuncType GetFunction(const std::string &functionName) {

@@ -1,9 +1,14 @@
 //
+// Created by Utilisateur on 13/04/2022.
+//
+
+//
 // Created by Utilisateur on 10/04/2022.
 //
 
-#if MF_WINDOWS
-#    include "MF/LightWindows.hpp"
+#if MF_UNIX
+#    include <dlfcn.h>
+
 #    include "MF/SharedLibs.hpp"
 
 namespace MF
@@ -30,30 +35,33 @@ namespace MF
             ResourceType resource;
         };
 
-        class HmoduleCloser : public ResourceCloser<HMODULE, decltype(&FreeLibrary)> {
+        using DlOpenResult_t = void *;
+
+        class DlOpenResultCloser : public ResourceCloser<DlOpenResult_t, decltype(&dlclose)> {
            public:
-            HmoduleCloser(HMODULE hmodule)
-                : ResourceCloser<HMODULE, decltype(&FreeLibrary)>(hmodule, FreeLibrary) {
+            DlOpenResultCloser(DlOpenResult_t value)
+                : ResourceCloser<DlOpenResult_t, decltype(&dlclose)>(value, dlclose) {
             }
         };
 
-        class SharedLib_Windows : public SharedLib {
+        class SharedLib_Dl : public SharedLib {
            public:
-            SharedLib_Windows(const HMODULE &hmodule) : libCloser(hmodule) {
+            SharedLib_Dl(const DlOpenResult_t &handle) : libCloser(handle) {
             }
 
             void *GetFunctionAsVoidPointer(const std::string &functionName) override {
                 LOCK_t lock(mutex);
 
-                FARPROC result = GetProcAddress(libCloser.get(), functionName.c_str());
-                // "FARPROC" is a std::function<int()> as function pointer
-
-                if (result == nullptr) {
+                (void)dlerror(); // Clear any previous error.
+                void *result = dlsym(libCloser.get(), functionName.c_str());
+                if (dlerror()) {
+                    // We must run this check because the "functionAddress" value may be null but
+                    // still valid.
                     throw element_not_found_exception(
                         "Unable to find given function: " + functionName);
                 }
 
-                return (void *)(result);
+                return result;
             }
 
             void *GetSystemItem() const noexcept override {
@@ -63,20 +71,17 @@ namespace MF
            private:
             std::mutex mutex;
             using LOCK_t = std::lock_guard<std::mutex>;
-            HmoduleCloser libCloser;
+            DlOpenResultCloser libCloser;
         };
 
         std::shared_ptr<SharedLib> OpenExplicitly(const std::string &libName) {
-            static constexpr HANDLE hFile = nullptr;
-            static constexpr DWORD dwFlags = LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
-
-            HMODULE libHandle = LoadLibraryExA(libName.data(), hFile, dwFlags);
+            DlOpenResult_t libHandle = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
             if (libHandle == nullptr) {
                 throw SharedLib::element_not_found_exception(
                     "Could not open library with name " + libName);
             }
 
-            return std::make_shared<SharedLib_Windows>(libHandle);
+            return std::make_shared<SharedLib_Dl>(libHandle);
         }
     } // namespace SharedLibs
 } // namespace MF
