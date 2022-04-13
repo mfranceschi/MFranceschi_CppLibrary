@@ -75,7 +75,7 @@ add_subdirectory(Windows)
 add_subdirectory(Filesystem)
 add_subdirectory(SharedLibs)
 add_subdirectory(Datetime)
-add_subdirectory(Async)
+# add_subdirectory(Async) # TODO - not ready yet
 add_subdirectory(Containers)
 
 add_library(MF_ALL INTERFACE)
@@ -85,7 +85,7 @@ target_link_libraries(
             MF_Commons
             MF_Filesystem
             MF_Windows
-            MF_Async
+            # MF_Async
             MF_SharedLibs
 )
 

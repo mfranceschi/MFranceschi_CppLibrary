@@ -10,6 +10,7 @@
 #    include <dlfcn.h>
 
 #    include "MF/SharedLibs.hpp"
+#    include "SharedLibs_DL_internals.hpp"
 
 namespace MF
 {
@@ -75,13 +76,41 @@ namespace MF
         };
 
         std::shared_ptr<SharedLib> OpenExplicitly(const std::string &libName) {
-            DlOpenResult_t libHandle = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-            if (libHandle == nullptr) {
-                throw SharedLib::element_not_found_exception(
-                    "Could not open library with name " + libName);
+            std::string fixedName = libName;
+            static const std::string extension = GetExtension();
+            if (fixedName.size() > extension.size() &&
+                fixedName.substr(fixedName.size() - extension.size()) != extension) {
+                fixedName += extension;
             }
 
-            return std::make_shared<SharedLib_Dl>(libHandle);
+            DlOpenResult_t libHandle = nullptr;
+
+            for (const std::string &namePrefix : {"lib", ""}) {
+                const std::string nameToTry = namePrefix + fixedName;
+
+                libHandle = dlopen(fixedName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+                if (libHandle != nullptr) {
+                    return std::make_shared<SharedLib_Dl>(libHandle);
+                }
+
+                /*
+                 * The following is a brute-force approach.
+                 * We test the "nameToTry" by prepending each added search path.
+                 */
+                for (const std::string &addedSearchPath : internals::getSearchPaths()) {
+                    const std::string nameWithPathToTry = *(--addedSearchPath.cend()) == '/'
+                                                              ? addedSearchPath + nameToTry
+                                                              : addedSearchPath + "/" + nameToTry;
+
+                    libHandle = dlopen(nameWithPathToTry.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+                    if (libHandle != nullptr) {
+                        return std::make_shared<SharedLib_Dl>(libHandle);
+                    }
+                }
+            }
+
+            throw SharedLib::element_not_found_exception(
+                "Could not open library with name " + fixedName);
         }
     } // namespace SharedLibs
 } // namespace MF

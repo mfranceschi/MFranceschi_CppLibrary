@@ -6,6 +6,7 @@
 #    include <set>
 
 #    include "MF/SharedLibs.hpp"
+#    include "SharedLibs_DL_internals.hpp"
 
 namespace MF
 {
@@ -60,7 +61,7 @@ namespace MF
                     return;
                 }
 
-                // Reaching this is super weird but ok.
+                // Reaching this part is super weird but ok.
                 return;
             }
 
@@ -75,6 +76,13 @@ namespace MF
 
             addedSearchPaths.erase(iterator);
         }
+
+        namespace internals
+        {
+            const std::set<std::string> &getSearchPaths() {
+                return addedSearchPaths;
+            }
+        } // namespace internals
 
     } // namespace SharedLibs
 } // namespace MF
