@@ -3,8 +3,6 @@ add_library(MF_SharedLibs STATIC)
 
 target_sources(MF_SharedLibs
         PRIVATE
-            src/SharedLibs.cpp
-
             src/SharedLib_DL.cpp
             src/SharedLibs_DL_internals.hpp
             src/SharedLibs_SearchPaths_DL.cpp

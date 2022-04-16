@@ -7,7 +7,7 @@
 
 #include "MF/SharedLibsMacros.hpp"
 
-#if MF_EXPORT_ME_1
+#if MF_EXPORT_ME_2
 #    define MF_SHARED_LIB_DIRECTIVE MF_EXPORT
 #else
 #    define MF_SHARED_LIB_DIRECTIVE MF_IMPORT

@@ -12,6 +12,8 @@
 
 using namespace MF::SharedLibs;
 
+static constexpr auto dummyFunctionName = "dummy_request_1234";
+
 class SampleLib2Tests : public ::testing::Test {
    protected:
     std::shared_ptr<SharedLib> sharedLib;
@@ -36,8 +38,13 @@ TEST_F(SampleLib2Tests, it_can_get_and_use_function) {
     ASSERT_EQ(result, 1);
 }
 
+TEST_F(SampleLib2Tests, it_throws_if_function_not_found) {
+    EXPECT_THROW(
+        sharedLib->GetFunction<decltype(&return_true)>(dummyFunctionName),
+        SharedLib::element_not_found_exception);
+}
+
 TEST_F(SampleLib2Tests, it_can_return_the_system_item) {
-    static constexpr auto dummyFunctionName = "dummy_request_1234";
     auto systemItem = sharedLib->GetSystemItem();
 
 #if MF_WINDOWS
