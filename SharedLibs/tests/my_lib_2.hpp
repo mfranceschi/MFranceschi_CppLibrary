@@ -2,8 +2,8 @@
 // Created by Utilisateur on 10/04/2022.
 //
 
-#ifndef MFRANCESCHI_CPPLIBRARIES_MY_LIB_1_H
-#define MFRANCESCHI_CPPLIBRARIES_MY_LIB_1_H
+#ifndef MFRANCESCHI_CPPLIBRARIES_MY_LIB_2_H
+#define MFRANCESCHI_CPPLIBRARIES_MY_LIB_2_H
 
 #include "MF/SharedLibsMacros.hpp"
 
@@ -19,4 +19,4 @@ extern "C" MF_SHARED_LIB_DIRECTIVE int return_param(int param);
 
 extern "C" MF_SHARED_LIB_DIRECTIVE int create_file(const char* filename);
 
-#endif // MFRANCESCHI_CPPLIBRARIES_MY_LIB_1_H
+#endif // MFRANCESCHI_CPPLIBRARIES_MY_LIB_2_H
