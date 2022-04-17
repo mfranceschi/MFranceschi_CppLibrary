@@ -54,7 +54,19 @@ namespace MF
              */
             template <typename FuncType>
             FuncType GetFunction(const std::string &functionName) {
-                return reinterpret_cast<FuncType>(GetFunctionAsVoidPointer(functionName));
+                return reinterpret_cast<FuncType>(GetSymbolAsVoidPointer(functionName));
+            }
+
+            /**
+             * Returns a reference to the variable named "name".
+             * Throws an "element_not_found_exception" if if the element is not found.
+             *
+             * Example: auto get_time_function =
+             * myLib->GetFunction<decltype(&get_time)>("get_time");
+             */
+            template <typename VarType>
+            VarType &GetVariable(const std::string &name) {
+                return *(static_cast<VarType *>(GetSymbolAsVoidPointer(name)));
             }
 
             /**
@@ -75,11 +87,11 @@ namespace MF
 
            protected:
             /**
-             * Returns a function pointer to the procedure designated by "functionName".
-             * The return value is always a valid function pointer that you can cast.
+             * Returns a pointer to the symbol designated by "name".
+             * The return value is always a valid pointer that you can cast.
              * Throws an "element_not_found_exception" if if the element is not found.
              */
-            virtual void *GetFunctionAsVoidPointer(const std::string &functionName) = 0;
+            virtual void *GetSymbolAsVoidPointer(const std::string &name) = 0;
 
             SharedLib() = default;
         };

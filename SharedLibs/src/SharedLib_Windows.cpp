@@ -42,15 +42,14 @@ namespace MF
             SharedLib_Windows(const HMODULE &hmodule) : libCloser(hmodule) {
             }
 
-            void *GetFunctionAsVoidPointer(const std::string &functionName) override {
+            void *GetSymbolAsVoidPointer(const std::string &name) override {
                 LOCK_t lock(mutex);
 
-                FARPROC result = GetProcAddress(libCloser.get(), functionName.c_str());
-                // "FARPROC" is a std::function<int()> as function pointer
+                FARPROC result = GetProcAddress(libCloser.get(), name.c_str());
+                // "FARPROC" is a function pointer of type int(void).
 
                 if (result == nullptr) {
-                    throw element_not_found_exception(
-                        "Unable to find given function: " + functionName);
+                    throw element_not_found_exception("Unable to find given symbol: " + name);
                 }
 
                 return (void *)(result);

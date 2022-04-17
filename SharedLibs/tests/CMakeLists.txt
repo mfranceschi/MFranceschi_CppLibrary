@@ -5,6 +5,7 @@ target_link_libraries(
         PRIVATE
             MF_SharedLibs
             MF_Commons_Tests
+            MF_Filesystem
 )
 
 target_sources(

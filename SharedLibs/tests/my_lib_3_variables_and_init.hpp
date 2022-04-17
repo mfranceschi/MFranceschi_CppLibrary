@@ -14,7 +14,7 @@
 #endif
 
 extern "C" {
-MF_SHARED_LIB_DIRECTIVE extern int the_variable;
+MF_SHARED_LIB_DIRECTIVE extern int thevariable;
 MF_SHARED_LIB_DIRECTIVE extern double theVariable;
 };
 

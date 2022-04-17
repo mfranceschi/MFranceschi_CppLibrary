@@ -50,7 +50,7 @@ namespace MF
             SharedLib_Dl(const DlOpenResult_t &handle) : libCloser(handle) {
             }
 
-            void *GetFunctionAsVoidPointer(const std::string &functionName) override {
+            void *GetSymbolAsVoidPointer(const std::string &functionName) override {
                 LOCK_t lock(mutex);
 
                 (void)dlerror(); // Clear any previous error.

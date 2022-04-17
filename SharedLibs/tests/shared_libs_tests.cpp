@@ -40,7 +40,21 @@ TEST(AddToSearchPaths, it_can_add_and_remove_absolute_path) {
 }
 
 TEST(OpenSharedLib, it_cannot_open_without_correct_search_path) {
-    EXPECT_THROW(OpenExplicitly(MF_SAMPLE_LIB_1_NAME), std::invalid_argument);
+    std::shared_ptr<SharedLib> lib;
+    EXPECT_THROW(lib = OpenExplicitly(MF_SAMPLE_LIB_1_NAME), std::invalid_argument);
+
+    if (HasFailure()) {
+#if MF_WINDOWS
+        static constexpr std::size_t modulePathLength = 1e6;
+        std::vector<char> modulePath(modulePathLength);
+        GetModuleFileNameA(
+            static_cast<HMODULE>(lib->GetSystemItem()), modulePath.data(), modulePathLength);
+        GTEST_FAIL()
+            << "Currently on Windows there is a bug where the DLL search path is always enabled. "
+            << "The DLL could be opened with the following path: '" << modulePath.data()
+            << "' even though we only provided the file name '" << MF_SAMPLE_LIB_1_NAME << "'.";
+#endif
+    }
 }
 
 TEST(OpenSharedLib, it_can_open_successfully_with_correct_search_path) {

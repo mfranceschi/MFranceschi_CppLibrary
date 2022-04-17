@@ -6,15 +6,15 @@
 
 #include <fstream>
 
-int the_variable = 1;
+int thevariable = 1;
 double theVariable = 1.;
 
 MF_SHARED_LIB_LOAD_UNLOAD(
     [&]() {
-        std::ofstream("temp_load.txt") << "LOAD!";
-        the_variable = 2;
-        theVariable = 3.;
+        std::ofstream("lib3_load.txt") << "LOAD!";
+        thevariable = 2;
+        theVariable = 3;
     },
     []() {
-        std::ofstream("temp_unload.txt") << "UNLOAD!";
+        std::ofstream("lib3_unload.txt") << "UNLOAD!";
     })
