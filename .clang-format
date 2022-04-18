@@ -24,3 +24,6 @@ AlignTrailingComments: false
 IndentPPDirectives: AfterHash
 
 SpacesBeforeTrailingComments: 1
+
+PointerAlignment: Left
+ReferenceAlignment: Pointer

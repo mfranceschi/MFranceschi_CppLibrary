@@ -15,6 +15,7 @@ static constexpr auto dummyFunctionName = "dummy_request_1234";
 class SampleLib3Tests : public ::testing::Test {
    protected:
     std::shared_ptr<SharedLib> sharedLib;
+
     static constexpr Filename_t loadFilename =
         MAKE_FILE_NAME MF_SAMPLE_LIB_3_FOLDER FILE_SEPARATOR "/lib3_load.txt";
     static constexpr Filename_t unloadFilename =
@@ -54,11 +55,10 @@ TEST_F(SampleLib3Tests, it_can_get_and_use_variable) {
 }
 
 TEST_F(SampleLib3Tests, it_can_get_names_in_case_sensitive_manner) {
-    int& variableWithLowerCaseV = sharedLib->GetVariable<int>("thevariable");
-    int& variableWithUpperCaseV = sharedLib->GetVariable<int>("theVariable");
+    void* variableWithLowerCaseV = sharedLib->GetPointer("thevariable");
+    void* variableWithUpperCaseV = sharedLib->GetPointer("theVariable");
 
     EXPECT_NE(variableWithLowerCaseV, variableWithUpperCaseV);
-    EXPECT_NE(std::addressof(variableWithLowerCaseV), std::addressof(variableWithUpperCaseV));
 }
 
 TEST_F(SampleLib3Tests, it_creates_file_on_load) {
