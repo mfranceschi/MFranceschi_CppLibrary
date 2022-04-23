@@ -84,13 +84,12 @@ jobs:
         id: install-dependencies
         run: |
           sudo apt update && sudo apt-get install clang-tidy
-          pip install cmakelint
 
       - name: SETUP - CMake configure
         id: cmake-configure
         if: ${{ steps.install-dependencies.outcome == 'success' }}
         run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMake_Config }} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Werror=dev -Werror=deprecated -S . -B ${{ env.BUILD_DIR }}
 
-      - name: CHECK - Clang-Tidy (static analysis, NOT on tests)
+      - name: CHECK - Clang-Tidy (static analysis)
         if: ${{ steps.cmake-configure.outcome == 'success' }}
         run: find ./ -name "*.cpp" -o -name "*.hpp" -o \( -name "misc" -o -name "build" -o -name "cmake-build-debug" \) -prune | xargs clang-tidy -p=${{ env.BUILD_DIR }} --warnings-as-errors=*

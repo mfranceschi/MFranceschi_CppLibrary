@@ -7,14 +7,14 @@
 
 using namespace MF::SharedLibs;
 
-TEST(SharedLib5Tests, it_throws) {
+TEST(SharedLib5Tests, it_handles_exception_during_library_init) {
     AddToSearchPaths(MF_SAMPLE_LIB_5_FOLDER);
 
     std::shared_ptr<SharedLib> sharedLib;
-
-    // Currently it abort() on Unix and throws not found on Windows.
-    // TODO: use signal handlers with <csignal> and signal(myFunction, SIGABRT) in Unix
-    // implementations.
-    // TODO: on Windows, ensure a specific exception is thrown and not element_not_found.
+#if MF_WINDOWS
+    EXPECT_THROWS(sharedLib = OpenExplicitly(MF_SAMPLE_LIB_5_NAME), std::runtime_error)
+#else
     EXPECT_DEATH(sharedLib = OpenExplicitly(MF_SAMPLE_LIB_5_NAME), "Load function throws");
+#endif
+    RemoveFromSearchPaths(MF_SAMPLE_LIB_5_FOLDER);
 }

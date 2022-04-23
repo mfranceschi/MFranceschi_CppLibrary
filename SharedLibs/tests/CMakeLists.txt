@@ -1,5 +1,5 @@
 
-add_executable(MF_SharedLibs_Tests )
+add_executable(MF_SharedLibs_Tests)
 target_link_libraries(
         MF_SharedLibs_Tests
         PRIVATE

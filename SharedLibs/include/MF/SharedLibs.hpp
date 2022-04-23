@@ -33,6 +33,10 @@ namespace MF
         /**
          * Opens the given library by its name (relative or absolute path are allowed).
          * Throws an "element_not_found_exception" if the library could not be found.
+         * If an error or exception is thrown when loading the library:
+         * - an exception is thrown (Windows),
+         * - a SIGABRT signal is raised (with the "dl" framework,
+         *   it's a fixed behaviour of the "dlopen" function).
          */
         std::shared_ptr<SharedLib> OpenExplicitly(const std::string &libName);
 
