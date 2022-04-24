@@ -6,10 +6,6 @@
 #include "my_lib_2/lib.hpp"
 #include "tests_data.hpp"
 
-#if MF_UNIX
-#    include <dlfcn.h>
-#endif
-
 using namespace MF::SharedLibs;
 
 static constexpr auto dummyFunctionName = "dummy_request_1234";
@@ -42,22 +38,4 @@ TEST_F(SampleLib2Tests, it_throws_if_function_not_found) {
     EXPECT_THROW(
         sharedLib->GetFunction<decltype(&return_true)>(dummyFunctionName),
         SharedLib::element_not_found_exception);
-}
-
-TEST_F(SampleLib2Tests, it_can_return_the_system_item) {
-    void *systemItem = sharedLib->GetSystemItem();
-
-#if MF_WINDOWS
-    HMODULE hmodule = static_cast<HMODULE>(systemItem);
-    auto procAddress = GetProcAddress(hmodule, dummyFunctionName);
-    EXPECT_EQ(procAddress, nullptr);
-    EXPECT_EQ(GetLastError(), ERROR_PROC_NOT_FOUND);
-#else
-    // clear errors
-    dlerror();
-
-    void* result = dlsym(systemItem, dummyFunctionName);
-    EXPECT_EQ(result, nullptr);
-    EXPECT_NE(dlerror(), nullptr);
-#endif
 }

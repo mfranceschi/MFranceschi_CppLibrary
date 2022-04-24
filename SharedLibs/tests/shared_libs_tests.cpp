@@ -2,12 +2,16 @@
 // Created by Utilisateur on 10/04/2022.
 //
 
-#include <Windows.h>
-
 #include "MF/Filesystem.hpp"
 #include "MF/SharedLibs.hpp"
 #include "shared_libs_tests_common.hpp"
 #include "tests_data.hpp"
+
+#if MF_WINDOWS
+#    include <Windows.h>
+#else
+#    include <dlfcn.h>
+#endif
 
 using namespace MF::SharedLibs;
 
@@ -94,11 +98,9 @@ TEST_F(SampleLib1Tests, it_can_return_the_system_item) {
 }
 
 TEST_F(SampleLib1Tests, it_can_return_the_system_path) {
-    std::string result;
+    std::string result = "";
 
     ASSERT_NO_THROW(result = sharedLib->GetSystemPath());
 
-    EXPECT_EQ(
-        result, MAKE_FILE_NAME MF_SAMPLE_LIB_1_FOLDER "/" MF_SAMPLE_LIB_1_NAME +
-                    std::string(GetExtension()));
+    EXPECT_EQ(result, MAKE_FILE_NAME MF_SAMPLE_LIB_1_FOLDER "/" MF_SAMPLE_LIB_1_EFFECTIVE_NAME);
 }

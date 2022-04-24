@@ -7,7 +7,9 @@
 //
 
 #if MF_UNIX
+#    define _GNU_SOURCE
 #    include <dlfcn.h>
+#    include <link.h>
 
 #    include "MF/SharedLibs.hpp"
 #    include "SharedLibs_DL_internals.hpp"
@@ -69,10 +71,27 @@ namespace MF
                 return libCloser.get();
             }
 
+            virtual const std::string &GetSystemPath() override {
+                LOCK_t lock(mutex);
+
+                if (systemPath.empty()) {
+                    link_map *details = nullptr;
+                    if (dlinfo(libCloser.get(), RTLD_DI_LINKMAP, &details) == 0) {
+                        systemPath = details->l_name;
+                    } else {
+                        throw std::runtime_error("Failed to get the system path.");
+                    }
+                }
+
+                return systemPath;
+            }
+
            private:
             std::mutex mutex;
             using LOCK_t = std::lock_guard<std::mutex>;
             DlOpenResultCloser libCloser;
+
+            std::string systemPath;
         };
 
         std::shared_ptr<SharedLib> OpenExplicitly(const std::string &libName) {
