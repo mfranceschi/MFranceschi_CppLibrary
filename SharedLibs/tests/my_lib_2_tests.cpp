@@ -3,7 +3,7 @@
 //
 
 #include "MF/SharedLibs.hpp"
-#include "my_lib_2.hpp"
+#include "my_lib_2/lib.hpp"
 #include "tests_data.hpp"
 
 #if MF_UNIX
@@ -45,7 +45,7 @@ TEST_F(SampleLib2Tests, it_throws_if_function_not_found) {
 }
 
 TEST_F(SampleLib2Tests, it_can_return_the_system_item) {
-    auto systemItem = sharedLib->GetSystemItem();
+    void *systemItem = sharedLib->GetSystemItem();
 
 #if MF_WINDOWS
     HMODULE hmodule = static_cast<HMODULE>(systemItem);

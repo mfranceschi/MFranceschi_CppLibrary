@@ -83,9 +83,15 @@ namespace MF
 
             /**
              * Gets the underlying system item.
-             * On Windows, use static_cast<HMODULE>.
+             * On Windows, use static_cast<HMODULE>(yourLib->GetSystemItem()).
              */
             virtual void *GetSystemItem() const noexcept = 0;
+
+            /**
+             * Gets the full path to the file of the shared library.
+             * Throws std::runtime_error if this info is not available.
+             */
+            virtual std::string GetSystemPath() const = 0;
 
             //---------------------------------------------- Constructors - destructor
 

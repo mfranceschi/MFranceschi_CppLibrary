@@ -42,7 +42,7 @@ namespace MF
             }
         };
 
-        static std::map<std::string, DllDirectoryCookieCloser> addedSearchPaths;
+        static std::map<std::string, DllDirectoryCookieCloser> addedSearchPaths{};
 
         void AddToSearchPaths(const std::string &path) {
             if (path.empty()) {

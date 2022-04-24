@@ -3,7 +3,7 @@
 //
 
 #include "MF/SharedLibs.hpp"
-#include "my_lib_1_empty.hpp"
+#include "my_lib_1_empty/lib.hpp"
 #include "tests_data.hpp"
 
 using namespace MF::SharedLibs;
@@ -41,19 +41,17 @@ TEST(AddToSearchPaths, it_can_add_and_remove_absolute_path) {
 
 TEST(OpenSharedLib, it_cannot_open_without_correct_search_path) {
     std::shared_ptr<SharedLib> lib;
-    EXPECT_THROW(
-        lib = OpenExplicitly(MF_SAMPLE_LIB_1_NAME), SharedLib::element_not_found_exception);
+    EXPECT_THROW(lib = OpenExplicitly(MF_SAMPLE_LIB_1_NAME), SharedLib::element_not_found_exception)
+        << "Even though we haven't specified a search path, the library has been opened. "
+        << "Input provided: '" << MF_SAMPLE_LIB_1_NAME << "'.";
 
     if (HasFailure()) {
 #if MF_WINDOWS
-        static constexpr std::size_t modulePathLength = 1e6;
-        std::vector<char> modulePath(modulePathLength);
+        static constexpr std::size_t MODULE_PATH_LENGTH = 1e6;
+        std::vector<char> modulePath(MODULE_PATH_LENGTH);
         GetModuleFileNameA(
-            static_cast<HMODULE>(lib->GetSystemItem()), modulePath.data(), modulePathLength);
-        GTEST_FAIL()
-            << "Currently on Windows there is a bug where the DLL search path is always enabled. "
-            << "The DLL could be opened with the following path: '" << modulePath.data()
-            << "' even though we only provided the file name '" << MF_SAMPLE_LIB_1_NAME << "'.";
+            static_cast<HMODULE>(lib->GetSystemItem()), modulePath.data(), MODULE_PATH_LENGTH);
+        GTEST_FAIL() << "For reference, DLL path is: '" << modulePath.data() << "'.";
 #endif
     }
 }

@@ -2,7 +2,7 @@
 // Created by Utilisateur on 10/04/2022.
 //
 
-#include "my_lib_2.hpp"
+#include "lib.hpp"
 
 #include <fstream>
 

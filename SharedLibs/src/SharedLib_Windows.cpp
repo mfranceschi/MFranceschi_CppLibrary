@@ -3,6 +3,8 @@
 //
 
 #if MF_WINDOWS
+#    include <vector>
+
 #    include "MF/LightWindows.hpp"
 #    include "MF/SharedLibs.hpp"
 
@@ -57,6 +59,13 @@ namespace MF
 
             void *GetSystemItem() const noexcept override {
                 return libCloser.get();
+            }
+
+            std::string GetSystemPath() const override {
+                static constexpr std::size_t MODULE_PATH_LENGTH = 1e6;
+                std::vector<char> modulePath(MODULE_PATH_LENGTH);
+                GetModuleFileNameA(libCloser.get(), modulePath.data(), MODULE_PATH_LENGTH);
+                return modulePath.data();
             }
 
            private:

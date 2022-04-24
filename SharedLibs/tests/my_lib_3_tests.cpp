@@ -4,7 +4,7 @@
 
 #include "MF/Filesystem.hpp"
 #include "MF/SharedLibs.hpp"
-#include "my_lib_3_variables_and_init.hpp"
+#include "my_lib_3_variables_and_init/lib.hpp"
 #include "tests_data.hpp"
 
 using namespace MF::SharedLibs;
@@ -16,10 +16,8 @@ class SampleLib3Tests : public ::testing::Test {
    protected:
     std::shared_ptr<SharedLib> sharedLib;
 
-    static constexpr Filename_t loadFilename =
-        MAKE_FILE_NAME MF_SAMPLE_LIB_3_FOLDER FILE_SEPARATOR "/lib3_load.txt";
-    static constexpr Filename_t unloadFilename =
-        MAKE_FILE_NAME MF_SAMPLE_LIB_3_FOLDER FILE_SEPARATOR "/lib3_unload.txt";
+    static constexpr Filename_t loadFilename = MAKE_FILE_NAME "./lib3_load.txt";
+    static constexpr Filename_t unloadFilename = MAKE_FILE_NAME "./lib3_unload.txt";
 
    public:
     void SetUp() override {
