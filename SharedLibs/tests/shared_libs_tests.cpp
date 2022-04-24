@@ -41,7 +41,8 @@ TEST(AddToSearchPaths, it_can_add_and_remove_absolute_path) {
 
 TEST(OpenSharedLib, it_cannot_open_without_correct_search_path) {
     std::shared_ptr<SharedLib> lib;
-    EXPECT_THROW(lib = OpenExplicitly(MF_SAMPLE_LIB_1_NAME), std::invalid_argument);
+    EXPECT_THROW(
+        lib = OpenExplicitly(MF_SAMPLE_LIB_1_NAME), SharedLib::element_not_found_exception);
 
     if (HasFailure()) {
 #if MF_WINDOWS

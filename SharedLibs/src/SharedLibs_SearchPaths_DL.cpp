@@ -83,7 +83,6 @@ namespace MF
                 return addedSearchPaths;
             }
         } // namespace internals
-
     } // namespace SharedLibs
 } // namespace MF
 

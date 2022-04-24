@@ -24,6 +24,7 @@ namespace MF
 
         /**
          * Adds the given path to the list of paths which the system uses to find the library.
+         * Throws std::invalid_argument if empty input.
          * No-op if the path is not a search path currently (as far as this function can know).
          */
         void RemoveFromSearchPaths(const std::string &path);

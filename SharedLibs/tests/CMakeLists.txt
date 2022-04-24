@@ -11,6 +11,7 @@ target_link_libraries(
 target_sources(
         MF_SharedLibs_Tests
         PRIVATE
+            shared_libs_tests_common.hpp
             shared_libs_tests.cpp
             my_lib_2_tests.cpp
             my_lib_3_tests.cpp

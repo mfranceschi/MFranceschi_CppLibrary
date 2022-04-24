@@ -75,7 +75,6 @@ namespace MF
 
             addedSearchPaths.erase(iterator);
         }
-
     } // namespace SharedLibs
 } // namespace MF
 
