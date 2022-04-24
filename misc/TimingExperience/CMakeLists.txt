@@ -7,4 +7,8 @@ if(MINGW)
             PROPERTIES
                 COMPILE_FLAGS "-Wno-conversion-null"
     )
+
+    if(WIN32)
+        target_link_libraries(TimingExperience PRIVATE Shlwapi.lib)
+    endif()
 endif()
