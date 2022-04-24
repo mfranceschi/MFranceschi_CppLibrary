@@ -89,9 +89,10 @@ namespace MF
 
             /**
              * Gets the full path to the file of the shared library.
+             * It uses '/' as separator.
              * Throws std::runtime_error if this info is not available.
              */
-            virtual std::string GetSystemPath() const = 0;
+            virtual const std::string &GetSystemPath() = 0;
 
             //---------------------------------------------- Constructors - destructor
 

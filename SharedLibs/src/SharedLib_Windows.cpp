@@ -3,10 +3,12 @@
 //
 
 #if MF_WINDOWS
+#    include <algorithm>
 #    include <vector>
 
 #    include "MF/LightWindows.hpp"
 #    include "MF/SharedLibs.hpp"
+#    include "MF/Windows.hpp"
 
 namespace MF
 {
@@ -61,24 +63,48 @@ namespace MF
                 return libCloser.get();
             }
 
-            std::string GetSystemPath() const override {
-                static constexpr std::size_t MODULE_PATH_LENGTH = 1e6;
-                std::vector<char> modulePath(MODULE_PATH_LENGTH);
-                GetModuleFileNameA(libCloser.get(), modulePath.data(), MODULE_PATH_LENGTH);
-                return modulePath.data();
+            const std::string &GetSystemPath() override {
+                LOCK_t lock(mutex);
+                if (!systemPath.empty()) {
+                    return systemPath;
+                }
+
+                std::vector<char> modulePath(MAX_PATH);
+                if (GetModuleFileNameA(libCloser.get(), modulePath.data(), MAX_PATH) == 0) {
+                    throw MF::Windows::GetCurrentSystemError();
+                }
+                if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+                    modulePath.clear();
+
+                    // We use the value of 32767 as stated in the docs:
+                    // https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
+                    modulePath.reserve(UINT16_MAX);
+                    if (GetModuleFileNameA(libCloser.get(), modulePath.data(), UINT16_MAX) == 0) {
+                        throw MF::Windows::GetCurrentSystemError();
+                    }
+                }
+
+                std::string result = modulePath.data();
+                std::replace(result.begin(), result.end(), '\\', '/');
+                auto iterator = result.rfind(".DLL");
+                result.replace(iterator, 4, GetExtension());
+
+                systemPath = result;
+
+                return systemPath;
             }
 
            private:
             std::mutex mutex;
             using LOCK_t = std::lock_guard<std::mutex>;
             HmoduleCloser libCloser;
+
+            std::string systemPath;
         };
 
         std::shared_ptr<SharedLib> OpenExplicitly(const std::string &libName) {
-            static constexpr HANDLE hFile = nullptr;
-            static constexpr DWORD dwFlags = LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
-
-            HMODULE libHandle = LoadLibraryExA(libName.data(), hFile, dwFlags);
+            HMODULE libHandle =
+                LoadLibraryExA(libName.data(), nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
             if (libHandle == nullptr) {
                 throw SharedLib::element_not_found_exception(
                     "Could not open library with name " + libName);

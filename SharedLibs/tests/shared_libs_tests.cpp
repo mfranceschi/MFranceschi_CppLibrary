@@ -2,8 +2,11 @@
 // Created by Utilisateur on 10/04/2022.
 //
 
+#include <Windows.h>
+
+#include "MF/Filesystem.hpp"
 #include "MF/SharedLibs.hpp"
-#include "my_lib_1_empty/lib.hpp"
+#include "shared_libs_tests_common.hpp"
 #include "tests_data.hpp"
 
 using namespace MF::SharedLibs;
@@ -62,4 +65,40 @@ TEST(OpenSharedLib, it_can_open_successfully_with_correct_search_path) {
     EXPECT_NO_THROW(OpenExplicitly(MF_SAMPLE_LIB_1_NAME));
 
     _cleanSearchPaths({MF_SAMPLE_LIB_1_FOLDER});
+}
+
+static constexpr auto dummyFunctionName = "dummy_request_1234";
+
+class SampleLib1Tests : public OpenedSharedLibFixture {
+   public:
+    SampleLib1Tests() : OpenedSharedLibFixture(MF_SAMPLE_LIB_1_FOLDER, MF_SAMPLE_LIB_1_NAME) {
+    }
+};
+
+TEST_F(SampleLib1Tests, it_can_return_the_system_item) {
+    void* systemItem = sharedLib->GetSystemItem();
+
+#if MF_WINDOWS
+    HMODULE hmodule = static_cast<HMODULE>(systemItem);
+    auto procAddress = GetProcAddress(hmodule, dummyFunctionName);
+    EXPECT_EQ(procAddress, nullptr);
+    EXPECT_EQ(GetLastError(), ERROR_PROC_NOT_FOUND);
+#else
+    // clear errors
+    dlerror();
+
+    void* result = dlsym(systemItem, dummyFunctionName);
+    EXPECT_EQ(result, nullptr);
+    EXPECT_NE(dlerror(), nullptr);
+#endif
+}
+
+TEST_F(SampleLib1Tests, it_can_return_the_system_path) {
+    std::string result;
+
+    ASSERT_NO_THROW(result = sharedLib->GetSystemPath());
+
+    EXPECT_EQ(
+        result, MAKE_FILE_NAME MF_SAMPLE_LIB_1_FOLDER "/" MF_SAMPLE_LIB_1_NAME +
+                    std::string(GetExtension()));
 }
