@@ -33,4 +33,20 @@ class OpenedSharedLibFixture : public ::testing::Test {
     }
 };
 
+struct MfSampleLib {
+    std::string name;
+    std::string folder;
+    std::string effectiveName;
+    bool shouldLoad;
+};
+
+static const std::vector<MfSampleLib> libs = {
+    MfSampleLib{}, // Empty for easier indexing.
+    MfSampleLib{MF_SAMPLE_LIB_1_NAME, MF_SAMPLE_LIB_1_FOLDER, MF_SAMPLE_LIB_1_EFFECTIVE_NAME, true},
+    MfSampleLib{MF_SAMPLE_LIB_2_NAME, MF_SAMPLE_LIB_2_FOLDER, "", true},
+    MfSampleLib{MF_SAMPLE_LIB_3_NAME, MF_SAMPLE_LIB_3_FOLDER, "", true},
+    MfSampleLib{MF_SAMPLE_LIB_4_NAME, MF_SAMPLE_LIB_4_FOLDER, "", true},
+    MfSampleLib{MF_SAMPLE_LIB_5_NAME, MF_SAMPLE_LIB_5_FOLDER, "", false},
+};
+
 #endif // MFRANCESCHI_CPPLIBRARIES_SHARED_LIBS_TESTS_COMMON_HPP

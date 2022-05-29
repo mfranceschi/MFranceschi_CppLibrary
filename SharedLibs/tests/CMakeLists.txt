@@ -1,5 +1,5 @@
 
-add_executable(MF_SharedLibs_Tests)
+add_executable(MF_SharedLibs_Tests can_open_tests.cpp)
 target_link_libraries(
         MF_SharedLibs_Tests
         PRIVATE
@@ -20,7 +20,7 @@ target_sources(
 )
 
 add_subdirectory(my_lib_1_empty)
-add_subdirectory(my_lib_2)
+add_subdirectory(my_lib_2_functions)
 add_subdirectory(my_lib_3_variables_and_init)
 add_subdirectory(my_lib_4_empty_load_and_unload)
 add_subdirectory(my_lib_5_load_throws)

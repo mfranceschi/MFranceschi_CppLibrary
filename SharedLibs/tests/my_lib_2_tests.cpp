@@ -3,7 +3,7 @@
 //
 
 #include "MF/SharedLibs.hpp"
-#include "my_lib_2/lib.hpp"
+#include "my_lib_2_functions/lib.hpp"
 #include "tests_data.hpp"
 
 using namespace MF::SharedLibs;

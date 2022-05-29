@@ -42,6 +42,16 @@ namespace MF
         std::shared_ptr<SharedLib> OpenExplicitly(const std::string &libName);
 
         /**
+         * Indicates if the provided library can be opened by the OpenExplicitly function.
+         *
+         * - It try-catches the OpenExplicitly call (Windows).
+         * - It forks and calls OpenExplicitly, then closes ("dl" framework). Returns false if
+         * "fork" failed. It returns whether that succeeded. No details provided in case of error.
+         *
+         */
+        bool CanOpen(const std::string &libName) noexcept;
+
+        /**
          * Wrapper for calls to a Dynamic Library.
          * An instance holds a valid system handle for one specific shared library object.
          */
