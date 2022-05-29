@@ -6,14 +6,12 @@
 // Created by Utilisateur on 10/04/2022.
 //
 
-#include <sys/wait.h>
-#include <unistd.h>
-
-#include <algorithm>
-#include <vector>
-
 #include "MF/SharedLibs.hpp"
-#include "MF/Windows.hpp"
+
+#if MF_UNIX
+#    include <sys/wait.h>
+#    include <unistd.h>
+#endif
 
 namespace MF
 {
@@ -34,7 +32,9 @@ namespace MF
                 // An error occurred when forking.
                 // Ignoring but returning false.
                 return false;
-            } else if (c_pid > 0) {
+            }
+
+            if (c_pid > 0) {
                 // Parent process.
                 int status = 0;
                 if (waitpid(c_pid, &status, 0) != -1) {
