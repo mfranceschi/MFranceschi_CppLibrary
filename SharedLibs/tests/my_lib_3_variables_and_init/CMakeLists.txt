@@ -6,7 +6,7 @@ target_compile_definitions(
         MF_SharedLibs_Tests
         PRIVATE
         MF_SAMPLE_LIB_3_NAME="My_Lib_Shared_3"
-        MF_SAMPLE_LIB_3_FOLDER="${CMAKE_CURRENT_BINARY_DIR}"
+        MF_SAMPLE_LIB_3_FOLDER="$<TARGET_FILE_DIR:My_Lib_Shared_3>"
         MF_EXPORT_ME_3=0
 )
 add_dependencies(MF_SharedLibs_Tests My_Lib_Shared_3)
