@@ -83,14 +83,13 @@ jobs:
 
       - name: SETUP - Install dependencies
         id: install-dependencies
-        run: |
-          sudo apt update && sudo apt-get install clang-tidy
+        run: sudo apt update && sudo apt-get install clang-tidy
 
       - name: SETUP - CMake configure
-        id: cmake-configure
-        if: ${{ steps.install-dependencies.outcome == 'success' }}
+        run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMAKE_CONFIG }} -Werror=dev -Werror=deprecated -G "Unix Makefiles" -S . -B ${{ env.BUILD_DIR }}
+
+      - name: SETUP - CMake configure (again) # it can help for the compile commands
         run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMAKE_CONFIG }} -Werror=dev -Werror=deprecated -G "Unix Makefiles" -S . -B ${{ env.BUILD_DIR }}
 
       - name: CHECK - Clang-Tidy (static analysis)
-        if: ${{ steps.cmake-configure.outcome == 'success' }}
         run: find ./ -name "*.cpp" -o -name "*.hpp" | grep -Ev "misc|build" | xargs clang-tidy -p=${{ env.BUILD_DIR }} --warnings-as-errors=*
