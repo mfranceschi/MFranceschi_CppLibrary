@@ -1,5 +1,5 @@
 
-add_library(MF_Datetime STATIC)
+add_library(MF_Datetime STATIC src/DateUtils_TZ.cpp)
 
 target_sources(MF_Datetime
         PRIVATE
