@@ -25,4 +25,7 @@ add_subdirectory(my_lib_3_variables_and_init)
 add_subdirectory(my_lib_4_empty_load_and_unload)
 add_subdirectory(my_lib_5_load_throws)
 
-gtest_discover_tests(MF_SharedLibs_Tests)
+gtest_discover_tests(
+        MF_SharedLibs_Tests
+        PROPERTIES RUN_SERIAL TRUE
+)
