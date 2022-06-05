@@ -26,7 +26,29 @@ class GetterSetterTests : public ::testing::Test {
 };
 
 void GetterSetterTests::SetUp() {
-    SetTZ("Europe/Paris");
+    static constexpr const char *tzForTests =
+#if MF_WINDOWS
+        "CET-1CEST";
+#else
+        "Europe/Paris";
+#endif
+    SetTZ(tzForTests);
+    _tzset();
+
+    /*
+    const auto *x = &_daylight;
+    const auto *y = &_timezone;
+    const char *const *z = _tzname;
+    const auto z0 = z[0];
+    const auto z1 = z[1];
+    const auto &classicLocale = std::locale::classic();
+    const auto classicLocaleName = classicLocale.name();
+    const auto globalLocale = std::locale();
+    const auto globalLocaleName = globalLocale.name();
+    const auto stdoutLocale = std::cout.getloc();
+    const auto stdoutLocaleName = stdoutLocale.name();
+    const auto fromSetlocale = std::setlocale(LC_ALL, nullptr);
+     */
 
     d1 = Date(year, month, monthday, hour, minutes, seconds, dst_flag);
     d1_original = d1;
