@@ -88,7 +88,7 @@ jobs:
       - name: SETUP - CMake configure
         id: cmake-configure
         if: ${{ steps.install-dependencies.outcome == 'success' }}
-        run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMAKE_CONFIG }} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Werror=dev -Werror=deprecated -S . -B ${{ env.BUILD_DIR }}
+        run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMAKE_CONFIG }} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Werror=dev -Werror=deprecated -G "Unix Makefiles" -S . -B ${{ env.BUILD_DIR }}
 
       - name: CHECK - Clang-Tidy (static analysis)
         if: ${{ steps.cmake-configure.outcome == 'success' }}
