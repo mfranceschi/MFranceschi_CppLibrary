@@ -17,8 +17,10 @@ namespace MF
         void SetTZ(const std::string& tzValue) {
 #if MF_WINDOWS
             _putenv_s("TZ", tzValue.data());
+            _tzset();
 #else
             setenv("TZ", tzValue.data(), 1);
+            tzset();
 #endif
         }
 

@@ -33,7 +33,6 @@ void GetterSetterTests::SetUp() {
         "Europe/Paris";
 #endif
     SetTZ(tzForTests);
-    _tzset();
 
     /*
     const auto *x = &_daylight;
