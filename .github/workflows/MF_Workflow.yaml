@@ -67,6 +67,7 @@ jobs:
 
   code-quality:
     runs-on: ubuntu-latest
+    if: ${{ false }}
 
     env:
       BUILD_DIR: ./build/
