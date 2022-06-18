@@ -8,6 +8,14 @@ Cygwin, WSL with gcc. MSVC and MinGW support both the UNICODE option.
 
 It may not necessarily be useful to everyone, but at least I am learning a lot! ;)
 
+- Supported systems:
+    - Windows 10+
+    - Linux
+- Supported toolchains:
+    - MSVC
+    - GCC
+    - Clang
+
 ## How to use it? With CMake!
 
 TL;DR = add this subdirectory and link to the library `MF_ALL`.
@@ -43,8 +51,8 @@ const SFilename_t currentWorkingDirectory = GetCWD();
     - Among others, Java-like `Stream` interface.
 - **Async**
     - Tools to help create processes and threads and monitor their execution.
-- **System**
-    - Adds low-level tools related to the OS.
+- **SharedLibs**
+    - Cross-platform helpers when working with shared libraries.
 - **Windows**
     - Some tools that are helpful when working with the Windows ecosystem.
     - It's non-breaking and empty when the OS is not Windows.

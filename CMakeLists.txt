@@ -46,8 +46,16 @@ if(MF_UNICODE OR UNICODE)
     add_compile_definitions(UNICODE=1)
 endif()
 
-# ----- TESTS SETUP ----- #
+# ----- DEV AND TESTS SETUP ----- #
 if(MF_IN_DEV)
+    if(MSVC)
+        # warning level 4
+        add_compile_options(/W4)
+    else()
+        # lots of warnings
+        add_compile_options(-Wall -Wextra -pedantic)
+    endif()
+
     enable_testing()
 
     set(_MF_GTEST_GIT_URL https://github.com/google/googletest)
@@ -73,9 +81,9 @@ add_subdirectory(Commons)
 add_subdirectory(Windows)
 
 add_subdirectory(Filesystem)
-add_subdirectory(System)
+add_subdirectory(SharedLibs)
 add_subdirectory(Datetime)
-add_subdirectory(Async)
+# add_subdirectory(Async) # TODO - not ready yet
 add_subdirectory(Containers)
 
 add_library(MF_ALL INTERFACE)
@@ -85,8 +93,8 @@ target_link_libraries(
             MF_Commons
             MF_Filesystem
             MF_Windows
-            MF_Async
-            MF_System
+            # MF_Async
+            MF_SharedLibs
 )
 
 add_subdirectory(misc/TimingExperience)

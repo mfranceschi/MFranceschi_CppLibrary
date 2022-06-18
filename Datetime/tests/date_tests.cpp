@@ -26,6 +26,14 @@ class GetterSetterTests : public ::testing::Test {
 };
 
 void GetterSetterTests::SetUp() {
+    static constexpr const char *tzForTests =
+#if MF_WINDOWS
+        "CET-1CEST";
+#else
+        "Europe/Paris";
+#endif
+    SetTZ(tzForTests);
+
     d1 = Date(year, month, monthday, hour, minutes, seconds, dst_flag);
     d1_original = d1;
 }

@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        CMake_Config: [ Debug, Release ]
+        CMAKE_CONFIG: [ Debug, Release ]
         os: [ ubuntu-latest, windows-latest ]
       fail-fast: false
 
@@ -28,16 +28,16 @@ jobs:
 
       - name: BUILD - CMake configure
         run: |
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.CMake_Config }} -DMF_IN_DEV=ON -S . -B ${{ env.BUILD_DIR }}
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.CMAKE_CONFIG }} -DMF_IN_DEV=ON -S . -B ${{ env.BUILD_DIR }}
 
       - name: BUILD - CMake build
         run: |
-          cmake --build ${{ env.BUILD_DIR }} -j10 --config=${{ matrix.CMake_Config}} 
+          cmake --build ${{ env.BUILD_DIR }} -j10 --config=${{ matrix.CMAKE_CONFIG}} 
 
       - name: TEST - CTest
         working-directory: ${{ env.BUILD_DIR }}
         run: |
-          ctest -j10 -C ${{ matrix.CMake_Config }} -T test --output-on-failure
+          ctest -j10 -C ${{ matrix.CMAKE_CONFIG }} -T test --output-on-failure
 
   code-quality-no-build-needed:
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
     env:
       BUILD_DIR: ./build/
       CLANG_VERSION: 10
-      CMake_Config: Debug
+      CMAKE_CONFIG: Debug
 
       CC: /usr/bin/clang
       CXX: /usr/bin/clang++
@@ -67,11 +67,13 @@ jobs:
 
   code-quality:
     runs-on: ubuntu-latest
+    if: ${{ false }}
 
     env:
       BUILD_DIR: ./build/
       CLANG_VERSION: 10
-      CMake_Config: Debug
+      CMAKE_CONFIG: Debug
+      CMAKE_EXPORT_COMPILE_COMMANDS: ON
 
       CC: /usr/bin/clang
       CXX: /usr/bin/clang++
@@ -82,15 +84,13 @@ jobs:
 
       - name: SETUP - Install dependencies
         id: install-dependencies
-        run: |
-          sudo apt update && sudo apt-get install clang-tidy
-          pip install cmakelint
+        run: sudo apt update && sudo apt-get install clang-tidy
 
       - name: SETUP - CMake configure
-        id: cmake-configure
-        if: ${{ steps.install-dependencies.outcome == 'success' }}
-        run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMake_Config }} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Werror=dev -Werror=deprecated -S . -B ${{ env.BUILD_DIR }}
+        run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMAKE_CONFIG }} -Werror=dev -Werror=deprecated -G "Unix Makefiles" -S . -B ${{ env.BUILD_DIR }}
 
-      - name: CHECK - Clang-Tidy (static analysis, NOT on tests)
-        if: ${{ steps.cmake-configure.outcome == 'success' }}
-        run: find ./ -name "*.cpp" -o -name "*.hpp" -o \( -name "misc" -o -name "build" -o -name "cmake-build-debug" \) -prune | xargs clang-tidy -p=${{ env.BUILD_DIR }} --warnings-as-errors=*
+      - name: SETUP - CMake configure (again) # it can help for the compile commands
+        run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMAKE_CONFIG }} -Werror=dev -Werror=deprecated -G "Unix Makefiles" -S . -B ${{ env.BUILD_DIR }}
+
+      - name: CHECK - Clang-Tidy (static analysis)
+        run: find ./ -name "*.cpp" -o -name "*.hpp" | grep -Ev "misc|build" | xargs clang-tidy -p=${{ env.BUILD_DIR }} --warnings-as-errors=*
