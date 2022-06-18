@@ -51,33 +51,27 @@ class TestFile : public ::testing::Test {
     }
 
     void CheckIsEmpty() const {
+        constexpr unsigned char unsignedCharMax = 0xff;
         if (fid.exists) {
-            // Max nbr of chars that will be read.
-            unsigned int chars_max = std::min(static_cast<Filesize_t>(5), fid.size / 10);
-
             // Try to read an invalid number of chars.
             // Effect: check that the file exists.
             EXPECT_TRUE(IsFileReadable(fid.name.c_str(), 0));
-            if (fid.size >= std::numeric_limits<unsigned char>::max()) {
-                EXPECT_TRUE(IsFileReadable(fid.name.c_str(), -1));
-            }
 
             // Read a few times.
-            for (unsigned int i = 1; i < chars_max; ++i) {
+            const unsigned char maxCharsToRead = std::min<unsigned char>(fid.size, unsignedCharMax);
+            for (unsigned char i = 1; i < maxCharsToRead; ++i) {
                 EXPECT_TRUE(IsFileReadable(fid.name.c_str(), i))
-                    << "Fail of \"Read a few times\" with index " << i;
+                    << "Fail of \"Read a few times\" with index " << static_cast<unsigned int>(i);
             }
-            if (fid.size < 3 /* Value of default param. */) {
+
+            if (fid.size < 1 /* Value of default param. */) {
                 EXPECT_FALSE(IsFileReadable(fid.name.c_str()));
             } else {
                 EXPECT_TRUE(IsFileReadable(fid.name.c_str()));
             }
         } else {
-            EXPECT_FALSE(IsFileReadable(fid.name.c_str(), 1));
+            EXPECT_FALSE(IsFileReadable(fid.name.c_str(), 0));
             EXPECT_FALSE(IsFileReadable(fid.name.c_str()));
-
-            // TODO maybe delete the following
-            EXPECT_FALSE(IsFileReadable(fid.name.c_str(), -1));
         }
     }
 

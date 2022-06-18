@@ -46,8 +46,16 @@ if(MF_UNICODE OR UNICODE)
     add_compile_definitions(UNICODE=1)
 endif()
 
-# ----- TESTS SETUP ----- #
+# ----- DEV AND TESTS SETUP ----- #
 if(MF_IN_DEV)
+    if (MSVC)
+        # warning level 4
+        add_compile_options(/W4)
+    else()
+        # lots of warnings
+        add_compile_options(-Wall -Wextra -pedantic)
+    endif()
+
     enable_testing()
 
     set(_MF_GTEST_GIT_URL https://github.com/google/googletest)
