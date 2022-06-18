@@ -48,7 +48,7 @@ endif()
 
 # ----- DEV AND TESTS SETUP ----- #
 if(MF_IN_DEV)
-    if (MSVC)
+    if(MSVC)
         # warning level 4
         add_compile_options(/W4)
     else()
