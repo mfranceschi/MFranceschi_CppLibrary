@@ -85,6 +85,7 @@ add_subdirectory(SharedLibs)
 add_subdirectory(Datetime)
 # add_subdirectory(Async) # TODO - not ready yet
 add_subdirectory(Containers)
+add_subdirectory(Timezones)
 
 add_library(MF_ALL INTERFACE)
 target_link_libraries(
