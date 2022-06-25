@@ -11,18 +11,6 @@ using namespace MF::Environment;
 static const std::string VAR_THAT_EXISTS = "PATH";
 static const std::string VAR_THAT_DOES_NOT_EXIST = "foobarbaz";
 
-#define ASSERT_ENV_VAR_DOES_NOT_EXIST(name) ASSERT_TRUE(getEnvOrDefault(name, "").empty())
-#define EXPECT_ENV_VAR_DOES_NOT_EXIST(name) EXPECT_TRUE(getEnvOrDefault(name, "").empty())
-
-class TestWithVarThatExists : public ::testing::Test {
-    // We might want to change it at build time for some OSes?
-    static constexpr const char* VAR_THAT_WILL_EXIST = "PATH";
-
-    const std::string name = VAR_THAT_WILL_EXIST;
-};
-
-class GetEnv2 : public TestWithVarThatExists {};
-
 class TestWithVarThatDoesNotExists : public ::testing::Test {
    protected:
     const std::string name = VAR_THAT_DOES_NOT_EXIST;
@@ -32,9 +20,19 @@ class TestWithVarThatDoesNotExists : public ::testing::Test {
     }
 
     void assertDoesNotExist(const std::string& messageToAppend = "") {
-        ASSERT_ENV_VAR_DOES_NOT_EXIST(name) << messageToAppend;
+        ASSERT_FALSE(hasEnv(name)) << messageToAppend;
     }
 };
+
+TEST(HasEnv, it_returns_true_if_exists) {
+    EXPECT_TRUE(hasEnv(VAR_THAT_EXISTS))
+        << "WARNING: it will result in inaccurate checks for other tests.";
+}
+
+TEST(HasEnv, it_returns_false_if_does_not_exists) {
+    ASSERT_FALSE(hasEnv(VAR_THAT_DOES_NOT_EXIST))
+        << "WARNING: it will result in inaccurate checks for other tests.";
+}
 
 TEST(GetEnv, it_can_get_for_var_that_exists) {
     std::string result;
@@ -86,7 +84,7 @@ TEST_F(UnsetEnv2, it_can_unset_env) {
     setEnv(name, "a");
 
     unsetEnv(name);
-    EXPECT_ENV_VAR_DOES_NOT_EXIST(name);
+    EXPECT_FALSE(hasEnv(name));
 }
 
 TEST_F(UnsetEnv2, it_is_no_op_if_not_exists) {

@@ -26,9 +26,40 @@ namespace MF
         // https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getenvironmentvariable#parameters
         static constexpr std::size_t BUF_LEN = 32767;
 
-        struct DwordAndBuffer {
+        class DwordAndBuffer {
+           private:
             DWORD dword;
             std::shared_ptr<std::array<char, BUF_LEN>> buffer;
+
+           public:
+            DwordAndBuffer(DWORD dwordIn, decltype(buffer)& bufferIn)
+                : dword(dwordIn), buffer(bufferIn) {
+            }
+
+            bool isError() const {
+                return dword == 0;
+            }
+
+            std::string getString() const {
+                return buffer->data();
+            }
+        };
+
+        /**
+         * See details here:
+         * https://docs.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-getcommandlinea
+         */
+        class EnvironmentBlock {
+           private:
+            char* block;
+
+           public:
+            EnvironmentBlock() : block(GetEnvironmentStringsA()) {
+            }
+
+            ~EnvironmentBlock() {
+                FreeEnvironmentStringsA(block);
+            }
         };
 
         static DwordAndBuffer getEnvInternal(const std::string& name) {
@@ -63,17 +94,29 @@ namespace MF
 
         std::string getEnv(const std::string& name) {
             auto dwordAndBuffer = getEnvInternal(name);
-            if (dwordAndBuffer.dword == 0) {
+            if (dwordAndBuffer.isError()) {
                 throw MF::Windows::GetCurrentSystemError();
             }
 
-            return dwordAndBuffer.buffer->data();
+            return dwordAndBuffer.getString();
         }
 
         std::string getEnvOrDefault(const std::string& name, const std::string& defaultValue) {
             auto dwordAndBuffer = getEnvInternal(name);
 
-            return (dwordAndBuffer.dword == 0) ? defaultValue : dwordAndBuffer.buffer->data();
+            return (dwordAndBuffer.isError()) ? defaultValue : dwordAndBuffer.getString();
+        }
+
+        bool hasEnv(const std::string& name) {
+            auto dwordAndBuffer = getEnvInternal(name);
+            if (dwordAndBuffer.isError()) {
+                auto systemError = MF::Windows::GetCurrentSystemError();
+                if (systemError.code().value() == ERROR_ENVVAR_NOT_FOUND) {
+                    return false;
+                }
+                throw systemError;
+            }
+            return true;
         }
     } // namespace Environment
 } // namespace MF

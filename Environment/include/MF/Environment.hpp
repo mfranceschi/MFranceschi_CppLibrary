@@ -37,7 +37,13 @@ namespace MF
          * Returns "defaultValue" if doesn't exist.
          * Throws if "name" is empty.
          */
-        std::string getEnvOrDefault(const std::string& name, const std::string& defaultValue);
+        std::string getEnvOrDefault(const std::string& name, const std::string& defaultValue = "");
+
+        /**
+         * Returns true if the environment variable "name" exists, false otherwise.
+         * Throws if "name" is empty.
+         */
+        bool hasEnv(const std::string& name);
     } // namespace Environment
 } // namespace MF
 
