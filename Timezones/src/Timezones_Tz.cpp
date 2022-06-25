@@ -2,7 +2,7 @@
 // Created by MartinF on 19/06/2022.
 //
 
-#include <memory>
+#include <ctime>
 #include <stdexcept>
 
 #include "MF/Environment.hpp"
@@ -22,6 +22,14 @@ namespace MF
 
         std::string getSystemTz() {
             return MF::Environment::getEnv("TZ");
+        }
+
+        void initSystemTz() {
+#if MF_WINDOWS
+            _tzset();
+#else
+            tzset();
+#endif
         }
     } // namespace Timezones
 } // namespace MF

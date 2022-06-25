@@ -42,6 +42,9 @@ namespace MF
          * Windows - https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/tzset#remarks
          */
         std::string getSystemTz();
+
+        /** See "tzset". */
+        void initSystemTz();
     } // namespace Timezones
 } // namespace MF
 

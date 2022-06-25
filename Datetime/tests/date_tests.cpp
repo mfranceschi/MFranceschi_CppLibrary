@@ -34,6 +34,7 @@ void GetterSetterTests::SetUp() {
         "Europe/Paris";
 #endif
     MF::Timezones::setSystemTz(tzForTests);
+    MF::Timezones::initSystemTz();
 
     d1 = Date(year, month, monthday, hour, minutes, seconds, dst_flag);
     d1_original = d1;
