@@ -1,5 +1,5 @@
 
-add_library(MF_Datetime STATIC src/DateUtils_TZ.cpp)
+add_library(MF_Datetime STATIC)
 
 file(GLOB Private_Sources
         CONFIGURE_DEPENDS
