@@ -208,9 +208,6 @@ namespace MF
         /** Returns the difference in seconds between UTC and local time. */
         long Timezone();
 
-        void SetTZ(const std::string &tzValue);
-        std::string GetTZ();
-
         /** Simple extension of the C struct tm with microseconds and operators overloading. */
         class Date {
             //----------------------------------------------------------------- PUBLIC

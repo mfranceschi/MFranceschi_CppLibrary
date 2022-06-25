@@ -31,7 +31,7 @@ namespace MF
          * Unix - https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
          * Windows - https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/tzset#remarks
          */
-        void setTz(const std::string&);
+        void setSystemTz(const std::string&);
 
         /**
          * Returns the current value of the TZ environment variable.
@@ -41,7 +41,7 @@ namespace MF
          * Unix - https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
          * Windows - https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/tzset#remarks
          */
-        std::string getTz();
+        std::string getSystemTz();
     } // namespace Timezones
 } // namespace MF
 

@@ -1,14 +1,19 @@
 
 add_library(MF_Datetime STATIC src/DateUtils_TZ.cpp)
 
+file(GLOB Private_Sources
+        CONFIGURE_DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp)
+file(GLOB Public_Sources
+        CONFIGURE_DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/MF/*.hpp)
+
 target_sources(MF_Datetime
         PRIVATE
-            src/Date.cpp
-            src/DateUtils.cpp
-            src/DateUtils_MaxYear.cpp
+        ${Private_Sources}
         PUBLIC
-            include/MF/Datetime.hpp
-)
+        ${Public_Sources})
 target_link_libraries(MF_Datetime PUBLIC MF_Commons MF_Windows)
 target_include_directories(MF_Datetime PUBLIC include)
 

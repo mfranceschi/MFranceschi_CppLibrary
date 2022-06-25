@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "MF/Datetime.hpp"
+#include "MF/Timezones.hpp"
 #include "tests_data.hpp"
 
 using namespace MF::Datetime;
@@ -32,7 +33,7 @@ void GetterSetterTests::SetUp() {
 #else
         "Europe/Paris";
 #endif
-    SetTZ(tzForTests);
+    MF::Timezones::setSystemTz(tzForTests);
 
     d1 = Date(year, month, monthday, hour, minutes, seconds, dst_flag);
     d1_original = d1;

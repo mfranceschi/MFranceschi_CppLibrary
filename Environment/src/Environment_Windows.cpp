@@ -22,7 +22,7 @@ namespace MF
             }
         }
 
-        // Max value for an environment variable, according:
+        // Max value for an environment variable, according to:
         // https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getenvironmentvariable#parameters
         static constexpr std::size_t BUF_LEN = 32767;
 
