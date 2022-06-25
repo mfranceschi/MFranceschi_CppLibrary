@@ -20,7 +20,10 @@ namespace MF
                 }
             }
 
-            /** UTC = local time + bias */
+            /**
+             * UTC = local time + bias
+             * NOTE: this seems to not work well at all.
+             */
             std::chrono::minutes bias() const {
                 return std::chrono::minutes(timeZoneInformation.Bias);
             }
@@ -42,15 +45,31 @@ namespace MF
         };
 
         std::chrono::seconds getTimezoneOffset() {
-            const TimeZoneInformation timeZoneInformation;
+            SYSTEMTIME systemTime;
+            SYSTEMTIME localTime;
+            GetSystemTime(&systemTime);
+            GetLocalTime(&localTime);
 
-            return std::chrono::duration_cast<std::chrono::seconds>(timeZoneInformation.bias());
+            FILETIME stf;
+            FILETIME ltf;
+            SystemTimeToFileTime(&systemTime, &stf);
+            SystemTimeToFileTime(&localTime, &ltf);
+
+            ULARGE_INTEGER ust{stf.dwLowDateTime, stf.dwHighDateTime};
+            ULARGE_INTEGER ult{ltf.dwLowDateTime, ltf.dwHighDateTime};
+
+            unsigned long long result = ult.QuadPart - ust.QuadPart;
+            std::chrono::microseconds resultInMicroseconds(result / 10);
+
+            return std::chrono::duration_cast<std::chrono::seconds>(resultInMicroseconds);
         }
 
         std::chrono::seconds getDstOffset() {
             const TimeZoneInformation timeZoneInformation;
 
-            return std::chrono::duration_cast<std::chrono::seconds>(timeZoneInformation.dstBias());
+            const auto dstBiasInMinutes = timeZoneInformation.dstBias() * -1;
+
+            return std::chrono::duration_cast<std::chrono::seconds>(dstBiasInMinutes);
         }
     } // namespace Timezones
 } // namespace MF

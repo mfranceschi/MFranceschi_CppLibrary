@@ -12,19 +12,18 @@ namespace MF
 {
     namespace Timezones
     {
-        static void throwIfTzNotFound() {
-            throw std::runtime_error("TZ environment variable not found.");
-        }
-
-        void setSystemTz(const std::string& tzValue) {
-            MF::Environment::setEnv("TZ", tzValue);
+        void setSystemTz(const std::string& newValue, bool runTzSet) {
+            MF::Environment::setEnv("TZ", newValue);
+            if (runTzSet) {
+                tzSet();
+            }
         }
 
         std::string getSystemTz() {
             return MF::Environment::getEnv("TZ");
         }
 
-        void initSystemTz() {
+        void tzSet() {
 #if MF_WINDOWS
             _tzset();
 #else
