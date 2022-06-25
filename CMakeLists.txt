@@ -79,7 +79,7 @@ endif()
 
 add_subdirectory(Commons)
 add_subdirectory(Windows)
-
+add_subdirectory(Environment)
 add_subdirectory(Filesystem)
 add_subdirectory(SharedLibs)
 add_subdirectory(Datetime)
