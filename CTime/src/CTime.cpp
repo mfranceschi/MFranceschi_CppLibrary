@@ -36,6 +36,22 @@ namespace MF
 {
     namespace CTime
     {
+        std::time_t Time() {
+            return std::time(nullptr);
+        }
+
+        double Difftime(std::time_t time_end, std::time_t time_beg) {
+            return std::difftime(time_end, time_beg);
+        }
+
+        std::time_t Mktime(std::tm &src) {
+            return std::mktime(&src);
+        }
+
+        std::time_t LocaltimeReversed(std::tm &src) {
+            return std::mktime(&src);
+        }
+
         bool Localtime(struct std::tm &dest, const std::time_t &src) {
 #if MF_WINDOWS
 

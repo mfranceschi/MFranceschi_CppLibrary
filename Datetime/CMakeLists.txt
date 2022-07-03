@@ -14,7 +14,7 @@ target_sources(MF_Datetime
         ${Private_Sources}
         PUBLIC
         ${Public_Sources})
-target_link_libraries(MF_Datetime PUBLIC MF_Commons MF_Windows)
+target_link_libraries(MF_Datetime PUBLIC MF_Commons MF_Windows MF_CTime)
 target_include_directories(MF_Datetime PUBLIC include)
 
 if(MF_IN_DEV)

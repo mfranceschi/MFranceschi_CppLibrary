@@ -5,22 +5,22 @@
 #ifndef MFRANCESCHI_CPPLIBRARIES_CTIME_HPP
 #define MFRANCESCHI_CPPLIBRARIES_CTIME_HPP
 
-#include <ctime>
+#include <ctime> // for type definitions
 #include <string>
 
 namespace MF
 {
     namespace CTime
     {
-        /** Value corresponding toAsctime and Ctime, for use in Strftime. */
+        /** Value corresponding to Asctime and Ctime, for use in Strftime. */
         static constexpr const char *DEFAULT_STRFTIME_FORMAT = "Www Mmm dd hh:mm:ss yyyy\n";
 
-        inline std::time_t Time();
-        inline double Difftime(std::time_t time_end, std::time_t time_beg);
-        inline std::time_t Mktime(std::tm &src);
+        std::time_t Time();
+        double Difftime(std::time_t time_end, std::time_t time_beg);
+        std::time_t Mktime(std::tm &src);
 
         /**
-         * Thread-safe version of Localtime.
+         * Thread-safe Localtime.
          * Default 'src' value uses the current UTC timestamp as source for the date.
          * Returns true on success and false on failre - use 'errno' on failure to investigate.
          */
@@ -32,10 +32,10 @@ namespace MF
          * Returns -1 on failure - no guarantee if 'src' has been affected or not in that case.
          *
          * Actually a wrapper for mktime. */
-        inline std::time_t LocaltimeReversed(std::tm &src);
+        std::time_t LocaltimeReversed(std::tm &src);
 
         /**
-         * Thread-safe version of Gmtime.
+         * Thread-safe Gmtime.
          * Default 'src' value uses the current UTC timestamp as source for the date.
          * Returns true on success and false on failre - use 'errno' on failure to investigate.
          */
@@ -53,23 +53,6 @@ namespace MF
 
         /** Like strptime. */
         bool Strptime(std::tm &dest, const char *src, const char *format = DEFAULT_STRFTIME_FORMAT);
-
-        // ----- IMPLEMENTATIONS ----- //
-        std::time_t Time() {
-            return std::time(nullptr);
-        }
-
-        double Difftime(std::time_t time_end, std::time_t time_beg) {
-            return std::difftime(time_end, time_beg);
-        }
-
-        std::time_t Mktime(std::tm &src) {
-            return std::mktime(&src);
-        }
-
-        std::time_t LocaltimeReversed(std::tm &src) {
-            return std::mktime(&src);
-        }
     } // namespace CTime
 } // namespace MF
 

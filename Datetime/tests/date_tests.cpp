@@ -87,16 +87,6 @@ namespace StaticMethodsTesting
         EXPECT_EQ(DaysInMonth(FEBRUARY, 1), 28); // Non-leap year
     }
 
-    TEST(Now_Timestamp, FullTest) {
-        time_t now_to_check = Now_Timestamp();
-        time_t now_from_chrono = clock::to_time_t(clock::now());
-        time_t distance = now_from_chrono - now_to_check;
-        if (distance < 0) {
-            distance *= -1;
-        }
-        EXPECT_TRUE(distance <= 1);
-    }
-
     TEST(Now, FullTest) {
         std::time_t now_to_check = time_t(Date::Now());
         time_t now_from_chrono = clock::to_time_t(clock::now());

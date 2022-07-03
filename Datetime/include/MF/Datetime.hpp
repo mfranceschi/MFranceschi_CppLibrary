@@ -9,6 +9,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "MF/CTime.hpp"
+
 namespace MF
 {
     namespace Datetime
@@ -193,20 +195,6 @@ namespace MF
             auto daysInMonth = ValidateMonths(month) ? days <= DaysInMonth(month) : 31;
             return days >= 1 && days <= daysInMonth;
         }
-
-        /** Returns now as UTC timestamp. */
-        inline time_t Now_Timestamp() {
-            return std::time(nullptr);
-        }
-
-        /** Thread-safe version of Localtime. */
-        bool Localtime(const std::time_t &src, struct std::tm &dest);
-
-        /** Thread-safe version of Gmtime. */
-        bool Gmtime(const std::time_t &src, struct std::tm &dest);
-
-        /** Returns the difference in seconds between UTC and local time. */
-        long Timezone();
 
         /** Simple extension of the C struct tm with microseconds and operators overloading. */
         class Date {
@@ -474,7 +462,7 @@ namespace MF
 
         inline Date Date::FromTime_t(const time_t time1, int microseconds) {
             std::tm tm1{0};
-            Localtime(time1, tm1);
+            MF::CTime::Localtime(tm1, time1);
             return Date(tm1, microseconds);
         }
 
