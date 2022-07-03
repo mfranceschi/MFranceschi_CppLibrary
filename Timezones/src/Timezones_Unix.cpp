@@ -7,18 +7,24 @@
 #    include <array>
 #    include <cassert>
 #    include <cstdio>
-#    include <ctime>
 #    include <memory>
 #    include <regex>
 #    include <sstream>
 #    include <vector>
 
+#    include "MF/CTime.hpp"
 #    include "MF/Timezones.hpp"
 
 namespace MF
 {
     namespace Timezones
     {
+        static int getCurrentYear() {
+            std::tm structTm{};
+            MF::CTime::Localtime(structTm);
+            return structTm.tm_year + 1900;
+        }
+
         static std::string runCommandAndGetOutput(const std::string& command) {
             static constexpr std::size_t BUFFER_SIZE = 128;
             std::array<char, BUFFER_SIZE> buffer{};
@@ -35,7 +41,7 @@ namespace MF
         }
 
         static std::string runZdump(const std::string& timezoneName) {
-            const int currentYear = 2022;
+            const int currentYear = getCurrentYear();
             std::ostringstream oss;
             oss << "zdump -i -c " << currentYear << "," << currentYear + 1 << " " << timezoneName;
             std::string command = oss.str();

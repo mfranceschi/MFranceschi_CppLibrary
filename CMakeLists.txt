@@ -78,6 +78,9 @@ if(MF_IN_DEV)
 endif()
 
 add_subdirectory(Commons)
+link_libraries(MF_Commons)
+
+add_subdirectory(CTime)
 add_subdirectory(Windows)
 add_subdirectory(Environment)
 add_subdirectory(Filesystem)
