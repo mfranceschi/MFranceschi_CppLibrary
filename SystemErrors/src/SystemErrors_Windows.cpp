@@ -4,6 +4,8 @@
 
 #if MF_WINDOWS
 
+#    include <memory>
+
 #    include "MF/LightWindows.hpp"
 #    include "MF/SystemErrors.hpp"
 
@@ -31,13 +33,12 @@ namespace MF
                     FORMAT_MESSAGE_IGNORE_INSERTS,
                 NULL, errorCode, getLangId(localized), (LPSTR)&messageBuffer, 0, NULL);
 
-            // Copy the error message into a std::string.
-            std::string message(messageBuffer, size);
+            // Small boilerplate to ensure we free the buffer
+            // if the constructor of 'std::string' throws.
+            std::unique_ptr<char, decltype(&LocalFree)> messageBufferSmart(
+                messageBuffer, &LocalFree);
 
-            // Free the Win32's string's buffer.
-            LocalFree(messageBuffer);
-
-            return message;
+            return std::string(messageBuffer, size);
         }
 
         std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode) {
