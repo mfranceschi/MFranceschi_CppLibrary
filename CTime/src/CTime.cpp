@@ -86,7 +86,7 @@ namespace MF
 
         time_t GmtimeReversed(std::tm &src) {
 #if MF_WINDOWS
-            returns _mkgmtime(&src);
+            return _mkgmtime(&src);
 #elif HAS_TIMEGM
             return timegm(&src);
 #else
@@ -110,11 +110,8 @@ namespace MF
 
             std::istringstream input(src);
             input.imbue(std::locale(setlocale(LC_ALL, nullptr)));
-            input >> std::get_time(&dest, f);
-            if (input.fail()) {
-                return false;
-            }
-            return true;
+            input >> std::get_time(&dest, format);
+            return !input.fail();
 #else
             return strptime(src, format, &dest) != nullptr;
 #endif
