@@ -47,7 +47,8 @@ namespace MF
             int wstatus = 0;
             pid_t waitPidResult = waitpid(-1, &wstatus, 0);
             SystemErrors::throwCurrentSystemErrorIf(waitPidResult == -1);
-            SystemErrors::throwCurrentSystemErrorIf(!WIFEXITED(wstatus));
+            SystemErrors::throwCurrentSystemErrorIf(!WIFEXITED(
+                wstatus)); // TODO no, check return status and throz std::runtime_error instead
 
             return result;
         }
@@ -61,8 +62,6 @@ namespace MF
             return runCommandAndGetOutput(command);
         }
 
-
-
         static std::chrono::hours parseZdumpOutput(const std::string& timezoneName) {
             const std::string output = runZdump(timezoneName);
             std::istringstream iss(output);
@@ -70,6 +69,7 @@ namespace MF
             std::string buffer;
 
             // Skip the first three lines
+            // TODO replace C asserts with C++ exceptions and smarter string manipulations.
             assert(std::getline(iss, buffer).good());
             assert(std::getline(iss, buffer).good());
             assert(std::getline(iss, buffer).good());
