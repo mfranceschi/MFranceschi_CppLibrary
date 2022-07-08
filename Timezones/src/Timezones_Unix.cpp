@@ -4,15 +4,18 @@
 
 #if MF_UNIX
 
+#    include <sys/wait.h>
+
 #    include <array>
 #    include <cassert>
 #    include <cstdio>
+#    include <fstream>
 #    include <memory>
 #    include <regex>
 #    include <sstream>
-#    include <vector>
 
 #    include "MF/CTime.hpp"
+#    include "MF/SystemErrors.hpp"
 #    include "MF/Timezones.hpp"
 
 namespace MF
@@ -29,14 +32,23 @@ namespace MF
             static constexpr std::size_t BUFFER_SIZE = 128;
             std::array<char, BUFFER_SIZE> buffer{};
 
+            FILE* thePipeStream = popen(command.c_str(), "r");
+            SystemErrors::throwCurrentSystemErrorIf(thePipeStream == nullptr);
+
+            std::unique_ptr<FILE, decltype(&pclose)> pipe(thePipeStream, pclose);
+
             std::string result;
-            std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
-            if (!pipe) {
-                throw std::runtime_error("popen() failed!");
-            }
             while (fgets(buffer.data(), BUFFER_SIZE, pipe.get()) != nullptr) {
                 result += buffer.data();
             }
+
+            // The following instructions are extra precautions in case the child process hasn't
+            // finished yet.
+            int wstatus = 0;
+            pid_t waitPidResult = waitpid(-1, &wstatus, 0);
+            SystemErrors::throwCurrentSystemErrorIf(waitPidResult == -1);
+            SystemErrors::throwCurrentSystemErrorIf(!WIFEXITED(wstatus));
+
             return result;
         }
 
@@ -49,7 +61,9 @@ namespace MF
             return runCommandAndGetOutput(command);
         }
 
-        static std::vector<std::string> runZdumpAndGetStrings(const std::string& timezoneName) {
+
+
+        static std::chrono::hours parseZdumpOutput(const std::string& timezoneName) {
             const std::string output = runZdump(timezoneName);
             std::istringstream iss(output);
 
@@ -65,11 +79,11 @@ namespace MF
 
             assert(std::getline(iss, buffer).good());
             const std::string string2 = buffer;
-            return {string1, string2};
-        }
 
-        static std::chrono::hours parseZdumpOutput(const std::string& timezoneName) {
-            const std::vector<std::string> stringsOfInterest = runZdumpAndGetStrings(timezoneName);
+            struct ZdumpIntervalsOfInterest {
+                std::string interval1, interval2;
+            };
+            const ZdumpIntervalsOfInterest intervalsOfInterest = {string1, string2};
 
             static const std::regex regex("^[0-9]+-[0-9]+-[0-9]+\t[0-9]+\t([+-]?)([0-9]+)\t.*$");
             static constexpr int SUBMATCH_FOR_SIGN = 1;
@@ -78,8 +92,8 @@ namespace MF
             std::smatch smatch1;
             std::smatch smatch2;
 
-            if (std::regex_match(stringsOfInterest.at(0), smatch1, regex) &&
-                std::regex_match(stringsOfInterest.at(1), smatch2, regex)) {
+            if (std::regex_match(intervalsOfInterest.interval1, smatch1, regex) &&
+                std::regex_match(intervalsOfInterest.interval2, smatch2, regex)) {
                 auto sign1 = smatch1.str(SUBMATCH_FOR_SIGN);
                 auto offset1 = smatch1.str(SUBMATCH_FOR_VALUE);
 
@@ -102,8 +116,11 @@ namespace MF
         }
 
         std::chrono::seconds getDstOffset() {
-            std::string timezoneName = runCommandAndGetOutput("cat /etc/timezone");
-            timezoneName.erase(timezoneName.size() - 1);
+            std::ifstream ifstream("/etc/timezone");
+            MF::SystemErrors::throwCurrentSystemErrorIf(!ifstream.good());
+
+            std::string timezoneName;
+            std::getline(ifstream, timezoneName);
             const auto resultInHours = parseZdumpOutput(timezoneName);
             return std::chrono::duration_cast<std::chrono::seconds>(resultInHours);
         }

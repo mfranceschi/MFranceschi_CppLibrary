@@ -22,6 +22,13 @@ namespace MF
 
         std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
 
+        /** Shorthand utility. */
+        inline void throwCurrentSystemErrorIf(bool condition) {
+            if (condition) {
+                throw getCurrentSystemError();
+            }
+        }
+
         /**
          * Sets the value of the internal flag 'systemErrorMessagesLocalized'.
          * If 'true' then error description strings are localized.

@@ -15,7 +15,7 @@ target_sources(MF_Timezones
         PUBLIC
             ${Public_Sources}
         )
-target_link_libraries(MF_Timezones PUBLIC MF_Commons MF_Windows MF_Environment MF_CTime)
+target_link_libraries(MF_Timezones PUBLIC MF_Commons MF_Windows MF_Environment MF_CTime MF_SystemErrors)
 target_include_directories(MF_Timezones PUBLIC include)
 
 if(MF_IN_DEV)

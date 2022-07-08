@@ -5,8 +5,8 @@
 #if MF_WINDOWS
 
 #    include "MF/LightWindows.hpp"
+#    include "MF/SystemErrors.hpp"
 #    include "MF/Timezones.hpp"
-#    include "MF/Windows.hpp"
 
 namespace MF
 {
@@ -15,9 +15,7 @@ namespace MF
         class TimeZoneInformation {
            public:
             TimeZoneInformation() : returnValue(GetTimeZoneInformation(&timeZoneInformation)) {
-                if (returnValue == TIME_ZONE_ID_INVALID) {
-                    throw Windows::GetCurrentSystemError();
-                }
+                MF::SystemErrors::throwCurrentSystemErrorIf(returnValue == TIME_ZONE_ID_INVALID);
             }
 
             /**
