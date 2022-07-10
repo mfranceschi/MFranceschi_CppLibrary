@@ -4,6 +4,8 @@
 
 #if MF_WINDOWS
 
+#    include <array>
+
 #    include "MF/LightWindows.hpp"
 #    include "MF/SystemErrors.hpp"
 #    include "MF/Timezones.hpp"
@@ -14,13 +16,16 @@ namespace MF
     {
         class TimeZoneInformation {
            public:
-            TimeZoneInformation() : returnValue(GetTimeZoneInformation(&timeZoneInformation)) {
+            TimeZoneInformation()
+                : returnValue(GetDynamicTimeZoneInformation(&timeZoneInformation)) {
                 MF::SystemErrors::throwCurrentSystemErrorIf(returnValue == TIME_ZONE_ID_INVALID);
             }
 
             /**
              * UTC = local time + bias
+             *
              * NOTE: this seems to not work well at all.
+             * Example: being in the London timezone with DST on --> UTC+0 and not UTC+1.
              */
             std::chrono::minutes bias() const {
                 return std::chrono::minutes(timeZoneInformation.Bias);
@@ -37,9 +42,24 @@ namespace MF
                 return std::chrono::minutes(timeZoneInformation.DaylightBias);
             }
 
+            std::string timeZoneKeyName() const {
+                const wchar_t* src = timeZoneInformation.TimeZoneKeyName;
+
+                static constexpr auto DEST_SIZE =
+                    std::extent_v<decltype(timeZoneInformation.TimeZoneKeyName)>;
+                std::array<char, DEST_SIZE> dest{};
+                size_t charsConverted = 0;
+
+                errno_t returnFromConversionFunction =
+                    wcstombs_s(&charsConverted, dest.data(), DEST_SIZE, src, std::wcslen(src));
+                SystemErrors::throwCurrentSystemErrorIf(returnFromConversionFunction != 0);
+
+                return dest.data();
+            }
+
            private:
-            TIME_ZONE_INFORMATION timeZoneInformation{};
-            DWORD returnValue;
+            DYNAMIC_TIME_ZONE_INFORMATION timeZoneInformation{};
+            const DWORD returnValue;
         };
 
         std::chrono::seconds getTimezoneOffset() {
@@ -68,6 +88,11 @@ namespace MF
             const auto dstBiasInMinutes = timeZoneInformation.dstBias() * -1;
 
             return std::chrono::duration_cast<std::chrono::seconds>(dstBiasInMinutes);
+        }
+
+        std::string getTimezoneName() {
+            const TimeZoneInformation timeZoneInformation;
+            return timeZoneInformation.timeZoneKeyName();
         }
     } // namespace Timezones
 } // namespace MF

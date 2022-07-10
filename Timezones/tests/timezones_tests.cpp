@@ -20,3 +20,9 @@ TEST(DstOffset, it_returns_a_value) {
     std::function<decltype(getDstOffset)>::result_type dstOffset;
     EXPECT_NO_THROW(dstOffset = getDstOffset());
 }
+
+TEST(TimeZoneName, it_returns_a_value) {
+    std::string tzName;
+    EXPECT_NO_THROW(tzName = getTimezoneName());
+    EXPECT_GT(tzName.length(), size_t(1));
+}

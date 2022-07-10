@@ -42,13 +42,22 @@ namespace MF
                 result += buffer.data();
             }
 
-            // The following instructions are extra precautions in case the child process hasn't
-            // finished yet.
+            // Ensure the child process terminated by exiting with success status.
             int wstatus = 0;
             pid_t waitPidResult = waitpid(-1, &wstatus, 0);
             SystemErrors::throwCurrentSystemErrorIf(waitPidResult == -1);
-            SystemErrors::throwCurrentSystemErrorIf(!WIFEXITED(
-                wstatus)); // TODO no, check return status and throz std::runtime_error instead
+
+            bool wIfExited = WIFEXITED(wstatus);
+            int wExitStatus = WEXITSTATUS(wstatus);
+            if (!(wIfExited && (wExitStatus == EXIT_SUCCESS))) {
+                std::ostringstream oss;
+                oss << "Error from zdump. The 'wstatus' value is " << std::hex << wstatus << ". ";
+                oss << "wIfExited returns " << std::boolalpha << wIfExited << ". ";
+                if (wIfExited) {
+                    oss << "The exit status is " << std::dec << wExitStatus << ". ";
+                }
+                throw std::runtime_error(oss.str());
+            }
 
             return result;
         }
@@ -116,13 +125,22 @@ namespace MF
         }
 
         std::chrono::seconds getDstOffset() {
-            std::ifstream ifstream("/etc/timezone");
+            const auto resultInHours = parseZdumpOutput(getTimezoneName());
+            return std::chrono::duration_cast<std::chrono::seconds>(resultInHours);
+        }
+
+        std::string getTimezoneName() {
+            static const std::string fileName = "/etc/timezone";
+            std::ifstream ifstream(fileName);
             MF::SystemErrors::throwCurrentSystemErrorIf(!ifstream.good());
 
             std::string timezoneName;
             std::getline(ifstream, timezoneName);
-            const auto resultInHours = parseZdumpOutput(timezoneName);
-            return std::chrono::duration_cast<std::chrono::seconds>(resultInHours);
+
+            if (ifstream.good()) {
+                return timezoneName;
+            }
+            throw std::runtime_error("Error reading " + fileName);
         }
     } // namespace Timezones
 } // namespace MF

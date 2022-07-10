@@ -28,6 +28,14 @@ namespace MF
         std::chrono::seconds getDstOffset();
 
         /**
+         * Returns the name of the current timezone.
+         * It should be a timezone name independent from the DST data.
+         *
+         * Example: "Europe/Paris".
+         */
+        std::string getTimezoneName();
+
+        /**
          * Sets the new value for the TZ environment variable.
          * Format is system dependent.
          * If "runTzSet" is true then calls "tzset".
