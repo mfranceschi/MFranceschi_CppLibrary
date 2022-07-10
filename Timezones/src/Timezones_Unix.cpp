@@ -23,9 +23,11 @@ namespace MF
     namespace Timezones
     {
         static int getCurrentYear() {
+            static constexpr int YEAR_OFFSET_IN_STRUCT_TM = 1900;
+
             std::tm structTm{};
             MF::CTime::Localtime(structTm);
-            return structTm.tm_year + 1900;
+            return structTm.tm_year + YEAR_OFFSET_IN_STRUCT_TM;
         }
 
         static std::string runCommandAndGetOutput(const std::string& command) {
@@ -71,43 +73,83 @@ namespace MF
             return runCommandAndGetOutput(command);
         }
 
+        class ISWrapper {
+           public:
+            void skipLine() {
+                getLineAndThrowIfNotGood();
+            }
+
+            const std::string& getLine() {
+                getLineAndThrowIfNotGood();
+                return buffer;
+            }
+
+           protected:
+            ISWrapper() = default;
+
+            void setStream(std::istream* pointer) {
+                istream1 = pointer;
+            }
+
+           private:
+            std::string buffer;
+            std::istream* istream1 = nullptr;
+
+            void getLineAndThrowIfNotGood() {
+                std::getline(*istream1, buffer);
+                if (!istream1->good()) {
+                    throw std::runtime_error("Unexpected stream error.");
+                }
+            }
+        };
+
+        class ISSWrapper : public ISWrapper {
+           public:
+            ISSWrapper(const std::string& input) : istream1(input) {
+                this->setStream(&istream1);
+            }
+
+           private:
+            std::istringstream istream1;
+        };
+
+        class IFSWrapper : public ISWrapper {
+           public:
+            IFSWrapper(const std::string& file) : fileStream(file) {
+                MF::SystemErrors::throwCurrentSystemErrorIf(!fileStream.good());
+                this->setStream(&fileStream);
+            }
+
+           private:
+            std::ifstream fileStream;
+        };
+
         static std::chrono::hours parseZdumpOutput(const std::string& timezoneName) {
             const std::string output = runZdump(timezoneName);
-            std::istringstream iss(output);
-
-            std::string buffer;
+            ISSWrapper issWrapper(output);
 
             // Skip the first three lines
-            // TODO replace C asserts with C++ exceptions and smarter string manipulations.
-            assert(std::getline(iss, buffer).good());
-            assert(std::getline(iss, buffer).good());
-            assert(std::getline(iss, buffer).good());
+            issWrapper.skipLine();
+            issWrapper.skipLine();
+            issWrapper.skipLine();
 
-            assert(std::getline(iss, buffer).good());
-            const std::string string1 = buffer;
-
-            assert(std::getline(iss, buffer).good());
-            const std::string string2 = buffer;
-
-            struct ZdumpIntervalsOfInterest {
-                std::string interval1, interval2;
-            };
-            const ZdumpIntervalsOfInterest intervalsOfInterest = {string1, string2};
+            const std::string& intervalLine1 = issWrapper.getLine();
+            const std::string& intervalLine2 = issWrapper.getLine();
 
             static const std::regex regex("^[0-9]+-[0-9]+-[0-9]+\t[0-9]+\t([+-]?)([0-9]+)\t.*$");
             static constexpr int SUBMATCH_FOR_SIGN = 1;
             static constexpr int SUBMATCH_FOR_VALUE = 2;
 
-            std::smatch smatch1;
-            std::smatch smatch2;
+            std::smatch stringMatch1;
+            std::smatch stringMatch2;
 
-            if (std::regex_match(intervalsOfInterest.interval1, smatch1, regex) &&
-                std::regex_match(intervalsOfInterest.interval2, smatch2, regex)) {
-                auto sign1 = smatch1.str(SUBMATCH_FOR_SIGN);
-                auto offset1 = smatch1.str(SUBMATCH_FOR_VALUE);
+            if (std::regex_match(intervalLine1, stringMatch1, regex) &&
+                std::regex_match(intervalLine2, stringMatch2, regex)) {
+                auto sign1 = stringMatch1.str(SUBMATCH_FOR_SIGN);
+                auto offset1 = stringMatch1.str(SUBMATCH_FOR_VALUE);
 
-                auto sign2 = smatch2.str(SUBMATCH_FOR_SIGN);
-                auto offset2 = smatch2.str(SUBMATCH_FOR_VALUE);
+                auto sign2 = stringMatch2.str(SUBMATCH_FOR_SIGN);
+                auto offset2 = stringMatch2.str(SUBMATCH_FOR_VALUE);
 
                 auto numericOffset1 = (sign1 == "+" ? 1 : -1) * std::stoi(offset1);
                 auto numericOffset2 = (sign2 == "+" ? 1 : -1) * std::stoi(offset2);
@@ -131,16 +173,10 @@ namespace MF
 
         std::string getTimezoneName() {
             static const std::string fileName = "/etc/timezone";
-            std::ifstream ifstream(fileName);
-            MF::SystemErrors::throwCurrentSystemErrorIf(!ifstream.good());
+            IFSWrapper fileStream(fileName);
 
-            std::string timezoneName;
-            std::getline(ifstream, timezoneName);
-
-            if (ifstream.good()) {
-                return timezoneName;
-            }
-            throw std::runtime_error("Error reading " + fileName);
+            const std::string& timezoneName = fileStream.getLine();
+            return timezoneName;
         }
     } // namespace Timezones
 } // namespace MF
