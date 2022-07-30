@@ -19,5 +19,5 @@ target_link_libraries(MF_SystemErrors PUBLIC MF_Commons MF_Windows)
 target_include_directories(MF_SystemErrors PUBLIC include)
 
 if(MF_IN_DEV)
-    # add_subdirectory(tests)
+    add_subdirectory(tests)
 endif()
