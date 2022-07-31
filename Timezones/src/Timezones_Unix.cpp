@@ -35,7 +35,7 @@ namespace MF
             std::array<char, BUFFER_SIZE> buffer{};
 
             FILE* thePipeStream = popen(command.c_str(), "r");
-            SystemErrors::throwCurrentSystemErrorIf(thePipeStream == nullptr);
+            SystemErrors::Errno::throwCurrentSystemErrorIf(thePipeStream == nullptr);
 
             std::unique_ptr<FILE, decltype(&pclose)> pipe(thePipeStream, pclose);
 
@@ -47,7 +47,7 @@ namespace MF
             // Ensure the child process terminated by exiting with success status.
             int wstatus = 0;
             pid_t waitPidResult = waitpid(-1, &wstatus, 0);
-            SystemErrors::throwCurrentSystemErrorIf(waitPidResult == -1);
+            SystemErrors::Errno::throwCurrentSystemErrorIf(waitPidResult == -1);
 
             bool wIfExited = WIFEXITED(wstatus);
             int wExitStatus = WEXITSTATUS(wstatus);
@@ -116,7 +116,7 @@ namespace MF
         class IFSWrapper : public ISWrapper {
            public:
             IFSWrapper(const std::string& file) : fileStream(file) {
-                MF::SystemErrors::throwCurrentSystemErrorIf(!fileStream.good());
+                MF::SystemErrors::Errno::throwCurrentSystemErrorIf(!fileStream.good());
                 this->setStream(&fileStream);
             }
 

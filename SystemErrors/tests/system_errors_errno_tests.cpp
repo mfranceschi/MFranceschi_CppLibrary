@@ -2,6 +2,8 @@
 // Created by MartinF on 30/07/2022.
 //
 
+#include <cstring>
+
 #include "MF/SystemErrors.hpp"
 #include "tests_data.hpp"
 
@@ -15,8 +17,8 @@ static ErrorCode_t doSomethingThatSetsLastError() {
     // https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/atoll-atoll-l-wtoll-wtoll-l?view=msvc-170#example
     const std::string str = "3336402735171707160320";
 
-    const auto result = atoi(str.c_str());
-    EXPECT_EQ(result, INT_MAX);
+    const auto result = strtol(str.c_str(), nullptr, 10);
+    EXPECT_EQ(result, LONG_MAX);
 
     return ERANGE;
 }
