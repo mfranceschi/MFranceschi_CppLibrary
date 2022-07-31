@@ -13,6 +13,7 @@ namespace MF
 {
     namespace SystemErrors
     {
+        /*
         static constexpr auto getLangId(bool localized) {
             return MAKELANGID(LANG_NEUTRAL, localized ? SUBLANG_DEFAULT : SUBLANG_NEUTRAL);
         }
@@ -48,6 +49,7 @@ namespace MF
             std::error_code errorCodeObject(errorCode, std::generic_category());
             return std::system_error(errorCodeObject, errorMessage);
         }
+         */
     } // namespace SystemErrors
 } // namespace MF
 #endif

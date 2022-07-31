@@ -8,9 +8,11 @@ namespace MF
 {
     namespace SystemErrors
     {
+        /*
         std::system_error getCurrentSystemError() {
             ErrorCode_t errorCode = getCurrentErrorCode();
             return getSystemErrorForErrorCode(errorCode);
         }
+         */
     } // namespace SystemErrors
 } // namespace MF

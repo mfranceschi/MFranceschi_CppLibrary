@@ -11,6 +11,8 @@ target_sources(
         MF_SystemErrors_Tests
         PRIVATE
         system_errors_tests.cpp
+        system_errors_win32_tests.cpp
+        system_errors_errno_tests.cpp
 )
 
 gtest_discover_tests(MF_SystemErrors_Tests)

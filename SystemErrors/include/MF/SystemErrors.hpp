@@ -11,6 +11,7 @@ namespace MF
 {
     namespace SystemErrors
     {
+        /*
 #if MF_WINDOWS
         using ErrorCode_t = std::uint32_t;
 #else
@@ -22,12 +23,56 @@ namespace MF
 
         std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
 
-        /** Shorthand utility. */
         inline void throwCurrentSystemErrorIf(bool condition) {
             if (condition) {
                 throw getCurrentSystemError();
             }
         }
+        */
+
+        namespace Errno
+        {
+            using ErrorCode_t = int;
+
+            ErrorCode_t getCurrentErrorCode();
+            void setCurrentErrorCode(ErrorCode_t value);
+
+            std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
+
+            inline std::system_error getCurrentSystemError() {
+                ErrorCode_t errorCode = getCurrentErrorCode();
+                return getSystemErrorForErrorCode(errorCode);
+            }
+
+            inline void throwCurrentSystemErrorIf(bool condition) {
+                if (condition) {
+                    throw getCurrentSystemError();
+                }
+            }
+        } // namespace Errno
+
+#if MF_WINDOWS
+        namespace Win32
+        {
+            using ErrorCode_t = std::uint32_t; // equivalent to DWORD
+
+            ErrorCode_t getCurrentErrorCode();
+            void setCurrentErrorCode(ErrorCode_t value);
+
+            std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
+
+            inline std::system_error getCurrentSystemError() {
+                ErrorCode_t errorCode = getCurrentErrorCode();
+                return getSystemErrorForErrorCode(errorCode);
+            }
+
+            inline void throwCurrentSystemErrorIf(bool condition) {
+                if (condition) {
+                    throw getCurrentSystemError();
+                }
+            }
+        } // namespace Win32
+#endif
 
         /**
          * Sets the value of the internal flag 'systemErrorMessagesLocalized'.

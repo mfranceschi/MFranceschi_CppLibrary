@@ -7,6 +7,7 @@
 
 using namespace MF::SystemErrors;
 
+/*
 ErrorCode_t doSomethingThatSetsLastError() {
 #if MF_WINDOWS
     const char* str = "3336402735171707160320";
@@ -38,3 +39,4 @@ TEST(GetCurrentErrorCode, it_returns_no_error) {
     doSomethingThatDoesNotSetsLastError();
     EXPECT_EQ(getCurrentErrorCode(), 0);
 }
+*/
