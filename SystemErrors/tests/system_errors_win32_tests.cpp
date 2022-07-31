@@ -11,53 +11,50 @@
 #    include "MF/SystemErrors.hpp"
 #    include "tests_data.hpp"
 
-namespace Win32_Tests
-{
-    using namespace MF::SystemErrors::Win32;
+using namespace MF::SystemErrors::Win32;
 
-    static ErrorCode_t doSomethingThatSetsLastError() {
-        const auto result = GetProcessId(nullptr);
-        EXPECT_EQ(result, DWORD(0));
+static ErrorCode_t doSomethingThatSetsLastError() {
+    const auto result = GetProcessId(nullptr);
+    EXPECT_EQ(result, DWORD(0));
 
-        return ERROR_INVALID_HANDLE;
+    return ERROR_INVALID_HANDLE;
+}
+
+static void doSomethingThatDoesNotSetsLastError() {
+    const std::string str = std::to_string(42);
+    int convertedValue = atoi(str.c_str());
+}
+
+TEST(Win32_ThrowCurrentSystemErrorIf, it_throws_if_true) {
+    const auto expectedError = doSomethingThatSetsLastError();
+
+    try {
+        throwCurrentSystemErrorIf(true);
+        FAIL() << "Expected an exception to be thrown.";
+    } catch (const std::system_error& systemError) {
+        EXPECT_EQ(systemError.code().value(), expectedError);
+        EXPECT_GT(std::strlen(systemError.what()), 1);
     }
+}
 
-    static void doSomethingThatDoesNotSetsLastError() {
-        const std::string str = std::to_string(42);
-        int convertedValue = atoi(str.c_str());
-    }
+TEST(Win32_ThrowCurrentSystemErrorIf, it_does_not_throw_if_false) {
+    const auto expectedError = doSomethingThatSetsLastError();
 
-    TEST(ThrowCurrentSystemErrorIf, it_throws_if_true) {
-        const auto expectedError = doSomethingThatSetsLastError();
+    EXPECT_NO_THROW(throwCurrentSystemErrorIf(false));
+}
 
-        try {
-            throwCurrentSystemErrorIf(true);
-            FAIL() << "Expected an exception to be thrown.";
-        } catch (const std::system_error& systemError) {
-            EXPECT_EQ(systemError.code().value(), expectedError);
-            EXPECT_GT(std::strlen(systemError.what()), 1);
-        }
-    }
+TEST(Win32_GetCurrentErrorCode, it_returns_the_current_error_code) {
+    const auto expectedError = doSomethingThatSetsLastError();
 
-    TEST(ThrowCurrentSystemErrorIf, it_does_not_throw_if_false) {
-        const auto expectedError = doSomethingThatSetsLastError();
+    const auto currentError = getCurrentErrorCode();
+    EXPECT_EQ(currentError, expectedError);
+}
 
-        EXPECT_NO_THROW(throwCurrentSystemErrorIf(false));
-    }
+TEST(Win32_GetCurrentErrorCode, it_returns_no_error) {
+    constexpr int myValue = 4242;
+    setCurrentErrorCode(myValue);
+    doSomethingThatDoesNotSetsLastError();
 
-    TEST(GetCurrentErrorCode, it_returns_the_current_error_code) {
-        const auto expectedError = doSomethingThatSetsLastError();
-
-        const auto currentError = getCurrentErrorCode();
-        EXPECT_EQ(currentError, expectedError);
-    }
-
-    TEST(GetCurrentErrorCode, it_returns_no_error) {
-        constexpr int myValue = 4242;
-        setCurrentErrorCode(myValue);
-        doSomethingThatDoesNotSetsLastError();
-
-        EXPECT_EQ(getCurrentErrorCode(), myValue);
-    }
-} // namespace Win32_Tests
+    EXPECT_EQ(getCurrentErrorCode(), myValue);
+}
 #endif

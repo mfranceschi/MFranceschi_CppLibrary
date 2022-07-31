@@ -7,58 +7,54 @@
 
 using namespace MF::SystemErrors::Errno;
 
-namespace Errno_Tests
-{
-    static_assert(
-        sizeof(int) <= 4,
-        "Tests must be adapted because 'int' has a bigger size than anticipated.");
+static_assert(
+    sizeof(int) <= 4, "Tests must be adapted because 'int' has a bigger size than anticipated.");
 
-    static ErrorCode_t doSomethingThatSetsLastError() {
-        // This overflowing number is taken from
-        // https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/atoll-atoll-l-wtoll-wtoll-l?view=msvc-170#example
-        const std::string str = "3336402735171707160320";
+static ErrorCode_t doSomethingThatSetsLastError() {
+    // This overflowing number is taken from
+    // https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/atoll-atoll-l-wtoll-wtoll-l?view=msvc-170#example
+    const std::string str = "3336402735171707160320";
 
-        const auto result = atoi(str.c_str());
-        EXPECT_EQ(result, INT_MAX);
+    const auto result = atoi(str.c_str());
+    EXPECT_EQ(result, INT_MAX);
 
-        return ERANGE;
+    return ERANGE;
+}
+
+static void doSomethingThatDoesNotSetsLastError() {
+    const std::string str = std::to_string(42);
+    int convertedValue = atoi(str.c_str());
+}
+
+TEST(Errno_ThrowCurrentSystemErrorIf, it_throws_if_true) {
+    const auto expectedError = doSomethingThatSetsLastError();
+
+    try {
+        throwCurrentSystemErrorIf(true);
+        FAIL() << "Expected an exception to be thrown.";
+    } catch (const std::system_error& systemError) {
+        EXPECT_EQ(systemError.code().value(), expectedError);
+        EXPECT_GT(std::strlen(systemError.what()), 1);
     }
+}
 
-    static void doSomethingThatDoesNotSetsLastError() {
-        const std::string str = std::to_string(42);
-        int convertedValue = atoi(str.c_str());
-    }
+TEST(Errno_ThrowCurrentSystemErrorIf, it_does_not_throw_if_false) {
+    const auto expectedError = doSomethingThatSetsLastError();
 
-    TEST(ThrowCurrentSystemErrorIf, it_throws_if_true) {
-        const auto expectedError = doSomethingThatSetsLastError();
+    EXPECT_NO_THROW(throwCurrentSystemErrorIf(false));
+}
 
-        try {
-            throwCurrentSystemErrorIf(true);
-            FAIL() << "Expected an exception to be thrown.";
-        } catch (const std::system_error& systemError) {
-            EXPECT_EQ(systemError.code().value(), expectedError);
-            EXPECT_GT(std::strlen(systemError.what()), 1);
-        }
-    }
+TEST(Errno_GetCurrentErrorCode, it_returns_the_current_error_code) {
+    const auto expectedError = doSomethingThatSetsLastError();
 
-    TEST(ThrowCurrentSystemErrorIf, it_does_not_throw_if_false) {
-        const auto expectedError = doSomethingThatSetsLastError();
+    const auto currentError = getCurrentErrorCode();
+    EXPECT_EQ(currentError, expectedError);
+}
 
-        EXPECT_NO_THROW(throwCurrentSystemErrorIf(false));
-    }
+TEST(Errno_GetCurrentErrorCode, it_returns_no_error) {
+    constexpr int myValue = 4242;
+    setCurrentErrorCode(myValue);
+    doSomethingThatDoesNotSetsLastError();
 
-    TEST(GetCurrentErrorCode, it_returns_the_current_error_code) {
-        const auto expectedError = doSomethingThatSetsLastError();
-
-        const auto currentError = getCurrentErrorCode();
-        EXPECT_EQ(currentError, expectedError);
-    }
-
-    TEST(GetCurrentErrorCode, it_returns_no_error) {
-        constexpr int myValue = 4242;
-        setCurrentErrorCode(myValue);
-        doSomethingThatDoesNotSetsLastError();
-
-        EXPECT_EQ(getCurrentErrorCode(), myValue);
-    }
-} // namespace Errno_Tests
+    EXPECT_EQ(getCurrentErrorCode(), myValue);
+}

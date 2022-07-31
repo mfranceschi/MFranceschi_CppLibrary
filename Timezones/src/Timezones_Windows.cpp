@@ -18,7 +18,8 @@ namespace MF
            public:
             TimeZoneInformation()
                 : returnValue(GetDynamicTimeZoneInformation(&timeZoneInformation)) {
-                MF::SystemErrors::throwCurrentSystemErrorIf(returnValue == TIME_ZONE_ID_INVALID);
+                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
+                    returnValue == TIME_ZONE_ID_INVALID);
             }
 
             /**
@@ -52,7 +53,7 @@ namespace MF
 
                 errno_t returnFromConversionFunction =
                     wcstombs_s(&charsConverted, dest.data(), DEST_SIZE, src, std::wcslen(src));
-                SystemErrors::throwCurrentSystemErrorIf(returnFromConversionFunction != 0);
+                SystemErrors::Errno::throwCurrentSystemErrorIf(returnFromConversionFunction != 0);
 
                 return dest.data();
             }
