@@ -17,7 +17,11 @@ target_sources(MF_SystemErrors
         )
 target_link_libraries(MF_SystemErrors PUBLIC MF_Commons MF_Windows)
 target_include_directories(MF_SystemErrors PUBLIC include)
+target_compile_definitions(MF_SystemErrors
+        PUBLIC
+        MF_SystemErrors_WSA=$<OR:$<BOOL:${MF_SystemErrors_WSA}>,$<BOOL:${MF_IN_DEV}>>
+        )
 
-if(MF_IN_DEV)
+if (MF_IN_DEV)
     add_subdirectory(tests)
-endif()
+endif ()

@@ -11,25 +11,6 @@ namespace MF
 {
     namespace SystemErrors
     {
-        /*
-#if MF_WINDOWS
-        using ErrorCode_t = std::uint32_t;
-#else
-        using ErrorCode_t = int;
-#endif
-        ErrorCode_t getCurrentErrorCode();
-
-        std::system_error getCurrentSystemError();
-
-        std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
-
-        inline void throwCurrentSystemErrorIf(bool condition) {
-            if (condition) {
-                throw getCurrentSystemError();
-            }
-        }
-        */
-
         namespace Errno
         {
             using ErrorCode_t = int;
@@ -54,7 +35,7 @@ namespace MF
 #if MF_WINDOWS
         namespace Win32
         {
-            using ErrorCode_t = std::uint32_t; // equivalent to DWORD
+            using ErrorCode_t = unsigned long; // equivalent to DWORD
 
             ErrorCode_t getCurrentErrorCode();
             void setCurrentErrorCode(ErrorCode_t value);
@@ -72,6 +53,27 @@ namespace MF
                 }
             }
         } // namespace Win32
+
+        namespace Wsa
+        {
+            using ErrorCode_t = int;
+
+            ErrorCode_t getCurrentErrorCode();
+            void setCurrentErrorCode(ErrorCode_t value);
+
+            std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
+
+            inline std::system_error getCurrentSystemError() {
+                ErrorCode_t errorCode = getCurrentErrorCode();
+                return getSystemErrorForErrorCode(errorCode);
+            }
+
+            inline void throwCurrentSystemErrorIf(bool condition) {
+                if (condition) {
+                    throw getCurrentSystemError();
+                }
+            }
+        } // namespace Wsa
 #endif
 
         /**

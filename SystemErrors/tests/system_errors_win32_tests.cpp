@@ -34,6 +34,8 @@ TEST(Win32_ThrowCurrentSystemErrorIf, it_throws_if_true) {
     } catch (const std::system_error& systemError) {
         EXPECT_EQ(systemError.code().value(), expectedError);
         EXPECT_GT(std::strlen(systemError.what()), 1);
+    } catch (...) {
+        FAIL() << "Unexpected or unknown error.";
     }
 }
 
@@ -55,6 +57,7 @@ TEST(Win32_GetCurrentErrorCode, it_returns_no_error) {
     setCurrentErrorCode(myValue);
     doSomethingThatDoesNotSetsLastError();
 
-    EXPECT_EQ(getCurrentErrorCode(), myValue);
+    const auto currentError = getCurrentErrorCode();
+    EXPECT_EQ(currentError, myValue);
 }
 #endif
