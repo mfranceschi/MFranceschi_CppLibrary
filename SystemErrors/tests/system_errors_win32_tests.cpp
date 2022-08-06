@@ -2,16 +2,13 @@
 // Created by MartinF on 31/07/2022.
 //
 
-//
-// Created by MartinF on 30/07/2022.
-//
-
 #if MF_WINDOWS
 #    include "MF/LightWindows.hpp"
 #    include "MF/SystemErrors.hpp"
 #    include "tests_data.hpp"
 
-using namespace MF::SystemErrors::Win32;
+using MF::SystemErrors::Win32;
+using ErrorCode_t = Win32::ErrorCode_t;
 
 static ErrorCode_t doSomethingThatSetsLastError() {
     const auto result = GetProcessId(nullptr);
@@ -29,7 +26,7 @@ TEST(Win32_ThrowCurrentSystemErrorIf, it_throws_if_true) {
     const auto expectedError = doSomethingThatSetsLastError();
 
     try {
-        throwCurrentSystemErrorIf(true);
+        Win32::throwCurrentSystemErrorIf(true);
         FAIL() << "Expected an exception to be thrown.";
     } catch (const std::system_error& systemError) {
         EXPECT_EQ(systemError.code().value(), expectedError);
@@ -42,22 +39,22 @@ TEST(Win32_ThrowCurrentSystemErrorIf, it_throws_if_true) {
 TEST(Win32_ThrowCurrentSystemErrorIf, it_does_not_throw_if_false) {
     const auto expectedError = doSomethingThatSetsLastError();
 
-    EXPECT_NO_THROW(throwCurrentSystemErrorIf(false));
+    EXPECT_NO_THROW(Win32::throwCurrentSystemErrorIf(false));
 }
 
 TEST(Win32_GetCurrentErrorCode, it_returns_the_current_error_code) {
     const auto expectedError = doSomethingThatSetsLastError();
 
-    const auto currentError = getCurrentErrorCode();
+    const auto currentError = Win32::getCurrentErrorCode();
     EXPECT_EQ(currentError, expectedError);
 }
 
 TEST(Win32_GetCurrentErrorCode, it_returns_no_error) {
     constexpr int myValue = 4242;
-    setCurrentErrorCode(myValue);
+    Win32::setCurrentErrorCode(myValue);
     doSomethingThatDoesNotSetsLastError();
 
-    const auto currentError = getCurrentErrorCode();
+    const auto currentError = Win32::getCurrentErrorCode();
     EXPECT_EQ(currentError, myValue);
 }
 #endif

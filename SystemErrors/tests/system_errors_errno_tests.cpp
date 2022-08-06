@@ -7,7 +7,8 @@
 #include "MF/SystemErrors.hpp"
 #include "tests_data.hpp"
 
-using namespace MF::SystemErrors::Errno;
+using MF::SystemErrors::Errno;
+using ErrorCode_t = Errno::ErrorCode_t;
 
 static_assert(
     sizeof(int) <= 4, "Tests must be adapted because 'int' has a bigger size than anticipated.");
@@ -32,7 +33,7 @@ TEST(Errno_ThrowCurrentSystemErrorIf, it_throws_if_true) {
     const auto expectedError = doSomethingThatSetsLastError();
 
     try {
-        throwCurrentSystemErrorIf(true);
+        Errno::throwCurrentSystemErrorIf(true);
         FAIL() << "Expected an exception to be thrown.";
     } catch (const std::system_error& systemError) {
         EXPECT_EQ(systemError.code().value(), expectedError);
@@ -45,21 +46,21 @@ TEST(Errno_ThrowCurrentSystemErrorIf, it_throws_if_true) {
 TEST(Errno_ThrowCurrentSystemErrorIf, it_does_not_throw_if_false) {
     const auto expectedError = doSomethingThatSetsLastError();
 
-    EXPECT_NO_THROW(throwCurrentSystemErrorIf(false));
+    EXPECT_NO_THROW(Errno::throwCurrentSystemErrorIf(false));
 }
 
 TEST(Errno_GetCurrentErrorCode, it_returns_the_current_error_code) {
     const auto expectedError = doSomethingThatSetsLastError();
 
-    const auto currentError = getCurrentErrorCode();
+    const auto currentError = Errno::getCurrentErrorCode();
     EXPECT_EQ(currentError, expectedError);
 }
 
 TEST(Errno_GetCurrentErrorCode, it_returns_no_error) {
     constexpr int myValue = 4242;
-    setCurrentErrorCode(myValue);
+    Errno::setCurrentErrorCode(myValue);
     doSomethingThatDoesNotSetsLastError();
 
-    const auto currentError = getCurrentErrorCode();
+    const auto currentError = Errno::getCurrentErrorCode();
     EXPECT_EQ(currentError, myValue);
 }

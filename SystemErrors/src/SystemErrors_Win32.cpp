@@ -2,10 +2,6 @@
 // Created by MartinF on 31/07/2022.
 //
 
-//
-// Created by MartinF on 03/07/2022.
-//
-
 #if MF_WINDOWS
 
 #    include "MF/LightWindows.hpp"
@@ -16,22 +12,24 @@ namespace MF
 {
     namespace SystemErrors
     {
-        namespace Win32
-        {
-            static_assert(std::is_same_v<DWORD, unsigned long>, "DWORD is not unsigned long!");
+        using ErrorCode_t = Win32::ErrorCode_t;
 
-            ErrorCode_t getCurrentErrorCode() {
-                return GetLastError();
-            }
+        static_assert(std::is_same_v<DWORD, unsigned long>, "DWORD is not unsigned long!");
+        static_assert(
+            std::is_same_v<DWORD, ErrorCode_t>,
+            "ErrorCode_t of Win32 MUST be identical to a DWORD!");
 
-            void setCurrentErrorCode(ErrorCode_t value) {
-                SetLastError(value);
-            }
+        ErrorCode_t Win32::getCurrentErrorCode() {
+            return GetLastError();
+        }
 
-            std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode) {
-                return WindowsCommons::getSystemErrorForErrorCode(errorCode);
-            }
-        } // namespace Win32
+        void Win32::setCurrentErrorCode(ErrorCode_t value) {
+            SetLastError(value);
+        }
+
+        std::system_error Win32::getSystemErrorForErrorCode(ErrorCode_t errorCode) {
+            return WindowsCommons::getSystemErrorForErrorCode(errorCode);
+        }
     } // namespace SystemErrors
 } // namespace MF
 #endif

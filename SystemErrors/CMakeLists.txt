@@ -17,9 +17,15 @@ target_sources(MF_SystemErrors
         )
 target_link_libraries(MF_SystemErrors PUBLIC MF_Commons MF_Windows)
 target_include_directories(MF_SystemErrors PUBLIC include)
+
+include(CheckSymbolExists)
+check_symbol_exists(strerrordesc_np "string.h" MF_HAS_strerrordesc_np)
+
 target_compile_definitions(MF_SystemErrors
         PUBLIC
         MF_SystemErrors_WSA=$<OR:$<BOOL:${MF_SystemErrors_WSA}>,$<BOOL:${MF_IN_DEV}>>
+        PRIVATE
+        MF_HAS_strerrordesc_np=$<BOOL:${MF_HAS_strerrordesc_np}>
         )
 
 if (MF_IN_DEV)

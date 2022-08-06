@@ -11,69 +11,66 @@ namespace MF
 {
     namespace SystemErrors
     {
-        namespace Errno
-        {
+        struct Errno {
             using ErrorCode_t = int;
 
-            ErrorCode_t getCurrentErrorCode();
-            void setCurrentErrorCode(ErrorCode_t value);
+            static ErrorCode_t getCurrentErrorCode();
+            static void setCurrentErrorCode(ErrorCode_t value);
 
-            std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
+            static std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
 
-            inline std::system_error getCurrentSystemError() {
+            static inline std::system_error getCurrentSystemError() {
                 ErrorCode_t errorCode = getCurrentErrorCode();
                 return getSystemErrorForErrorCode(errorCode);
             }
 
-            inline void throwCurrentSystemErrorIf(bool condition) {
+            static inline void throwCurrentSystemErrorIf(bool condition) {
                 if (condition) {
                     throw getCurrentSystemError();
                 }
             }
-        } // namespace Errno
+        };
 
 #if MF_WINDOWS
-        namespace Win32
-        {
+        struct Win32 {
             using ErrorCode_t = unsigned long; // equivalent to DWORD
 
-            ErrorCode_t getCurrentErrorCode();
-            void setCurrentErrorCode(ErrorCode_t value);
+            static ErrorCode_t getCurrentErrorCode();
+            static void setCurrentErrorCode(ErrorCode_t value);
 
-            std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
+            static std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
 
-            inline std::system_error getCurrentSystemError() {
+            static inline std::system_error getCurrentSystemError() {
                 ErrorCode_t errorCode = getCurrentErrorCode();
                 return getSystemErrorForErrorCode(errorCode);
             }
 
-            inline void throwCurrentSystemErrorIf(bool condition) {
+            static inline void throwCurrentSystemErrorIf(bool condition) {
                 if (condition) {
                     throw getCurrentSystemError();
                 }
             }
-        } // namespace Win32
+        };
 
-        namespace Wsa
-        {
+        struct Wsa {
             using ErrorCode_t = int;
 
-            ErrorCode_t getCurrentErrorCode();
-            void setCurrentErrorCode(ErrorCode_t value);
+            static ErrorCode_t getCurrentErrorCode();
+            static void setCurrentErrorCode(ErrorCode_t value);
 
-            std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
+            static std::system_error getSystemErrorForErrorCode(ErrorCode_t errorCode);
 
-            inline std::system_error getCurrentSystemError() {
+            static inline std::system_error getCurrentSystemError() {
                 ErrorCode_t errorCode = getCurrentErrorCode();
                 return getSystemErrorForErrorCode(errorCode);
             }
 
-            inline void throwCurrentSystemErrorIf(bool condition) {
+            static inline void throwCurrentSystemErrorIf(bool condition) {
                 if (condition) {
                     throw getCurrentSystemError();
                 }
             }
-        } // namespace Wsa
+        };
 #endif
 
         /**
