@@ -18,14 +18,17 @@ target_sources(MF_SystemErrors
 target_link_libraries(MF_SystemErrors PUBLIC MF_Commons MF_Windows)
 target_include_directories(MF_SystemErrors PUBLIC include)
 
-include(CheckSymbolExists)
-check_symbol_exists(strerrordesc_np "string.h" MF_HAS_strerrordesc_np)
+include(CheckStrerrorFunctionsExist.cmake)
 
 target_compile_definitions(MF_SystemErrors
         PUBLIC
         MF_SystemErrors_WSA=$<OR:$<BOOL:${MF_SystemErrors_WSA}>,$<BOOL:${MF_IN_DEV}>>
         PRIVATE
         MF_HAS_strerrordesc_np=$<BOOL:${MF_HAS_strerrordesc_np}>
+        MF_HAS_strerror_r=$<BOOL:${MF_HAS_strerror_r}>
+        MF_HAS_strerror_s=$<BOOL:${MF_HAS_strerror_s}>
+        MF_HAS_strerror_l=$<BOOL:${MF_HAS_strerror_l}>
+        __STDC_WANT_LIB_EXT1__=1
         )
 
 if (MF_IN_DEV)
