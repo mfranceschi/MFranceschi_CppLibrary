@@ -91,26 +91,36 @@ namespace MF
                 istream1 = pointer;
             }
 
-           private:
+           protected:
             std::string buffer;
             std::istream* istream1 = nullptr;
 
-            void getLineAndThrowIfNotGood() {
+            virtual void getLineAndThrowIfNotGood() {
                 std::getline(*istream1, buffer);
                 if (!istream1->good()) {
-                    throw std::runtime_error("Unexpected stream error.");
+                    throw std::runtime_error(
+                        "Unexpected stream error - pos=" + std::to_string(istream1->tellg()));
                 }
             }
         };
 
         class ISSWrapper : public ISWrapper {
            public:
-            ISSWrapper(const std::string& input) : istream1(input) {
-                this->setStream(&istream1);
+            ISSWrapper(const std::string& input) : istringstream1(input) {
+                this->setStream(&istringstream1);
             }
 
            private:
-            std::istringstream istream1;
+            std::istringstream istringstream1;
+
+            void getLineAndThrowIfNotGood() override {
+                std::getline(*istream1, buffer);
+                if (!istream1->good()) {
+                    throw std::runtime_error(
+                        "Unexpected stream error - pos=" + std::to_string(istream1->tellg()) +
+                        " - string was " + istringstream1.str());
+                }
+            }
         };
 
         class IFSWrapper : public ISWrapper {
