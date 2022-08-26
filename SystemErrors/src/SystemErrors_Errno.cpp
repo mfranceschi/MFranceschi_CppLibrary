@@ -34,6 +34,7 @@ namespace MF
         }
 
 #if MF_HAS_strerror_l
+#    error strerror_l
         static const locale_t theRawLocale =
             newlocale(LC_MESSAGES_MASK, "en_US.UTF-8", (locale_t)0);
 
@@ -127,13 +128,12 @@ namespace MF
             errno = value;
         }
 
-        std::system_error Errno::getSystemErrorForErrorCode(ErrorCode_t errorCode) {
+        SystemError Errno::getSystemErrorForErrorCode(ErrorCode_t errorCode) {
             std::string errorMessage = getSystemErrorMessagesLocalized()
                                            ? getErrorMessageLocalizedForErrorCode(errorCode)
                                            : getErrorMessageNotLocalizedForErrorCode(errorCode);
 
-            std::error_code errorCodeObject(errorCode, std::generic_category());
-            return std::system_error(errorCodeObject, errorMessage);
+            return SystemError(errorCode, errorMessage);
         }
     } // namespace SystemErrors
 } // namespace MF

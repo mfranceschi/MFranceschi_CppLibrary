@@ -20,8 +20,8 @@ namespace MF
         {
             std::string getErrorMessageForErrorCode(int errorCode, bool localized);
             std::string getErrorMessageForErrorCode(DWORD errorCode, bool localized);
-            std::system_error getSystemErrorForErrorCode(int errorCode);
-            std::system_error getSystemErrorForErrorCode(DWORD errorCode);
+            SystemError getSystemErrorForErrorCode(int errorCode);
+            SystemError getSystemErrorForErrorCode(DWORD errorCode);
         } // namespace WindowsCommons
     } // namespace SystemErrors
 } // namespace MF

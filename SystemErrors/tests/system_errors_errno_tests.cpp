@@ -2,12 +2,10 @@
 // Created by MartinF on 30/07/2022.
 //
 
-#include <cstring>
-
 #include "MF/SystemErrors.hpp"
 #include "tests_data.hpp"
 
-using MF::SystemErrors::Errno;
+using namespace MF::SystemErrors;
 using ErrorCode_t = Errno::ErrorCode_t;
 
 static_assert(
@@ -21,7 +19,7 @@ static ErrorCode_t doSomethingThatSetsLastError() {
     const auto result = strtol(str.c_str(), nullptr, 10);
     EXPECT_EQ(result, LONG_MAX);
 
-    return ERANGE;
+    return ERANGE; // en_US string is "Numerical result out of range"
 }
 
 static void doSomethingThatDoesNotSetsLastError() {
@@ -30,14 +28,18 @@ static void doSomethingThatDoesNotSetsLastError() {
 }
 
 TEST(Errno_ThrowCurrentSystemErrorIf, it_throws_if_true) {
+    setSystemErrorMessagesLocalized(false);
     const auto expectedError = doSomethingThatSetsLastError();
 
     try {
         Errno::throwCurrentSystemErrorIf(true);
         FAIL() << "Expected an exception to be thrown.";
-    } catch (const std::system_error& systemError) {
-        EXPECT_EQ(systemError.code().value(), expectedError);
-        EXPECT_GT(std::strlen(systemError.what()), 1);
+    } catch (const SystemError& systemError) {
+        EXPECT_EQ(systemError.getParadigm(), Paradigm::ERRNO);
+        EXPECT_EQ(systemError.getErrorCode(), expectedError);
+        EXPECT_STREQ(systemError.what(), "Numerical result out of range");
+    } catch (const std::runtime_error& runtime_error) {
+        FAIL() << "Unexpected runtime_error: " << runtime_error.what();
     } catch (...) {
         FAIL() << "Unexpected or unknown error.";
     }

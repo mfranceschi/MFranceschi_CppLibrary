@@ -25,7 +25,7 @@ namespace MF
             WSASetLastError(value);
         }
 
-        std::system_error Wsa::getSystemErrorForErrorCode(ErrorCode_t errorCode) {
+        SystemError Wsa::getSystemErrorForErrorCode(ErrorCode_t errorCode) {
             return WindowsCommons::getSystemErrorForErrorCode(errorCode);
         }
     } // namespace SystemErrors

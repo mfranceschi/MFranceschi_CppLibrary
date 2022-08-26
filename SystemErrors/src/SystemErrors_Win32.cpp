@@ -27,7 +27,7 @@ namespace MF
             SetLastError(value);
         }
 
-        std::system_error Win32::getSystemErrorForErrorCode(ErrorCode_t errorCode) {
+        SystemError Win32::getSystemErrorForErrorCode(ErrorCode_t errorCode) {
             return WindowsCommons::getSystemErrorForErrorCode(errorCode);
         }
     } // namespace SystemErrors

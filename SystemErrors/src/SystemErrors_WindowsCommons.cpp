@@ -45,21 +45,21 @@ namespace MF
                 return getErrorMessageForErrorCode(DWORD(errorCode), localized);
             }
 
-            std::system_error getSystemErrorForErrorCode(DWORD errorCode) {
+            SystemError getSystemErrorForErrorCode(DWORD errorCode) {
                 std::string errorMessage =
                     getErrorMessageForErrorCode(errorCode, getSystemErrorMessagesLocalized());
 
                 std::error_code errorCodeObject(
                     static_cast<int>(errorCode), std::generic_category());
-                return std::system_error(errorCodeObject, errorMessage);
+                return SystemError(errorCodeObject, errorMessage);
             }
 
-            std::system_error getSystemErrorForErrorCode(int errorCode) {
+            SystemError getSystemErrorForErrorCode(int errorCode) {
                 std::string errorMessage =
                     getErrorMessageForErrorCode(errorCode, getSystemErrorMessagesLocalized());
 
                 std::error_code errorCodeObject(errorCode, std::generic_category());
-                return std::system_error(errorCodeObject, errorMessage);
+                return SystemError(errorCodeObject, errorMessage);
             }
         } // namespace WindowsCommons
     } // namespace SystemErrors

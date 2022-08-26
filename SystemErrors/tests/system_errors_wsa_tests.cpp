@@ -43,7 +43,7 @@ TEST(Wsa_ThrowCurrentSystemErrorIf, it_throws_if_true) {
     try {
         Wsa::throwCurrentSystemErrorIf(true);
         FAIL() << "Expected an exception to be thrown.";
-    } catch (const std::system_error& systemError) {
+    } catch (const SystemError& systemError) {
         EXPECT_EQ(systemError.code().value(), expectedError);
         EXPECT_GT(std::strlen(systemError.what()), 1) << systemError.what();
     } catch (...) {
