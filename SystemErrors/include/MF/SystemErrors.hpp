@@ -11,7 +11,7 @@ namespace MF
 {
     namespace SystemErrors
     {
-        enum class Paradigm { ERRNO, WIN32, WSA };
+        enum class Paradigm { Errno, Win32, Wsa };
 
         class SystemError : public std::runtime_error {
            public:
@@ -30,7 +30,7 @@ namespace MF
 
            private:
             const long errorCode = 0;
-            const Paradigm paradigm = Paradigm::ERRNO;
+            const Paradigm paradigm = Paradigm::Errno;
         };
 
         struct Errno {

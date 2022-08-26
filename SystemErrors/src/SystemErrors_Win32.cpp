@@ -28,7 +28,7 @@ namespace MF
         }
 
         SystemError Win32::getSystemErrorForErrorCode(ErrorCode_t errorCode) {
-            return WindowsCommons::getSystemErrorForErrorCode(errorCode);
+            return WindowsCommons::getSystemErrorForErrorCode(errorCode, Paradigm::Win32);
         }
     } // namespace SystemErrors
 } // namespace MF

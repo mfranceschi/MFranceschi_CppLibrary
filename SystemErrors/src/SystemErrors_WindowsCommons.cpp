@@ -38,6 +38,11 @@ namespace MF
                 std::unique_ptr<char, decltype(&LocalFree)> messageBufferSmart(
                     messageBuffer, &LocalFree);
 
+                if ((messageBuffer[size - 3] == '.') && (messageBuffer[size - 2] == '\r') &&
+                    (messageBuffer[size - 1] == '\n')) {
+                    size -= 3;
+                }
+
                 return std::string(messageBuffer, size);
             }
 
@@ -45,21 +50,18 @@ namespace MF
                 return getErrorMessageForErrorCode(DWORD(errorCode), localized);
             }
 
-            SystemError getSystemErrorForErrorCode(DWORD errorCode) {
+            SystemError getSystemErrorForErrorCode(DWORD errorCode, Paradigm paradigm) {
                 std::string errorMessage =
                     getErrorMessageForErrorCode(errorCode, getSystemErrorMessagesLocalized());
 
-                std::error_code errorCodeObject(
-                    static_cast<int>(errorCode), std::generic_category());
-                return SystemError(errorCodeObject, errorMessage);
+                return SystemError(paradigm, errorCode, errorMessage);
             }
 
-            SystemError getSystemErrorForErrorCode(int errorCode) {
+            SystemError getSystemErrorForErrorCode(int errorCode, Paradigm paradigm) {
                 std::string errorMessage =
                     getErrorMessageForErrorCode(errorCode, getSystemErrorMessagesLocalized());
 
-                std::error_code errorCodeObject(errorCode, std::generic_category());
-                return SystemError(errorCodeObject, errorMessage);
+                return SystemError(paradigm, errorCode, errorMessage);
             }
         } // namespace WindowsCommons
     } // namespace SystemErrors

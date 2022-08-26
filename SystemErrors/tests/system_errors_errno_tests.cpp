@@ -19,7 +19,7 @@ static ErrorCode_t doSomethingThatSetsLastError() {
     const auto result = strtol(str.c_str(), nullptr, 10);
     EXPECT_EQ(result, LONG_MAX);
 
-    return ERANGE; // en_US string is "Numerical result out of range"
+    return ERANGE; // "Numerical result out of range" (Linux) or "Result too large" (Windows)
 }
 
 static void doSomethingThatDoesNotSetsLastError() {
@@ -35,9 +35,12 @@ TEST(Errno_ThrowCurrentSystemErrorIf, it_throws_if_true) {
         Errno::throwCurrentSystemErrorIf(true);
         FAIL() << "Expected an exception to be thrown.";
     } catch (const SystemError& systemError) {
-        EXPECT_EQ(systemError.getParadigm(), Paradigm::ERRNO);
+        EXPECT_EQ(systemError.getParadigm(), Paradigm::Errno);
         EXPECT_EQ(systemError.getErrorCode(), expectedError);
-        EXPECT_STREQ(systemError.what(), "Numerical result out of range");
+        EXPECT_THAT(
+            systemError.what(), ::testing::AnyOf(
+                                    ::testing::StrEq("Numerical result out of range"),
+                                    ::testing::StrEq("Result too large")));
     } catch (const std::runtime_error& runtime_error) {
         FAIL() << "Unexpected runtime_error: " << runtime_error.what();
     } catch (...) {

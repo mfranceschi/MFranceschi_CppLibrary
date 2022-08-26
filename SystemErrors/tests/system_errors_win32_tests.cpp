@@ -7,14 +7,14 @@
 #    include "MF/SystemErrors.hpp"
 #    include "tests_data.hpp"
 
-using MF::SystemErrors::Win32;
+using namespace MF::SystemErrors;
 using ErrorCode_t = Win32::ErrorCode_t;
 
 static ErrorCode_t doSomethingThatSetsLastError() {
     const auto result = GetProcessId(nullptr);
     EXPECT_EQ(result, DWORD(0));
 
-    return ERROR_INVALID_HANDLE;
+    return ERROR_INVALID_HANDLE; // "The handle is invalid"
 }
 
 static void doSomethingThatDoesNotSetsLastError() {
@@ -23,14 +23,18 @@ static void doSomethingThatDoesNotSetsLastError() {
 }
 
 TEST(Win32_ThrowCurrentSystemErrorIf, it_throws_if_true) {
+    setSystemErrorMessagesLocalized(false);
     const auto expectedError = doSomethingThatSetsLastError();
 
     try {
         Win32::throwCurrentSystemErrorIf(true);
         FAIL() << "Expected an exception to be thrown.";
     } catch (const SystemError& systemError) {
-        EXPECT_EQ(systemError.code().value(), expectedError);
-        EXPECT_GT(std::strlen(systemError.what()), 1);
+        EXPECT_EQ(systemError.getParadigm(), Paradigm::Win32);
+        EXPECT_EQ(systemError.getErrorCode(), expectedError);
+        EXPECT_STREQ(systemError.what(), "The handle is invalid");
+    } catch (const std::runtime_error& runtime_error) {
+        FAIL() << "Unexpected runtime_error: " << runtime_error.what();
     } catch (...) {
         FAIL() << "Unexpected or unknown error.";
     }

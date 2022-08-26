@@ -25,9 +25,11 @@ int main() {
 
     const auto sysError = Errno::getSystemErrorForErrorCode(errorCode);
     std::cout << "Error message is:" << sysError.what() << std::endl;
+    /*
     std::cout << "strerror_l message is:"
               << strerror_l(errorCode, newlocale(LC_MESSAGES_MASK, "en_US.UTF-8", (locale_t)0))
               << std::endl;
+              */
 
     return 0;
 }

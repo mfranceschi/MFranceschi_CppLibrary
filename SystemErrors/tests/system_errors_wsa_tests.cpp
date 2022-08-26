@@ -13,7 +13,7 @@
 
 #    pragma comment(lib, "Ws2_32.lib")
 
-using MF::SystemErrors::Wsa;
+using namespace MF::SystemErrors;
 using ErrorCode_t = Wsa::ErrorCode_t;
 
 static ErrorCode_t doSomethingThatSetsLastError() {
@@ -22,7 +22,8 @@ static ErrorCode_t doSomethingThatSetsLastError() {
 
     EXPECT_EQ(result, SOCKET_ERROR);
 
-    return WSANOTINITIALISED;
+    return WSANOTINITIALISED; // message is "Either the application has not called WSAStartup, or
+                              // WSAStartup failed"
 }
 
 static void doSomethingThatDoesNotSetsLastError() {
@@ -38,14 +39,20 @@ static void doSomethingThatDoesNotSetsLastError() {
 }
 
 TEST(Wsa_ThrowCurrentSystemErrorIf, it_throws_if_true) {
+    setSystemErrorMessagesLocalized(false);
     const auto expectedError = doSomethingThatSetsLastError();
 
     try {
         Wsa::throwCurrentSystemErrorIf(true);
         FAIL() << "Expected an exception to be thrown.";
     } catch (const SystemError& systemError) {
-        EXPECT_EQ(systemError.code().value(), expectedError);
-        EXPECT_GT(std::strlen(systemError.what()), 1) << systemError.what();
+        EXPECT_EQ(systemError.getParadigm(), Paradigm::Wsa);
+        EXPECT_EQ(systemError.getErrorCode(), expectedError);
+        EXPECT_STREQ(
+            systemError.what(),
+            "Either the application has not called WSAStartup, or WSAStartup failed");
+    } catch (const std::runtime_error& runtime_error) {
+        FAIL() << "Unexpected runtime_error: " << runtime_error.what();
     } catch (...) {
         FAIL() << "Unexpected or unknown error.";
     }

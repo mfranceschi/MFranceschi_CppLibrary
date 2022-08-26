@@ -5,12 +5,13 @@
 #ifndef MFRANCESCHI_CPPLIBRARIES_SYSTEMERRORS_WINDOWSCOMMONS_HPP
 #define MFRANCESCHI_CPPLIBRARIES_SYSTEMERRORS_WINDOWSCOMMONS_HPP
 
-#if MF_WINDOWS || 1
+#if MF_WINDOWS
 
 #    include <string>
 #    include <system_error>
 
 #    include "MF/LightWindows.hpp"
+#    include "MF/SystemErrors.hpp"
 
 namespace MF
 {
@@ -20,8 +21,8 @@ namespace MF
         {
             std::string getErrorMessageForErrorCode(int errorCode, bool localized);
             std::string getErrorMessageForErrorCode(DWORD errorCode, bool localized);
-            SystemError getSystemErrorForErrorCode(int errorCode);
-            SystemError getSystemErrorForErrorCode(DWORD errorCode);
+            SystemError getSystemErrorForErrorCode(int errorCode, Paradigm paradigm);
+            SystemError getSystemErrorForErrorCode(DWORD errorCode, Paradigm paradigm);
         } // namespace WindowsCommons
     } // namespace SystemErrors
 } // namespace MF
