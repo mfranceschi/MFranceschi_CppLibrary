@@ -31,9 +31,6 @@ target_compile_definitions(MF_SystemErrors
         __STDC_WANT_LIB_EXT1__=1
         )
 
-if (MF_IN_DEV)
+if(MF_IN_DEV)
     add_subdirectory(tests)
-endif ()
-
-add_executable(TestSystemErrors TestSystemErrors.cpp)
-target_link_libraries(TestSystemErrors MF_SystemErrors)
+endif()
