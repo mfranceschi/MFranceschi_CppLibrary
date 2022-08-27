@@ -118,7 +118,7 @@ namespace MF
                 if (!istream1->good()) {
                     throw std::runtime_error(
                         "Unexpected stream error - pos=" + std::to_string(istream1->tellg()) +
-                        " - string was " + istringstream1.str());
+                        " - string was <<" + istringstream1.str() + ">>.");
                 }
             }
         };
@@ -177,6 +177,15 @@ namespace MF
         }
 
         std::chrono::seconds getDstOffset() {
+            const auto timezoneName = getTimezoneName();
+            if ((timezoneName.find("UTC") != std::string::npos) ||
+                (timezoneName.find("UCT") != std::string::npos) ||
+                (timezoneName.find("Universal") != std::string::npos)) {
+                // All the timezones that are identical to UTC contain one of the above substring.
+                // So if we have a timezone that is UTC-like then we can safely return zero offset.
+                return std::chrono::seconds(0);
+            }
+
             const auto resultInHours = parseZdumpOutput(getTimezoneName());
             return std::chrono::duration_cast<std::chrono::seconds>(resultInHours);
         }
