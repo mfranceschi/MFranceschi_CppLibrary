@@ -51,7 +51,7 @@ namespace MF
 
             bool wIfExited = WIFEXITED(wstatus);
             int wExitStatus = WEXITSTATUS(wstatus);
-            if (!(wIfExited && (wExitStatus == EXIT_SUCCESS))) {
+            if (!wIfExited || (wExitStatus != EXIT_SUCCESS)) {
                 std::ostringstream oss;
                 oss << "Error from zdump. The 'wstatus' value is " << std::hex << wstatus << ". ";
                 oss << "wIfExited returns " << std::boolalpha << wIfExited << ". ";
@@ -168,10 +168,13 @@ namespace MF
                 return std::chrono::hours(difference);
             }
 
+            // This is called if the regex did not match.
+            // Fallback to have something to return, even if potentially wrong.
             return std::chrono::hours(0);
         }
 
         std::chrono::seconds getTimezoneOffset() {
+            // We're using the UNIX extern value 'timezone'.
             const auto timezoneOffsetInSeconds = -timezone;
             return std::chrono::seconds(timezoneOffsetInSeconds);
         }

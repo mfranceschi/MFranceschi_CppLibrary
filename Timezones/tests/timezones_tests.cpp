@@ -24,5 +24,5 @@ TEST(DstOffset, it_returns_a_value) {
 TEST(TimeZoneName, it_returns_a_value) {
     std::string tzName;
     EXPECT_NO_THROW(tzName = getTimezoneName());
-    EXPECT_GT(tzName.length(), size_t(1));
+    EXPECT_GT(tzName.length(), std::size_t(1));
 }

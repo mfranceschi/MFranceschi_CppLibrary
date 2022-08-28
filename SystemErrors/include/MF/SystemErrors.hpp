@@ -5,14 +5,24 @@
 #ifndef MFRANCESCHI_CPPLIBRARIES_SYSTEMERRORS_HPP
 #define MFRANCESCHI_CPPLIBRARIES_SYSTEMERRORS_HPP
 
-#include <system_error>
+#include <stdexcept>
 
 namespace MF
 {
     namespace SystemErrors
     {
-        enum class Paradigm { Errno, Win32, Wsa };
+        /**
+         * Enumerates the error paradigms.
+         */
+         enum class Paradigm { Errno, Win32, Wsa };
 
+         /**
+          * Exception class used in this module.
+          *
+          * We're not using std::system_error for two reasons:
+          * 1. to avoid the use of std::error_code, which adds unnecessary instructions;
+          * 2. to have a total control on the error message.
+          */
         class SystemError : public std::runtime_error {
            public:
             SystemError(long errorCode, const std::string& message)

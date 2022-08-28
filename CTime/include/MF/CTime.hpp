@@ -13,7 +13,7 @@ namespace MF
     namespace CTime
     {
         /** Value corresponding to Asctime and Ctime, for use in Strftime. */
-        static constexpr const char *DEFAULT_STRFTIME_FORMAT = "Www Mmm dd hh:mm:ss yyyy\n";
+        static constexpr const char *DEFAULT_STRFTIME_FORMAT = "%a %b %e %H:%M:%S %Y\n";
 
         std::time_t Time();
         double Difftime(std::time_t time_end, std::time_t time_beg);
@@ -29,7 +29,7 @@ namespace MF
         /**
          * Tries to normalize 'src' by considering it as a local time,
          * and returns the corresponding 'time_t'.
-         * Returns -1 on failure - no guarantee if 'src' has been affected or not in that case.
+         * Returns -1 on failure - no guarantee if 'src' has been modified or not in that case.
          *
          * Actually a wrapper for mktime. */
         std::time_t LocaltimeReversed(std::tm &src);
@@ -44,11 +44,11 @@ namespace MF
         /**
          * Tries to normalize 'src' by considering it as a UTC time,
          * and returns the corresponding 'time_t'.
-         * Returns -1 on failure - no guarantee if 'src' has been affected or not in that case.
+         * Returns -1 on failure - no guarantee if 'src' has been modified or not in that case.
          */
         std::time_t GmtimeReversed(std::tm &src);
 
-        /** Like strftime but returns a std::string. */
+        /** Like strftime but returns a std::string. Returns empty string on failure. */
         std::string Strftime(const std::tm &src, const char *format = DEFAULT_STRFTIME_FORMAT);
 
         /** Like strptime. */

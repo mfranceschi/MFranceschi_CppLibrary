@@ -15,6 +15,7 @@ target_sources(MF_CTime
         )
 target_link_libraries(MF_CTime PUBLIC MF_Commons)
 target_include_directories(MF_CTime PUBLIC include)
+target_compile_definitions(MF_CTime PRIVATE __STDC_WANT_LIB_EXT1__=1)
 
 if(MF_IN_DEV)
     add_subdirectory(tests)

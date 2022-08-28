@@ -2,8 +2,7 @@
 // Created by MartinF on 03/07/2022.
 //
 
-#define __STDC_WANT_LIB_EXT1__ 1
-#define _XOPEN_SOURCE 1
+#define _XOPEN_SOURCE 500
 
 #include "MF/CTime.hpp"
 
@@ -54,11 +53,9 @@ namespace MF
 
         bool Localtime(struct std::tm &dest, const std::time_t &src) {
 #if MF_WINDOWS
-
             // Win32-style secure version is always available.
-            // Order of arguments is differemt than non-Win32 secure version.
+            // Order of arguments is different from non-Win32 secure version.
             return !localtime_s(&dest, &src);
-
 #elif HAS_SECURE_VERSIONS
             return localtime_s(&src, &dest);
 #elif HAS_RESTARTABLE_VERSIONS
@@ -70,11 +67,9 @@ namespace MF
 
         bool Gmtime(struct std::tm &dest, const std::time_t &src) {
 #if MF_WINDOWS
-
             // Win32-style secure version is always available.
-            // Order of arguments is differemt than non-Win32 secure version.
+            // Order of arguments is different from non-Win32 secure version.
             return !gmtime_s(&dest, &src);
-
 #elif HAS_SECURE_VERSIONS
             return gmtime_s(&src, &dest);
 #elif HAS_RESTARTABLE_VERSIONS
@@ -90,7 +85,7 @@ namespace MF
 #elif HAS_TIMEGM
             return timegm(&src);
 #else
-#    error TODO what do we do
+#    error TODO implement(?)
 #endif
         }
 
@@ -100,8 +95,9 @@ namespace MF
             static constexpr std::size_t BUFFER_SIZE_LIKE_CTIME = 25 + 1;
 
             std::array<char, BUFFER_SIZE_LIKE_CTIME> buffer{0};
-            std::strftime(buffer.data(), buffer.size(), format, &src);
-            return buffer.data();
+            // TODO check for failure
+            size_t charsCount = std::strftime(buffer.data(), buffer.size(), format, &src);
+            return charsCount ? buffer.data() : "";
         }
 
         bool Strptime(std::tm &dest, const char *src, const char *format) {

@@ -33,7 +33,7 @@ namespace MF
             return strerror(errorCode);
         }
 
-#if MF_HAS_strerror_l
+#if MF_HAS_strerror_localized
 #    error strerror_l
         static const locale_t theRawLocale =
             newlocale(LC_MESSAGES_MASK, "en_US.UTF-8", (locale_t)0);
@@ -43,7 +43,7 @@ namespace MF
         }
 #endif
 
-#if MF_HAS_strerror_s
+#if MF_HAS_strerror_secure
         static std::string getErrorMessage_Strerror_s(ErrorCode_t errorCode) {
             std::vector<char> buffer(DEFAULT_BUFFER_SIZE);
             auto result = strerror_s(buffer.data(), buffer.capacity(), errorCode);
@@ -64,7 +64,7 @@ namespace MF
         }
 #endif
 
-#if MF_HAS_strerror_r
+#if MF_HAS_strerror_repeatable
         static std::string getErrorMessage_Strerror_r(ErrorCode_t errorCode) {
             std::vector<char> buffer(DEFAULT_BUFFER_SIZE);
             auto result = strerror_r(errorCode, buffer.data(), buffer.capacity());
@@ -99,11 +99,11 @@ namespace MF
 #endif
 
         static std::string getErrorMessageLocalizedForErrorCode(ErrorCode_t errorCode) {
-#if MF_HAS_strerror_l
+#if MF_HAS_strerror_localized
             return getErrorMessage_Strerror_l(errorCode, true);
-#elif MF_HAS_strerror_s
+#elif MF_HAS_strerror_secure
             return getErrorMessage_Strerror_s(errorCode);
-#elif MF_HAS_strerror_r
+#elif MF_HAS_strerror_repeatable
             return getErrorMessage_Strerror_r(errorCode);
 #else
             return getErrorMessage_Strerror(errorCode);
@@ -113,9 +113,12 @@ namespace MF
         static std::string getErrorMessageNotLocalizedForErrorCode(ErrorCode_t errorCode) {
 #if MF_HAS_strerrordesc_np
             return getErrorMessage_Strerrordesc_np(errorCode);
-#elif MF_HAS_strerror_l
+#elif MF_HAS_strerror_localized
             return getErrorMessage_Strerror_l(errorCode, false);
 #else
+            // At this point, we have no tool to help us get the string message
+            // that is guaranteed to be in the en-US locale.
+            // Fallback to the localized string message to ensure we have a message to return.
             return getErrorMessageLocalizedForErrorCode(errorCode);
 #endif
         }
