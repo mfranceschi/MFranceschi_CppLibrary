@@ -16,7 +16,7 @@ namespace MF
          * Return the offset of the current timezone in regards to the UTC time zone.
          * As defined in https://pubs.opengroup.org/onlinepubs/7908799/xsh/timezone.html.
          *
-         * Example: UTC+1 --> 1 hour.
+         * Example: UTC+1 --> 3600s.
          */
         std::chrono::seconds getTimezoneOffset();
 
@@ -38,7 +38,7 @@ namespace MF
         /**
          * Sets the new value for the TZ environment variable.
          * Format is system dependent.
-         * If "runTzSet" is true then calls "tzset".
+         * If "runTzSet" is true then calls "tzSet()".
          *
          * Unix - https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
          * Windows - https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/tzset#remarks
@@ -47,7 +47,7 @@ namespace MF
 
         /**
          * Returns the current value of the TZ environment variable.
-         * Throws a system_error if it does not exist.
+         * Throws a runtime_error if it does not exist.
          *
          * Format is system dependent.
          * Unix - https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
@@ -55,7 +55,7 @@ namespace MF
          */
         std::string getSystemTz();
 
-        /** See "tzset". */
+        /** See UNIX's "tzset". */
         void tzSet();
     } // namespace Timezones
 } // namespace MF

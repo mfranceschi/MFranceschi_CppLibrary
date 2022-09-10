@@ -5,6 +5,7 @@
 #if MF_WINDOWS
 
 #    include <array>
+#    include <functional>
 #    include <memory>
 #    include <stdexcept>
 
@@ -42,23 +43,6 @@ namespace MF
 
             std::string getString() const {
                 return buffer->data();
-            }
-        };
-
-        /**
-         * See details here:
-         * https://docs.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-getcommandlinea
-         */
-        class EnvironmentBlock {
-           private:
-            char* block;
-
-           public:
-            EnvironmentBlock() : block(GetEnvironmentStringsA()) {
-            }
-
-            ~EnvironmentBlock() {
-                FreeEnvironmentStringsA(block);
             }
         };
 
@@ -117,6 +101,89 @@ namespace MF
                 throw systemError;
             }
             return true;
+        }
+
+        /**
+         * See details here:
+         * https://docs.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-getcommandlinea
+         */
+        class EnvironmentBlock {
+           private:
+            char* const block;
+            char* firstEnvVar = block;
+
+           public:
+            EnvironmentBlock() : block(GetEnvironmentStringsA()) {
+                while (*firstEnvVar == '=') {
+                    firstEnvVar = nextEntry(firstEnvVar);
+                }
+            }
+
+            char* getFirstEnvVarEntry() const {
+                return firstEnvVar;
+            }
+
+            static char* nextEntry(char* current) {
+                return strchr(current, '\0') + 1;
+            }
+
+            static bool isOver(const char* current) {
+                return *current == '\0';
+            }
+
+            ~EnvironmentBlock() {
+                FreeEnvironmentStringsA(block);
+            }
+        };
+
+        static void exploreEnviron(
+            const std::function<void(char* thePair, char* positionOfEqualSign)>& function) {
+            EnvironmentBlock environmentBlock;
+
+            static const auto MyFreeEnvStringsA = [](char* ptr) {
+                FreeEnvironmentStringsA(ptr);
+            };
+
+            auto ptr = std::unique_ptr<char, decltype(MyFreeEnvStringsA)>{
+                GetEnvironmentStringsA(), MyFreeEnvStringsA};
+
+            for (char* currentEntry = environmentBlock.getFirstEnvVarEntry();
+                 !EnvironmentBlock::isOver(currentEntry);
+                 currentEntry = EnvironmentBlock::nextEntry(currentEntry)) {
+                char* name = currentEntry;
+                char* positionOfEqualSign = strchr(name, '=');
+
+                function(currentEntry, positionOfEqualSign);
+            }
+        }
+
+        std::vector<std::string> listNames() {
+            std::vector<std::string> result;
+            exploreEnviron([&result](char* thePair, char* positionOfEqualSign) {
+                if (positionOfEqualSign == nullptr) {
+                    // Abnormal!
+                    return;
+                }
+                result.push_back(std::string(thePair, positionOfEqualSign - thePair));
+            });
+
+            return result;
+        }
+
+        std::vector<std::pair<std::string, std::string>> listAll() {
+            std::vector<std::pair<std::string, std::string>> result;
+
+            exploreEnviron([&result](char* thePair, char* positionOfEqualSign) {
+                if (positionOfEqualSign == nullptr) {
+                    // Abnormal!
+                    return;
+                }
+                result.push_back(std::make_pair(
+                    std::string(thePair, positionOfEqualSign - thePair),
+                    std::string(positionOfEqualSign + 1)));
+            });
+
+            return result;
         }
     } // namespace Environment
 } // namespace MF

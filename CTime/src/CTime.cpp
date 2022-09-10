@@ -95,7 +95,6 @@ namespace MF
             static constexpr std::size_t BUFFER_SIZE_LIKE_CTIME = 25 + 1;
 
             std::array<char, BUFFER_SIZE_LIKE_CTIME> buffer{0};
-            // TODO check for failure
             size_t charsCount = std::strftime(buffer.data(), buffer.size(), format, &src);
             return charsCount ? buffer.data() : "";
         }

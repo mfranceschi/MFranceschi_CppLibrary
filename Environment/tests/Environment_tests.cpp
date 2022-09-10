@@ -90,3 +90,27 @@ TEST_F(UnsetEnv2, it_can_unset_env) {
 TEST_F(UnsetEnv2, it_is_no_op_if_not_exists) {
     EXPECT_NO_THROW(unsetEnv(name));
 }
+
+TEST(ListEnv, it_can_list_env_names) {
+    auto result = listNames();
+    ASSERT_FALSE(result.empty());
+
+    for (const auto& str : result) {
+        EXPECT_FALSE(str.empty());
+        EXPECT_EQ(str.find('='), std::string::npos);
+    }
+}
+
+TEST(ListEnv, it_can_list_all) {
+    auto result = listAll();
+    ASSERT_FALSE(result.empty());
+
+    for (const auto& pair : result) {
+        EXPECT_FALSE(pair.first.empty());
+
+        EXPECT_EQ(pair.first.find('='), std::string::npos);
+        EXPECT_EQ(pair.second.find('='), std::string::npos);
+    }
+
+    EXPECT_EQ(result.size(), listNames().size());
+}

@@ -26,3 +26,8 @@ TEST(TimeZoneName, it_returns_a_value) {
     EXPECT_NO_THROW(tzName = getTimezoneName());
     EXPECT_GT(tzName.length(), std::size_t(1));
 }
+
+TEST(SystemTz, it_sets_and_gets_a_value) {
+    std::string tzSetValue="abcde";
+
+}

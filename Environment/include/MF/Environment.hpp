@@ -6,6 +6,7 @@
 #define MFRANCESCHI_CPPLIBRARIES_ENVIRONMENT_HPP
 
 #include <string>
+#include <vector>
 
 namespace MF
 {
@@ -44,6 +45,16 @@ namespace MF
          * Throws if "name" is empty.
          */
         bool hasEnv(const std::string& name);
+
+        /**
+         * Returns an array that is a copy of the names of all the environment variables for the current process.
+         */
+        std::vector<std::string> listNames();
+
+        /**
+         * Returns an array of <name, value> of all the environment variables for the current process.
+         */
+        std::vector<std::pair<std::string, std::string>> listAll();
     } // namespace Environment
 } // namespace MF
 

@@ -67,8 +67,10 @@ TEST(CTime_Difftime, it_returns_a_value) {
 
 TEST(CTime_Mktime, it_returns_a_value) {
     std::tm tm1{};
-    time_t time1 = Mktime(tm1);
+    Localtime(tm1);
+    std::time_t time1 = Mktime(tm1);
 
+    EXPECT_NE(time1, std::time_t(-1));
     EXPECT_NE(time1, 0);
     EXPECT_NE(tm1.tm_year, 0);
 }

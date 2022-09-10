@@ -3,7 +3,11 @@
 //
 
 #if MF_UNIX
+#    include <unistd.h>
+
 #    include <cstdlib>
+#    include <cstring>
+#    include <functional>
 #    include <stdexcept>
 
 #    include "MF/Environment.hpp"
@@ -84,6 +88,44 @@ namespace MF
 
             OptionalString result(getenv(name.c_str()));
             return result.isPresent();
+        }
+
+        static void exploreEnviron(
+            const std::function<void(char* thePair, char* positionOfEqualSign)>& function) {
+            for (char** currentPair = environ; *currentPair != nullptr; currentPair++) {
+                char* thePair = *currentPair;
+                char* positionOfEqualSign = strchr(thePair, '=');
+                function(thePair, positionOfEqualSign);
+            }
+        }
+
+        std::vector<std::string> listNames() {
+            std::vector<std::string> result;
+            exploreEnviron([&result](char* thePair, char* positionOfEqualSign) {
+                if (positionOfEqualSign == nullptr) {
+                    // Abnormal!
+                    return;
+                }
+                result.push_back(std::string(thePair, positionOfEqualSign - thePair));
+            });
+
+            return result;
+        }
+
+        std::vector<std::pair<std::string, std::string>> listAll() {
+            std::vector<std::pair<std::string, std::string>> result;
+
+            exploreEnviron([&result](char* thePair, char* positionOfEqualSign) {
+                if (positionOfEqualSign == nullptr) {
+                    // Abnormal!
+                    return;
+                }
+                result.push_back(std::make_pair(
+                    std::string(thePair, positionOfEqualSign - thePair),
+                    std::string(positionOfEqualSign + 1)));
+            });
+
+            return result;
         }
     } // namespace Environment
 } // namespace MF
