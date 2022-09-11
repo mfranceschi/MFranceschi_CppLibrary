@@ -13,11 +13,15 @@ namespace MF
 {
     namespace Optionals
     {
+        /**
+         * Simple exception thrown when trying to access the value of an empty optional.
+         */
         class EmptyOptionalException : public std::runtime_error {
            public:
             EmptyOptionalException() : std::runtime_error("No value present in Optional.") {
             }
         };
+
         template <typename T>
         class Optional;
 
@@ -30,20 +34,15 @@ namespace MF
         template <typename T>
         Optional<T> of(const std::shared_ptr<T>& pointer);
 
+        /**
+         * Wrapper for a shared pointer that can contain a value, or not.
+         * API is an extension of Java's Optional.
+         *
+         * An optional contains a value, or does not contain a value (in which case it is empty).
+         * You can build an optional with the functions "empty()" and "of(...)".
+         */
         template <typename T>
         class Optional {
-           private:
-            const std::shared_ptr<T> value;
-
-            explicit Optional(const std::shared_ptr<T>& ptr = nullptr) : value(ptr) {
-            }
-
-            friend Optional<T> empty<T>();
-
-            friend Optional<T> of<T>(const T& value);
-
-            friend Optional<T> of<T>(const std::shared_ptr<T>& pointer);
-
            public:
             const T& get() const {
                 return getOrThrow();
@@ -54,6 +53,10 @@ namespace MF
             }
             bool isEmpty() const {
                 return !isPresent();
+            }
+
+            operator bool() const {
+                return isPresent();
             }
 
             void ifPresent(const std::function<void(const T&)>& consumer) const {
@@ -100,12 +103,16 @@ namespace MF
                 return isPresent() ? *value : other;
             }
 
-            const T& getOrRun(const std::function<T(void)> supplier) {
+            const T& getOrRun(const std::function<const T&(void)> supplier) {
+                return isPresent() ? *value : supplier();
+            }
+
+            T getOrRunWithCopy(const std::function<T(void)> supplier) {
                 return isPresent() ? *value : supplier();
             }
 
             const T& getOrThrow() const {
-                if (value) {
+                if (isPresent()) {
                     return *value;
                 }
 
@@ -132,11 +139,28 @@ namespace MF
             bool contains(const T& other) const {
                 return isPresent() ? *value == other : false;
             }
+
+           private:
+            // Shared_ptr is const to ensure the immutability of the Optional class.
+            const std::shared_ptr<T> value;
+
+            // Unique empty optional for a type T.
+            // Having it unique is - hopefully - a small optimization.
+            static const Optional<T> EMPTY;
+
+            explicit Optional(const std::shared_ptr<T>& ptr = nullptr) : value(ptr) {
+            }
+
+            friend Optional<T> empty<T>();
+
+            friend Optional<T> of<T>(const T& value);
+
+            friend Optional<T> of<T>(const std::shared_ptr<T>& pointer);
         };
 
         template <typename T>
         Optional<T> empty() {
-            return Optional<T>();
+            return Optional<T>::EMPTY;
         }
 
         template <typename T>
@@ -148,6 +172,9 @@ namespace MF
         Optional<T> of(const std::shared_ptr<T>& pointer) {
             return Optional<T>(pointer);
         }
+
+        template <typename T>
+        const Optional<T> Optional<T>::EMPTY = Optional<T>(nullptr);
     } // namespace Optionals
 } // namespace MF
 
