@@ -15,7 +15,7 @@ TEST(Optionals, it_can_build_simple_instances) {
     EXPECT_TRUE(intWithOne.isPresent());
 
     std::shared_ptr<int> pointerTo3 = std::make_shared<int>(3);
-    Optional<int> with3 = of<int>(pointerTo3);
+    Optional<int> with3 = ofSharedPointer<int>(pointerTo3);
     EXPECT_TRUE(with3.isPresent());
 }
 
@@ -178,6 +178,6 @@ TEST(Optionals, it_can_get_shared_ptr) {
     EXPECT_EQ(copyOfEmptyPtr.get(), nullptr);
     EXPECT_EQ(*copyOfPtrOfThree.get(), 3);
 
-    EXPECT_EQ(of(copyOfPtrOfThree), intWith3);
-    EXPECT_EQ(of(copyOfEmptyPtr), emptyInt);
+    EXPECT_EQ(ofSharedPointer(copyOfPtrOfThree), intWith3);
+    EXPECT_EQ(ofSharedPointer(copyOfEmptyPtr), emptyInt);
 }

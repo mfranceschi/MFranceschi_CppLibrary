@@ -32,7 +32,7 @@ namespace MF
         Optional<T> of(const T& value);
 
         template <typename T>
-        Optional<T> of(const std::shared_ptr<T>& pointer);
+        Optional<T> ofSharedPointer(const std::shared_ptr<T>& pointer);
 
         /**
          * Wrapper for a shared pointer that can contain a value, or not.
@@ -155,7 +155,7 @@ namespace MF
 
             friend Optional<T> of<T>(const T& value);
 
-            friend Optional<T> of<T>(const std::shared_ptr<T>& pointer);
+            friend Optional<T> ofSharedPointer<T>(const std::shared_ptr<T>& pointer);
         };
 
         template <typename T>
@@ -169,7 +169,7 @@ namespace MF
         }
 
         template <typename T>
-        Optional<T> of(const std::shared_ptr<T>& pointer) {
+        Optional<T> ofSharedPointer(const std::shared_ptr<T>& pointer) {
             return Optional<T>(pointer);
         }
 
