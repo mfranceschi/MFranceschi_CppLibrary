@@ -26,94 +26,84 @@ namespace MF
         class Optional;
 
         template <typename T>
-        Optional<T> empty();
+        using OptionalPtr = std::shared_ptr<Optional<T>>;
 
         template <typename T>
-        Optional<T> of(const T& value);
+        OptionalPtr<T> empty();
 
         template <typename T>
-        Optional<T> ofSharedPointer(const std::shared_ptr<T>& pointer);
+        OptionalPtr<T> ofRvalue(const T& rvalue);
+
+        template <typename T>
+        OptionalPtr<T> ofLvalue(const T& lvalue);
+
+        template <typename T>
+        OptionalPtr<T> ofSharedPointer(const std::shared_ptr<T>& pointer);
 
         /**
          * Wrapper for a shared pointer that can contain a value, or not.
-         * API is an extension of Java's Optional.
+         * API is similar to Java's Optional, with some changes.
          *
          * An optional contains a value, or does not contain a value (in which case it is empty).
          * You can build an optional with the functions "empty()" and "of(...)".
          */
         template <typename T>
-        class Optional {
+        class Optional : public std::enable_shared_from_this<Optional<T>> {
            public:
-            const T& get() const {
+            virtual const T& get() const {
                 return getOrThrow();
             }
 
-            bool isPresent() const {
-                return bool(value);
-            }
-            bool isEmpty() const {
+            virtual bool isPresent() const = 0;
+
+            virtual bool isEmpty() const {
                 return !isPresent();
             }
 
-            operator bool() const {
+            virtual operator bool() const {
                 return isPresent();
             }
 
-            void ifPresent(const std::function<void(const T&)>& consumer) const {
-                if (isPresent()) {
-                    consumer(*value);
+            virtual OptionalPtr<T> filter(const std::function<bool(const T&)>& predicate) {
+                if (isEmpty()) {
+                    return empty<T>();
                 }
-            }
 
-            void ifPresentOrElse(
-                const std::function<void(const T&)>& consumer,
-                const std::function<void(void)>& emptyAction) const {
-                if (isPresent()) {
-                    consumer(*value);
-                } else {
-                    emptyAction();
-                }
-            }
-
-            Optional<T> filter(const std::function<bool(const T&)>& predicate) const {
-                if (isPresent()) {
-                    if (!predicate(*value)) {
-                        return Optional<T>();
-                    }
-                }
-                return *this;
+                return predicate(_getRValueUnchecked()) ? this->shared_from_this() : empty<T>();
             }
 
             template <typename Destination>
-            Optional<Destination> map(const std::function<Destination(const T&)>& mapper) const {
-                return isPresent() ? of<Destination>(mapper(*value)) : empty<Destination>();
+            OptionalPtr<Destination> map(const std::function<Destination(const T&)>& mapper) const {
+                return isPresent() ? ofLvalue<Destination>(mapper(_getRValueUnchecked()))
+                                   : empty<Destination>();
             }
 
             template <typename Destination>
-            Optional<Destination> flatMap(
-                const std::function<Optional<Destination>(const T&)>& mapper) const {
-                return isPresent() ? mapper(*value) : empty<Destination>();
+            OptionalPtr<Destination> flatMap(
+                const std::function<OptionalPtr<Destination>(const T&)>& mapper) const {
+                return isPresent() ? mapper(_getRValueUnchecked()) : empty<Destination>();
             }
 
-            Optional<T> useThisOrRun(const std::function<Optional<T>(void)> supplier) const {
-                return isPresent() ? *this : supplier();
+            virtual OptionalPtr<T> useThisOrRun(
+                const std::function<OptionalPtr<T>(void)> supplier) {
+                return isPresent() ? this->shared_from_this() : supplier();
             }
 
-            const T& getOrDefault(const T& other) const {
-                return isPresent() ? *value : other;
+            virtual const T& getOrDefault(const T& other) const {
+                return isPresent() ? _getRValueUnchecked() : other;
             }
 
-            const T& getOrRun(const std::function<const T&(void)> supplier) {
-                return isPresent() ? *value : supplier();
+            virtual const T& getOrRun(const std::function<const T&(void)> supplier) {
+                return isPresent() ? _getRValueUnchecked() : supplier();
             }
 
-            T getOrRunWithCopy(const std::function<T(void)> supplier) {
-                return isPresent() ? *value : supplier();
+            virtual T getOrRunWithCopy(const std::function<T(void)> supplier) {
+                return isPresent() ? _getRValueUnchecked() : supplier();
             }
 
-            const T& getOrThrow() const {
+            virtual const T& getOrThrow() const {
                 if (isPresent()) {
-                    return *value;
+                    return _getRValueUnchecked();
                 }
 
                 throw EmptyOptionalException();
@@ -122,59 +112,203 @@ namespace MF
             template <typename ExceptionToThrow>
             const T& getOrThrow(const std::function<ExceptionToThrow(void)> supplier) const {
                 if (isPresent()) {
-                    return *value;
+                    return _getRValueUnchecked();
                 }
 
                 throw supplier();
+            }
+
+            virtual bool operator==(const Optional<T>& other) const {
+                if (isPresent()) {
+                    return other.contains(_getRValueUnchecked());
+                } else {
+                    return other.isEmpty();
+                }
+            }
+
+            virtual bool contains(const T& other) const {
+                return isPresent() ? _getRValueUnchecked() == other : false;
+            }
+
+           protected:
+            /// Returns the contained RValue. Undefined behaviour if isEmpty.
+            virtual const T& _getRValueUnchecked() const = 0;
+
+           private:
+            // Unique empty optional for a type T.
+            // Having it unique is - hopefully - a small optimization.
+            static const OptionalPtr<T> EMPTY;
+
+            friend OptionalPtr<T> empty<T>();
+        };
+
+        /// Always contains a value, NOT COPIED from the source.
+        template <typename T>
+        class OptionalFromRvalue : public Optional<T> {
+           public:
+            static OptionalPtr<T> ofRvalue(const T& rvalue) {
+                return OptionalPtr<T>(new OptionalFromRvalue<T>(rvalue));
+            }
+
+            bool isPresent() const override {
+                return true;
+            }
+
+           protected:
+            const T& _getRValueUnchecked() const override {
+                return value;
+            };
+
+           private:
+            OptionalFromRvalue(const T& theValue) : value(theValue) {
+            }
+
+            // friend OptionalPtr<T> ofRvalue<T>(const T& rvalue);
+
+            // Shared_ptr is const to ensure the immutability of the Optional class.
+            const T& value;
+        };
+
+        /// Always contains a value, COPIED from the source.
+        template <typename T>
+        class OptionalFromLvalue : public Optional<T> {
+            static_assert(std::is_copy_constructible<T>::value, "Type must be copy constructible.");
+
+           public:
+            static OptionalPtr<T> ofLvalue(const T& lvalue) {
+                // return std::make_shared<OptionalFromLvalue<T>>(lvalue);
+                return OptionalPtr<T>(new OptionalFromLvalue<T>(lvalue));
+            }
+
+            bool isPresent() const override {
+                return true;
+            }
+
+           protected:
+            const T& _getRValueUnchecked() const override {
+                return value;
+            };
+
+           private:
+            OptionalFromLvalue(const T& theValue) : value(theValue) {
+            }
+
+            // friend OptionalPtr<T> ofLvalue(const T& lvalue);
+
+            const T value;
+        };
+
+        template <typename T>
+        class OptionalFromSharedPtr : public Optional<T> {
+           public:
+            static OptionalPtr<T> ofSharedPointer(const std::shared_ptr<T>& pointer) {
+                return OptionalPtr<T>(new OptionalFromSharedPtr<T>(pointer));
+            }
+
+            bool isPresent() const override {
+                return bool(value);
             }
 
             const std::shared_ptr<T>& getSharedPtr() const {
                 return value;
             }
 
-            bool operator==(const Optional<T>& other) const {
-                return this->value == other.value;
-            }
-
-            bool contains(const T& other) const {
-                return isPresent() ? *value == other : false;
-            }
+           protected:
+            const T& _getRValueUnchecked() const override {
+                return *value;
+            };
 
            private:
-            // Shared_ptr is const to ensure the immutability of the Optional class.
-            const std::shared_ptr<T> value;
-
-            // Unique empty optional for a type T.
-            // Having it unique is - hopefully - a small optimization.
-            static const Optional<T> EMPTY;
-
-            explicit Optional(const std::shared_ptr<T>& ptr = nullptr) : value(ptr) {
+            OptionalFromSharedPtr(const std::shared_ptr<T> theValue) : value(theValue) {
             }
 
-            friend Optional<T> empty<T>();
+            // friend OptionalPtr<T> ofSharedPointer<T>(const std::shared_ptr<T>& pointer);
 
-            friend Optional<T> of<T>(const T& value);
+            // Shared_ptr is const to ensure the immutability of the Optional class.
+            const std::shared_ptr<T> value;
+        };
 
-            friend Optional<T> ofSharedPointer<T>(const std::shared_ptr<T>& pointer);
+        /// Optimized: always empty.
+        template <typename T>
+        class OptionalEmpty : public Optional<T> {
+           public:
+            const T& get() const override {
+                throw EmptyOptionalException();
+            }
+
+            bool isPresent() const override {
+                return false;
+            }
+
+            bool isEmpty() const override {
+                return true;
+            }
+
+            operator bool() const override {
+                return false;
+            }
+
+            OptionalPtr<T> filter(const std::function<bool(const T&)>&) override {
+                return this->shared_from_this();
+            }
+
+            OptionalPtr<T> useThisOrRun(
+                const std::function<OptionalPtr<T>(void)> supplier) override {
+                return supplier();
+            }
+
+            const T& getOrDefault(const T& other) const override {
+                return other;
+            }
+
+            const T& getOrRun(const std::function<const T&(void)> supplier) override {
+                return supplier();
+            }
+
+            T getOrRunWithCopy(const std::function<T(void)> supplier) override {
+                return supplier();
+            }
+
+            const T& getOrThrow() const override {
+                throw EmptyOptionalException();
+            }
+
+            bool operator==(const Optional<T>& other) const override {
+                return this->isEmpty() == other.isEmpty();
+            }
+
+            bool contains(const T&) const override {
+                return false;
+            }
+
+           protected:
+            const T& _getRValueUnchecked() const {
+                throw EmptyOptionalException();
+            };
         };
 
         template <typename T>
-        Optional<T> empty() {
+        OptionalPtr<T> empty() {
             return Optional<T>::EMPTY;
         }
 
         template <typename T>
-        Optional<T> of(const T& value) {
-            return Optional<T>(std::make_shared<T>(value));
+        OptionalPtr<T> ofRvalue(const T& rvalue) {
+            return OptionalFromRvalue<T>::ofRvalue(rvalue);
         }
 
         template <typename T>
-        Optional<T> ofSharedPointer(const std::shared_ptr<T>& pointer) {
-            return Optional<T>(pointer);
+        OptionalPtr<T> ofLvalue(const T& lvalue) {
+            return OptionalFromLvalue<T>::ofLvalue(lvalue);
         }
 
         template <typename T>
-        const Optional<T> Optional<T>::EMPTY = Optional<T>(nullptr);
+        OptionalPtr<T> ofSharedPointer(const std::shared_ptr<T>& pointer) {
+            return OptionalFromSharedPtr<T>::ofSharedPointer(pointer);
+        }
+
+        template <typename T>
+        const OptionalPtr<T> Optional<T>::EMPTY = std::make_shared<OptionalEmpty<T>>();
     } // namespace Optionals
 } // namespace MF
 
