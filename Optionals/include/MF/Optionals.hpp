@@ -41,8 +41,8 @@ namespace MF
         OptionalPtr<T> ofSharedPointer(const std::shared_ptr<T>& pointer);
 
         /**
-         * Wrapper for a shared pointer that can contain a value, or not.
-         * API is similar to Java's Optional, with some changes.
+         * An Optional can contain a value, or be empty.
+         * The API is inspired from Java's Optional, with some changes.
          *
          * An optional contains a value, or does not contain a value (in which case it is empty).
          * You can build an optional with the functions "empty()" and "of(...)".
@@ -163,9 +163,6 @@ namespace MF
             OptionalFromRvalue(const T& theValue) : value(theValue) {
             }
 
-            // friend OptionalPtr<T> ofRvalue<T>(const T& rvalue);
-
-            // Shared_ptr is const to ensure the immutability of the Optional class.
             const T& value;
         };
 
@@ -176,7 +173,6 @@ namespace MF
 
            public:
             static OptionalPtr<T> ofLvalue(const T& lvalue) {
-                // return std::make_shared<OptionalFromLvalue<T>>(lvalue);
                 return OptionalPtr<T>(new OptionalFromLvalue<T>(lvalue));
             }
 
@@ -192,8 +188,6 @@ namespace MF
            private:
             OptionalFromLvalue(const T& theValue) : value(theValue) {
             }
-
-            // friend OptionalPtr<T> ofLvalue(const T& lvalue);
 
             const T value;
         };
@@ -221,8 +215,6 @@ namespace MF
            private:
             OptionalFromSharedPtr(const std::shared_ptr<T> theValue) : value(theValue) {
             }
-
-            // friend OptionalPtr<T> ofSharedPointer<T>(const std::shared_ptr<T>& pointer);
 
             // Shared_ptr is const to ensure the immutability of the Optional class.
             const std::shared_ptr<T> value;
