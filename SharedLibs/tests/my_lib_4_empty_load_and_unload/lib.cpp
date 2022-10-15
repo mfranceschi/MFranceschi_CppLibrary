@@ -4,4 +4,4 @@
 
 #include "MF/SharedLibsMacros.hpp"
 
-MF_SHARED_LIB_LOAD_UNLOAD(nullptr, nullptr);
+MF_SHARED_LIB_LOAD_UNLOAD(nullptr, nullptr)

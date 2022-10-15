@@ -34,8 +34,8 @@ namespace MF
             }
 
            private:
-            const Closer closer;
             ResourceType resource;
+            const Closer closer;
         };
 
         using DlOpenResult_t = void *;

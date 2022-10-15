@@ -5,6 +5,7 @@ target_link_libraries(
         PRIVATE
             MF_Datetime
             MF_Commons_Tests
+            MF_Timezones
 )
 
 target_sources(

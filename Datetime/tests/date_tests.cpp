@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "MF/Datetime.hpp"
+#include "MF/Timezones.hpp"
 #include "tests_data.hpp"
 
 using namespace MF::Datetime;
@@ -32,7 +33,7 @@ void GetterSetterTests::SetUp() {
 #else
         "Europe/Paris";
 #endif
-    SetTZ(tzForTests);
+    MF::Timezones::setSystemTz(tzForTests, true);
 
     d1 = Date(year, month, monthday, hour, minutes, seconds, dst_flag);
     d1_original = d1;
@@ -84,16 +85,6 @@ namespace StaticMethodsTesting
     TEST(DaysInMonth, February) {
         EXPECT_EQ(DaysInMonth(FEBRUARY, 0), 29); // Leap year
         EXPECT_EQ(DaysInMonth(FEBRUARY, 1), 28); // Non-leap year
-    }
-
-    TEST(Now_Timestamp, FullTest) {
-        time_t now_to_check = Now_Timestamp();
-        time_t now_from_chrono = clock::to_time_t(clock::now());
-        time_t distance = now_from_chrono - now_to_check;
-        if (distance < 0) {
-            distance *= -1;
-        }
-        EXPECT_TRUE(distance <= 1);
     }
 
     TEST(Now, FullTest) {

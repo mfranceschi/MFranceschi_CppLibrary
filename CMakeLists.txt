@@ -78,13 +78,19 @@ if(MF_IN_DEV)
 endif()
 
 add_subdirectory(Commons)
-add_subdirectory(Windows)
+link_libraries(MF_Commons)
 
+add_subdirectory(SystemErrors)
+add_subdirectory(Optionals)
+add_subdirectory(CTime)
+add_subdirectory(Windows)
+add_subdirectory(Environment)
 add_subdirectory(Filesystem)
 add_subdirectory(SharedLibs)
-add_subdirectory(Datetime)
+# add_subdirectory(Datetime) # TODO - not ready yet
 # add_subdirectory(Async) # TODO - not ready yet
 add_subdirectory(Containers)
+add_subdirectory(Timezones)
 
 add_library(MF_ALL INTERFACE)
 target_link_libraries(

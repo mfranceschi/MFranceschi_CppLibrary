@@ -16,6 +16,6 @@
 extern "C" {
 MF_SHARED_LIB_DIRECTIVE extern int thevariable;
 MF_SHARED_LIB_DIRECTIVE extern double theVariable;
-};
+}
 
 #endif // MFRANCESCHI_CPPLIBRARIES_LIB_HPP
