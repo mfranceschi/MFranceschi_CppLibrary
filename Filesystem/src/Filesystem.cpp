@@ -65,7 +65,7 @@ namespace MF
 
         template <class CharT>
         static std::unique_ptr<std::basic_ifstream<CharT>> internalOpenFile(
-            const std::basic_string<CharT> filename, Encoding_t encoding) {
+            const std::basic_string<CharT> &filename, Encoding_t encoding) {
             auto ptr = std::make_unique<std::basic_ifstream<CharT>>();
 
             switch (encoding) {
@@ -94,16 +94,7 @@ namespace MF
             return internalOpenFile(filename, getFileEncoding(filename));
         }
 
-        std::unique_ptr<std::wifstream> openFile(const WideFilename_t &filename) {
-            return internalOpenFile(filename, getFileEncoding(filename));
-        }
-
         std::unique_ptr<std::ifstream> openFile(const Filename_t &filename, Encoding_t encoding) {
-            return internalOpenFile(filename, encoding);
-        }
-
-        std::unique_ptr<std::wifstream> openFile(
-            const WideFilename_t &filename, Encoding_t encoding) {
             return internalOpenFile(filename, encoding);
         }
 
@@ -118,34 +109,11 @@ namespace MF
             }
         }
 
-        Encoding_t getFileEncoding(const WideFilename_t &filename) {
-            std::array<char, NBR_BITS_TO_READ_ENCODING> bits{};
-            osReadFileToBuffer(filename, bits.data(), NBR_BITS_TO_READ_ENCODING);
-            return parseBitsAndFindEncoding(bits);
-        }
-
         Encoding_t getFileEncoding(const Filename_t &filename) {
             std::array<char, NBR_BITS_TO_READ_ENCODING> bits{};
             osReadFileToBuffer(filename, bits.data(), NBR_BITS_TO_READ_ENCODING);
             return parseBitsAndFindEncoding(bits);
         }
-
-        /*
-        std::ostream &operator<<(std::ostream &theOstream, const Encoding_t &enc) {
-            switch (enc) {
-                case Encoding_e::ENC_UTF16LE:
-                    theOstream << "UTF-16LE";
-                    break;
-                case Encoding_e::ENC_UTF8:
-                    theOstream << "UTF-8";
-                    break;
-                case Encoding_e::ENC_DEFAULT:
-                    theOstream << "<encoding-unknown>";
-                    break;
-            }
-            return theOstream;
-        }
-        */
 
         std::vector<Filename_t> listFilesInDirectory(const Filename_t &folder) {
             bool addFileSeparatorAtTheEnd = !MF::Strings::stringEndsWith(folder, FILE_SEPARATOR);
@@ -155,6 +123,22 @@ namespace MF
                 addFileSeparatorAtTheEnd ? folder + FILE_SEPARATOR : folder, result);
             std::sort(result.begin(), result.end());
             return result;
+        }
+
+#if MF_WINDOWS
+        std::unique_ptr<std::wifstream> openFile(const WideFilename_t &filename) {
+            return internalOpenFile(filename, getFileEncoding(filename));
+        }
+
+        std::unique_ptr<std::wifstream> openFile(
+            const WideFilename_t &filename, Encoding_t encoding) {
+            return internalOpenFile(filename, encoding);
+        }
+
+        Encoding_t getFileEncoding(const WideFilename_t &filename) {
+            std::array<char, NBR_BITS_TO_READ_ENCODING> bits{};
+            osReadFileToBuffer(filename, bits.data(), NBR_BITS_TO_READ_ENCODING);
+            return parseBitsAndFindEncoding(bits);
         }
 
         std::vector<WideFilename_t> listFilesInDirectory(const WideFilename_t &folder) {
@@ -167,5 +151,6 @@ namespace MF
             std::sort(result.begin(), result.end());
             return result;
         }
+#endif
     } // namespace Filesystem
 } // namespace MF

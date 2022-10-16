@@ -6,9 +6,11 @@ target_sources(
         MF_Filesystem
         PRIVATE
             src/Filesystem.cpp
+            src/Filesystem_Constants.cpp
+            src/Filesystem_Unix.cpp
+            src/Filesystem_Unix_ReadWholeFile.cpp
             src/Filesystem_Windows.cpp
             src/Filesystem_Windows_ReadWholeFile.cpp
-            src/Filesystem_Constants.cpp
             src/FilesystemOSHelper.hpp
             src/FilesystemOSHelper_Unix.cpp
             src/FilesystemOSHelper_Windows.cpp

@@ -13,13 +13,17 @@ namespace MF
     {
 
         void osReadFileToBuffer(const Filename_t &filename, char *buffer, Filesize_t bufferSize);
+
+        void osGetDirectoryContents(
+            const Filename_t &directoryName, std::vector<Filename_t> &result);
+
+#if MF_WINDOWS
         void osReadFileToBuffer(
             const WideFilename_t &filename, char *buffer, Filesize_t bufferSize);
 
         void osGetDirectoryContents(
-            const Filename_t &directoryName, std::vector<Filename_t> &result);
-        void osGetDirectoryContents(
             const WideFilename_t &directoryName, std::vector<WideFilename_t> &result);
+#endif
     } // namespace Filesystem
 } // namespace MF
 

@@ -2,9 +2,11 @@
 // Created by MartinF on 16/10/2022.
 //
 
-#include "MF/Filesystem.hpp"
-#include "MF/SystemErrors.hpp"
-#include "MF/Windows.hpp"
+#if MF_WINDOWS
+
+#    include "MF/Filesystem.hpp"
+#    include "MF/SystemErrors.hpp"
+#    include "MF/Windows.hpp"
 
 namespace MF
 {
@@ -61,3 +63,5 @@ namespace MF
         }
     } // namespace Filesystem
 } // namespace MF
+
+#endif

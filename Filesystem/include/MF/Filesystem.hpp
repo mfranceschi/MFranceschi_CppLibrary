@@ -36,33 +36,22 @@ namespace MF
         using Filesize_t = unsigned long;
 
         using Filename_t = std::string;
-        using WideFilename_t = std::wstring;
 
         extern const Filename_t FILE_SEPARATOR;
-        extern const WideFilename_t FILE_SEPARATOR_WIDE;
         extern const Filename_t LINE_END;
-        extern const WideFilename_t LINE_END_WIDE;
 
         //////////////////////////////////////////////////////////////////  PUBLIC
         //------------------------------------------------------- Public functions
 
         void deleteFile(const Filename_t &filename);
-        void deleteFile(const WideFilename_t &filename);
-
         void deleteDirectory(const Filename_t &filename);
-        void deleteDirectory(const WideFilename_t &filename);
 
         bool isFile(const Filename_t &filename);
-        bool isFile(const WideFilename_t &filename);
-
         bool isDir(const Filename_t &filename);
-        bool isDir(const WideFilename_t &filename);
 
         Filesize_t getFileSize(const Filename_t &filename);
-        Filesize_t getFileSize(const WideFilename_t &filename);
 
         Encoding_t getFileEncoding(const Filename_t &filename);
-        Encoding_t getFileEncoding(const WideFilename_t &filename);
 
         /**
          * Opens the file with the correct locale (regarding the encoding) and skipping the
@@ -70,15 +59,10 @@ namespace MF
          */
         std::unique_ptr<std::ifstream> openFile(const Filename_t &filename);
         std::unique_ptr<std::ifstream> openFile(const Filename_t &filename, Encoding_t encoding);
-        std::unique_ptr<std::wifstream> openFile(const WideFilename_t &filename);
-        std::unique_ptr<std::wifstream> openFile(
-            const WideFilename_t &filename, Encoding_t encoding);
 
         void createDirectory(const Filename_t &filename);
-        void createDirectory(const WideFilename_t &filename);
 
         Filename_t getCWD();
-        WideFilename_t getCWDWide();
 
         /**
          * Generates the complete list of files and directories that are direct children of the
@@ -86,10 +70,9 @@ namespace MF
          * PATH_SEPARATOR.
          * > listFilesInDirectory("myFolder/") -> ("file.txt", "image.png", "subfolder/")
          * @param folder Name or path to the folder. It must end with a PATH_SEPARATOR character.
-         * @return List of files and directories names, or empty vector if anything failed.
+         * @return List of files and directories names.
          */
         std::vector<Filename_t> listFilesInDirectory(const Filename_t &folder);
-        std::vector<WideFilename_t> listFilesInDirectory(const WideFilename_t &folder);
 
         /// Data structure used to store information about files opened with openFile.
         class WholeFileData {
@@ -124,7 +107,35 @@ namespace MF
          * @return "nullptr" if anything failed or the file is empty, or a new structure.
          */
         std::unique_ptr<const WholeFileData> readWholeFile(const Filename_t &filename);
+
+#    if MF_WINDOWS
+        using WideFilename_t = std::wstring;
+
+        extern const WideFilename_t FILE_SEPARATOR_WIDE;
+        extern const WideFilename_t LINE_END_WIDE;
+
+        void deleteFile(const WideFilename_t &filename);
+        void deleteDirectory(const WideFilename_t &filename);
+
+        bool isFile(const WideFilename_t &filename);
+        bool isDir(const WideFilename_t &filename);
+
+        Filesize_t getFileSize(const WideFilename_t &filename);
+
+        Encoding_t getFileEncoding(const WideFilename_t &filename);
+
+        std::unique_ptr<std::wifstream> openFile(const WideFilename_t &filename);
+        std::unique_ptr<std::wifstream> openFile(
+            const WideFilename_t &filename, Encoding_t encoding);
+
+        void createDirectory(const WideFilename_t &filename);
+
+        WideFilename_t getCWDWide();
+
+        std::vector<WideFilename_t> listFilesInDirectory(const WideFilename_t &folder);
+
         std::unique_ptr<const WholeFileData> readWholeFile(const WideFilename_t &filename);
+#    endif
     } // namespace Filesystem
 } // namespace MF
 #endif // FILE_H

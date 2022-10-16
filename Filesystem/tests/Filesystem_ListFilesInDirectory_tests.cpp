@@ -3,6 +3,7 @@
 //
 
 #include "Filesystem_tests_commons.hpp"
+#include "MF/SystemErrors.hpp"
 
 TEST(listFilesInDirectory, UsualTest) {
     std::vector<Filename_t> expected = {
@@ -18,9 +19,7 @@ TEST(listFilesInDirectory, UsualTest) {
 }
 
 TEST(listFilesInDirectory, NonExistingDirectory) {
-    std::vector<Filename_t> ret = listFilesInDirectory(FILENAME_NOT_EXISTING);
-
-    EXPECT_THAT(ret, ::testing::IsEmpty());
+    EXPECT_THROW(listFilesInDirectory(FILENAME_NOT_EXISTING), MF::SystemErrors::SystemError);
 }
 
 TEST(listFilesInDirectory, EmptyDirectory) {
