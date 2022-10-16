@@ -18,7 +18,10 @@ namespace MF
         namespace WindowsCommons
         {
             static constexpr auto getLangId(bool localized) {
-                return MAKELANGID(LANG_NEUTRAL, localized ? SUBLANG_DEFAULT : SUBLANG_NEUTRAL);
+                // TODO: ensure that MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) will always work.
+                // It is possible that this locale is not installed on a machine,
+                // causing the FormatMessage function to fail with ERROR_RESOURCE_LANG_NOT_FOUND.
+                return localized ? LANG_USER_DEFAULT : MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
             }
 
             std::string getErrorMessageForErrorCode(DWORD errorCode, bool localized) {

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "Filesystem_tests_commons.hpp"
+#include "MF/SystemErrors.hpp"
 
 // Mother class for test fixtures.
 class TestFile : public ::testing::Test {
@@ -15,12 +16,16 @@ class TestFile : public ::testing::Test {
     }
 
     void CheckSize() const {
-        Filesize_t size = GetFileSize(fid.name.c_str());
-        EXPECT_EQ(size, fid.size);
+        if (fid.exists) {
+            Filesize_t size = getFileSize(fid.name);
+            EXPECT_EQ(size, fid.size);
+        } else {
+            EXPECT_THROW(getFileSize(fid.name), MF::SystemErrors::SystemError);
+        }
     }
 
     void CheckExists() const {
-        bool result = IsFile(fid.name.c_str());
+        bool result = isFile(fid.name);
         if (fid.exists) {
             EXPECT_TRUE(result);
         } else {
@@ -29,14 +34,17 @@ class TestFile : public ::testing::Test {
     }
 
     void CheckEncoding() const {
-        EXPECT_EQ(GetFileEncoding(fid.name.c_str()), fid.encoding);
+        if (fid.exists) {
+            EXPECT_EQ(getFileEncoding(fid.name), fid.encoding);
+        } else {
+            EXPECT_THROW(getFileEncoding(fid.name), MF::SystemErrors::SystemError);
+        }
     }
 
     void CheckOpen() const {
-        std::ifstream ifs;
-        bool was_opened = OpenFile(ifs, fid.name.c_str());
         if (fid.exists) {
-            ASSERT_TRUE(was_opened);
+            auto openedFile = openFile(fid.name);
+            auto &ifs = *openedFile;
             ASSERT_TRUE(ifs.good());
             EXPECT_EQ(ifs.tellg(), fid.offset);
             ifs.seekg(0, std::ios_base::beg);
@@ -45,58 +53,30 @@ class TestFile : public ::testing::Test {
             ifs.seekg(-1, std::ios_base::end);
             EXPECT_EQ(static_cast<char>(ifs.peek()), fid.lastByte);
         } else {
-            ASSERT_FALSE(was_opened);
-            ASSERT_FALSE(ifs.good());
-        }
-    }
-
-    void CheckIsEmpty() const {
-        constexpr unsigned char unsignedCharMax = 0xff;
-        if (fid.exists) {
-            // Try to read an invalid number of chars.
-            // Effect: check that the file exists.
-            EXPECT_TRUE(IsFileReadable(fid.name.c_str(), 0));
-
-            // Read a few times.
-            const unsigned char maxCharsToRead = std::min<unsigned char>(fid.size, unsignedCharMax);
-            for (unsigned char i = 1; i < maxCharsToRead; ++i) {
-                EXPECT_TRUE(IsFileReadable(fid.name.c_str(), i))
-                    << "Fail of \"Read a few times\" with index " << static_cast<unsigned int>(i);
-            }
-
-            if (fid.size < 1 /* Value of default param. */) {
-                EXPECT_FALSE(IsFileReadable(fid.name.c_str()));
-            } else {
-                EXPECT_TRUE(IsFileReadable(fid.name.c_str()));
-            }
-        } else {
-            EXPECT_FALSE(IsFileReadable(fid.name.c_str(), 0));
-            EXPECT_FALSE(IsFileReadable(fid.name.c_str()));
+            EXPECT_THROW(openFile(fid.name), MF::SystemErrors::SystemError);
         }
     }
 
     void SetUp() override {
         if (fid.exists) {
-            ASSERT_TRUE(IsFile(fid.name.c_str())) << GetCWD() << std::endl << fid.name;
+            ASSERT_TRUE(isFile(fid.name)) << getCWD() << std::endl << fid.name;
         } else {
-            if (IsFile(fid.name.c_str())) {
-                DeleteFile(fid.name.c_str());
+            if (isFile(fid.name)) {
+                deleteFile(fid.name);
             }
         }
     }
 
     void TearDown() override {
         if (fid.exists) {
-            ASSERT_TRUE(IsFile(fid.name.c_str()));
+            ASSERT_TRUE(isFile(fid.name));
         } else {
-            ASSERT_FALSE(IsFile(fid.name.c_str()));
+            ASSERT_FALSE(isFile(fid.name));
         }
     }
 };
 
 // Test classes for test fixtures
-#if 1
-
 class NotExistingFile : public TestFile {
    protected:
     NotExistingFile() : TestFile(fid_not_existing) {
@@ -115,10 +95,7 @@ class SmallFileUTF16LE : public TestFile {
     }
 };
 
-#endif
-
 // Test fixtures
-#if 1
 TEST_F(MiddleWeightFile, VerifySize) {
     CheckSize();
 }
@@ -133,10 +110,6 @@ TEST_F(MiddleWeightFile, VerifyEncoding) {
 
 TEST_F(MiddleWeightFile, VerifyOpen) {
     CheckOpen();
-}
-
-TEST_F(MiddleWeightFile, VerifyIsEmpty) {
-    CheckIsEmpty();
 }
 
 TEST_F(NotExistingFile, VerifySize) {
@@ -155,10 +128,6 @@ TEST_F(NotExistingFile, VerifyOpen) {
     CheckOpen();
 }
 
-TEST_F(NotExistingFile, VerifyIsEmpty) {
-    CheckIsEmpty();
-}
-
 TEST_F(SmallFileUTF16LE, VerifySize) {
     CheckSize();
 }
@@ -175,45 +144,36 @@ TEST_F(SmallFileUTF16LE, VerifyOpen) {
     CheckOpen();
 }
 
-TEST_F(SmallFileUTF16LE, VerifyIsEmpty) {
-    CheckIsEmpty();
-}
-
-#endif
-
 // Individual test cases
-#if 1
-TEST(IsDir, ActualFolder) {
-    ASSERT_TRUE(IsDir(MAKE_FILE_NAME MF_FILESYSTEM_TESTS_FILES_DIR));
+TEST(isDir, ActualFolder) {
+    ASSERT_TRUE(isDir(MF_FILESYSTEM_TESTS_FILES_DIR));
 }
 
-TEST(IsDir, IsAFile) {
-    SFilename_t fname = FILENAME_SMALL_UTF16LE;
-    ASSERT_TRUE(IsFile(fname.c_str()));
-    ASSERT_FALSE(IsDir(fname.c_str()));
+TEST(isDir, IsAFile) {
+    Filename_t fname = FILENAME_SMALL_UTF16LE;
+    ASSERT_TRUE(isFile(fname));
+    ASSERT_FALSE(isDir(fname));
 }
 
-TEST(IsDir, Unexisting) {
-    ASSERT_FALSE(IsDir(FILENAME_NOT_EXISTING.c_str()));
+TEST(isDir, Unexisting) {
+    ASSERT_FALSE(isDir(FILENAME_NOT_EXISTING));
 }
 
-TEST(IsDir, NewFolder) {
-    const SFilename_t &filename = FILENAME_TEMP;
-    ASSERT_FALSE(IsDir(filename.c_str()));
+TEST(isDir, NewFolder) {
+    const Filename_t &filename = FILENAME_TEMP;
+    ASSERT_FALSE(isDir(filename));
 
-    ASSERT_TRUE(CreateDirectory(filename.c_str()));
+    ASSERT_NO_THROW(createDirectory(filename));
 
-    EXPECT_TRUE(IsDir(filename.c_str()));
-    ASSERT_TRUE(Delete(filename.c_str(), false));
+    EXPECT_TRUE(isDir(filename));
+    ASSERT_NO_THROW(deleteDirectory(filename));
 }
 
-TEST(DeleteFile, Unexisting) {
-    ASSERT_FALSE(DeleteFile(FILENAME_NOT_EXISTING.c_str()));
+TEST(deleteFile, Unexisting) {
+    ASSERT_THROW(deleteFile(FILENAME_NOT_EXISTING), MF::SystemErrors::SystemError);
 }
-
-#endif
 
 TEST(GetCwd, itWorks) {
-    SFilename_t cwd = GetCWD();
+    Filename_t cwd = getCWD();
     ASSERT_FALSE(cwd.empty());
 }

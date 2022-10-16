@@ -41,10 +41,6 @@ TEST(Errno_ThrowCurrentSystemErrorIf, it_throws_if_true) {
             systemError.what(), ::testing::AnyOf(
                                     ::testing::StrEq("Numerical result out of range"),
                                     ::testing::StrEq("Result too large")));
-    } catch (const std::runtime_error& runtime_error) {
-        FAIL() << "Unexpected runtime_error: " << runtime_error.what();
-    } catch (...) {
-        FAIL() << "Unexpected or unknown error.";
     }
 }
 

@@ -11,28 +11,15 @@ namespace MF
 {
     namespace Filesystem
     {
-        bool osDeleteFile(Filename_t filename);
 
-        bool osDeleteFileOrDirectory(Filename_t filename);
-
-        bool osDeleteDirectory(Filename_t filename);
-
-        bool osFileExists(Filename_t filename);
-
-        bool osDirectoryExists(Filename_t filename);
-
-        int osReadFileToBuffer(Filename_t filename, char *buffer, Filesize_t bufferSize);
-
-        Filesize_t osGetFileSize(Filename_t filename);
-
-        bool osCreateDirectory(Filename_t directoryName);
-
-        SFilename_t osGetCWD();
+        void osReadFileToBuffer(const Filename_t &filename, char *buffer, Filesize_t bufferSize);
+        void osReadFileToBuffer(
+            const WideFilename_t &filename, char *buffer, Filesize_t bufferSize);
 
         void osGetDirectoryContents(
-            const SFilename_t &directoryName, std::vector<SFilename_t> &result);
-
-        std::unique_ptr<const WholeFileData> osReadWholeFile(Filename_t filename);
+            const Filename_t &directoryName, std::vector<Filename_t> &result);
+        void osGetDirectoryContents(
+            const WideFilename_t &directoryName, std::vector<WideFilename_t> &result);
     } // namespace Filesystem
 } // namespace MF
 

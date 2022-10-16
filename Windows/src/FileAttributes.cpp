@@ -9,17 +9,14 @@ namespace MF
 {
     namespace Windows
     {
-        FileAttributes::FileAttributes() : FileAttributes(INVALID_FILE_ATTRIBUTES) {
+        FileAttributes::FileAttributes(DWORD value) : dWord(value) {
         }
 
-        FileAttributes::FileAttributes(Type value) : dWord(value) {
-        }
-
-        FileAttributes::Type FileAttributes::get() const {
+        DWORD FileAttributes::get() const {
             return dWord;
         }
 
-        FileAttributes& FileAttributes::set(Type value) {
+        FileAttributes& FileAttributes::set(DWORD value) {
             dWord = value;
             return *this;
         }

@@ -85,6 +85,7 @@ add_subdirectory(Optionals)
 add_subdirectory(CTime)
 add_subdirectory(Windows)
 add_subdirectory(Environment)
+add_subdirectory(Strings)
 add_subdirectory(Filesystem)
 add_subdirectory(SharedLibs)
 # add_subdirectory(Datetime) # TODO - not ready yet
@@ -103,4 +104,4 @@ target_link_libraries(
             MF_SharedLibs
 )
 
-add_subdirectory(misc/TimingExperience)
+# add_subdirectory(misc/TimingExperience)

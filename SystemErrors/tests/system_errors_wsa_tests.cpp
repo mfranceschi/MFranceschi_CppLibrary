@@ -51,10 +51,6 @@ TEST(Wsa_ThrowCurrentSystemErrorIf, it_throws_if_true) {
         EXPECT_STREQ(
             systemError.what(),
             "Either the application has not called WSAStartup, or WSAStartup failed");
-    } catch (const std::runtime_error& runtime_error) {
-        FAIL() << "Unexpected runtime_error: " << runtime_error.what();
-    } catch (...) {
-        FAIL() << "Unexpected or unknown error.";
     }
 }
 

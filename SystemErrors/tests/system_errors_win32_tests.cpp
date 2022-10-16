@@ -33,10 +33,6 @@ TEST(Win32_ThrowCurrentSystemErrorIf, it_throws_if_true) {
         EXPECT_EQ(systemError.getParadigm(), Paradigm::Win32);
         EXPECT_EQ(systemError.getErrorCode(), expectedError);
         EXPECT_STREQ(systemError.what(), "The handle is invalid");
-    } catch (const std::runtime_error& runtime_error) {
-        FAIL() << "Unexpected runtime_error: " << runtime_error.what();
-    } catch (...) {
-        FAIL() << "Unexpected or unknown error.";
     }
 }
 

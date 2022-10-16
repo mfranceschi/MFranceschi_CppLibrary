@@ -5,6 +5,8 @@
 #include <string>
 #include <system_error>
 
+#include "MF/LightWindows.hpp"
+
 namespace MF
 {
     namespace Windows
@@ -23,17 +25,15 @@ namespace MF
         std::wstring ConvertString(const char *utf8String);
 
         /// Sets or unsets the "inherit" flag to the given handle.
-        void MakeHandleInheritable(void *handle, bool inherit = true);
+        void MakeHandleInheritable(HANDLE handle, bool inherit = true);
 
         class FileAttributes {
            public:
-            using Type = unsigned long;
+            FileAttributes() = delete;
+            FileAttributes(DWORD value);
 
-            FileAttributes();
-            FileAttributes(Type value);
-
-            Type get() const;
-            FileAttributes &set(Type value);
+            DWORD get() const;
+            FileAttributes &set(DWORD value);
 
             bool isInvalid() const;
             bool isValid() const;
@@ -42,15 +42,67 @@ namespace MF
             bool isFile() const; /// defined as "not a directory"
 
            private:
-            Type dWord;
+            DWORD dWord;
         };
 
-        static inline FileAttributes makeFileAttributes(FileAttributes::Type value) {
+        static inline FileAttributes makeFileAttributes(DWORD value) {
             FileAttributes instance(value);
             if (instance.isInvalid()) {
                 throw std::invalid_argument("Provided file attributes are invalid");
             }
             return instance;
         }
+
+        namespace internals
+        {
+            template <typename ResourceType, typename Closer>
+            class ResourceCloser {
+               public:
+                ResourceCloser(ResourceType resource, Closer closer)
+                    : resource(resource), closer(closer) {
+                }
+
+                const ResourceType &get() const {
+                    return resource;
+                }
+
+                ResourceType release() {
+                    ResourceType theResource = resource;
+                    resource = ResourceType();
+                    closer = Closer();
+                    return theResource;
+                }
+
+                virtual ~ResourceCloser() {
+                    closer(resource);
+                }
+
+               private:
+                Closer closer;
+                ResourceType resource;
+            };
+        } // namespace internals
+
+        class HandleCloser : public internals::ResourceCloser<HANDLE, decltype(&CloseHandle)> {
+           public:
+            HandleCloser(HANDLE handle)
+                : ResourceCloser<HANDLE, decltype(&CloseHandle)>(handle, CloseHandle) {
+            }
+
+            bool isInvalid() const {
+                return get() == INVALID_HANDLE_VALUE;
+            }
+        };
+
+        class FileHandleCloser : public internals::ResourceCloser<HANDLE, decltype(&FindClose)> {
+           public:
+            FileHandleCloser(HANDLE handle)
+                : ResourceCloser<HANDLE, decltype(&FindClose)>(handle, FindClose) {
+            }
+
+            bool isInvalid() const {
+                return get() == INVALID_HANDLE_VALUE;
+            }
+        };
     } // namespace Windows
 } // namespace MF

@@ -55,8 +55,8 @@ namespace MF
             size_t size = FormatMessageA(
                 FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                     FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0,
-                NULL);
+                NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPSTR)&messageBuffer, 0, NULL);
 
             // Copy the error message into a std::string.
             std::string message(messageBuffer, size);
@@ -64,7 +64,8 @@ namespace MF
             // Free the Win32's string's buffer.
             LocalFree(messageBuffer);
 
-            return std::system_error(std::error_code(errorMessageID, std::generic_category()), message);
+            return std::system_error(
+                std::error_code(errorMessageID, std::generic_category()), message);
         }
 
         std::wstring ConvertString(const char *utf8String) {
@@ -82,7 +83,7 @@ namespace MF
             return wstr.get();
         }
 
-        void MakeHandleInheritable(void *handle, bool inherit) {
+        void MakeHandleInheritable(HANDLE handle, bool inherit) {
             SetHandleInformation(handle, HANDLE_FLAG_INHERIT, inherit ? HANDLE_FLAG_INHERIT : 0);
         }
     } // namespace Windows

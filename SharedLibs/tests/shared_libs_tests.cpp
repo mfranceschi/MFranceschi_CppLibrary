@@ -102,5 +102,6 @@ TEST_F(SampleLib1Tests, it_can_return_the_system_path) {
 
     ASSERT_NO_THROW(result = sharedLib->GetSystemPath());
 
-    EXPECT_EQ(result, MAKE_FILE_NAME MF_SAMPLE_LIB_1_FOLDER "/" MF_SAMPLE_LIB_1_EFFECTIVE_NAME);
+    // Reminder: the file separator used here is "/".
+    EXPECT_EQ(result, MF_SAMPLE_LIB_1_FOLDER "/" MF_SAMPLE_LIB_1_EFFECTIVE_NAME);
 }
