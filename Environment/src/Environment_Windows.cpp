@@ -11,7 +11,7 @@
 
 #    include "MF/Environment.hpp"
 #    include "MF/LightWindows.hpp"
-#    include "MF/Windows.hpp"
+#    include "MF/SystemErrors.hpp"
 
 namespace MF
 {
@@ -61,9 +61,7 @@ namespace MF
             assertNameIsNotEmpty(name);
 
             BOOL result = SetEnvironmentVariable(name.c_str(), value.c_str());
-            if (result == FALSE) {
-                throw MF::Windows::GetCurrentSystemError();
-            }
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(result == FALSE);
         }
 
         void unsetEnv(const std::string& name) {
@@ -71,16 +69,12 @@ namespace MF
 
             BOOL result = SetEnvironmentVariable(name.c_str(), nullptr);
             // It does not fail if it does not exist.
-            if (result == FALSE) {
-                throw MF::Windows::GetCurrentSystemError();
-            }
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(result == FALSE);
         }
 
         std::string getEnv(const std::string& name) {
             auto dwordAndBuffer = getEnvInternal(name);
-            if (dwordAndBuffer.isError()) {
-                throw MF::Windows::GetCurrentSystemError();
-            }
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(dwordAndBuffer.isError());
 
             return dwordAndBuffer.getString();
         }
@@ -94,11 +88,11 @@ namespace MF
         bool hasEnv(const std::string& name) {
             auto dwordAndBuffer = getEnvInternal(name);
             if (dwordAndBuffer.isError()) {
-                auto systemError = MF::Windows::GetCurrentSystemError();
-                if (systemError.code().value() == ERROR_ENVVAR_NOT_FOUND) {
+                auto systemError = MF::SystemErrors::Win32::getCurrentErrorCode();
+                if (systemError == ERROR_ENVVAR_NOT_FOUND) {
                     return false;
                 }
-                throw systemError;
+                throw MF::SystemErrors::Win32::getSystemErrorForErrorCode(systemError);
             }
             return true;
         }

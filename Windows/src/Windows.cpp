@@ -82,9 +82,5 @@ namespace MF
             MultiByteToWideChar(CP_UTF8, 0, utf8String, -1, wstr.get(), wchars_num);
             return wstr.get();
         }
-
-        void MakeHandleInheritable(HANDLE handle, bool inherit) {
-            SetHandleInformation(handle, HANDLE_FLAG_INHERIT, inherit ? HANDLE_FLAG_INHERIT : 0);
-        }
     } // namespace Windows
 } // namespace MF

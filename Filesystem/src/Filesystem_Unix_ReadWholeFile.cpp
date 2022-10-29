@@ -2,15 +2,17 @@
 // Created by MartinF on 16/10/2022.
 //
 
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#if MF_UNIX
 
-#include <cassert>
+#    include <fcntl.h>
+#    include <sys/mman.h>
+#    include <sys/stat.h>
+#    include <unistd.h>
 
-#include "MF/Filesystem.hpp"
-#include "MF/SystemErrors.hpp"
+#    include <cassert>
+
+#    include "MF/Filesystem.hpp"
+#    include "MF/SystemErrors.hpp"
 
 namespace MF
 {
@@ -50,3 +52,5 @@ namespace MF
         }
     } // namespace Filesystem
 } // namespace MF
+
+#endif

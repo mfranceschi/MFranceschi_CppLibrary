@@ -15,7 +15,7 @@ target_sources(MF_SystemErrors
         PUBLIC
         ${Public_Sources}
         )
-target_link_libraries(MF_SystemErrors PUBLIC MF_Commons MF_Windows)
+target_link_libraries(MF_SystemErrors PUBLIC MF_Commons MF_Windows_Header)
 target_include_directories(MF_SystemErrors PUBLIC include)
 
 include(CheckStrerrorFunctionsExist.cmake)
