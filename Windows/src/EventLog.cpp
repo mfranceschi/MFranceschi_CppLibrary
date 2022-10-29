@@ -106,6 +106,10 @@ namespace MF
             EVENTLOGRECORD* EventRecord::getBufferAsRecord() const {
                 return static_cast<EVENTLOGRECORD*>(buffer);
             }
+
+            EventRecord::EventRecord(LPVOID buffer) : buffer(buffer) {
+            }
+
             EventRecord::~EventRecord() {
                 free(buffer);
             }
@@ -136,11 +140,12 @@ namespace MF
                 internals::ArrayOfArrays<const char> arrayOfArrays{
                     internals::vectorToArrayOfArrays(eventToWrite.strings),
                     eventToWrite.strings.size()};
+                WORD eventType = eventTypeToWord(eventToWrite.eventType);
 
                 BOOL success = ReportEventA(
-                    hEventSource, WORD(eventToWrite.eventType), eventToWrite.eventCategory,
-                    eventToWrite.eventId, eventToWrite.userId, arrayOfArrays.nbItems,
-                    eventToWrite.rawData.size, arrayOfArrays.pointer, eventToWrite.rawData.pointer);
+                    hEventSource, eventType, eventToWrite.eventCategory, eventToWrite.eventId,
+                    eventToWrite.userId, arrayOfArrays.nbItems, eventToWrite.rawData.size,
+                    arrayOfArrays.pointer, eventToWrite.rawData.pointer);
                 Win32::throwCurrentSystemErrorIf(success == FALSE);
             }
 
@@ -148,11 +153,12 @@ namespace MF
                 internals::ArrayOfArrays<const wchar_t> arrayOfArrays{
                     internals::vectorToArrayOfArrays(eventToWrite.strings),
                     eventToWrite.strings.size()};
+                WORD eventType = eventTypeToWord(eventToWrite.eventType);
 
                 BOOL success = ReportEventW(
-                    hEventSource, WORD(eventToWrite.eventType), eventToWrite.eventCategory,
-                    eventToWrite.eventId, eventToWrite.userId, arrayOfArrays.nbItems,
-                    eventToWrite.rawData.size, arrayOfArrays.pointer, eventToWrite.rawData.pointer);
+                    hEventSource, eventType, eventToWrite.eventCategory, eventToWrite.eventId,
+                    eventToWrite.userId, arrayOfArrays.nbItems, eventToWrite.rawData.size,
+                    arrayOfArrays.pointer, eventToWrite.rawData.pointer);
                 Win32::throwCurrentSystemErrorIf(success == FALSE);
             }
 
@@ -192,15 +198,15 @@ namespace MF
                 Win32::throwCurrentSystemErrorIf(handle == nullptr);
             }
 
-            void EventLogReader::readOneEventForward() {
+            std::unique_ptr<EventRecord> EventLogReader::readOneEventForward() {
                 return readOneEvent(EVENTLOG_SEQUENTIAL_READ | EVENTLOG_FORWARDS_READ);
             }
 
-            void EventLogReader::readOneEventBackwards() {
+            std::unique_ptr<EventRecord> EventLogReader::readOneEventBackwards() {
                 return readOneEvent(EVENTLOG_SEQUENTIAL_READ | EVENTLOG_BACKWARDS_READ);
             }
 
-            void EventLogReader::readOneEventAtOffset(DWORD offset) {
+            std::unique_ptr<EventRecord> EventLogReader::readOneEventAtOffset(DWORD offset) {
                 return readOneEvent(EVENTLOG_SEEK_READ, offset);
             }
 
@@ -253,7 +259,7 @@ namespace MF
                 return handle;
             }
 
-            void EventLogReader::readOneEvent(DWORD flags, DWORD offset) {
+            std::unique_ptr<EventRecord> EventLogReader::readOneEvent(DWORD flags, DWORD offset) {
                 LPVOID buffer = this;
                 DWORD bufferSize = 1;
                 DWORD nbBytesRead = 0;
@@ -263,8 +269,8 @@ namespace MF
                     handle, flags, offset, buffer, bufferSize, &nbBytesRead,
                     &minNumberOfBytesNeeded);
                 if (success != 0u) {
-                    // TODO wtf!?
-                    exit(1);
+                    throw std::runtime_error(
+                        "Call to 'ReadEventLogA' with 1 byte to read has succeeded!");
                 }
                 auto errorCode = Win32::getCurrentErrorCode();
                 if (errorCode != ERROR_INSUFFICIENT_BUFFER) {
@@ -273,10 +279,13 @@ namespace MF
 
                 buffer = malloc(minNumberOfBytesNeeded);
                 Errno::throwCurrentSystemErrorIf(buffer == nullptr);
+                bufferSize = minNumberOfBytesNeeded;
 
                 success = ReadEventLogA(
                     handle, flags, 0, buffer, bufferSize, &nbBytesRead, &minNumberOfBytesNeeded);
-                EventRecord eventRecord{buffer}; // TODO return it
+                Errno::throwCurrentSystemErrorIf(success == FALSE);
+
+                return std::make_unique<EventRecord>(buffer);
             }
 
             EventLogReader::~EventLogReader() {

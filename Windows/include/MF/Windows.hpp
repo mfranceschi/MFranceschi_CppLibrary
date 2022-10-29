@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <system_error>
@@ -60,6 +61,10 @@ namespace MF
                 eAUDIT_FAILURE = EVENTLOG_AUDIT_FAILURE
             };
 
+            inline WORD eventTypeToWord(EventType_e e) {
+                return static_cast<WORD>(e);
+            }
+
             struct RawData {
                 std::size_t size = 0;
                 void* pointer = nullptr;
@@ -90,6 +95,7 @@ namespace MF
 
                 EVENTLOGRECORD* getBufferAsRecord() const;
 
+                EventRecord(LPVOID buffer);
                 ~EventRecord(); // Calls 'free'.
 
                 const LPVOID buffer;
@@ -128,9 +134,9 @@ namespace MF
                 explicit EventLogReader(
                     const std::wstring& sourceName, const std::wstring& UNCServerName = L"");
 
-                void readOneEventForward();
-                void readOneEventBackwards();
-                void readOneEventAtOffset(DWORD offset);
+                std::unique_ptr<EventRecord> readOneEventForward();
+                std::unique_ptr<EventRecord> readOneEventBackwards();
+                std::unique_ptr<EventRecord> readOneEventAtOffset(DWORD offset);
 
                 void backup(const std::string& backupFileName);
                 void backup(const std::wstring& backupFileName);
@@ -146,7 +152,7 @@ namespace MF
                 ~EventLogReader();
 
                private:
-                void readOneEvent(DWORD flags, DWORD offset = 0);
+                std::unique_ptr<EventRecord> readOneEvent(DWORD flags, DWORD offset = 0);
                 const HANDLE handle;
             };
         } // namespace EventLog
