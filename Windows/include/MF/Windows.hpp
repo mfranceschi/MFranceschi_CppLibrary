@@ -92,6 +92,8 @@ namespace MF
                 RawData getData() const;
                 wchar_t* getMaybeFirstString() const;
                 size_t getNumberOfStrings() const;
+                wchar_t* getSourceName() const;
+                wchar_t* getComputerName() const;
 
                 EVENTLOGRECORD* getBufferAsRecord() const;
 
@@ -111,6 +113,10 @@ namespace MF
 
                 void info(
                     const std::vector<std::string>& strings,
+                    DWORD eventId = 0,
+                    WORD eventCategory = 0);
+                void info(
+                    const std::vector<std::wstring>& strings,
                     DWORD eventId = 0,
                     WORD eventCategory = 0);
 
@@ -136,6 +142,14 @@ namespace MF
 
                 std::unique_ptr<EventRecord> readOneEventForward();
                 std::unique_ptr<EventRecord> readOneEventBackwards();
+
+                /**
+                 * Note: use this with care.
+                 * If a SystemError with code 'ERROR_INVALID_PARAMETER' (87) is thrown,
+                 * it is probably due to the size of the log file.
+                 * Use another read function instead.
+                 * https://www.betaarchive.com/wiki/index.php/Microsoft_KB_Archive/177199
+                 */
                 std::unique_ptr<EventRecord> readOneEventAtOffset(DWORD offset);
 
                 void backup(const std::string& backupFileName);

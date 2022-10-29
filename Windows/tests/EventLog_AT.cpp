@@ -3,24 +3,47 @@
 //
 
 #include <ctime>
+#include <iostream>
 
 #include "MF/Windows.hpp"
 
 using namespace MF::Windows::EventLog;
 
-static const std::string appName = "MF_Lib EventLog acceptance testing";
+static const std::wstring appNameForWriting = L"MF_Lib EventLog acceptance testing";
 
-std::string getTimestampAsString() {
-    return std::to_string(time(nullptr));
+std::wstring getTimestampAsWstring() {
+    return std::to_wstring(time(nullptr));
 }
 
 void logInfoEvent() {
-    EventLogWriter eventLogWriter(appName);
-    std::vector<std::string> strings = {"Hello, World! Timestamp is " + getTimestampAsString()};
+    EventLogWriter eventLogWriter(appNameForWriting);
+    std::vector<std::wstring> strings = {L"Hello, World! Timestamp is " + getTimestampAsWstring()};
     eventLogWriter.info(strings);
 }
 
+void readEvents(const std::wstring& appName) {
+    EventLogReader eventLogReader(appName);
+
+    std::cout << "There are " << eventLogReader.getNumberOfRecords() << " records here in total."
+              << std::endl;
+    std::cout << "The oldest event has the record number "
+              << eventLogReader.getOldestEventRecordNumber() << std::endl;
+    std::cout << "Is full? " << std::boolalpha << eventLogReader.isFull() << std::endl;
+
+    auto event = eventLogReader.readOneEventForward();
+    /*
+    std::cout << "Reading event number " << event->getRecordNumber() << std::endl;
+    event = eventLogReader.readOneEventBackwards();
+    std::cout << "Reading event number " << event->getRecordNumber() << std::endl;
+     */
+}
+
 int main() {
-    logInfoEvent();
+    try {
+        // logInfoEvent();
+        readEvents(L"Application");
+    } catch (const std::runtime_error& error) {
+        std::cerr << error.what() << std::endl;
+    }
     return 0;
 }

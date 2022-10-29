@@ -45,13 +45,13 @@ namespace MF
                 };
 
                 template <typename CharT>
-                const CharT** vectorToArrayOfArrays(
+                CharT** vectorToArrayOfArrays(
                     const std::vector<std::basic_string<CharT>>& strings) {
                     if (strings.empty()) {
                         return nullptr;
                     }
 
-                    const CharT** arrayOfArrays = new const CharT*[strings.size()];
+                    CharT** arrayOfArrays = new CharT*[strings.size()];
                     for (size_t i = 0; i < strings.size(); i++) {
                         CharT* currentArray = new CharT[strings[i].length() + 1];
                         copyString(strings[i], currentArray);
@@ -102,6 +102,22 @@ namespace MF
             size_t EventRecord::getNumberOfStrings() const {
                 return getBufferAsRecord()->NumStrings;
             }
+            wchar_t* EventRecord::getSourceName() const {
+                void* lastFieldAddress = &(getBufferAsRecord()->DataOffset);
+                void* sourceNameAddress = (char*)lastFieldAddress +
+                                          std::ptrdiff_t(sizeof getBufferAsRecord()->DataOffset);
+                wchar_t* sourceName = static_cast<wchar_t*>(sourceNameAddress);
+                return sourceName;
+            }
+
+            wchar_t* EventRecord::getComputerName() const {
+                void* lastFieldAddress = &(getBufferAsRecord()->DataOffset);
+                void* sourceNameAddress = (char*)lastFieldAddress +
+                                          std::ptrdiff_t(sizeof getBufferAsRecord()->DataOffset);
+                wchar_t* sourceName = static_cast<wchar_t*>(sourceNameAddress);
+                wchar_t* computerName = sourceName + wcslen(sourceName) + 1;
+                return computerName;
+            }
 
             EVENTLOGRECORD* EventRecord::getBufferAsRecord() const {
                 return static_cast<EVENTLOGRECORD*>(buffer);
@@ -136,29 +152,37 @@ namespace MF
                     EventToWrite<char>{strings, eventId, eventCategory, EventType_e::eINFORMATION});
             }
 
+            void EventLogWriter::info(
+                const std::vector<std::wstring>& strings, DWORD eventId, WORD eventCategory) {
+                reportEvent(EventToWrite<wchar_t>{
+                    strings, eventId, eventCategory, EventType_e::eINFORMATION});
+            }
+
             void EventLogWriter::reportEvent(const EventToWrite<char>& eventToWrite) {
-                internals::ArrayOfArrays<const char> arrayOfArrays{
+                internals::ArrayOfArrays<char> arrayOfArrays{
                     internals::vectorToArrayOfArrays(eventToWrite.strings),
                     eventToWrite.strings.size()};
                 WORD eventType = eventTypeToWord(eventToWrite.eventType);
+                auto stringsPointer = const_cast<const char**>(arrayOfArrays.pointer);
 
                 BOOL success = ReportEventA(
                     hEventSource, eventType, eventToWrite.eventCategory, eventToWrite.eventId,
                     eventToWrite.userId, arrayOfArrays.nbItems, eventToWrite.rawData.size,
-                    arrayOfArrays.pointer, eventToWrite.rawData.pointer);
+                    stringsPointer, eventToWrite.rawData.pointer);
                 Win32::throwCurrentSystemErrorIf(success == FALSE);
             }
 
             void EventLogWriter::reportEvent(const EventToWrite<wchar_t>& eventToWrite) {
-                internals::ArrayOfArrays<const wchar_t> arrayOfArrays{
+                internals::ArrayOfArrays<wchar_t> arrayOfArrays{
                     internals::vectorToArrayOfArrays(eventToWrite.strings),
                     eventToWrite.strings.size()};
                 WORD eventType = eventTypeToWord(eventToWrite.eventType);
+                auto stringsPointer = const_cast<const wchar_t**>(arrayOfArrays.pointer);
 
                 BOOL success = ReportEventW(
                     hEventSource, eventType, eventToWrite.eventCategory, eventToWrite.eventId,
                     eventToWrite.userId, arrayOfArrays.nbItems, eventToWrite.rawData.size,
-                    arrayOfArrays.pointer, eventToWrite.rawData.pointer);
+                    stringsPointer, eventToWrite.rawData.pointer);
                 Win32::throwCurrentSystemErrorIf(success == FALSE);
             }
 
@@ -283,7 +307,7 @@ namespace MF
 
                 success = ReadEventLogA(
                     handle, flags, 0, buffer, bufferSize, &nbBytesRead, &minNumberOfBytesNeeded);
-                Errno::throwCurrentSystemErrorIf(success == FALSE);
+                Win32::throwCurrentSystemErrorIf(success == FALSE);
 
                 return std::make_unique<EventRecord>(buffer);
             }
