@@ -16,7 +16,8 @@ if(WIN32)
     target_sources(
             MF_Windows
             PRIVATE
-                src/EventLog.cpp
+                src/EventLog_Read.cpp
+                src/EventLog_Write.cpp
                 src/FileAttributes.cpp
                 src/Windows.cpp
     )

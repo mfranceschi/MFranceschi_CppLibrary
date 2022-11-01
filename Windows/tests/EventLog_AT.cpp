@@ -41,7 +41,7 @@ void readEvents(const std::wstring& appName) {
 int main() {
     try {
         // logInfoEvent();
-        readEvents(L"Application");
+        readEvents(appNameForWriting); // (L"Application");
     } catch (const std::runtime_error& error) {
         std::cerr << error.what() << std::endl;
     }

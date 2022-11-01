@@ -74,22 +74,28 @@ namespace MF
 
             Windows::FileHandleCloser handle(FindFirstFileA(tempFolderName.c_str(), &wfd));
 
-            if (!handle.isInvalid()) {
-                do {
-                    // If it is a directory, then remove "." and ".." or append an ending backslash.
-                    Windows::FileAttributes fileAttributes(wfd.dwFileAttributes);
-                    Filename_t filename = wfd.cFileName;
-                    if (fileAttributes.isValid() && fileAttributes.isDirectory()) {
-                        if (isCurrentOrParentDir(filename)) {
-                            continue;
-                        }
-
-                        result.push_back(filename + FILE_SEPARATOR);
-                    } else {
-                        result.emplace_back(filename);
-                    }
-                } while (FindNextFileA(handle.get(), &wfd) != 0);
+            if (handle.isInvalid()) {
+                auto errorCode = SystemErrors::Win32::getCurrentErrorCode();
+                if (errorCode == ERROR_FILE_NOT_FOUND) {
+                    return;
+                }
+                throw SystemErrors::Win32::getSystemErrorForErrorCode(errorCode);
             }
+
+            do {
+                // If it is a directory, then remove "." and ".." or append an ending backslash.
+                Windows::FileAttributes fileAttributes(wfd.dwFileAttributes);
+                Filename_t filename = wfd.cFileName;
+                if (fileAttributes.isValid() && fileAttributes.isDirectory()) {
+                    if (isCurrentOrParentDir(filename)) {
+                        continue;
+                    }
+
+                    result.push_back(filename + FILE_SEPARATOR);
+                } else {
+                    result.emplace_back(filename);
+                }
+            } while (FindNextFileA(handle.get(), &wfd) != 0);
         }
 
         void osGetDirectoryContents(
@@ -100,22 +106,28 @@ namespace MF
 
             Windows::FileHandleCloser handle(FindFirstFileW(tempFolderName.c_str(), &wfd));
 
-            if (!handle.isInvalid()) {
-                do {
-                    // If it is a directory, then remove "." and ".." or append an ending backslash.
-                    Windows::FileAttributes fileAttributes(wfd.dwFileAttributes);
-                    WideFilename_t filename = wfd.cFileName;
-                    if (fileAttributes.isValid() && fileAttributes.isDirectory()) {
-                        if (isCurrentOrParentDir(filename)) {
-                            continue;
-                        }
-
-                        result.push_back(filename + FILE_SEPARATOR_WIDE);
-                    } else {
-                        result.emplace_back(filename);
-                    }
-                } while (FindNextFileW(handle.get(), &wfd) != 0);
+            if (handle.isInvalid()) {
+                auto errorCode = SystemErrors::Win32::getCurrentErrorCode();
+                if (errorCode == ERROR_FILE_NOT_FOUND) {
+                    return;
+                }
+                throw SystemErrors::Win32::getSystemErrorForErrorCode(errorCode);
             }
+
+            do {
+                // If it is a directory, then remove "." and ".." or append an ending backslash.
+                Windows::FileAttributes fileAttributes(wfd.dwFileAttributes);
+                WideFilename_t filename = wfd.cFileName;
+                if (fileAttributes.isValid() && fileAttributes.isDirectory()) {
+                    if (isCurrentOrParentDir(filename)) {
+                        continue;
+                    }
+
+                    result.push_back(filename + FILE_SEPARATOR_WIDE);
+                } else {
+                    result.emplace_back(filename);
+                }
+            } while (FindNextFileW(handle.get(), &wfd) != 0);
         }
 
     } // namespace Filesystem
