@@ -50,7 +50,7 @@ namespace MF
             return instance;
         }
 
-        namespace internals
+        namespace ResourceClosers
         {
             template <typename ResourceType, typename Closer>
             class ResourceCloser {
@@ -67,20 +67,25 @@ namespace MF
                     ResourceType theResource = resource;
                     resource = ResourceType();
                     closer = Closer();
+                    callCloser = false;
                     return theResource;
                 }
 
                 virtual ~ResourceCloser() {
-                    closer(resource);
+                    if (callCloser) {
+                        closer(resource);
+                    }
                 }
 
                private:
                 Closer closer;
                 ResourceType resource;
+                bool callCloser = true;
             };
-        } // namespace internals
+        } // namespace ResourceClosers
 
-        class HandleCloser : public internals::ResourceCloser<HANDLE, decltype(&CloseHandle)> {
+        class HandleCloser
+            : public ResourceClosers::ResourceCloser<HANDLE, decltype(&CloseHandle)> {
            public:
             HandleCloser(HANDLE handle)
                 : ResourceCloser<HANDLE, decltype(&CloseHandle)>(handle, CloseHandle) {
@@ -91,7 +96,8 @@ namespace MF
             }
         };
 
-        class FileHandleCloser : public internals::ResourceCloser<HANDLE, decltype(&FindClose)> {
+        class FileHandleCloser
+            : public ResourceClosers::ResourceCloser<HANDLE, decltype(&FindClose)> {
            public:
             FileHandleCloser(HANDLE handle)
                 : ResourceCloser<HANDLE, decltype(&FindClose)>(handle, FindClose) {
@@ -99,6 +105,14 @@ namespace MF
 
             bool isInvalid() const {
                 return get() == INVALID_HANDLE_VALUE;
+            }
+        };
+
+        class LocalMemoryCloser
+            : public ResourceClosers::ResourceCloser<void*, decltype(&LocalFree)> {
+           public:
+            LocalMemoryCloser(void* pointer)
+                : ResourceClosers::ResourceCloser<void*, decltype(&LocalFree)>(pointer, LocalFree) {
             }
         };
     } // namespace Windows

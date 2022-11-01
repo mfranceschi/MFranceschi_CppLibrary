@@ -1,6 +1,3 @@
-//---------- Implementation of module <File> (file File.cpp)
-
-//--------------------------------------------------------------- Includes
 
 #include "MF/Filesystem.hpp"
 
@@ -41,11 +38,6 @@ namespace MF
 {
     namespace Filesystem
     {
-        /////////////////////////////////////////////////////////////////  PRIVATE
-
-        //------------------------------------------------------------------ Types
-
-        //-------------------------------------------------------------- Constants
 
         const static locale LOCALE_UTF8("");
         const static locale LOCALE_UTF16LE(
@@ -55,13 +47,6 @@ namespace MF
                 0x10ffffUL,
                 std::little_endian>()); // I can call "new" because the locale's destructors deletes
                                         // the facet.
-
-        //------------------------------------------------------- Static variables
-
-        //------------------------------------------------------ Private functions
-
-        //////////////////////////////////////////////////////////////////  PUBLIC
-        //------------------------------------------------------- Public functions
 
         template <class CharT>
         static std::unique_ptr<std::basic_ifstream<CharT>> internalOpenFile(

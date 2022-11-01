@@ -7,15 +7,13 @@
  * You are in charge of providing the right C-string filename (wide or not).
  */
 
-//---------- Interface of module <File> (file File.h)
-#if !defined(FILE_H)
-#    define FILE_H
+#ifndef FILE_H
+#define FILE_H
 
-//--------------------------------------------------------------- Includes
-#    include <fstream>
-#    include <memory>
-#    include <string>
-#    include <vector>
+#include <fstream>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace MF
 {
@@ -39,9 +37,6 @@ namespace MF
 
         extern const Filename_t FILE_SEPARATOR;
         extern const Filename_t LINE_END;
-
-        //////////////////////////////////////////////////////////////////  PUBLIC
-        //------------------------------------------------------- Public functions
 
         void deleteFile(const Filename_t &filename);
         void deleteDirectory(const Filename_t &filename);
@@ -77,7 +72,7 @@ namespace MF
         /// Data structure used to store information about files opened with openFile.
         class WholeFileData {
            public:
-            const char *&getContent() {
+            const char *getContent() const {
                 return content;
             }
 
@@ -108,7 +103,7 @@ namespace MF
          */
         std::unique_ptr<const WholeFileData> readWholeFile(const Filename_t &filename);
 
-#    if MF_WINDOWS
+#if MF_WINDOWS
         using WideFilename_t = std::wstring;
 
         extern const WideFilename_t FILE_SEPARATOR_WIDE;
@@ -135,7 +130,7 @@ namespace MF
         std::vector<WideFilename_t> listFilesInDirectory(const WideFilename_t &folder);
 
         std::unique_ptr<const WholeFileData> readWholeFile(const WideFilename_t &filename);
-#    endif
+#endif
     } // namespace Filesystem
 } // namespace MF
 #endif // FILE_H

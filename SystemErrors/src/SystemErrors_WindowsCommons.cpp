@@ -6,10 +6,11 @@
 
 #    include "SystemErrors_WindowsCommons.hpp"
 
-#    include <memory>
+#    include <sstream>
 
 #    include "MF/LightWindows.hpp"
 #    include "MF/SystemErrors.hpp"
+#    include "MF/Windows.hpp"
 
 namespace MF
 {
@@ -31,15 +32,23 @@ namespace MF
                 // Ask Win32 to give us the string version of that message ID.
                 // The parameters we pass in, tell Win32 to create the buffer that holds the message
                 // for us (because we don't yet know how long the message string will be).
+                static constexpr DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                                               FORMAT_MESSAGE_FROM_SYSTEM |
+                                               FORMAT_MESSAGE_IGNORE_INSERTS;
                 size_t size = FormatMessageA(
-                    FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                        FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL, errorCode, getLangId(localized), (LPSTR)&messageBuffer, 0, NULL);
+                    flags, NULL, errorCode, getLangId(localized), (LPSTR)&messageBuffer, 0, NULL);
+                if (size == 0) {
+                    auto newErrorCode = GetLastError();
+                    std::ostringstream oss;
+                    oss << std::hex << std::showbase
+                        << "Unable to retrieve the error message for error code " << errorCode
+                        << " - FormatMessageA failed with error " << newErrorCode << ".";
+                    throw std::runtime_error(oss.str());
+                }
 
                 // Small boilerplate to ensure we free the buffer
                 // if the constructor of 'std::string' throws.
-                std::unique_ptr<char, decltype(&LocalFree)> messageBufferSmart(
-                    messageBuffer, &LocalFree);
+                Windows::LocalMemoryCloser messageBufferSmart(messageBuffer);
 
                 if ((messageBuffer[size - 3] == '.') && (messageBuffer[size - 2] == '\r') &&
                     (messageBuffer[size - 1] == '\n')) {

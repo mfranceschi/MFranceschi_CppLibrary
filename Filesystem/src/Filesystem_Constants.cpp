@@ -10,8 +10,9 @@ namespace MF
     {
 #if MF_WINDOWS
         const Filename_t FILE_SEPARATOR = "\\";
-        const WideFilename_t FILE_SEPARATOR_WIDE = L"\\";
         const Filename_t LINE_END = "\r\n";
+
+        const WideFilename_t FILE_SEPARATOR_WIDE = L"\\";
         const WideFilename_t LINE_END_WIDE = L"\r\n";
 #else
         const Filename_t FILE_SEPARATOR = "/";
