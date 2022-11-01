@@ -24,7 +24,6 @@ target_compile_definitions(MF_SystemErrors
         PUBLIC
         MF_SystemErrors_WSA=$<OR:$<BOOL:${MF_SystemErrors_WSA}>,$<BOOL:${MF_IN_DEV}>>
         PRIVATE
-        MF_HAS_strerrordesc_np=$<BOOL:${MF_HAS_strerrordesc_np}>
         MF_HAS_strerror_localized=$<BOOL:${MF_HAS_strerror_localized}>
         MF_HAS_strerror_repeatable=$<BOOL:${MF_HAS_strerror_repeatable}>
         MF_HAS_strerror_secure=$<BOOL:${MF_HAS_strerror_secure}>

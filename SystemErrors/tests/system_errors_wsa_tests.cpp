@@ -9,6 +9,7 @@
 #    include <array>
 
 #    include "MF/SystemErrors.hpp"
+#    include "SystemErrors_TestHelper.hpp"
 #    include "tests_data.hpp"
 
 #    pragma comment(lib, "Ws2_32.lib")
@@ -39,18 +40,13 @@ static void doSomethingThatDoesNotSetsLastError() {
 }
 
 TEST(Wsa_ThrowCurrentSystemErrorIf, it_throws_if_true) {
-    setSystemErrorMessagesLocalized(false);
     const auto expectedError = doSomethingThatSetsLastError();
 
     try {
         Wsa::throwCurrentSystemErrorIf(true);
         FAIL() << "Expected an exception to be thrown.";
     } catch (const SystemError& systemError) {
-        EXPECT_EQ(systemError.getParadigm(), Paradigm::Wsa);
-        EXPECT_EQ(systemError.getErrorCode(), expectedError);
-        EXPECT_STREQ(
-            systemError.what(),
-            "Either the application has not called WSAStartup, or WSAStartup failed");
+        checkSystemError(systemError, Paradigm::Wsa, expectedError);
     }
 }
 

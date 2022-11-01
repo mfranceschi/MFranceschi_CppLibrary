@@ -8,6 +8,11 @@
 
 #include "MF/SystemErrors.hpp"
 
+#if MF_WINDOWS
+#    pragma warning(disable : 4505)
+#    pragma warning(disable : 4996)
+#endif
+
 #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && !_GNU_SOURCE
 #    define MF_strerror_r_IS_XSI 1
 #    define MF_strerror_r_IS_GNU 0
@@ -43,7 +48,7 @@ namespace MF
         }
 #endif
 
-#if MF_HAS_strerror_secure
+#if MF_HAS_strerror_secure || MF_WINDOWS
         static std::string getErrorMessage_Strerror_s(ErrorCode_t errorCode) {
             std::vector<char> buffer(DEFAULT_BUFFER_SIZE);
             auto result = strerror_s(buffer.data(), buffer.capacity(), errorCode);
@@ -92,34 +97,15 @@ namespace MF
         }
 #endif
 
-#if MF_HAS_strerrordesc_np
-        static std::string getErrorMessage_Strerrordesc_np(ErrorCode_t errorCode) {
-            return strerrordesc_np(errorCode);
-        }
-#endif
-
         static std::string getErrorMessageLocalizedForErrorCode(ErrorCode_t errorCode) {
 #if MF_HAS_strerror_localized
             return getErrorMessage_Strerror_l(errorCode, true);
-#elif MF_HAS_strerror_secure
+#elif MF_HAS_strerror_secure || MF_WINDOWS
             return getErrorMessage_Strerror_s(errorCode);
 #elif MF_HAS_strerror_repeatable
             return getErrorMessage_Strerror_r(errorCode);
 #else
             return getErrorMessage_Strerror(errorCode);
-#endif
-        }
-
-        static std::string getErrorMessageNotLocalizedForErrorCode(ErrorCode_t errorCode) {
-#if MF_HAS_strerrordesc_np
-            return getErrorMessage_Strerrordesc_np(errorCode);
-#elif MF_HAS_strerror_localized
-            return getErrorMessage_Strerror_l(errorCode, false);
-#else
-            // At this point, we have no tool to help us get the string message
-            // that is guaranteed to be in the en-US locale.
-            // Fallback to the localized string message to ensure we have a message to return.
-            return getErrorMessageLocalizedForErrorCode(errorCode);
 #endif
         }
 
@@ -132,9 +118,7 @@ namespace MF
         }
 
         SystemError Errno::getSystemErrorForErrorCode(ErrorCode_t errorCode) {
-            std::string errorMessage = getSystemErrorMessagesLocalized()
-                                           ? getErrorMessageLocalizedForErrorCode(errorCode)
-                                           : getErrorMessageNotLocalizedForErrorCode(errorCode);
+            std::string errorMessage = getErrorMessageLocalizedForErrorCode(errorCode);
 
             return SystemError(errorCode, errorMessage);
         }

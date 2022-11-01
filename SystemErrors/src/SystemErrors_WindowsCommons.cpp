@@ -18,14 +18,14 @@ namespace MF
     {
         namespace WindowsCommons
         {
-            static constexpr auto getLangId(bool localized) {
+            static constexpr auto getLangId() {
                 // TODO: ensure that MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) will always work.
                 // It is possible that this locale is not installed on a machine,
                 // causing the FormatMessage function to fail with ERROR_RESOURCE_LANG_NOT_FOUND.
-                return localized ? LANG_USER_DEFAULT : MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
+                return LANG_USER_DEFAULT;
             }
 
-            std::string getErrorMessageForErrorCode(DWORD errorCode, bool localized) {
+            std::string getErrorMessageForErrorCode(DWORD errorCode) {
                 // Source: https://stackoverflow.com/a/17387176/11996851
                 LPSTR messageBuffer = nullptr;
 
@@ -36,7 +36,7 @@ namespace MF
                                                FORMAT_MESSAGE_FROM_SYSTEM |
                                                FORMAT_MESSAGE_IGNORE_INSERTS;
                 size_t size = FormatMessageA(
-                    flags, NULL, errorCode, getLangId(localized), (LPSTR)&messageBuffer, 0, NULL);
+                    flags, NULL, errorCode, getLangId(), (LPSTR)&messageBuffer, 0, NULL);
                 if (size == 0) {
                     auto newErrorCode = GetLastError();
                     std::ostringstream oss;
@@ -58,20 +58,18 @@ namespace MF
                 return std::string(messageBuffer, size);
             }
 
-            std::string getErrorMessageForErrorCode(int errorCode, bool localized) {
-                return getErrorMessageForErrorCode(DWORD(errorCode), localized);
+            std::string getErrorMessageForErrorCode(int errorCode) {
+                return getErrorMessageForErrorCode(DWORD(errorCode));
             }
 
             SystemError getSystemErrorForErrorCode(DWORD errorCode, Paradigm paradigm) {
-                std::string errorMessage =
-                    getErrorMessageForErrorCode(errorCode, getSystemErrorMessagesLocalized());
+                std::string errorMessage = getErrorMessageForErrorCode(errorCode);
 
                 return SystemError(paradigm, errorCode, errorMessage);
             }
 
             SystemError getSystemErrorForErrorCode(int errorCode, Paradigm paradigm) {
-                std::string errorMessage =
-                    getErrorMessageForErrorCode(errorCode, getSystemErrorMessagesLocalized());
+                std::string errorMessage = getErrorMessageForErrorCode(errorCode);
 
                 return SystemError(paradigm, errorCode, errorMessage);
             }

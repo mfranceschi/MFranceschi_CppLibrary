@@ -14,15 +14,15 @@ namespace MF
         /**
          * Enumerates the error paradigms.
          */
-         enum class Paradigm { Errno, Win32, Wsa };
+        enum class Paradigm { Errno, Win32, Wsa };
 
-         /**
-          * Exception class used in this module.
-          *
-          * We're not using std::system_error for two reasons:
-          * 1. to avoid the use of std::error_code, which adds unnecessary instructions;
-          * 2. to have a total control on the error message.
-          */
+        /**
+         * Exception class used in this module.
+         *
+         * We're not using std::system_error for two reasons:
+         * 1. to avoid the use of std::error_code, which adds unnecessary instructions;
+         * 2. to have a total control on the error message.
+         */
         class SystemError : public std::runtime_error {
            public:
             SystemError(long errorCode, const std::string& message)
@@ -104,24 +104,6 @@ namespace MF
             }
         };
 #endif
-
-        /**
-         * Sets the value of the internal flag 'systemErrorMessagesLocalized'.
-         * If 'true' then error description strings are localized.
-         * Default value is 'true'.
-         *
-         * Please note that that behaviour is not guaranteed.
-         */
-        void setSystemErrorMessagesLocalized(bool newValue);
-
-        /**
-         * Returns the value of the internal flag 'systemErrorMessagesLocalized'.
-         * If 'true' then error description strings are localized.
-         * Default value is 'true'.
-         *
-         * Please note that that behaviour is not guaranteed.
-         */
-        bool getSystemErrorMessagesLocalized();
     } // namespace SystemErrors
 } // namespace MF
 
