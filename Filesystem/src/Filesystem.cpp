@@ -101,7 +101,7 @@ namespace MF
         }
 
         std::vector<Filename_t> listFilesInDirectory(const Filename_t &folder) {
-            bool addFileSeparatorAtTheEnd = !MF::Strings::stringEndsWith(folder, FILE_SEPARATOR);
+            bool addFileSeparatorAtTheEnd = !MF::Strings::endsWith(folder, FILE_SEPARATOR);
 
             std::vector<Filename_t> result;
             osGetDirectoryContents(
@@ -127,8 +127,7 @@ namespace MF
         }
 
         std::vector<WideFilename_t> listFilesInDirectory(const WideFilename_t &folder) {
-            bool addFileSeparatorAtTheEnd =
-                !MF::Strings::stringEndsWith(folder, FILE_SEPARATOR_WIDE);
+            bool addFileSeparatorAtTheEnd = !MF::Strings::endsWith(folder, FILE_SEPARATOR_WIDE);
 
             std::vector<WideFilename_t> result;
             osGetDirectoryContents(

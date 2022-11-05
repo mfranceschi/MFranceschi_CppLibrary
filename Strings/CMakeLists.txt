@@ -1,5 +1,5 @@
 
-add_library(MF_Strings STATIC)
+add_library(MF_Strings STATIC src/Strings_Chars.cpp)
 
 file(GLOB Private_Sources
         CONFIGURE_DEPENDS
@@ -17,5 +17,5 @@ target_link_libraries(MF_Strings PUBLIC)
 target_include_directories(MF_Strings PUBLIC include)
 
 if(MF_IN_DEV)
-    # add_subdirectory(tests)
+    add_subdirectory(tests)
 endif()
