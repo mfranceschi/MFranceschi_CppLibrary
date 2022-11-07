@@ -1,5 +1,5 @@
 
-add_library(MF_Windows_Header INTERFACE include/MF/LightWindows.hpp)
+add_library(MF_Windows_Header INTERFACE)
 target_include_directories(MF_Windows_Header INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_library(MF_Windows STATIC EXCLUDE_FROM_ALL)

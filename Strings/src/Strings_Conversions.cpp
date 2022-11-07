@@ -4,9 +4,11 @@
 
 #include "MF/Strings.hpp"
 
-#include <Windows.h>
+#if MF_WINDOWS
+#    include <cassert>
 
-#include <cassert>
+#    include "MF/LightWindows.hpp"
+#endif
 
 namespace MF
 {

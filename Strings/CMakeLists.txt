@@ -13,7 +13,7 @@ target_sources(MF_Strings
         PRIVATE ${Private_Sources}
         PUBLIC ${Public_Sources}
         )
-target_link_libraries(MF_Strings PUBLIC)
+target_link_libraries(MF_Strings PUBLIC MF_Windows_Header)
 target_include_directories(MF_Strings PUBLIC include)
 
 if(MF_IN_DEV)
