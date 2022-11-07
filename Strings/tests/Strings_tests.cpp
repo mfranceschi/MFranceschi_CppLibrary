@@ -24,9 +24,11 @@ TEST(Strings_Split, itWorks) {
     const std::string input = "boo:and:foo";
     const std::vector<std::string> expected1 = {"boo", "and", "foo"};
     const std::vector<std::string> expected2 = {"b", "", ":and:f"};
+    const std::vector<std::string> expected3 = {"boo:and:foo"};
 
     EXPECT_THAT(split(input, std::string(":")), ::testing::ContainerEq(expected1));
     EXPECT_THAT(split(input, std::string("o")), ::testing::ContainerEq(expected2));
+    EXPECT_THAT(split(input, std::string(" ")), ::testing::ContainerEq(expected3));
 }
 
 TEST(Strings_StartsWith, itWorks) {
