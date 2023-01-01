@@ -60,14 +60,14 @@ namespace MF
         void setEnv(const std::string& name, const std::string& value) {
             assertNameIsNotEmpty(name);
 
-            BOOL result = SetEnvironmentVariable(name.c_str(), value.c_str());
+            BOOL result = SetEnvironmentVariableA(name.c_str(), value.c_str());
             MF::SystemErrors::Win32::throwCurrentSystemErrorIf(result == FALSE);
         }
 
         void unsetEnv(const std::string& name) {
             assertNameIsNotEmpty(name);
 
-            BOOL result = SetEnvironmentVariable(name.c_str(), nullptr);
+            BOOL result = SetEnvironmentVariableA(name.c_str(), nullptr);
             // It does not fail if it does not exist.
             MF::SystemErrors::Win32::throwCurrentSystemErrorIf(result == FALSE);
         }
@@ -106,8 +106,14 @@ namespace MF
             char* const block;
             char* firstEnvVar = block;
 
+#    ifdef GetEnvironmentStrings
+            // We need this because the way it's done regarding macros.
+            // We'll only use the ANSI version here.
+#        undef GetEnvironmentStrings
+#    endif
+
            public:
-            EnvironmentBlock() : block(GetEnvironmentStringsA()) {
+            EnvironmentBlock() : block(GetEnvironmentStrings()) {
                 while (*firstEnvVar == '=') {
                     firstEnvVar = nextEntry(firstEnvVar);
                 }
@@ -139,7 +145,7 @@ namespace MF
             };
 
             auto ptr = std::unique_ptr<char, decltype(MyFreeEnvStringsA)>{
-                GetEnvironmentStringsA(), MyFreeEnvStringsA};
+                GetEnvironmentStrings(), MyFreeEnvStringsA};
 
             for (char* currentEntry = environmentBlock.getFirstEnvVarEntry();
                  !EnvironmentBlock::isOver(currentEntry);

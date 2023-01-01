@@ -14,9 +14,6 @@
 #    if defined(_MSC_VER)
 #        pragma warning(disable : 26444) // Warning that occurs when using imbue.
 #    endif
-#    if defined(UNICODE)
-#        include "Toolbox.hpp"
-#    endif
 #else
 #    include <sys/mman.h>
 #endif
@@ -101,7 +98,7 @@ namespace MF
         }
 
         std::vector<Filename_t> listFilesInDirectory(const Filename_t &folder) {
-            bool addFileSeparatorAtTheEnd = !MF::Strings::endsWith(folder, FILE_SEPARATOR);
+            bool const addFileSeparatorAtTheEnd = !MF::Strings::endsWith(folder, FILE_SEPARATOR);
 
             std::vector<Filename_t> result;
             osGetDirectoryContents(
@@ -127,7 +124,8 @@ namespace MF
         }
 
         std::vector<WideFilename_t> listFilesInDirectory(const WideFilename_t &folder) {
-            bool addFileSeparatorAtTheEnd = !MF::Strings::endsWith(folder, FILE_SEPARATOR_WIDE);
+            bool const addFileSeparatorAtTheEnd =
+                !MF::Strings::endsWith(folder, FILE_SEPARATOR_WIDE);
 
             std::vector<WideFilename_t> result;
             osGetDirectoryContents(
