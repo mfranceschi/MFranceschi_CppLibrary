@@ -16,6 +16,6 @@ target_sources(MF_Bytes
 # target_link_libraries(MF_Bytes PUBLIC MF_Windows_Header)
 target_include_directories(MF_Bytes PUBLIC include)
 
-if (MF_IN_DEV)
+if(MF_IN_DEV)
     add_subdirectory(tests)
-endif ()
+endif()
