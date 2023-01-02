@@ -9,7 +9,7 @@ using namespace MF::Environment;
 
 // We might want to change those at build time for some OSes?
 static const std::string VAR_THAT_EXISTS = "PATH";
-static const std::string VAR_THAT_DOES_NOT_EXIST = "foobarbaz";
+static const std::string VAR_THAT_DOES_NOT_EXIST = "abcd1234";
 
 class TestWithVarThatDoesNotExists : public ::testing::Test {
    protected:
@@ -17,6 +17,10 @@ class TestWithVarThatDoesNotExists : public ::testing::Test {
 
     void SetUp() override {
         assertDoesNotExist("From SetUp method");
+    }
+
+    void TearDown() override {
+        unsetEnv(name);
     }
 
     void assertDoesNotExist(const std::string& messageToAppend = "") {
@@ -49,7 +53,7 @@ class GetEnvOrDefault2 : public TestWithVarThatDoesNotExists {};
 
 TEST_F(GetEnvOrDefault2, it_returns_default_value_if_not_exists) {
     // It should not exist --> return given default value.
-    static const std::string defaultValue = "abc123-defaultValue";
+    static auto defaultValue = "abc123-defaultValue";
     EXPECT_EQ(getEnvOrDefault(name, defaultValue), defaultValue);
 }
 

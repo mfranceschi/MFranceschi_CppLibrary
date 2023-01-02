@@ -13,7 +13,6 @@ target_sources(MF_Bytes
         PRIVATE ${Private_Sources}
         PUBLIC ${Public_Sources}
         )
-# target_link_libraries(MF_Bytes PUBLIC MF_Windows_Header)
 target_include_directories(MF_Bytes PUBLIC include)
 
 if(MF_IN_DEV)

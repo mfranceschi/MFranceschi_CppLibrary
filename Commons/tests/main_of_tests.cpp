@@ -4,23 +4,28 @@
 
 #include "tests_data.hpp"
 
-// Main function
+#if MF_WINDOWS && MF_LOOK_FOR_MEMORY_LEAKS
+#    include <crtdbg.h>
+#    include <stdlib.h>
+
+#    include <array>
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
 
-#ifdef I_Want_Mem_Leaks
-    _CrtMemState states[3];
-    _CrtMemCheckpoint(&states[0]);
-#endif
+    // Get a checkpoint of the memory after Google Test has been initialized.
+    _CrtMemState memoryState = {0};
+    _CrtMemCheckpoint( &memoryState );
+    int retval = RUN_ALL_TESTS();
 
-    int res = RUN_ALL_TESTS();
-
-#ifdef I_Want_Mem_Leaks
-    _CrtMemCheckpoint(&states[1]);
-    if (_CrtMemDifference(&states[2], &states[0], &states[1])) {
-        _CrtMemDumpStatistics(&states[2]);
-    }
-#endif
-
-    return res;
+    // Check for leaks after tests have run
+    _CrtMemDumpAllObjectsSince( &memoryState );
+    return retval;
 }
+
+#else
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+
+    return res = RUN_ALL_TESTS();
+}
+#endif
