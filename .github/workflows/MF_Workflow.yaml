@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: SETUP - Checkout git repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: SETUP - Set up build tools
         if: ${{ false }} # ${{ matrix.os == 'ubuntu-latest' }}
@@ -53,7 +53,7 @@ jobs:
 
     steps:
       - name: SETUP - Checkout git repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: CHECK - Clang-Format (formatting)
         uses: RafikFarhad/clang-format-github-action@v2.0.0
@@ -81,7 +81,7 @@ jobs:
 
     steps:
       - name: SETUP - Checkout git repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: SETUP - Install dependencies
         id: install-dependencies
