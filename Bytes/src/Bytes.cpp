@@ -4,12 +4,23 @@
 
 #include "MF/Bytes.hpp"
 
+#include <sstream>
 #include <stdexcept>
 
 namespace MF
 {
     namespace Bytes
     {
+
+        void Buffer::throwForInvalidIndex(std::size_t index) {
+            if (index >= getSize()) {
+                std::ostringstream oss;
+                oss << "Index out of bounds: " << index << " is >= the buffer size, which is "
+                    << getSize() << ".";
+                throw std::out_of_range(oss.str());
+            }
+        }
+
         class BufferWithRawPointer : public Buffer {
            public:
             BufferWithRawPointer(void* buffer, std::size_t size)

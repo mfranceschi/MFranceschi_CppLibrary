@@ -14,16 +14,25 @@ namespace MF
            public:
             virtual void* get() const = 0;
 
-            /// Usage: @code myBuffer->getAs<byte>()
+            /// Usage: @code myBuffer->getWithCast<byte>()
             template <typename Type>
-            Type* getAs() const {
+            Type* getWithCast() const {
                 return reinterpret_cast<Type*>(get());
+            }
+
+            template <typename Type>
+            Type& getAt(std::size_t index) {
+                throwForInvalidIndex(index);
+                return getWithCast<Type>()[index];
             }
 
             virtual std::size_t getSize() const = 0;
 
            protected:
             Buffer() = default;
+
+           private:
+            void throwForInvalidIndex(std::size_t index);
 
            public:
             // TODO: NoCopy, NoMove
