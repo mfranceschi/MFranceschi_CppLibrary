@@ -47,14 +47,65 @@ namespace MF
         bool hasEnv(const std::string& name);
 
         /**
-         * Returns an array that is a copy of the names of all the environment variables for the current process.
+         * Returns an array that is a copy of the names of all the environment variables for the
+         * current process.
          */
         std::vector<std::string> listNames();
 
         /**
-         * Returns an array of <name, value> of all the environment variables for the current process.
+         * Returns an array of <name, value> of all the environment variables for the current
+         * process.
          */
         std::vector<std::pair<std::string, std::string>> listAll();
+
+#if MF_WINDOWS
+        /**
+         * Sets the environment variable "name" to the value "value".
+         * Erases if already exists.
+         * The behaviour is non-portable when value = "".
+         */
+        void setEnv(const std::wstring& name, const std::wstring& value);
+
+        /**
+         * Deletes the environment variable "name" for the current process.
+         * No-op if doesn't exists.
+         * Throws if "name" is empty.
+         */
+        void unsetEnv(const std::wstring& name);
+
+        /**
+         * Returns the value of the environment variable "name".
+         * Throws if doesn't exist.
+         * Throws if "name" is empty.
+         */
+        std::wstring getEnv(const std::wstring& name);
+
+        /**
+         * Returns the value of the environment variable "name".
+         * Returns "defaultValue" if doesn't exist.
+         * Throws if "name" is empty.
+         */
+        std::wstring getEnvOrDefault(
+            const std::wstring& name, const std::wstring& defaultValue = L"");
+
+        /**
+         * Returns true if the environment variable "name" exists, false otherwise.
+         * Throws if "name" is empty.
+         */
+        bool hasEnv(const std::wstring& name);
+
+        /**
+         * Returns an array that is a copy of the names of all the environment variables for the
+         * current process.
+         */
+        std::vector<std::wstring> listNamesWide();
+
+        /**
+         * Returns an array of <name, value> of all the environment variables for the current
+         * process.
+         */
+        std::vector<std::pair<std::wstring, std::wstring>> listAllWide();
+#endif
     } // namespace Environment
 } // namespace MF
 
