@@ -119,51 +119,89 @@ namespace MF
          * https://docs.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-getcommandlinea
          */
         template <typename CharT>
-        class EnvironmentBlock {
-           private:
+        class EnvironmentBlockBase {
+           protected:
             CharT* const block;
             CharT* firstEnvVar = block;
 
+           protected:
+            explicit EnvironmentBlockBase(CharT* block) : block(block) {
+            }
+
            public:
-            EnvironmentBlock() : block(GetEnvironmentStrings()) {
+            CharT* getFirstEnvVarEntry() const {
+                return firstEnvVar;
+            }
+
+            virtual ~EnvironmentBlockBase() = default;
+        };
+
+        class EnvironmentBlockAnsi : public EnvironmentBlockBase<char> {
+           public:
+            EnvironmentBlockAnsi() : EnvironmentBlockBase<char>(GetEnvironmentStrings()) {
                 while (*firstEnvVar == '=') {
                     firstEnvVar = nextEntry(firstEnvVar);
                 }
             }
 
-            CharT* getFirstEnvVarEntry() const {
-                return firstEnvVar;
-            }
-
-            static CharT* nextEntry(CharT* current) {
+            static char* nextEntry(char* current) {
                 return strchr(current, '\0') + 1;
             }
 
-            static bool isOver(const CharT* current) {
+            static bool isOver(const char* current) {
                 return *current == '\0';
             }
 
-            ~EnvironmentBlock() {
+            ~EnvironmentBlockAnsi() {
                 FreeEnvironmentStringsA(block);
             }
         };
 
+        class EnvironmentBlockWide : public EnvironmentBlockBase<wchar_t> {
+           public:
+            EnvironmentBlockWide() : EnvironmentBlockBase<wchar_t>(GetEnvironmentStringsW()) {
+                while (*firstEnvVar == L'=') {
+                    firstEnvVar = nextEntry(firstEnvVar);
+                }
+            }
+
+            static wchar_t* nextEntry(wchar_t* current) {
+                return wcschr(current, L'\0') + 1;
+            }
+
+            static bool isOver(const wchar_t* current) {
+                return *current == L'\0';
+            }
+
+            ~EnvironmentBlockWide() {
+                FreeEnvironmentStringsW(block);
+            }
+        };
+
+        template <typename CharT>
+        using EnvironmentBlock_t = typename std::conditional<
+            std::is_same<CharT, char>::value,
+            EnvironmentBlockAnsi,
+            EnvironmentBlockWide>::type;
+
+        static char* nextOccurrence(char* str, int item) {
+            return strchr(str, item);
+        }
+
+        static wchar_t* nextOccurrence(wchar_t* str, int item) {
+            return wcschr(str, item);
+        }
+
+        template <typename CharT>
         static void exploreEnviron(
-            const std::function<void(char* thePair, char* positionOfEqualSign)>& function) {
-            EnvironmentBlock<char> environmentBlock;
+            const std::function<void(CharT* thePair, CharT* positionOfEqualSign)>& function) {
+            EnvironmentBlock_t<CharT> environmentBlock;
 
-            static const auto MyFreeEnvStringsA = [](char* ptr) {
-                FreeEnvironmentStringsA(ptr);
-            };
-
-            auto ptr = std::unique_ptr<char, decltype(MyFreeEnvStringsA)>{
-                GetEnvironmentStrings(), MyFreeEnvStringsA};
-
-            for (char* currentEntry = environmentBlock.getFirstEnvVarEntry();
-                 !EnvironmentBlock<char>::isOver(currentEntry);
-                 currentEntry = EnvironmentBlock<char>::nextEntry(currentEntry)) {
-                char* name = currentEntry;
-                char* positionOfEqualSign = strchr(name, '=');
+            for (CharT* currentEntry = environmentBlock.getFirstEnvVarEntry();
+                 !EnvironmentBlock_t<CharT>::isOver(currentEntry);
+                 currentEntry = EnvironmentBlock_t<CharT>::nextEntry(currentEntry)) {
+                CharT* name = currentEntry;
+                CharT* positionOfEqualSign = nextOccurrence(name, '=');
 
                 function(currentEntry, positionOfEqualSign);
             }
@@ -171,7 +209,7 @@ namespace MF
 
         std::vector<std::string> listNames() {
             std::vector<std::string> result;
-            exploreEnviron([&result](char* thePair, char* positionOfEqualSign) {
+            exploreEnviron<char>([&result](char* thePair, char* positionOfEqualSign) {
                 if (positionOfEqualSign == nullptr) {
                     // Abnormal!
                     return;
@@ -185,7 +223,7 @@ namespace MF
         std::vector<std::pair<std::string, std::string>> listAll() {
             std::vector<std::pair<std::string, std::string>> result;
 
-            exploreEnviron([&result](char* thePair, char* positionOfEqualSign) {
+            exploreEnviron<char>([&result](char* thePair, char* positionOfEqualSign) {
                 if (positionOfEqualSign == nullptr) {
                     // Abnormal!
                     return;
@@ -239,13 +277,32 @@ namespace MF
         }
 
         std::vector<std::wstring> listNamesWide() {
-            // TODO
-            return {};
+            std::vector<std::wstring> result;
+            exploreEnviron<wchar_t>([&result](wchar_t* thePair, wchar_t* positionOfEqualSign) {
+                if (positionOfEqualSign == nullptr) {
+                    // Abnormal!
+                    return;
+                }
+                result.push_back(std::wstring(thePair, positionOfEqualSign - thePair));
+            });
+
+            return result;
         }
 
         std::vector<std::pair<std::wstring, std::wstring>> listAllWide() {
-            // TODO
-            return {};
+            std::vector<std::pair<std::wstring, std::wstring>> result;
+
+            exploreEnviron<wchar_t>([&result](wchar_t* thePair, wchar_t* positionOfEqualSign) {
+                if (positionOfEqualSign == nullptr) {
+                    // Abnormal!
+                    return;
+                }
+                result.push_back(std::make_pair(
+                    std::wstring(thePair, positionOfEqualSign - thePair),
+                    std::wstring(positionOfEqualSign + 1)));
+            });
+
+            return result;
         }
     } // namespace Environment
 } // namespace MF
