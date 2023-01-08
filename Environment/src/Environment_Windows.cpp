@@ -189,7 +189,7 @@ namespace MF
         }
 
         static wchar_t* nextOccurrence(wchar_t* str, int item) {
-            return wcschr(str, item);
+            return wcschr(str, static_cast<wchar_t>(item));
         }
 
         template <typename CharT>

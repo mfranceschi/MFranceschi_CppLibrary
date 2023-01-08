@@ -3,7 +3,6 @@ include(TestBigEndian)
 test_big_endian(MF_BIG_ENDIAN)
 
 add_library(MF_Commons STATIC EXCLUDE_FROM_ALL)
-message(STATUS ${CMAKE_CXX_COMPILER_ID})
 target_compile_definitions(
         MF_Commons
         PUBLIC

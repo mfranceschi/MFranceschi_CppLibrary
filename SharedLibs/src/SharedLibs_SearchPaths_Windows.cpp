@@ -58,7 +58,7 @@ namespace MF
             DLL_DIRECTORY_COOKIE cookie = AddDllDirectory(wPath.c_str());
 
             if (cookie == nullptr) {
-                const auto lastError = GetLastError();
+                const auto lastError = GetLastError(); // TODO: find out what was my intent :D
                 throw std::runtime_error(
                     "An error occurred when trying to add '" + path + "' to search paths.");
             }

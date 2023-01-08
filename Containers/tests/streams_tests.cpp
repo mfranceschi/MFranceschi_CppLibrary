@@ -12,7 +12,7 @@ bool isIntNonZero(int input) {
     return input != 0;
 }
 double convertToDoubleAndInvert(int input) {
-    return 1. / (double)input;
+    return 1. / double(input);
 }
 
 template <typename T>
@@ -43,13 +43,13 @@ TEST(UnpolishedTest, FromAnotherRepo) {
     ASSERT_LIST_CONTAINS(bVector, 0);
     ASSERT_EQ(bVector.size(), 4);
 
-    StreamPtr<int> streamC = streamB->filter(isIntNonZero);
+    const StreamPtr<int> streamC = streamB->filter(isIntNonZero);
     auto cVector = streamC->collectToVector();
     ASSERT_LIST_CONTAINS(cVector, 2);
     ASSERT_LIST_CONTAINS(cVector, 22);
     ASSERT_LIST_CONTAINS(cVector, -2);
     ASSERT_EQ(cVector.size(), 3);
 
-    StreamPtr<double> streamD = streamC->map<double>(convertToDoubleAndInvert);
+    const StreamPtr<double> streamD = streamC->map<double>(convertToDoubleAndInvert);
     ASSERT_EQ(streamD->collectToVector().size(), 3);
 }
