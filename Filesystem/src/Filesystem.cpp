@@ -42,26 +42,26 @@ namespace MF
             new std::codecvt_utf8_utf16<
                 wchar_t,
                 0x10ffffUL,
-                std::little_endian>()); // I can call "new" because the locale's destructors deletes
+                std::little_endian>()); // I can call "new" because the locale's destructor deletes
                                         // the facet.
 
         template <class CharT>
         static std::unique_ptr<std::basic_ifstream<CharT>> internalOpenFile(
-            const std::basic_string<CharT> &filename, Encoding_t encoding) {
+            const std::basic_string<CharT> &filename, FileEncoding_e encoding) {
             auto ptr = std::make_unique<std::basic_ifstream<CharT>>();
 
             switch (encoding) {
-                case Encoding_e::ENC_UTF8:
+                case FileEncoding_e::ENC_UTF8:
                     ptr->open(filename);
                     ptr->imbue(LOCALE_UTF8);
                     ptr->seekg(3);
                     break;
-                case Encoding_e::ENC_UTF16LE:
+                case FileEncoding_e::ENC_UTF16LE:
                     ptr->open(filename, ios_base::binary);
                     ptr->imbue(LOCALE_UTF16LE);
                     ptr->seekg(2, ios_base::beg);
                     break;
-                case Encoding_e::ENC_DEFAULT:
+                case FileEncoding_e::ENC_DEFAULT:
                     ptr->open(filename, ios_base::binary);
                     break;
                 default:
@@ -76,29 +76,32 @@ namespace MF
             return internalOpenFile(filename, getFileEncoding(filename));
         }
 
-        std::unique_ptr<std::ifstream> openFile(const Filename_t &filename, Encoding_t encoding) {
+        std::unique_ptr<std::ifstream> openFile(
+            const Filename_t &filename, FileEncoding_e encoding) {
             return internalOpenFile(filename, encoding);
         }
 
-        static Encoding_t parseBitsAndFindEncoding(
+        static FileEncoding_e parseBitsAndFindEncoding(
             const std::array<char, NBR_BITS_TO_READ_ENCODING> &bits) {
             if (bits[0] == '\xff' && bits[1] == '\xfe') {
-                return Encoding_e::ENC_UTF16LE;
-            } else if (bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf') {
-                return Encoding_e::ENC_UTF8;
-            } else {
-                return Encoding_e::ENC_DEFAULT;
+                return FileEncoding_e::ENC_UTF16LE;
             }
+
+            if (bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf') {
+                return FileEncoding_e::ENC_UTF8;
+            }
+
+            return FileEncoding_e::ENC_DEFAULT;
         }
 
-        Encoding_t getFileEncoding(const Filename_t &filename) {
+        FileEncoding_e getFileEncoding(const Filename_t &filename) {
             std::array<char, NBR_BITS_TO_READ_ENCODING> bits{};
             osReadFileToBuffer(filename, bits.data(), NBR_BITS_TO_READ_ENCODING);
             return parseBitsAndFindEncoding(bits);
         }
 
         std::vector<Filename_t> listFilesInDirectory(const Filename_t &folder) {
-            bool const addFileSeparatorAtTheEnd = !MF::Strings::endsWith(folder, FILE_SEPARATOR);
+            const bool addFileSeparatorAtTheEnd = !MF::Strings::endsWith(folder, FILE_SEPARATOR);
 
             std::vector<Filename_t> result;
             osGetDirectoryContents(
@@ -113,11 +116,11 @@ namespace MF
         }
 
         std::unique_ptr<std::wifstream> openFile(
-            const WideFilename_t &filename, Encoding_t encoding) {
+            const WideFilename_t &filename, FileEncoding_e encoding) {
             return internalOpenFile(filename, encoding);
         }
 
-        Encoding_t getFileEncoding(const WideFilename_t &filename) {
+        FileEncoding_e getFileEncoding(const WideFilename_t &filename) {
             std::array<char, NBR_BITS_TO_READ_ENCODING> bits{};
             osReadFileToBuffer(filename, bits.data(), NBR_BITS_TO_READ_ENCODING);
             return parseBitsAndFindEncoding(bits);

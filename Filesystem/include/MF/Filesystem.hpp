@@ -19,24 +19,14 @@ namespace MF
 {
     namespace Filesystem
     {
-        // Represents a file encoding.
-        // It is an implementation detail that may change. Please use "..._t" instead.
-        enum class Encoding_e {
-            ENC_UTF16LE, // Normal UTF-16LE
-            ENC_UTF8, // Normal UTF-8
-            ENC_DEFAULT // If no encoding is false, we assume the default locale.
-        };
+        enum class FileEncoding_e { ENC_UTF16LE, ENC_UTF8, ENC_DEFAULT };
 
-        // Represents a file encoding.
-        using Encoding_t = Encoding_e;
-
-        // Type used to deal with file sizes.
         using Filesize_t = unsigned long;
 
         using Filename_t = std::string;
 
-        extern const Filename_t FILE_SEPARATOR;
-        extern const Filename_t LINE_END;
+        extern const Filename_t FILE_SEPARATOR; // either '/' or '\'
+        extern const Filename_t LINE_END; // either "\r\n" or "\n"
 
         void deleteFile(const Filename_t &filename);
         void deleteDirectory(const Filename_t &filename);
@@ -46,14 +36,15 @@ namespace MF
 
         Filesize_t getFileSize(const Filename_t &filename);
 
-        Encoding_t getFileEncoding(const Filename_t &filename);
+        FileEncoding_e getFileEncoding(const Filename_t &filename);
 
         /**
          * Opens the file with the correct locale (regarding the encoding) and skipping the
          * corresponding Byte Order Marks.
          */
         std::unique_ptr<std::ifstream> openFile(const Filename_t &filename);
-        std::unique_ptr<std::ifstream> openFile(const Filename_t &filename, Encoding_t encoding);
+        std::unique_ptr<std::ifstream> openFile(
+            const Filename_t &filename, FileEncoding_e encoding);
 
         void createDirectory(const Filename_t &filename);
 
@@ -117,11 +108,11 @@ namespace MF
 
         Filesize_t getFileSize(const WideFilename_t &filename);
 
-        Encoding_t getFileEncoding(const WideFilename_t &filename);
+        FileEncoding_e getFileEncoding(const WideFilename_t &filename);
 
         std::unique_ptr<std::wifstream> openFile(const WideFilename_t &filename);
         std::unique_ptr<std::wifstream> openFile(
-            const WideFilename_t &filename, Encoding_t encoding);
+            const WideFilename_t &filename, FileEncoding_e encoding);
 
         void createDirectory(const WideFilename_t &filename);
 
