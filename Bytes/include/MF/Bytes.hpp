@@ -4,6 +4,16 @@
 #include <string>
 #include <vector>
 
+#ifdef BIG_ENDIAN
+#    undef BIG_ENDIAN
+static constexpr long BIG_ENDIAN = 4321;
+#endif
+
+#ifdef LITTLE_ENDIAN
+#    undef LITTLE_ENDIAN
+static constexpr long LITTLE_ENDIAN = 4321;
+#endif
+
 namespace MF
 {
     namespace Bytes

@@ -4,6 +4,7 @@
 
 #include "MF/Bytes.hpp"
 
+#include <algorithm>
 #include <sstream>
 #include <stdexcept>
 

@@ -14,11 +14,11 @@ int main(int argc, char **argv) {
 
     // Get a checkpoint of the memory after Google Test has been initialized.
     _CrtMemState memoryState = {0};
-    _CrtMemCheckpoint( &memoryState );
+    _CrtMemCheckpoint(&memoryState);
     int retval = RUN_ALL_TESTS();
 
     // Check for leaks after tests have run
-    _CrtMemDumpAllObjectsSince( &memoryState );
+    _CrtMemDumpAllObjectsSince(&memoryState);
     return retval;
 }
 
@@ -26,6 +26,6 @@ int main(int argc, char **argv) {
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
 
-    return res = RUN_ALL_TESTS();
+    return RUN_ALL_TESTS();
 }
 #endif
