@@ -121,14 +121,16 @@ namespace MF
             virtual bool operator==(const Optional<T>& other) const {
                 if (isPresent()) {
                     return other.contains(_getRValueUnchecked());
-                } else {
-                    return other.isEmpty();
                 }
+
+                return other.isEmpty();
             }
 
             virtual bool contains(const T& other) const {
                 return isPresent() ? _getRValueUnchecked() == other : false;
             }
+
+            virtual ~Optional() = default;
 
            protected:
             /// Returns the contained RValue. Undefined behaviour if isEmpty.
@@ -240,7 +242,8 @@ namespace MF
                 return false;
             }
 
-            OptionalPtr<T> filter(const std::function<bool(const T&)>&) override {
+            OptionalPtr<T> filter(const std::function<bool(const T&)>& unused) override {
+                (void)unused;
                 return this->shared_from_this();
             }
 
@@ -269,12 +272,15 @@ namespace MF
                 return this->isEmpty() == other.isEmpty();
             }
 
-            bool contains(const T&) const override {
+            bool contains(const T& unused) const override {
+                (void)unused;
                 return false;
             }
 
+            ~OptionalEmpty() = default;
+
            protected:
-            const T& _getRValueUnchecked() const {
+            const T& _getRValueUnchecked() const override {
                 throw EmptyOptionalException();
             };
         };

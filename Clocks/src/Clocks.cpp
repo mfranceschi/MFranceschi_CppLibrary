@@ -25,8 +25,8 @@ namespace MF
             cumulated_offset = cumulated_offset + nowSteady() - lastPause;
         }
 
-        std::chrono::steady_clock::time_point PauseableSteadyClock::nowSteady() {
-            return std::chrono::steady_clock::now();
+        PauseableSteadyClock::_underlying_clock::time_point PauseableSteadyClock::nowSteady() {
+            return _underlying_clock::now();
         }
 
         PauseableSteadyClock::time_point PauseableSteadyClock::now() {

@@ -87,6 +87,12 @@ namespace MF
             }
             return true;
         }
+
+        template <class CharT>
+        bool endsWith(const std::basic_string<CharT>& input, CharT lastChar) {
+            auto stringLastChar = input[input.size() - 1];
+            return stringLastChar == lastChar;
+        }
     } // namespace Strings
 } // namespace MF
 
