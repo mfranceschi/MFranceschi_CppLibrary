@@ -38,6 +38,13 @@ namespace MF
              */
             std::string getUserAnswer(const std::string& question);
 
+            struct GetUserChoiceParams {
+                std::string question;
+                std::vector<std::pair<std::regex, std::string>> possibleAnswers;
+                std::string incorrectInputMessage = "Incorrect input.";
+                std::uint16_t maxAttempts = std::numeric_limits<decltype(maxAttempts)>::max();
+            };
+
             /**
              * Similar to the above, except that the function won't return until the user inputs
              * anything that matches one of the regexes, or until maxAttempts is reached. The
@@ -46,34 +53,13 @@ namespace MF
              * If maxAttempts is reached because the user wrote an incorrect output too many times,
              * returns an empty optional.
              */
-            Optionals::OptionalPtr<std::string> getUserChoice(
-                const std::string& question,
-                const std::vector<std::pair<std::regex, std::string>>& possibleAnswers,
-                const std::string& incorrectInputMessage = "Incorrect input.",
-                std::uint16_t maxAttempts = 0);
+            Optionals::OptionalPtr<std::string> getUserChoice(const GetUserChoiceParams& params);
 
             void pressEnterToContinue() {
                 char lastChar = '\0';
                 while (lastChar != '\n') {
                     lastChar = getNext();
                 }
-            }
-
-            bool getYesOrNo() {
-                const std::pair<std::regex, std::string> YES_CHOICE =
-                    std::make_pair(std::regex("^[Yy]"), "yes");
-
-                const std::pair<std::regex, std::string> NO_CHOICE =
-                    std::make_pair(std::regex("^[Nn]"), "no");
-
-                const std::vector<std::pair<std::regex, std::string>> CHOICES{
-                    YES_CHOICE, NO_CHOICE};
-
-                return getUserChoice(std::string(), CHOICES)
-                    ->map<bool>([&YES_CHOICE](const std::string& answer) {
-                        return answer == YES_CHOICE.second;
-                    })
-                    ->getOrDefault(false);
             }
 
            private:

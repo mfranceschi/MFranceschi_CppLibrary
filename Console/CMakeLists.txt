@@ -17,5 +17,5 @@ target_link_libraries(MF_Console PUBLIC MF_Commons MF_Strings MF_Optionals MF_Sy
 target_include_directories(MF_Console PUBLIC include)
 
 if(MF_IN_DEV)
-    # add_subdirectory(tests)
+    add_subdirectory(tests)
 endif()

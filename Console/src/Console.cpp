@@ -36,30 +36,25 @@ namespace MF
         }
 
         Optionals::OptionalPtr<std::string> ConsoleToolbox::getUserChoice(
-            const std::string& question,
-            const std::vector<std::pair<std::regex, std::string>>& possibleAnswers,
-            const std::string& incorrectInputMessage,
-            std::uint16_t maxAttempts) {
-            if (maxAttempts == 0) {
-                maxAttempts = std::numeric_limits<decltype(maxAttempts)>::max();
-            }
+            const GetUserChoiceParams& params) {
 
-            printIfNonEmptyWithNewline(stdStream, question);
+
+            printIfNonEmptyWithNewline(stdStream, params.question);
 
             std::string input;
             std::uint16_t attempts = 0;
 
-            while (attempts < maxAttempts) {
+            while (attempts < params.maxAttempts) {
                 input = getNonBlankInput();
 
                 // Look for a matching regex.
-                for (const auto& pair : possibleAnswers) {
+                for (const auto& pair : params.possibleAnswers) {
                     if (std::regex_match(input, pair.first)) {
                         return Optionals::ofLvalue(pair.second);
                     }
                 }
 
-                printIfNonEmptyWithNewline(stdStream, incorrectInputMessage);
+                printIfNonEmptyWithNewline(stdStream, params.incorrectInputMessage);
                 attempts++;
             }
 
