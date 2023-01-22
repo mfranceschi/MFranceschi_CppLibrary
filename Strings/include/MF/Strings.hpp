@@ -25,6 +25,9 @@ namespace MF
         {
             bool isBlank(char value);
             bool isBlank(wchar_t value);
+
+            bool isSpace(char value);
+            bool isSpace(wchar_t value);
         } // namespace Chars
 
         template <class CharT>
@@ -43,10 +46,6 @@ namespace MF
             return true;
         }
 
-        /**
-         * Same as java.lang.String.split(String regex),
-         * except that it's not a regex but a substring matching.
-         */
         template <typename CharT>
         std::vector<std::basic_string<CharT>> split(
             const std::basic_string<CharT>& input,
@@ -69,6 +68,10 @@ namespace MF
         template <class CharT>
         bool startsWith(
             const std::basic_string<CharT>& input, const std::basic_string<CharT>& substring) {
+            if (input.length() < substring.length()) {
+                return false;
+            }
+
             for (std::size_t i = 0; i < substring.length(); i++) {
                 if (input[i] != substring[i]) {
                     return false;
@@ -78,8 +81,17 @@ namespace MF
         }
 
         template <class CharT>
+        bool startsWith(const std::basic_string<CharT>& input, CharT firstChar) {
+            return input.empty() ? false : input[0] == firstChar;
+        }
+
+        template <class CharT>
         bool endsWith(
             const std::basic_string<CharT>& input, const std::basic_string<CharT>& substring) {
+            if (input.length() < substring.length()) {
+                return false;
+            }
+
             for (std::size_t i = 0; i < substring.length(); i++) {
                 if (input[input.length() - substring.length() + i] != substring[i]) {
                     return false;
@@ -90,8 +102,31 @@ namespace MF
 
         template <class CharT>
         bool endsWith(const std::basic_string<CharT>& input, CharT lastChar) {
-            auto stringLastChar = input[input.size() - 1];
-            return stringLastChar == lastChar;
+            return input.empty() ? false : input[input.size() - 1] == lastChar;
+        }
+
+        template <class CharT>
+        std::basic_string<CharT> strip(const CharT* input) {
+            return strip(std::basic_string<CharT>(input));
+        }
+
+        template <class CharT>
+        std::basic_string<CharT> strip(const std::basic_string<CharT>& input) {
+            if (isBlank(input)) {
+                return std::string();
+            }
+
+            std::size_t firstNonBlank = 0;
+            while (Chars::isSpace(input[firstNonBlank])) {
+                firstNonBlank++;
+            }
+
+            std::size_t lastBlankBlock = input.length();
+            while (Chars::isSpace(input[lastBlankBlock - 1])) {
+                lastBlankBlock--;
+            }
+
+            return input.substr(firstNonBlank, lastBlankBlock - firstNonBlank);
         }
     } // namespace Strings
 } // namespace MF

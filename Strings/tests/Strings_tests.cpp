@@ -40,7 +40,14 @@ TEST(Strings_StartsWith, itWorks) {
     EXPECT_FALSE(startsWith(input, std::string("bcde")));
     EXPECT_FALSE(startsWith(input, std::string("ac")));
     EXPECT_FALSE(startsWith(input, std::string(" ")));
-    EXPECT_FALSE(startsWith(input, std::string("\\")));
+
+    EXPECT_TRUE(startsWith(input, 'a'));
+    EXPECT_FALSE(startsWith(input, 'b'));
+    EXPECT_FALSE(startsWith(input, 'e'));
+
+    EXPECT_FALSE(startsWith(std::string(""), 'a'));
+    EXPECT_FALSE(startsWith(std::string(""), std::string("a")));
+    EXPECT_TRUE(startsWith(std::string(""), std::string("")));
 }
 
 TEST(Strings_EndsWith, itWorks) {
@@ -53,4 +60,23 @@ TEST(Strings_EndsWith, itWorks) {
     EXPECT_FALSE(endsWith(input, std::string("ce")));
     EXPECT_FALSE(endsWith(input, std::string(" ")));
     EXPECT_FALSE(endsWith(input, std::string("\\")));
+
+    EXPECT_TRUE(endsWith(input, 'e'));
+    EXPECT_FALSE(endsWith(input, 'd'));
+    EXPECT_FALSE(endsWith(input, 'a'));
+
+    EXPECT_FALSE(endsWith(std::string(""), 'a'));
+    EXPECT_FALSE(endsWith(std::string(""), std::string("a")));
+    EXPECT_TRUE(endsWith(std::string(""), std::string("")));
+}
+
+TEST(Strings_Strip, itWorks) {
+    EXPECT_EQ(strip("abc"), std::string("abc"));
+    EXPECT_EQ(strip(" abc"), std::string("abc"));
+    EXPECT_EQ(strip("abc "), std::string("abc"));
+    EXPECT_EQ(strip(" abc "), std::string("abc"));
+    EXPECT_EQ(strip(" \t  abc  \t \n \t "), std::string("abc"));
+
+    EXPECT_TRUE(strip("  ").empty());
+    EXPECT_TRUE(strip("").empty());
 }

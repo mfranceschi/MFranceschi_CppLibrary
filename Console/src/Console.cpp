@@ -25,6 +25,7 @@ namespace MF
             std::string input;
             while (Strings::isBlank(input)) {
                 std::cin >> input;
+                input = Strings::strip(input);
             }
             return input;
         }
@@ -37,8 +38,6 @@ namespace MF
 
         Optionals::OptionalPtr<std::string> ConsoleToolbox::getUserChoice(
             const GetUserChoiceParams& params) {
-
-
             printIfNonEmptyWithNewline(stdStream, params.question);
 
             std::string input;
@@ -49,7 +48,8 @@ namespace MF
 
                 // Look for a matching regex.
                 for (const auto& pair : params.possibleAnswers) {
-                    if (std::regex_match(input, pair.first)) {
+                    if (std::regex_search(
+                            input, pair.first, std::regex_constants::match_continuous)) {
                         return Optionals::ofLvalue(pair.second);
                     }
                 }
