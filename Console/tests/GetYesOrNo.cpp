@@ -16,6 +16,7 @@ using namespace MF::Console;
  */
 int main(int nargs, char** args) {
     ConsoleToolbox::GetUserChoiceParams params{};
+    params.incorrectInputMessage = ""; // No output please.
 
     if (nargs == 2) {
         params.maxAttempts = std::atoi(args[1]);
@@ -28,11 +29,8 @@ int main(int nargs, char** args) {
 
     return ConsoleToolbox::forStdout()
         .getUserChoice(params)
-        ->map<bool>([](const std::string& answer) {
-            return answer == "yes";
-        })
-        ->map<int>([](const bool& value) {
-            return value ? 0 : 1;
+        ->map<int>([](const std::string& answer) {
+            return (answer == "yes") ? EXIT_SUCCESS : EXIT_FAILURE;
         })
         ->getOrDefault(2);
 }
