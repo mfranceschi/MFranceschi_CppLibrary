@@ -6,7 +6,10 @@ find_package(Python3)
 
 add_test(
         NAME GetYesOrNo_PyTests
-        COMMAND Python3::Interpreter ${CMAKE_CURRENT_SOURCE_DIR}/GetYesOrNo_tests.py $<TARGET_FILE:GetYesOrNo>
+        COMMAND
+            Python3::Interpreter
+            ${CMAKE_CURRENT_SOURCE_DIR}/GetYesOrNo_tests.py
+            $<TARGET_FILE:GetYesOrNo>
 )
 set_tests_properties(GetYesOrNo_PyTests PROPERTIES TIMEOUT 10)
 
