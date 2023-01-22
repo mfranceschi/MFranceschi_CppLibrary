@@ -71,12 +71,12 @@ TEST(Strings_EndsWith, itWorks) {
 }
 
 TEST(Strings_Strip, itWorks) {
-    EXPECT_EQ(strip("abc"), std::string("abc"));
-    EXPECT_EQ(strip(" abc"), std::string("abc"));
-    EXPECT_EQ(strip("abc "), std::string("abc"));
-    EXPECT_EQ(strip(" abc "), std::string("abc"));
-    EXPECT_EQ(strip(" \t  abc  \t \n \t "), std::string("abc"));
+    EXPECT_EQ(strip(std::string("abc")), std::string("abc"));
+    EXPECT_EQ(strip(std::string(" abc")), std::string("abc"));
+    EXPECT_EQ(strip(std::string("abc ")), std::string("abc"));
+    EXPECT_EQ(strip(std::string(" abc ")), std::string("abc"));
+    EXPECT_EQ(strip(std::string(" \t  abc  \t \n \t ")), std::string("abc"));
 
-    EXPECT_TRUE(strip("  ").empty());
-    EXPECT_TRUE(strip("").empty());
+    EXPECT_TRUE(strip(std::string("  ")).empty());
+    EXPECT_TRUE(strip(std::string("")).empty());
 }

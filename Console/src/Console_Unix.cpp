@@ -20,7 +20,7 @@ namespace MF
 
             SystemErrors::Errno::throwCurrentSystemErrorIf(tcgetattr(STDIN_FILENO, &infos) == -1);
 
-            const auto c_lflag_copy = infos.c_lflag;
+            const auto c_lflag_copy = infos.c_lflag; // TODO
 
             infos.c_lflag &= ~ECHO; // Non-echo mode
 
