@@ -32,8 +32,29 @@ namespace MF
         PauseableSteadyClock::time_point PauseableSteadyClock::now() {
             return nowSteady() - cumulated_offset;
         }
+
         bool PauseableSteadyClock::isPaused() const {
             return inPause;
+        }
+
+        PauseableSteadyClock::duration PauseableSteadyClock::getCumulatedOffset() const {
+            return cumulated_offset;
+        }
+
+        void PauseableSteadyClock::setOffset(PauseableSteadyClock::duration newOffset) {
+            cumulated_offset = newOffset;
+        }
+
+        PauseableAdjustableSteadyClock PauseableAdjustableSteadyClock::newClock() {
+            return PauseableAdjustableSteadyClock();
+        }
+
+        void PauseableAdjustableSteadyClock::addOffset(
+            PauseableAdjustableSteadyClock::duration offset) {
+            setOffset(getCumulatedOffset() + offset);
+        }
+
+        PauseableAdjustableSteadyClock::PauseableAdjustableSteadyClock() {
         }
     } // namespace Clocks
 } // namespace MF

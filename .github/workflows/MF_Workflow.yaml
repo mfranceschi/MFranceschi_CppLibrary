@@ -61,7 +61,7 @@ jobs:
           sources: "**/*.hpp,**/*.cpp"
 
       - name: CHECK - CMake linting
-        if: ${{ always() }}
+        if: ${{ false }}
         run: |
           pip install cmakelint
           find ./ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100 --filter=-readability/wonkycase

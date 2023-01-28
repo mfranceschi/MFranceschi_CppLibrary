@@ -18,9 +18,12 @@ target_compile_definitions(
         MF_BIG_ENDIAN=${MF_BIG_ENDIAN}
         MF_LITTLE_ENDIAN=$<NOT:${MF_BIG_ENDIAN}>
 )
-target_sources(MF_Commons PRIVATE src/dummy.cpp)
+target_sources(MF_Commons
+        PUBLIC include/MF/Commons.hpp
+        PRIVATE src/dummy.cpp
+        )
 
-if(MF_IN_DEV)
+if (MF_IN_DEV)
     target_compile_definitions(MF_Commons PUBLIC _CRTDBG_MAP_ALLOC=1)
     add_subdirectory(tests)
-endif()
+endif ()

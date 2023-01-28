@@ -23,11 +23,19 @@ namespace MF
 
         namespace Chars
         {
+            // TODO use locale? such as
+            // 'std::use_facet<std::ctype<CharT>>(std::locale()).tolower(ch)'
             bool isBlank(char value);
             bool isBlank(wchar_t value);
 
             bool isSpace(char value);
             bool isSpace(wchar_t value);
+
+            char toUpper(char value);
+            wchar_t toUpper(wchar_t value);
+
+            char toLower(char value);
+            wchar_t toLower(wchar_t value);
         } // namespace Chars
 
         template <class CharT>
@@ -127,6 +135,26 @@ namespace MF
             }
 
             return input.substr(firstNonBlank, lastBlankBlock - firstNonBlank);
+        }
+
+        template <class CharT>
+        std::basic_string<CharT> toLowerCase(const std::basic_string<CharT>& input) {
+            std::string result(input.length());
+
+            for (const CharT& charT : input) {
+                result.append(Chars::toLower(charT));
+            }
+            return result;
+        }
+
+        template <class CharT>
+        std::basic_string<CharT> toUpperCase(const std::basic_string<CharT>& input) {
+            std::string result(input.length());
+
+            for (const CharT& charT : input) {
+                result.append(Chars::toUpper(charT));
+            }
+            return result;
         }
     } // namespace Strings
 } // namespace MF
