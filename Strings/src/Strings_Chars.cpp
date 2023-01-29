@@ -74,7 +74,7 @@ namespace MF
             }
 
             char toLower(char value) {
-                return std::tolower(value);
+                return std::tolower(value, LocaleCache::getOrFetch());
             }
 
             wchar_t toLower(wchar_t value) {

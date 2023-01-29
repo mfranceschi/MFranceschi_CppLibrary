@@ -41,7 +41,7 @@ namespace MF
         template <class CharT>
         bool contains(
             const std::basic_string<CharT>& input, const std::basic_string<CharT>& substring) {
-            return input.find(substring) != std::string ::npos;
+            return input.find(substring) != std::basic_string<CharT>::npos;
         }
 
         template <typename CharT>
@@ -60,11 +60,12 @@ namespace MF
             const std::basic_string<CharT>& splitBySubstring = "\n") {
             std::vector<std::basic_string<CharT>> result;
             size_t position = 0;
-            while (position != std::string::npos) {
+            while (position != std::basic_string<CharT>::npos) {
                 auto position2 = input.find(splitBySubstring, position);
                 result.push_back(input.substr(position, position2 - position));
-                position = (position2 == std::string::npos) ? position2
-                                                            : position2 + splitBySubstring.length();
+                position = (position2 == std::basic_string<CharT>::npos)
+                               ? position2
+                               : position2 + splitBySubstring.length();
             }
 
             while (result[result.size() - 1] == std::basic_string<CharT>()) {
@@ -121,7 +122,7 @@ namespace MF
         template <class CharT>
         std::basic_string<CharT> strip(const std::basic_string<CharT>& input) {
             if (isBlank(input)) {
-                return std::string();
+                return std::basic_string<CharT>();
             }
 
             std::size_t firstNonBlank = 0;
@@ -139,20 +140,22 @@ namespace MF
 
         template <class CharT>
         std::basic_string<CharT> toLowerCase(const std::basic_string<CharT>& input) {
-            std::string result(input.length());
+            std::basic_string<CharT> result;
+            result.reserve(input.length());
 
             for (const CharT& charT : input) {
-                result.append(Chars::toLower(charT));
+                result += Chars::toLower(charT);
             }
             return result;
         }
 
         template <class CharT>
         std::basic_string<CharT> toUpperCase(const std::basic_string<CharT>& input) {
-            std::string result(input.length());
+            std::basic_string<CharT> result;
+            result.reserve(input.length());
 
             for (const CharT& charT : input) {
-                result.append(Chars::toUpper(charT));
+                result += Chars::toUpper(charT);
             }
             return result;
         }
