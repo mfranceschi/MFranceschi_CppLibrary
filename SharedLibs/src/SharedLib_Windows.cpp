@@ -30,8 +30,8 @@ namespace MF
             }
 
            private:
-            const Closer closer;
             ResourceType resource;
+            const Closer closer;
         };
 
         class HmoduleCloser : public ResourceCloser<HMODULE, decltype(&FreeLibrary)> {

@@ -12,7 +12,9 @@
 #    include "SystemErrors_TestHelper.hpp"
 #    include "tests_data.hpp"
 
-#    pragma comment(lib, "Ws2_32.lib")
+#    if !MF_MINGW
+#        pragma comment(lib, "Ws2_32.lib")
+#    endif
 
 using namespace MF::SystemErrors;
 using ErrorCode_t = Wsa::ErrorCode_t;

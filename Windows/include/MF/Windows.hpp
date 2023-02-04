@@ -78,8 +78,8 @@ namespace MF
                 }
 
                private:
-                Closer closer;
                 ResourceType resource;
+                Closer closer;
                 bool callCloser = true;
             };
         } // namespace ResourceClosers

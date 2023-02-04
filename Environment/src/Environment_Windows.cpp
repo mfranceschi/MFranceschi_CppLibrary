@@ -5,6 +5,7 @@
 #if MF_WINDOWS
 
 #    include <array>
+#    include <cstring>
 #    include <functional>
 #    include <memory>
 #    include <stdexcept>

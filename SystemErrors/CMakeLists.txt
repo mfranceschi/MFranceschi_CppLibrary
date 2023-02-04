@@ -18,6 +18,10 @@ target_sources(MF_SystemErrors
 target_link_libraries(MF_SystemErrors PUBLIC MF_Commons MF_Windows_Header)
 target_include_directories(MF_SystemErrors PUBLIC include)
 
+if (WIN32 AND MINGW)
+    target_link_libraries(MF_SystemErrors PRIVATE ws2_32)
+endif ()
+
 include(CheckStrerrorFunctionsExist.cmake)
 
 target_compile_definitions(MF_SystemErrors
@@ -30,6 +34,6 @@ target_compile_definitions(MF_SystemErrors
         __STDC_WANT_LIB_EXT1__=1
         )
 
-if(MF_IN_DEV)
+if (MF_IN_DEV)
     add_subdirectory(tests)
-endif()
+endif ()

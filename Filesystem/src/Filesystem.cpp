@@ -52,17 +52,17 @@ namespace MF
 
             switch (encoding) {
                 case FileEncoding_e::ENC_UTF8:
-                    ptr->open(filename);
+                    ptr->open(filename.c_str());
                     ptr->imbue(LOCALE_UTF8);
                     ptr->seekg(3);
                     break;
                 case FileEncoding_e::ENC_UTF16LE:
-                    ptr->open(filename, ios_base::binary);
+                    ptr->open(filename.c_str(), ios_base::binary);
                     ptr->imbue(LOCALE_UTF16LE);
                     ptr->seekg(2, ios_base::beg);
                     break;
                 case FileEncoding_e::ENC_DEFAULT:
-                    ptr->open(filename, ios_base::binary);
+                    ptr->open(filename.c_str(), ios_base::binary);
                     break;
                 default:
                     throw std::invalid_argument(

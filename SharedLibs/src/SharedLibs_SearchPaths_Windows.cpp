@@ -29,8 +29,8 @@ namespace MF
             }
 
            private:
-            const Closer closer;
             ResourceType resource;
+            const Closer closer;
         };
 
         class DllDirectoryCookieCloser

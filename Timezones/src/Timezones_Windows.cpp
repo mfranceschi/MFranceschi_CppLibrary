@@ -47,11 +47,11 @@ namespace MF
                 const wchar_t* src = timeZoneInformation.TimeZoneKeyName;
 
                 static constexpr auto DEST_SIZE =
-                    std::extent_v<decltype(timeZoneInformation.TimeZoneKeyName)>;
+                    std::extent<decltype(timeZoneInformation.TimeZoneKeyName)>::value;
                 std::array<char, DEST_SIZE> dest{};
                 size_t charsConverted = 0;
 
-                errno_t returnFromConversionFunction =
+                const errno_t returnFromConversionFunction =
                     wcstombs_s(&charsConverted, dest.data(), DEST_SIZE, src, std::wcslen(src));
                 SystemErrors::Errno::throwCurrentSystemErrorIf(returnFromConversionFunction != 0);
 
@@ -74,11 +74,11 @@ namespace MF
             SystemTimeToFileTime(&systemTime, &stf);
             SystemTimeToFileTime(&localTime, &ltf);
 
-            ULARGE_INTEGER ust{stf.dwLowDateTime, stf.dwHighDateTime};
-            ULARGE_INTEGER ult{ltf.dwLowDateTime, ltf.dwHighDateTime};
+            const ULARGE_INTEGER ust{stf.dwLowDateTime, stf.dwHighDateTime};
+            const ULARGE_INTEGER ult{ltf.dwLowDateTime, ltf.dwHighDateTime};
 
-            unsigned long long result = ult.QuadPart - ust.QuadPart;
-            std::chrono::microseconds resultInMicroseconds(result / 10);
+            const unsigned long long result = ult.QuadPart - ust.QuadPart;
+            const std::chrono::microseconds resultInMicroseconds(result / 10);
 
             return std::chrono::duration_cast<std::chrono::seconds>(resultInMicroseconds);
         }

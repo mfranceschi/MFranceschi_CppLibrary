@@ -8,7 +8,7 @@
 
 #include "MF/SystemErrors.hpp"
 
-#if MF_WINDOWS
+#if MF_WINDOWS && defined(_MSC_VER)
 #    pragma warning(disable : 4505)
 #    pragma warning(disable : 4996)
 #endif
@@ -118,7 +118,7 @@ namespace MF
         }
 
         SystemError Errno::getSystemErrorForErrorCode(ErrorCode_t errorCode) {
-            std::string errorMessage = getErrorMessageLocalizedForErrorCode(errorCode);
+            const std::string errorMessage = getErrorMessageLocalizedForErrorCode(errorCode);
 
             return SystemError(errorCode, errorMessage);
         }
