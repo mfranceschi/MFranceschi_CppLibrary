@@ -5,6 +5,7 @@
 #if MF_UNIX
 #    include <set>
 
+#    include "MF/Environment.hpp"
 #    include "MF/SharedLibs.hpp"
 #    include "SharedLibs_DL_internals.hpp"
 
@@ -16,8 +17,7 @@ namespace MF
         static constexpr char ITEM_SEPARATOR = ':';
 
         static inline std::string readEnvVariable() {
-            const char *result = getenv(ENV_VARIABLE_NAME);
-            return result == nullptr ? "" : result;
+            return Environment::getEnvOrDefault(ENV_VARIABLE_NAME, "");
         }
 
         static std::set<std::string> addedSearchPaths;
@@ -36,12 +36,7 @@ namespace MF
             std::string newLdLibraryPath =
                 ldLibraryPath.empty() ? path
                                       : ldLibraryPath + std::to_string(ITEM_SEPARATOR) + path;
-            int result = setenv(ENV_VARIABLE_NAME, newLdLibraryPath.c_str(), 1);
-
-            if (result != 0) {
-                throw std::runtime_error(
-                    "An error occurred when trying to add '" + path + "' to search paths.");
-            }
+            Environment::setEnv(ENV_VARIABLE_NAME, newLdLibraryPath);
 
             addedSearchPaths.insert(path);
         }
@@ -57,7 +52,7 @@ namespace MF
             std::size_t pos = ldLibraryPath.find(ITEM_SEPARATOR);
             if (pos == std::string::npos) {
                 if (ldLibraryPath == path) {
-                    unsetenv(ENV_VARIABLE_NAME);
+                    Environment::unsetEnv(ENV_VARIABLE_NAME);
                     return;
                 }
 
@@ -72,7 +67,7 @@ namespace MF
                 resultingString =
                     ldLibraryPath.substr(0, pos - 1) + ldLibraryPath.substr(pos + path.length());
             }
-            setenv(ENV_VARIABLE_NAME, resultingString.c_str(), 1);
+            Environment::setEnv(ENV_VARIABLE_NAME, resultingString);
 
             addedSearchPaths.erase(iterator);
         }

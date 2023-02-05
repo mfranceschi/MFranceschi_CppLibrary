@@ -11,7 +11,7 @@ add_test(
             ${CMAKE_CURRENT_SOURCE_DIR}/GetYesOrNo_tests.py
             $<TARGET_FILE:GetYesOrNo>
 )
-set_tests_properties(GetYesOrNo_PyTests PROPERTIES TIMEOUT 10)
+set_tests_properties(GetYesOrNo_PyTests PROPERTIES TIMEOUT 5)
 
 #[[
 add_executable(MF_Console_Tests)
