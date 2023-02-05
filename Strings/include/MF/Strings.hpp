@@ -159,6 +159,18 @@ namespace MF
             }
             return result;
         }
+
+        template <class CharT, class Iterator_t>
+        std::basic_string<CharT> join(
+            const std::basic_string<CharT>& separator, Iterator_t beginIt, Iterator_t endIt) {
+            // TODO test
+            std::basic_string<CharT> result;
+            while (beginIt != endIt) {
+                result += separator;
+                beginIt++;
+            }
+            return result.substr(0, result.length() - separator.length());
+        }
     } // namespace Strings
 } // namespace MF
 
