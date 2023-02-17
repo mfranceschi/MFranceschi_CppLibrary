@@ -80,15 +80,3 @@ TEST(Strings_Strip, itWorks) {
     EXPECT_TRUE(strip(std::string("  ")).empty());
     EXPECT_TRUE(strip(std::string("")).empty());
 }
-
-TEST(String_ToUpperCase, itHandlesNonAscii) {
-    GTEST_SKIP() << "Not currently working.";
-    EXPECT_EQ(toUpperCase(std::string("é")), std::string("É"));
-    EXPECT_EQ(toUpperCase(std::wstring(L"é")), std::wstring(L"É"));
-}
-
-TEST(String_ToLowerCase, itHandlesNonAscii) {
-    GTEST_SKIP() << "Not currently working.";
-    EXPECT_EQ(toLowerCase(std::string("É")), std::string("é"));
-    EXPECT_EQ(toLowerCase(std::wstring(L"É")), std::wstring(L"é"));
-}

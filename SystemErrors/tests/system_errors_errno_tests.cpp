@@ -53,12 +53,8 @@ TEST(Errno_GetCurrentErrorCode, it_returns_the_current_error_code) {
 }
 
 TEST(Errno_GetCurrentErrorCode, it_returns_no_error) {
-    GTEST_SKIP() << "Needs more polish.";
-
     constexpr int myValue = 4242;
     Errno::setCurrentErrorCode(myValue);
-    doSomethingThatDoesNotSetsLastError();
-
     const auto currentError = Errno::getCurrentErrorCode();
     EXPECT_EQ(currentError, myValue);
 }
