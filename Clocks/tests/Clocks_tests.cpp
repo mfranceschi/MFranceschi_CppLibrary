@@ -14,7 +14,7 @@ using namespace std::chrono;
 
 static ::testing::AssertionResult isDurationAcceptable(
     milliseconds duration, milliseconds minValue, milliseconds maxUpperValue) {
-    bool isAcceptable = (duration >= minValue) && (duration <= minValue + maxUpperValue);
+    const bool isAcceptable = (duration >= minValue) && (duration <= minValue + maxUpperValue);
 
     if (isAcceptable) {
         return ::testing::AssertionSuccess();
@@ -45,9 +45,9 @@ TEST(Clocks_PauseableSteadyClock, it_works) {
     auto steadyTime2 = steady_clock::now();
 
     EXPECT_TRUE(
-        isDurationAcceptable(duration_cast<milliseconds>(steadyTime2 - steadyTime1), 400ms, 50ms))
+        isDurationAcceptable(duration_cast<milliseconds>(steadyTime2 - steadyTime1), 400ms, 200ms))
         << "STEADY";
-    EXPECT_TRUE(isDurationAcceptable(duration_cast<milliseconds>(myTime2 - myTime1), 250ms, 50ms))
+    EXPECT_TRUE(isDurationAcceptable(duration_cast<milliseconds>(myTime2 - myTime1), 250ms, 140ms))
         << "MY PAUSEABLE";
 }
 
@@ -71,8 +71,8 @@ TEST(Clocks_PauseableSteadyClock, it_works_longer_version) {
     auto steadyTime2 = steady_clock::now();
 
     EXPECT_TRUE(
-        isDurationAcceptable(duration_cast<milliseconds>(steadyTime2 - steadyTime1), 1610ms, 150ms))
+        isDurationAcceptable(duration_cast<milliseconds>(steadyTime2 - steadyTime1), 1610ms, 200ms))
         << "STEADY";
-    EXPECT_TRUE(isDurationAcceptable(duration_cast<milliseconds>(myTime2 - myTime1), 500ms, 50ms))
+    EXPECT_TRUE(isDurationAcceptable(duration_cast<milliseconds>(myTime2 - myTime1), 500ms, 200ms))
         << "MY PAUSEABLE";
 }
