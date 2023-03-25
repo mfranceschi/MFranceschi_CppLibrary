@@ -5,6 +5,7 @@
 #if MF_WINDOWS
 #    include "MF/LightWindows.hpp"
 #    include "MF/SystemErrors.hpp"
+#    include "SystemErrors_TestHelper.hpp"
 #    include "tests_data.hpp"
 
 using namespace MF::SystemErrors;
@@ -23,20 +24,13 @@ static void doSomethingThatDoesNotSetsLastError() {
 }
 
 TEST(Win32_ThrowCurrentSystemErrorIf, it_throws_if_true) {
-    setSystemErrorMessagesLocalized(false);
     const auto expectedError = doSomethingThatSetsLastError();
 
     try {
         Win32::throwCurrentSystemErrorIf(true);
         FAIL() << "Expected an exception to be thrown.";
     } catch (const SystemError& systemError) {
-        EXPECT_EQ(systemError.getParadigm(), Paradigm::Win32);
-        EXPECT_EQ(systemError.getErrorCode(), expectedError);
-        EXPECT_STREQ(systemError.what(), "The handle is invalid");
-    } catch (const std::runtime_error& runtime_error) {
-        FAIL() << "Unexpected runtime_error: " << runtime_error.what();
-    } catch (...) {
-        FAIL() << "Unexpected or unknown error.";
+        checkSystemError(systemError, Paradigm::Win32, expectedError);
     }
 }
 

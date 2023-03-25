@@ -13,7 +13,7 @@ target_sources(MF_Environment
         PRIVATE ${Private_Sources}
         PUBLIC ${Public_Sources}
         )
-target_link_libraries(MF_Environment PUBLIC MF_Commons MF_Windows)
+target_link_libraries(MF_Environment PUBLIC MF_Commons MF_SystemErrors)
 target_include_directories(MF_Environment PUBLIC include)
 
 if(MF_IN_DEV)

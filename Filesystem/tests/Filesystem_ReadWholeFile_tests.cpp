@@ -6,19 +6,16 @@
 
 using namespace MF::Filesystem;
 
-TEST(ReadWholeFile, ManyReads) {
-    SFilename_t file = fid_middle_size.name;
+TEST(readWholeFile, ManyReads) {
+    Filename_t file = fid_middle_size.name;
+    const size_t position1 = 0;
+    const size_t position2 = fid_middle_size.size - 1;
+
     constexpr long iterations = 1000L;
     for (long i = 0; i < iterations; ++i) {
-        auto fileData = ReadWholeFile(file.c_str());
-        ASSERT_NE(fileData, nullptr) << "Failed to ReadWholeFile at iteration " << i;
+        auto fileData = readWholeFile(file);
+        ASSERT_NE(fileData, nullptr) << "Failed to readWholeFile at iteration " << i;
+        ASSERT_NO_THROW(fileData->getContent()[position1]);
+        ASSERT_NO_THROW(fileData->getContent()[position2]);
     }
-}
-
-TEST(ReadWholeFile, StringRead) {
-    const file_info_data &file_used = fid_smallfile_utf16le;
-    std::string callResult;
-    EXPECT_TRUE(ReadWholeFileToString(file_used.name.c_str(), callResult))
-        << "Failed to call ReadWholeFileToString";
-    EXPECT_EQ(callResult.size(), file_used.size) << "Wrong file size";
 }

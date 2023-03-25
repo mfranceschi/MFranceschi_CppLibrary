@@ -15,8 +15,12 @@ target_sources(MF_SystemErrors
         PUBLIC
         ${Public_Sources}
         )
-target_link_libraries(MF_SystemErrors PUBLIC MF_Commons MF_Windows)
+target_link_libraries(MF_SystemErrors PUBLIC MF_Commons MF_Windows_Header)
 target_include_directories(MF_SystemErrors PUBLIC include)
+
+if (WIN32 AND MINGW)
+    target_link_libraries(MF_SystemErrors PRIVATE ws2_32)
+endif ()
 
 include(CheckStrerrorFunctionsExist.cmake)
 
@@ -24,13 +28,12 @@ target_compile_definitions(MF_SystemErrors
         PUBLIC
         MF_SystemErrors_WSA=$<OR:$<BOOL:${MF_SystemErrors_WSA}>,$<BOOL:${MF_IN_DEV}>>
         PRIVATE
-        MF_HAS_strerrordesc_np=$<BOOL:${MF_HAS_strerrordesc_np}>
         MF_HAS_strerror_localized=$<BOOL:${MF_HAS_strerror_localized}>
         MF_HAS_strerror_repeatable=$<BOOL:${MF_HAS_strerror_repeatable}>
         MF_HAS_strerror_secure=$<BOOL:${MF_HAS_strerror_secure}>
         __STDC_WANT_LIB_EXT1__=1
         )
 
-if(MF_IN_DEV)
+if (MF_IN_DEV)
     add_subdirectory(tests)
-endif()
+endif ()

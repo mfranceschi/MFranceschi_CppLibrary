@@ -6,6 +6,7 @@
 #define MYWORKS_TEST0_COMMAND_HPP
 
 #include <functional>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -73,7 +74,78 @@ namespace MF
         };
 
         void Command(const CommandCall &call, CommandReturn &);
-        
+
+        namespace Reboot
+        {
+            struct StdConsoleOutChoice {};
+
+            struct OutputToFile : StdConsoleOutChoice {
+               private:
+                const Filename_t filename;
+            };
+
+            struct OutputToConsole : StdConsoleOutChoice {};
+
+            struct OutputSilenced : StdConsoleOutChoice {};
+
+            struct OutputToStringStream : StdConsoleOutChoice {
+               private:
+                std::istringstream iss;
+
+               public:
+                std::istringstream &getStringStream();
+            };
+
+            struct StdConsoleInChoice {};
+
+            struct InputSomeFile : StdConsoleInChoice {
+               private:
+                const Filename_t filename;
+            };
+
+            struct InputSomeString : StdConsoleInChoice {
+               private:
+                const Filename_t text;
+            };
+
+            struct InputNothing : StdConsoleInChoice {};
+
+            struct CommandCall2 {
+                /**
+                 * Name or path to the executable.
+                 */
+                Filename_t executable;
+
+                /**
+                 * List of arguments.
+                 * The interpretation depends on the OS; we recommend using just 1 string.
+                 */
+                std::vector<Filename_t> arguments{};
+
+                std::unique_ptr<StdConsoleOutChoice> stdOutChoice =
+                    std::make_unique<OutputToConsole>();
+                std::unique_ptr<StdConsoleOutChoice> stdErrChoice =
+                    std::make_unique<OutputToConsole>();
+                std::unique_ptr<StdConsoleInChoice> stdInChoice = std::make_unique<InputNothing>();
+            };
+
+            struct CommandOver2 {
+                int exitCode = 0;
+            };
+
+            struct CommandAsyncReturn2 {
+                std::future<CommandOver2> futureCommandOver;
+
+                void tryToInterrupt();
+                void wait();
+                void waitFor(const std::chrono::duration &duration);
+                void getReturnCode();
+            };
+
+            CommandAsyncReturn2 runCommandAsynchrone(const CommandCall2 &);
+            CommandOver2 runCommandSynchrously(const CommandCall2 &);
+        } // namespace Reboot
+
         // TODO implement
         // - Normal call
         // - CMD specific call

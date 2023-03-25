@@ -13,7 +13,9 @@ target_sources(MF_SharedLibs
             include/MF/SharedLibs.hpp
             include/MF/SharedLibsMacros.hpp
 )
-target_link_libraries(MF_SharedLibs PUBLIC MF_Commons MF_Windows ${CMAKE_DL_LIBS})
+target_link_libraries(MF_SharedLibs
+        PUBLIC MF_Commons MF_SystemErrors
+        PRIVATE MF_Windows MF_Environment ${CMAKE_DL_LIBS})
 target_include_directories(MF_SharedLibs PUBLIC include)
 
 if(MF_IN_DEV)

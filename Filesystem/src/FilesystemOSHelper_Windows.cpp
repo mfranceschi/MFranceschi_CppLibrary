@@ -8,204 +8,126 @@
 
 #if MF_WINDOWS
 
-#    include <cassert>
-#    include <cstring>
-#    include <functional>
-
 #    include "FilesystemOSHelper.hpp"
 #    include "MF/LightWindows.hpp"
+#    include "MF/SystemErrors.hpp"
 #    include "MF/Windows.hpp"
 
 namespace MF
 {
     namespace Filesystem
     {
-        namespace
-        {
-            template <typename ResourceType, typename Closer>
-            class ResourceCloser {
-               public:
-                ResourceCloser(ResourceType resource, Closer closer)
-                    : resource(resource), closer(closer) {
-                }
-
-                const ResourceType &get() const {
-                    return resource;
-                }
-
-                virtual ~ResourceCloser() {
-                    closer(resource);
-                }
-
-               private:
-                Closer closer;
-                ResourceType resource;
-            };
-
-            class HandleCloser : public ResourceCloser<HANDLE, decltype(&CloseHandle)> {
-               public:
-                HandleCloser(HANDLE handle)
-                    : ResourceCloser<HANDLE, decltype(&CloseHandle)>(handle, CloseHandle) {
-                }
-
-                bool isInvalid() const {
-                    return get() == INVALID_HANDLE_VALUE;
-                }
-            };
-
-            class FileHandleCloser : public ResourceCloser<HANDLE, decltype(&FindClose)> {
-               public:
-                FileHandleCloser(HANDLE handle)
-                    : ResourceCloser<HANDLE, decltype(&FindClose)>(handle, FindClose) {
-                }
-
-                bool isInvalid() const {
-                    return get() == INVALID_HANDLE_VALUE;
-                }
-            };
-        } // namespace
-
-        bool osDeleteFile(Filename_t filename) {
-            return DeleteFile(filename);
-        }
-
-        bool osDeleteFileOrDirectory(Filename_t name) {
-            return DeleteFile(name) != 0 ? true : RemoveDirectory(name);
-        }
-
-        bool osDeleteDirectory(Filename_t name) {
-            return RemoveDirectory(name);
-        }
-
-        bool osFileExists(Filename_t filename) {
-            Windows::FileAttributes attr(GetFileAttributes(filename));
-            return attr.isValid() && attr.isFile();
-        }
-
-        bool osDirectoryExists(Filename_t filename) {
-            Windows::FileAttributes attr(GetFileAttributes(filename));
-            return attr.isValid() && attr.isDirectory();
-        }
-
-        int osReadFileToBuffer(Filename_t filename, char *buffer, Filesize_t bufferSize) {
-            HandleCloser handle(CreateFile(
-                filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
-                FILE_ATTRIBUTE_NORMAL, nullptr));
-            if (handle.isInvalid()) {
-                return -1;
-            }
-
+        static void readBytesFromFileHandle(
+            const Windows::HandleCloser &handleCloser, char *buffer, Filesize_t bufferSize) {
             DWORD numberOfBytesRead = 0;
             BOOL returnValue =
-                ReadFile(handle.get(), buffer, bufferSize, &numberOfBytesRead, nullptr);
-
-            return returnValue == 0 ? -1 : static_cast<int>(numberOfBytesRead);
+                ReadFile(handleCloser.get(), buffer, bufferSize, &numberOfBytesRead, nullptr);
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(returnValue == FALSE);
         }
 
-        Filesize_t osGetFileSize(Filename_t filename) {
-            HandleCloser handle(CreateFile(
-                filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
-                FILE_ATTRIBUTE_NORMAL, nullptr));
-            if (handle.isInvalid()) {
-                return 0;
+        void osReadFileToBuffer(const Filename_t &filename, char *buffer, Filesize_t bufferSize) {
+            if (bufferSize == 0) {
+                throw std::invalid_argument("Tried to read a buffer of size 0.");
             }
 
-            LARGE_INTEGER res;
-            GetFileSizeEx(handle.get(), &res);
-            return static_cast<Filesize_t>(res.QuadPart);
+            Windows::HandleCloser handle(CreateFileA(
+                filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+                FILE_ATTRIBUTE_NORMAL, nullptr));
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle.isInvalid());
+
+            readBytesFromFileHandle(handle, buffer, bufferSize);
         }
 
-        bool osCreateDirectory(Filename_t directoryName) {
-            return CreateDirectory(directoryName, nullptr);
+        void osReadFileToBuffer(
+            const WideFilename_t &filename, char *buffer, Filesize_t bufferSize) {
+            if (bufferSize == 0) {
+                throw std::invalid_argument("Tried to read a buffer of size 0.");
+            }
+
+            Windows::HandleCloser handle(CreateFileW(
+                filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+                FILE_ATTRIBUTE_NORMAL, nullptr));
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle.isInvalid());
+
+            readBytesFromFileHandle(handle, buffer, bufferSize);
         }
 
-        SFilename_t osGetCWD() {
-            DWORD bufferLength = GetCurrentDirectory(0, nullptr);
-            assert(bufferLength != 0);
+        static bool isCurrentOrParentDir(const Filename_t &string) {
+            static Filename_t CURRENT_DIR = ".";
+            static Filename_t PARENT_DIR = "..";
 
-            std::vector<TCHAR> buffer(bufferLength);
-            GetCurrentDirectory(bufferLength, buffer.data());
+            return string == CURRENT_DIR || string == PARENT_DIR;
+        }
 
-            return buffer.data();
+        static bool isCurrentOrParentDir(const WideFilename_t &string) {
+            static WideFilename_t CURRENT_DIR = L".";
+            static WideFilename_t PARENT_DIR = L"..";
+
+            return string == CURRENT_DIR || string == PARENT_DIR;
         }
 
         void osGetDirectoryContents(
-            const SFilename_t &directoryName, std::vector<SFilename_t> &result) {
-            static Filename_t CURRENT_DIR = MAKE_FILE_NAME ".";
-            static Filename_t PARENT_DIR = MAKE_FILE_NAME "..";
+            const Filename_t &directoryName, std::vector<Filename_t> &result) {
+            Filename_t tempFolderName = directoryName + "*";
 
-            SFilename_t tempFolderName = directoryName + MAKE_FILE_NAME "*";
+            WIN32_FIND_DATAA wfd;
 
-            WIN32_FIND_DATA wfd;
+            Windows::FileHandleCloser handle(FindFirstFileA(tempFolderName.c_str(), &wfd));
 
-            FileHandleCloser handle(FindFirstFile(tempFolderName.c_str(), &wfd));
-
-            if (!handle.isInvalid()) {
-                do {
-                    // If it is a directory, then remove "." and ".." or append an ending backslash.
-                    Windows::FileAttributes fileAttributes(wfd.dwFileAttributes);
-                    Filename_t filename = wfd.cFileName;
-                    if (fileAttributes.isValid() && fileAttributes.isDirectory()) {
-                        if (std::strcmp(filename, CURRENT_DIR) == 0 ||
-                            std::strcmp(filename, PARENT_DIR) == 0) {
-                            // Ignore "." and ".."
-                            continue;
-                        }
-
-                        result.push_back(filename + SFilename_t(MAKE_FILE_NAME FILE_SEPARATOR));
-                    } else {
-                        result.emplace_back(filename);
-                    }
-                } while (FindNextFile(handle.get(), &wfd));
+            if (handle.isInvalid()) {
+                auto errorCode = SystemErrors::Win32::getCurrentErrorCode();
+                if (errorCode == ERROR_FILE_NOT_FOUND) {
+                    return;
+                }
+                throw SystemErrors::Win32::getSystemErrorForErrorCode(errorCode);
             }
+
+            do {
+                // If it is a directory, then remove "." and ".." or append an ending backslash.
+                Windows::FileAttributes fileAttributes(wfd.dwFileAttributes);
+                Filename_t filename = wfd.cFileName;
+                if (fileAttributes.isValid() && fileAttributes.isDirectory()) {
+                    if (isCurrentOrParentDir(filename)) {
+                        continue;
+                    }
+
+                    result.push_back(filename + FILE_SEPARATOR);
+                } else {
+                    result.emplace_back(filename);
+                }
+            } while (FindNextFileA(handle.get(), &wfd) != 0);
         }
 
-        struct Windows_ReadFileData_Dummy : public WholeFileData {
-            HANDLE fileHandle = nullptr;
-            HANDLE mappingHandle = nullptr;
-        };
+        void osGetDirectoryContents(
+            const WideFilename_t &directoryName, std::vector<WideFilename_t> &result) {
+            WideFilename_t tempFolderName = directoryName + L"*";
 
-        struct Windows_ReadFileData : public Windows_ReadFileData_Dummy {
-            ~Windows_ReadFileData() override {
-                UnmapViewOfFile(contents);
-                CloseHandle(mappingHandle);
-                CloseHandle(fileHandle);
-            }
-        };
+            WIN32_FIND_DATAW wfd;
 
-        using osReadFileData_t = Windows_ReadFileData;
+            Windows::FileHandleCloser handle(FindFirstFileW(tempFolderName.c_str(), &wfd));
 
-        std::unique_ptr<const WholeFileData> osReadWholeFile(Filename_t filename) {
-            auto rfd = std::make_unique<Windows_ReadFileData_Dummy>();
-
-            rfd->size = osGetFileSize(filename);
-            if (rfd->size == 0) {
-                return nullptr;
+            if (handle.isInvalid()) {
+                auto errorCode = SystemErrors::Win32::getCurrentErrorCode();
+                if (errorCode == ERROR_FILE_NOT_FOUND) {
+                    return;
+                }
+                throw SystemErrors::Win32::getSystemErrorForErrorCode(errorCode);
             }
 
-            rfd->fileHandle = CreateFile(
-                filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
-                FILE_ATTRIBUTE_NORMAL, nullptr);
-            if (rfd->fileHandle == INVALID_HANDLE_VALUE) {
-                return nullptr;
-            }
+            do {
+                // If it is a directory, then remove "." and ".." or append an ending backslash.
+                Windows::FileAttributes fileAttributes(wfd.dwFileAttributes);
+                WideFilename_t filename = wfd.cFileName;
+                if (fileAttributes.isValid() && fileAttributes.isDirectory()) {
+                    if (isCurrentOrParentDir(filename)) {
+                        continue;
+                    }
 
-            rfd->mappingHandle =
-                CreateFileMapping(rfd->fileHandle, nullptr, PAGE_READONLY, 0, 0, nullptr);
-            if (rfd->mappingHandle == nullptr || GetLastError() == ERROR_ALREADY_EXISTS) {
-                CloseHandle(rfd->fileHandle);
-                return nullptr;
-            }
-
-            rfd->contents = static_cast<const char *>(
-                MapViewOfFile(rfd->mappingHandle, FILE_MAP_READ, 0, 0, 0));
-            if (rfd->contents == nullptr) {
-                CloseHandle(rfd->mappingHandle);
-                CloseHandle(rfd->fileHandle);
-                return nullptr;
-            }
-
-            return rfd;
+                    result.push_back(filename + FILE_SEPARATOR_WIDE);
+                } else {
+                    result.emplace_back(filename);
+                }
+            } while (FindNextFileW(handle.get(), &wfd) != 0);
         }
 
     } // namespace Filesystem

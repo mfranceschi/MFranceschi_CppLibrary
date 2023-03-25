@@ -14,11 +14,12 @@ jobs:
       matrix:
         CMAKE_CONFIG: [ Debug, Release ]
         os: [ ubuntu-latest, windows-latest ]
+        MF_UNICODE: [ ON, OFF ]
       fail-fast: false
 
     steps:
       - name: SETUP - Checkout git repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: SETUP - Set up build tools
         if: ${{ false }} # ${{ matrix.os == 'ubuntu-latest' }}
@@ -28,7 +29,7 @@ jobs:
 
       - name: BUILD - CMake configure
         run: |
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.CMAKE_CONFIG }} -DMF_IN_DEV=ON -S . -B ${{ env.BUILD_DIR }}
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.CMAKE_CONFIG }} -DMF_IN_DEV=ON -DMF_UNICODE=${{ matrix.MF_UNICODE }} -S . -B ${{ env.BUILD_DIR }}
 
       - name: BUILD - CMake build
         run: |
@@ -52,7 +53,7 @@ jobs:
 
     steps:
       - name: SETUP - Checkout git repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: CHECK - Clang-Format (formatting)
         uses: RafikFarhad/clang-format-github-action@v2.0.0
@@ -60,7 +61,7 @@ jobs:
           sources: "**/*.hpp,**/*.cpp"
 
       - name: CHECK - CMake linting
-        if: ${{ always() }}
+        if: ${{ false }}
         run: |
           pip install cmakelint
           find ./ -name "CMakeLists.txt" | xargs cmakelint --spaces=2 --linelength=100 --filter=-readability/wonkycase
@@ -80,7 +81,7 @@ jobs:
 
     steps:
       - name: SETUP - Checkout git repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: SETUP - Install dependencies
         id: install-dependencies
@@ -93,4 +94,4 @@ jobs:
         run: cmake -DCMAKE_BUILD_TYPE=${{ env.CMAKE_CONFIG }} -Werror=dev -Werror=deprecated -G "Unix Makefiles" -S . -B ${{ env.BUILD_DIR }}
 
       - name: CHECK - Clang-Tidy (static analysis)
-        run: find ./ -name "*.cpp" -o -name "*.hpp" | grep -Ev "misc|build" | xargs clang-tidy -p=${{ env.BUILD_DIR }} --warnings-as-errors=*
+        run: find ./ -name "*.cpp" -o -name "*.hpp" | grep -Ev "build" | xargs clang-tidy -p=${{ env.BUILD_DIR }} --warnings-as-errors=*

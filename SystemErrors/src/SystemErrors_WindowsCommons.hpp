@@ -19,8 +19,8 @@ namespace MF
     {
         namespace WindowsCommons
         {
-            std::string getErrorMessageForErrorCode(int errorCode, bool localized);
-            std::string getErrorMessageForErrorCode(DWORD errorCode, bool localized);
+            std::string getErrorMessageForErrorCode(int errorCode);
+            std::string getErrorMessageForErrorCode(DWORD errorCode);
             SystemError getSystemErrorForErrorCode(int errorCode, Paradigm paradigm);
             SystemError getSystemErrorForErrorCode(DWORD errorCode, Paradigm paradigm);
         } // namespace WindowsCommons

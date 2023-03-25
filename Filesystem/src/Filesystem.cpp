@@ -1,6 +1,3 @@
-//---------- Implementation of module <File> (file File.cpp)
-
-//--------------------------------------------------------------- Includes
 
 #include "MF/Filesystem.hpp"
 
@@ -11,13 +8,11 @@
 #include <sstream>
 
 #include "FilesystemOSHelper.hpp"
+#include "MF/Strings.hpp"
 
 #if MF_WINDOWS
 #    if defined(_MSC_VER)
 #        pragma warning(disable : 26444) // Warning that occurs when using imbue.
-#    endif
-#    if defined(UNICODE)
-#        include "Toolbox.hpp"
 #    endif
 #else
 #    include <sys/mman.h>
@@ -40,11 +35,6 @@ namespace MF
 {
     namespace Filesystem
     {
-        /////////////////////////////////////////////////////////////////  PRIVATE
-
-        //------------------------------------------------------------------ Types
-
-        //-------------------------------------------------------------- Constants
 
         const static locale LOCALE_UTF8("");
         const static locale LOCALE_UTF16LE(
@@ -52,170 +42,100 @@ namespace MF
             new std::codecvt_utf8_utf16<
                 wchar_t,
                 0x10ffffUL,
-                std::little_endian>()); // I can call "new" because the locale's destructors deletes
+                std::little_endian>()); // I can call "new" because the locale's destructor deletes
                                         // the facet.
 
-        //------------------------------------------------------- Static variables
+        template <class CharT>
+        static std::unique_ptr<std::basic_ifstream<CharT>> internalOpenFile(
+            const std::basic_string<CharT> &filename, FileEncoding_e encoding) {
+            auto ptr = std::make_unique<std::basic_ifstream<CharT>>();
 
-        //------------------------------------------------------ Private functions
-
-        //////////////////////////////////////////////////////////////////  PUBLIC
-        //------------------------------------------------------- Public functions
-
-        SFilename_t MakeFilename(bool absolute, bool isDirectory, int number, ...) {
-            (void)(absolute);
-            using ArgumentsType = Filename_t;
-            Soss_t oss;
-            va_list argsList;
-            va_start(argsList, number);
-            ArgumentsType currentArg;
-
-#if MF_UNIX
-            // On UNIX, if the given path is intended to be absolute,
-            // we prepend a FILE_SEPARATOR.
-            if (absolute) {
-                oss << FILE_SEPARATOR;
-            }
-#endif
-
-            for (int i = 0; i < number - 1; i++) {
-                currentArg = va_arg(argsList, ArgumentsType);
-                oss << currentArg << FILE_SEPARATOR;
+            switch (encoding) {
+                case FileEncoding_e::ENC_UTF8:
+                    ptr->open(filename.c_str());
+                    ptr->imbue(LOCALE_UTF8);
+                    ptr->seekg(3);
+                    break;
+                case FileEncoding_e::ENC_UTF16LE:
+                    ptr->open(filename.c_str(), ios_base::binary);
+                    ptr->imbue(LOCALE_UTF16LE);
+                    ptr->seekg(2, ios_base::beg);
+                    break;
+                case FileEncoding_e::ENC_DEFAULT:
+                    ptr->open(filename.c_str(), ios_base::binary);
+                    break;
+                default:
+                    throw std::invalid_argument(
+                        "Invalid encoding value: " + std::to_string(static_cast<int>(encoding)));
             }
 
-            currentArg = va_arg(argsList, ArgumentsType);
-            oss << currentArg;
-
-            if (isDirectory) {
-                oss << FILE_SEPARATOR;
-            }
-            return oss.str();
+            return ptr;
         }
 
-        bool Delete(Filename_t filename, bool fileOnly) {
-            return fileOnly ? osDeleteFile(filename) : osDeleteFileOrDirectory(filename);
+        std::unique_ptr<std::ifstream> openFile(const Filename_t &filename) {
+            return internalOpenFile(filename, getFileEncoding(filename));
         }
 
-        bool DeleteFile(Filename_t filename) {
-            return osDeleteFile(filename);
+        std::unique_ptr<std::ifstream> openFile(
+            const Filename_t &filename, FileEncoding_e encoding) {
+            return internalOpenFile(filename, encoding);
         }
 
-        bool DeleteDirectory(Filename_t filename) {
-            return osDeleteDirectory(filename);
-        }
-
-        bool IsFile(Filename_t filename) {
-            return osFileExists(filename);
-        }
-
-        bool IsDir(Filename_t filename) {
-            return osDirectoryExists(filename);
-        }
-
-        bool IsFileReadable(Filename_t filename, unsigned char charsToRead) {
-            if (charsToRead == 0) {
-                return osFileExists(filename);
+        static FileEncoding_e parseBitsAndFindEncoding(
+            const std::array<char, NBR_BITS_TO_READ_ENCODING> &bits) {
+            if (bits[0] == '\xff' && bits[1] == '\xfe') {
+                return FileEncoding_e::ENC_UTF16LE;
             }
 
-            std::vector<char> buffer(charsToRead);
-            int bytesRead = osReadFileToBuffer(filename, buffer.data(), charsToRead);
-            return bytesRead == charsToRead;
-        }
-
-        bool OpenFile(ifstream &ifs, Filename_t filename, Encoding_t encoding) {
-            ifs.close();
-            if (encoding == Encoding_e::ENC_ERROR) {
-                encoding = GetFileEncoding(filename);
+            if (bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf') {
+                return FileEncoding_e::ENC_UTF8;
             }
 
-            if (encoding == Encoding_e::ENC_UTF8) {
-                ifs.open(filename);
-                ifs.imbue(LOCALE_UTF8);
-                ifs.seekg(3);
-                return true;
-            } else if (encoding == Encoding_e::ENC_UTF16LE) {
-                ifs.open(filename, ios_base::binary);
-                ifs.imbue(LOCALE_UTF16LE);
-                ifs.seekg(2, ios_base::beg);
-                return true;
-            } else if (encoding == Encoding_e::ENC_DEFAULT) {
-                ifs.open(filename, ios_base::binary);
-                return true;
-            } else {
-                // GetFileEncoding is unknown
-                return false;
-            }
+            return FileEncoding_e::ENC_DEFAULT;
         }
 
-        Filesize_t GetFileSize(Filename_t filename) {
-            return osGetFileSize(filename);
-        }
-
-        Encoding_t GetFileEncoding(Filename_t filename) {
+        FileEncoding_e getFileEncoding(const Filename_t &filename) {
             std::array<char, NBR_BITS_TO_READ_ENCODING> bits{};
-            int readResult = osReadFileToBuffer(filename, bits.data(), NBR_BITS_TO_READ_ENCODING);
-
-            if (readResult != NBR_BITS_TO_READ_ENCODING) {
-                return Encoding_e::ENC_ERROR;
-            } else if (bits[0] == '\xff' && bits[1] == '\xfe') {
-                return Encoding_e::ENC_UTF16LE;
-            } else if (bits[0] == '\xef' && bits[1] == '\xbb' && bits[2] == '\xbf') {
-                return Encoding_e::ENC_UTF8;
-            } else {
-                return Encoding_e::ENC_DEFAULT;
-            }
+            osReadFileToBuffer(filename, bits.data(), NBR_BITS_TO_READ_ENCODING);
+            return parseBitsAndFindEncoding(bits);
         }
 
-        bool CreateDirectory(Filename_t filename) {
-            return osCreateDirectory(filename);
-        }
+        std::vector<Filename_t> listFilesInDirectory(const Filename_t &folder) {
+            const bool addFileSeparatorAtTheEnd = !MF::Strings::endsWith(folder, FILE_SEPARATOR);
 
-        std::ostream &operator<<(std::ostream &theOstream, const Encoding_t &enc) {
-            switch (enc) {
-                case Encoding_e::ENC_UTF16LE:
-                    theOstream << "UTF-16LE";
-                    break;
-                case Encoding_e::ENC_UTF8:
-                    theOstream << "UTF-8";
-                    break;
-                case Encoding_e::ENC_ERROR:
-                    theOstream << "<encoding-error>";
-                    break;
-                case Encoding_e::ENC_DEFAULT:
-                    theOstream << "<encoding-unknown>";
-                    break;
-            }
-            return theOstream;
-        }
-
-        SFilename_t GetCWD() {
-            return osGetCWD();
-        }
-
-        std::vector<SFilename_t> ListFilesInDirectory(Filename_t folder) {
-            SFilename_t directoryName(folder);
-            if (*(--directoryName.cend()) != *FILE_SEPARATOR) {
-                directoryName.append(FILE_SEPARATOR);
-            }
-
-            std::vector<SFilename_t> result;
-            osGetDirectoryContents(folder, result);
+            std::vector<Filename_t> result;
+            osGetDirectoryContents(
+                addFileSeparatorAtTheEnd ? folder + FILE_SEPARATOR : folder, result);
             std::sort(result.begin(), result.end());
             return result;
         }
 
-        std::unique_ptr<const WholeFileData> ReadWholeFile(Filename_t filename) {
-            return osReadWholeFile(filename);
+#if MF_WINDOWS
+        std::unique_ptr<std::wifstream> openFile(const WideFilename_t &filename) {
+            return internalOpenFile(filename, getFileEncoding(filename));
         }
 
-        bool ReadWholeFileToString(Filename_t filename, std::string &string) {
-            auto fileContents = ReadWholeFile(filename);
-            if (fileContents) {
-                string.assign(fileContents->contents, fileContents->size);
-                return true;
-            }
-
-            return false;
+        std::unique_ptr<std::wifstream> openFile(
+            const WideFilename_t &filename, FileEncoding_e encoding) {
+            return internalOpenFile(filename, encoding);
         }
+
+        FileEncoding_e getFileEncoding(const WideFilename_t &filename) {
+            std::array<char, NBR_BITS_TO_READ_ENCODING> bits{};
+            osReadFileToBuffer(filename, bits.data(), NBR_BITS_TO_READ_ENCODING);
+            return parseBitsAndFindEncoding(bits);
+        }
+
+        std::vector<WideFilename_t> listFilesInDirectory(const WideFilename_t &folder) {
+            bool const addFileSeparatorAtTheEnd =
+                !MF::Strings::endsWith(folder, FILE_SEPARATOR_WIDE);
+
+            std::vector<WideFilename_t> result;
+            osGetDirectoryContents(
+                addFileSeparatorAtTheEnd ? folder + FILE_SEPARATOR_WIDE : folder, result);
+            std::sort(result.begin(), result.end());
+            return result;
+        }
+#endif
     } // namespace Filesystem
 } // namespace MF

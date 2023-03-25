@@ -8,7 +8,7 @@
 
 #    include "MF/LightWindows.hpp"
 #    include "MF/SharedLibs.hpp"
-#    include "MF/Windows.hpp"
+#    include "MF/SystemErrors.hpp"
 
 namespace MF
 {
@@ -30,8 +30,8 @@ namespace MF
             }
 
            private:
-            const Closer closer;
             ResourceType resource;
+            const Closer closer;
         };
 
         class HmoduleCloser : public ResourceCloser<HMODULE, decltype(&FreeLibrary)> {
@@ -64,24 +64,28 @@ namespace MF
             }
 
             const std::string &GetSystemPath() override {
+                using namespace MF::SystemErrors;
+
                 LOCK_t lock(mutex);
                 if (!systemPath.empty()) {
                     return systemPath;
                 }
 
                 std::vector<char> modulePath(MAX_PATH);
-                if (GetModuleFileNameA(libCloser.get(), modulePath.data(), MAX_PATH) == 0) {
-                    throw MF::Windows::GetCurrentSystemError();
-                }
+                Win32::setCurrentErrorCode(0);
+                DWORD charsCopied =
+                    GetModuleFileNameA(libCloser.get(), modulePath.data(), MAX_PATH);
+                Win32::throwCurrentSystemErrorIf(charsCopied == 0);
+
                 if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
                     modulePath.clear();
 
                     // We use the value of 32767 as stated in the docs:
                     // https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
                     modulePath.reserve(UINT16_MAX);
-                    if (GetModuleFileNameA(libCloser.get(), modulePath.data(), UINT16_MAX) == 0) {
-                        throw MF::Windows::GetCurrentSystemError();
-                    }
+                    charsCopied =
+                        GetModuleFileNameA(libCloser.get(), modulePath.data(), UINT16_MAX);
+                    Win32::throwCurrentSystemErrorIf(charsCopied == 0);
                 }
 
                 std::string result = modulePath.data();

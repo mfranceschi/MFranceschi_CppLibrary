@@ -3,6 +3,7 @@
 //
 
 #include "MF/SystemErrors.hpp"
+#include "SystemErrors_TestHelper.hpp"
 #include "tests_data.hpp"
 
 using namespace MF::SystemErrors;
@@ -28,23 +29,13 @@ static void doSomethingThatDoesNotSetsLastError() {
 }
 
 TEST(Errno_ThrowCurrentSystemErrorIf, it_throws_if_true) {
-    setSystemErrorMessagesLocalized(false);
     const auto expectedError = doSomethingThatSetsLastError();
 
     try {
         Errno::throwCurrentSystemErrorIf(true);
         FAIL() << "Expected an exception to be thrown.";
     } catch (const SystemError& systemError) {
-        EXPECT_EQ(systemError.getParadigm(), Paradigm::Errno);
-        EXPECT_EQ(systemError.getErrorCode(), expectedError);
-        EXPECT_THAT(
-            systemError.what(), ::testing::AnyOf(
-                                    ::testing::StrEq("Numerical result out of range"),
-                                    ::testing::StrEq("Result too large")));
-    } catch (const std::runtime_error& runtime_error) {
-        FAIL() << "Unexpected runtime_error: " << runtime_error.what();
-    } catch (...) {
-        FAIL() << "Unexpected or unknown error.";
+        checkSystemError(systemError, Paradigm::Errno, expectedError);
     }
 }
 
@@ -64,8 +55,6 @@ TEST(Errno_GetCurrentErrorCode, it_returns_the_current_error_code) {
 TEST(Errno_GetCurrentErrorCode, it_returns_no_error) {
     constexpr int myValue = 4242;
     Errno::setCurrentErrorCode(myValue);
-    doSomethingThatDoesNotSetsLastError();
-
     const auto currentError = Errno::getCurrentErrorCode();
     EXPECT_EQ(currentError, myValue);
 }

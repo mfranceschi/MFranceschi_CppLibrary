@@ -15,10 +15,15 @@
 #    else
 #        include <cstdio>
 #        include <cstring>
+#        define STRSAFE_E_INVALID_PARAMETER static_cast<int>(0x80070057)
+
 #        define StringCchCopy(pszDest, cchDest, pszSrc) \
             ((std::strncpy(pszDest, pszSrc, cchDest)) ? 1 : -1)
-#        define STRSAFE_E_INVALID_PARAMETER static_cast<int>(0x80070057)
-#        define StringCchPrintf std::snprintf
+#        if UNICODE
+#            define StringCchPrintf _snwprintf
+#        else
+#            define StringCchPrintf std::snprintf
+#        endif
 #    endif
 
 #endif // MFRANCESCHI_CPPLIBRARIES_STRINGSAFEPLACEHOLDER_HPP && MF_WINDOWS

@@ -81,7 +81,7 @@ TEST(CTime_Strftime, it_returns_a_value) {
     ASSERT_TRUE(success);
 
     std::string result = Strftime(currentLocalTime);
-    EXPECT_NE(result, "");
+    EXPECT_NE(result, "") << "errno=" << errno;
 }
 
 TEST(CTime_Strptime, it_returns_a_value) {

@@ -16,8 +16,8 @@ class SampleLib3Tests : public ::testing::Test {
    protected:
     std::shared_ptr<SharedLib> sharedLib;
 
-    static constexpr Filename_t loadFilename = MAKE_FILE_NAME "./lib3_load.txt";
-    static constexpr Filename_t unloadFilename = MAKE_FILE_NAME "./lib3_unload.txt";
+    static const Filename_t loadFilename;
+    static const Filename_t unloadFilename;
 
    public:
     void SetUp() override {
@@ -35,15 +35,18 @@ class SampleLib3Tests : public ::testing::Test {
 #    pragma push_macro("DeleteFile")
 #    undef DeleteFile
 #endif
-        EXPECT_TRUE(DeleteFile(loadFilename))
+        EXPECT_NO_THROW(deleteFile(loadFilename))
             << "Failed to remove the file created when LOADing the library.";
-        EXPECT_TRUE(DeleteFile(unloadFilename))
+        EXPECT_NO_THROW(deleteFile(unloadFilename))
             << "Failed to remove the file created when UNLOADing the library.";
 #if defined(_MSC_VER)
 #    pragma pop_macro("DeleteFile")
 #endif
     }
 };
+
+const Filename_t SampleLib3Tests::loadFilename = "./lib3_load.txt";
+const Filename_t SampleLib3Tests::unloadFilename = "./lib3_unload.txt";
 
 TEST_F(SampleLib3Tests, it_can_get_and_use_variable) {
     const int& thevariable_retrieved = sharedLib->GetVariable<int>("thevariable");
@@ -60,10 +63,10 @@ TEST_F(SampleLib3Tests, it_can_get_names_in_case_sensitive_manner) {
 }
 
 TEST_F(SampleLib3Tests, it_creates_file_on_load) {
-    EXPECT_TRUE(IsFile(loadFilename));
+    EXPECT_TRUE(isFile(loadFilename));
 }
 
 TEST_F(SampleLib3Tests, it_creates_file_on_unload) {
     sharedLib.reset();
-    EXPECT_TRUE(IsFile(unloadFilename));
+    EXPECT_TRUE(isFile(unloadFilename));
 }

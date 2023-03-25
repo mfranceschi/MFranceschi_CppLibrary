@@ -2,12 +2,10 @@
 // Created by Utilisateur on 13/04/2022.
 //
 
-//
-// Created by Utilisateur on 10/04/2022.
-//
-
 #if MF_UNIX
-#    define _GNU_SOURCE
+#    ifndef _GNU_SOURCE
+#        define _GNU_SOURCE 1
+#    endif
 #    include <dlfcn.h>
 #    include <link.h>
 

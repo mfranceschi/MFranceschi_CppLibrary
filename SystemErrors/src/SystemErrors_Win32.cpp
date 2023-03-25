@@ -14,9 +14,9 @@ namespace MF
     {
         using ErrorCode_t = Win32::ErrorCode_t;
 
-        static_assert(std::is_same_v<DWORD, unsigned long>, "DWORD is not unsigned long!");
+        static_assert(std::is_same<DWORD, unsigned long>::value, "DWORD is not unsigned long!");
         static_assert(
-            std::is_same_v<DWORD, ErrorCode_t>,
+            std::is_same<DWORD, ErrorCode_t>::value,
             "ErrorCode_t of Win32 MUST be identical to a DWORD!");
 
         ErrorCode_t Win32::getCurrentErrorCode() {

@@ -83,8 +83,12 @@ link_libraries(MF_Commons)
 add_subdirectory(SystemErrors)
 add_subdirectory(Optionals)
 add_subdirectory(CTime)
+add_subdirectory(Bytes)
 add_subdirectory(Windows)
 add_subdirectory(Environment)
+add_subdirectory(Strings)
+add_subdirectory(Console)
+add_subdirectory(Clocks)
 add_subdirectory(Filesystem)
 add_subdirectory(SharedLibs)
 # add_subdirectory(Datetime) # TODO - not ready yet
@@ -99,8 +103,6 @@ target_link_libraries(
             MF_Commons
             MF_Filesystem
             MF_Windows
-            # MF_Async
             MF_SharedLibs
 )
 
-add_subdirectory(misc/TimingExperience)
