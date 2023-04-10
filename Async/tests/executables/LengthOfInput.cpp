@@ -6,7 +6,7 @@
 #include <string>
 
 int main() {
-    std::string s;
-    std::cin >> s;
-    return s.size();
+    std::string inputString;
+    std::getline(std::cin, inputString);
+    return inputString.size();
 }

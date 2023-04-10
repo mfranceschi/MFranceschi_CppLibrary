@@ -81,8 +81,7 @@ namespace MF
             return GetStdHandle(STD_ERROR_HANDLE);
         }
 
-        const MF::Filesystem::Filename_t ProcessOutputStream_Kill::KILL_FILENAME =
-            MAKE_FILE_NAME "NUL";
+        const MF::Filesystem::Filename_t ProcessOutputStream_Kill::KILL_FILENAME = TEXT("NUL");
 
         void ProcessOutputStream_Kill::beforeStart() {
             fileStream = CreateFile(

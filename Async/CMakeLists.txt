@@ -1,10 +1,15 @@
 
 add_library(MF_Async STATIC EXCLUDE_FROM_ALL)
 target_include_directories(MF_Async PUBLIC include)
-target_link_libraries(MF_Async PUBLIC MF_Commons MF_Filesystem)
+target_link_libraries(MF_Async PUBLIC MF_Commons MF_Filesystem PRIVATE MF_Windows_Header MF_SystemErrors)
 target_sources(
         MF_Async
         PRIVATE
+            src/Command_Windows.cpp
+            src/Command_Windows_commons.hpp
+            src/Command_Windows_consoleChoices.cpp
+            src/Command_Windows_misc.cpp
+            #[[
             src/Command.cpp
             src/CommandHelper.hpp
             src/CommandHelper_Generic.cpp
@@ -17,6 +22,7 @@ target_sources(
         PUBLIC
             include/MF/Command.hpp
             include/MF/Timer.hpp
+            ]]
 )
 
 if(MF_IN_DEV)
