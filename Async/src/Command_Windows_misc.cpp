@@ -8,6 +8,7 @@
 #    include <cassert>
 
 #    include "Command_Windows_commons.hpp"
+#    include "MF/SystemErrors.hpp"
 
 namespace MF
 {
@@ -53,6 +54,13 @@ namespace MF
             startupinfo.hStdInput =
                 dynamic_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice))
                     .getStreamItem();
+        }
+
+        int getExitCode(ProcessItem processItem) {
+            DWORD exitCode;
+            BOOL success = GetExitCodeProcess(processItem, &exitCode);
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(success == FALSE);
+            return static_cast<int>(exitCode);
         }
 
         void makeHandleInheritable(HANDLE handle, bool yesOrNo) {

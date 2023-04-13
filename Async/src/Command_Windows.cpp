@@ -4,9 +4,6 @@
 
 #if MF_WINDOWS
 
-#    include <cassert>
-#    include <iostream>
-
 #    include "Command_Windows_commons.hpp"
 #    include "MF/SystemErrors.hpp"
 
@@ -14,6 +11,30 @@ namespace MF
 {
     namespace Command
     {
+        static void beforeStart(const CommandCall &commandCall) {
+            static_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice)).beforeStart();
+            static_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdOutChoice)).beforeStart();
+            static_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdErrChoice)).beforeStart();
+        }
+
+        static void afterStart(const CommandCall &commandCall) {
+            static_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice)).afterStart();
+            static_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdOutChoice)).afterStart();
+            static_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdErrChoice)).afterStart();
+        }
+
+        static void beforeStop(const CommandCall &commandCall) {
+            static_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice)).beforeStop();
+            static_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdOutChoice)).beforeStop();
+            static_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdErrChoice)).beforeStop();
+        }
+
+        static void afterStop(const CommandCall &commandCall) {
+            static_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice)).afterStop();
+            static_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdOutChoice)).afterStop();
+            static_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdErrChoice)).afterStop();
+        }
+
         static ProcessItem doCreateProcess(const CommandCall &commandCall) {
             LPCTCH lpApplicationName = nullptr;
             std::vector<TCHAR> commandLine =
@@ -25,8 +46,9 @@ namespace MF
             bool bInheritHandles = true; // Handles are inherited
             DWORD dwCreationFlags = 0; // Creation flags
             LPVOID lpEnvironment = nullptr; // We use the parent's environment
-            LPTSTR lpCurrentDirectory =
-                nullptr; // We use the parent's current working directory - TODO customize?
+            LPCTSTR lpCurrentDirectory = commandCall.workingDirectory.empty()
+                                             ? nullptr
+                                             : commandCall.workingDirectory.c_str();
             STARTUPINFO startupinfo;
             populateStartupInfo(commandCall, startupinfo);
 
@@ -44,19 +66,34 @@ namespace MF
             return processInformation.hProcess;
         }
 
-        CommandOver runCommandAndWait(const CommandCall &commandCall) {
-            static_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice)).beforeStart();
+        void doStopProcess(ProcessItem processItem, std::chrono::milliseconds waitFor) {
+            DWORD result = WaitForSingleObject(
+                processItem,
+                waitFor == std::chrono::milliseconds::zero() ? INFINITE : waitFor.count());
+            if (result == WAIT_OBJECT_0) {
+                // It means that the process terminated.
+                return;
+            }
+
+            if (result == WAIT_TIMEOUT) {
+                throw std::runtime_error("Timeout reached!");
+            }
+
+            // Some other error happened. Throwing.
+            throw MF::SystemErrors::Win32::getCurrentSystemError();
+        }
+
+        CommandOver runCommandAndWait(
+            const CommandCall &commandCall, std::chrono::milliseconds waitFor) {
+            beforeStart(commandCall);
             ProcessItem processItem = doCreateProcess(commandCall);
-            static_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice)).afterStart();
+            afterStart(commandCall);
 
-            static_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice)).beforeStop();
-            assert(WaitForSingleObject(processItem, 1000) == WAIT_OBJECT_0);
-            static_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice)).afterStop();
+            beforeStop(commandCall);
+            doStopProcess(processItem, waitFor);
+            afterStop(commandCall);
 
-            DWORD exitCode;
-            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                GetExitCodeProcess(processItem, &exitCode) == FALSE);
-            return {static_cast<int>(exitCode)};
+            return {getExitCode(processItem)};
         }
     } // namespace Command
 } // namespace MF

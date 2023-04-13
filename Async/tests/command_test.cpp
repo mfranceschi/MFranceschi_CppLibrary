@@ -101,3 +101,18 @@ TEST_F(Commands, LengthOfInput_InputStreamClosed) {
     cc();
     EXPECT_EQ(exitCode, 0);
 }
+
+TEST_F(Commands, LengthOfInput_FromFile) {
+    commandCall.executable = LengthOfInput_Executable;
+    commandCall.stdInChoice = makeInputFromFile(LOREM_IPSUM_TWO_LINES_FILE);
+    cc();
+    EXPECT_EQ(exitCode, 95);
+}
+
+TEST_F(Commands, GenerateOutput_FromFile) {
+    commandCall.executable = GenerateOutput_Executable;
+    commandCall.arguments = {std::to_string(1e5), "out"};
+    commandCall.stdOutChoice = makeOutputIgnored();
+    cc();
+    EXPECT_EQ(exitCode, 95);
+}

@@ -61,6 +61,8 @@ namespace MF
 
         SECURITY_ATTRIBUTES &getInheritableSecAttr();
 
+        int getExitCode(ProcessItem processItem);
+
         void makeHandleInheritable(HANDLE handle, bool yesOrNo);
     } // namespace Command
 } // namespace MF
