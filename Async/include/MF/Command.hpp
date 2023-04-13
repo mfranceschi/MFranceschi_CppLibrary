@@ -22,16 +22,14 @@ namespace MF
 
         struct ConsoleOutputChoice;
         std::shared_ptr<ConsoleOutputChoice> makeOutputToFile(const Filename_t &filename);
-        std::shared_ptr<ConsoleOutputChoice> makeOutputToStringStream(
-            const std::stringstream &stream);
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToStringStream(std::stringstream &stream);
         std::shared_ptr<ConsoleOutputChoice> makeOutputToConsole();
         std::shared_ptr<ConsoleOutputChoice> makeOutputIgnored();
 
         struct ConsoleInputChoice;
         std::shared_ptr<ConsoleInputChoice> makeInputFromFile(const Filename_t &filename);
         std::shared_ptr<ConsoleInputChoice> makeInputFromString(const std::string &string);
-        std::shared_ptr<ConsoleInputChoice> makeInputFromStringStream(
-            const std::stringstream &stream);
+        std::shared_ptr<ConsoleInputChoice> makeInputFromStringStream(std::stringstream &stream);
         std::shared_ptr<ConsoleInputChoice> makeInputFromConsole();
         std::shared_ptr<ConsoleInputChoice> makeInputEmpty();
 
@@ -63,15 +61,14 @@ namespace MF
         };
 
         struct CommandAsyncReturn {
-            std::future<CommandOver> futureCommandOver;
-
-            void tryToInterrupt();
-            void wait();
-            void waitFor(const std::chrono::nanoseconds &duration);
-            void getReturnCode();
+            virtual void tryToStop() = 0;
+            virtual void wait() = 0;
+            virtual void waitFor(const std::chrono::nanoseconds &duration) = 0;
+            virtual std::future<CommandOver> getFutureCommandOver() = 0;
         };
 
-        CommandAsyncReturn runCommandAsync(const CommandCall &commandCall);
+        std::shared_ptr<CommandAsyncReturn> runCommandAsync(const CommandCall &commandCall);
+
         CommandOver runCommandAndWait(
             const CommandCall &commandCall,
             std::chrono::milliseconds waitFor = std::chrono::milliseconds::zero());

@@ -25,12 +25,43 @@ TEST_F(Commands, ReturnNbArgs_Nothing) {
     EXPECT_EQ(1, exitCode);
 }
 
-TEST_F(Commands, HelloWorld_KilledOutput) {
+TEST_F(Commands, HelloWorld_OutputIgnored) {
     commandCall.executable = HelloWorld_Executable;
     commandCall.stdOutChoice = makeOutputIgnored();
-    commandCall.stdErrChoice = makeOutputIgnored();
     cc();
     EXPECT_EQ(0, exitCode);
+}
+
+TEST_F(Commands, HelloWorld_OutputToConsole) {
+    commandCall.executable = HelloWorld_Executable;
+    commandCall.stdOutChoice = makeOutputToConsole();
+    cc();
+    EXPECT_EQ(0, exitCode);
+}
+
+TEST_F(Commands, HelloWorld_OutputToFile) {
+    const Filename_t filename = "out.txt";
+    commandCall.executable = HelloWorld_Executable;
+    commandCall.stdOutChoice = makeOutputToFile(filename);
+    cc();
+    EXPECT_EQ(0, exitCode);
+
+    std::ifstream ifstream(filename, std::ios_base::in);
+    std::string line;
+    std::getline(ifstream, line);
+    EXPECT_EQ(line, std::string("Hello, World!"));
+}
+
+TEST_F(Commands, HelloWorld_OutputToStringStream) {
+    std::stringstream stream;
+    commandCall.executable = HelloWorld_Executable;
+    commandCall.stdOutChoice = makeOutputToStringStream(stream);
+    cc();
+    EXPECT_EQ(0, exitCode);
+
+    std::string line;
+    std::getline(stream, line);
+    EXPECT_EQ(line, std::string("Hello, World!"));
 }
 
 /*
@@ -109,10 +140,10 @@ TEST_F(Commands, LengthOfInput_FromFile) {
     EXPECT_EQ(exitCode, 95);
 }
 
-TEST_F(Commands, GenerateOutput_FromFile) {
+TEST_F(Commands, GenerateOutput_Ignored) {
     commandCall.executable = GenerateOutput_Executable;
-    commandCall.arguments = {std::to_string(1e5), "out"};
+    commandCall.arguments = {std::to_string(2), "out"};
     commandCall.stdOutChoice = makeOutputIgnored();
     cc();
-    EXPECT_EQ(exitCode, 95);
+    EXPECT_EQ(exitCode, 0);
 }

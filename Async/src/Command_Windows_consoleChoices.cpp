@@ -4,6 +4,7 @@
 
 #if MF_WINDOWS
 
+#    include <array>
 #    include <cassert>
 
 #    include "Command_Windows_commons.hpp"
@@ -56,7 +57,7 @@ namespace MF
 
         struct ConsoleOutputChoice_Windows_File : ConsoleOutputChoice_Windows {
             StreamItem readFromFile = INVALID_HANDLE_VALUE;
-            const Filename_t filename; // TODO Unicode??
+            const Filename_t filename;
 
             ConsoleOutputChoice_Windows_File(const Filename_t &filename) : filename(filename) {
             }
@@ -87,6 +88,61 @@ namespace MF
             return std::make_shared<ConsoleOutputChoice_Windows_File>(filename);
         }
 
+        struct ConsoleOutputChoice_Windows_StringStream : ConsoleOutputChoice_Windows {
+            std::stringstream &stringStream;
+
+            StreamItem readStream = INVALID_HANDLE_VALUE;
+            StreamItem writeToStream = INVALID_HANDLE_VALUE;
+
+            ConsoleOutputChoice_Windows_StringStream(std::stringstream &stringStream1)
+                : stringStream(stringStream1) {
+            }
+
+            void beforeStart() override {
+                SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
+                CreatePipe(&readStream, &writeToStream, &securityAttributes, 0);
+                makeHandleInheritable(readStream, false);
+                makeHandleInheritable(writeToStream, true);
+            }
+
+            void afterStart() override {
+                CloseHandle(writeToStream);
+            }
+
+            void beforeStop() override {
+                static constexpr size_t BUFFER_SIZE = 4096;
+                std::array<char, BUFFER_SIZE + 1> buffer{0};
+                DWORD nbBytesRead = 0;
+                do {
+                    BOOL result =
+                        ReadFile(readStream, buffer.data(), buffer.size(), &nbBytesRead, nullptr);
+                    MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!result);
+                    stringStream << buffer.data();
+                } while (nbBytesRead == BUFFER_SIZE);
+            }
+
+            void afterStop() override {
+                CloseHandle(readStream);
+            }
+
+            StreamItem getStreamItem(OutputStream_e) const override {
+                return writeToStream;
+            }
+
+            ~ConsoleOutputChoice_Windows_StringStream() {
+                if (readStream != INVALID_HANDLE_VALUE) {
+                    CloseHandle(readStream);
+                }
+                if (writeToStream != INVALID_HANDLE_VALUE) {
+                    CloseHandle(writeToStream);
+                }
+            }
+        };
+
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToStringStream(std::stringstream &stream) {
+            return std::make_shared<ConsoleOutputChoice_Windows_StringStream>(stream);
+        }
+
         struct ConsoleInputChoice_Windows_Console : ConsoleInputChoice_Windows {
             StreamItem getStreamItem() const override {
                 return GetStdHandle(STD_INPUT_HANDLE);
@@ -98,7 +154,7 @@ namespace MF
         }
 
         struct ConsoleInputChoice_Windows_String : ConsoleInputChoice_Windows {
-            const std::string inputString; // TODO Unicode??
+            const Filename_t inputString;
             StreamItem readStream = INVALID_HANDLE_VALUE;
             StreamItem writeToStream = INVALID_HANDLE_VALUE;
 
@@ -151,65 +207,31 @@ namespace MF
 
         struct ConsoleInputChoice_Windows_File : ConsoleInputChoice_Windows {
             StreamItem readFromFile = INVALID_HANDLE_VALUE;
-            StreamItem writeToPipe = INVALID_HANDLE_VALUE;
-            StreamItem readFromPipe = INVALID_HANDLE_VALUE;
-
-            const std::string filename; // TODO Unicode??
-            static constexpr size_t BUFFER_SIZE = 4096;
+            const Filename_t filename;
 
             ConsoleInputChoice_Windows_File(const std::string &filename) : filename(filename) {
             }
 
             void beforeStart() override {
-                SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
-                assert(CreatePipe(&readFromPipe, &writeToPipe, &securityAttributes, 0));
-                makeHandleInheritable(readFromPipe, true);
-                makeHandleInheritable(writeToPipe, false);
-
                 readFromFile = CreateFile(
                     filename.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY,
                     NULL);
                 MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
                     readFromFile == INVALID_HANDLE_VALUE);
-                makeHandleInheritable(readFromFile, false);
-            }
-
-            void afterStart() override {
-                // Copy-pasted from
-                // https://learn.microsoft.com/en-us/windows/win32/procthread/creating-a-child-process-with-redirected-input-and-output
-                DWORD nbrBytesRead, nbrBytesWritten;
-                CHAR chBuf[BUFFER_SIZE];
-                BOOL bSuccess = FALSE;
-
-                for (;;) {
-                    bSuccess = ReadFile(readFromFile, chBuf, BUFFER_SIZE, &nbrBytesRead, NULL);
-                    if (!bSuccess || nbrBytesRead == 0) break;
-
-                    bSuccess = WriteFile(writeToPipe, chBuf, nbrBytesRead, &nbrBytesWritten, NULL);
-                    if (!bSuccess) break;
-                }
-
-                CloseHandle(writeToPipe);
-                CloseHandle(readFromFile);
+                makeHandleInheritable(readFromFile, true);
             }
 
             void afterStop() override {
-                CloseHandle(readFromPipe);
+                CloseHandle(readFromFile);
             }
 
             StreamItem getStreamItem() const override {
-                return readFromPipe;
+                return readFromFile;
             }
 
             ~ConsoleInputChoice_Windows_File() {
                 if (readFromFile != INVALID_HANDLE_VALUE) {
                     CloseHandle(readFromFile);
-                }
-                if (writeToPipe != INVALID_HANDLE_VALUE) {
-                    CloseHandle(writeToPipe);
-                }
-                if (readFromPipe != INVALID_HANDLE_VALUE) {
-                    CloseHandle(readFromPipe);
                 }
             }
         };
