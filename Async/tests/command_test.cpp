@@ -8,56 +8,70 @@
 
 using namespace ::MF::Command;
 
-class Commands : public ::testing::Test {
+class CommandTestBase : public ::testing::Test {
    protected:
     CommandCall commandCall;
 
-    int exitCode;
+    int exitCode = -1;
 
-    void cc() {
+    void callCommand(int expectedExitCode = 0) {
         exitCode = runCommandAndWait(commandCall).exitCode;
+        EXPECT_EQ(expectedExitCode, exitCode);
     }
 };
 
-TEST_F(Commands, ReturnNbArgs_Nothing) {
+TEST_F(CommandTestBase, ReturnNbArgs_Nothing) {
     commandCall.executable = ReturnNbArgs_Executable;
-    cc();
-    EXPECT_EQ(1, exitCode);
+    callCommand(1);
 }
 
-TEST_F(Commands, HelloWorld_OutputIgnored) {
+TEST_F(CommandTestBase, HelloWorld_OutputIgnored) {
     commandCall.executable = HelloWorld_Executable;
     commandCall.stdOutChoice = makeOutputIgnored();
-    cc();
-    EXPECT_EQ(0, exitCode);
+    callCommand();
 }
 
-TEST_F(Commands, HelloWorld_OutputToConsole) {
+TEST_F(CommandTestBase, HelloWorld_OutputToConsole) {
     commandCall.executable = HelloWorld_Executable;
     commandCall.stdOutChoice = makeOutputToConsole();
-    cc();
-    EXPECT_EQ(0, exitCode);
+    callCommand();
 }
 
-TEST_F(Commands, HelloWorld_OutputToFile) {
-    const Filename_t filename = "out.txt";
+TEST_F(CommandTestBase, HelloWorld_OutputToFile) {
+    const Filename_t filename = Filename_t(test_info_->name()) + ".txt";
     commandCall.executable = HelloWorld_Executable;
     commandCall.stdOutChoice = makeOutputToFile(filename);
-    cc();
-    EXPECT_EQ(0, exitCode);
+    callCommand();
 
     std::ifstream ifstream(filename, std::ios_base::in);
     std::string line;
     std::getline(ifstream, line);
+    ifstream.close();
     EXPECT_EQ(line, std::string("Hello, World!"));
+
+    MF::Filesystem::deleteFile(filename);
 }
 
-TEST_F(Commands, HelloWorld_OutputToStringStream) {
+TEST_F(CommandTestBase, HelloWorldToStderr_OutputToFile) {
+    const Filename_t filename = Filename_t(test_info_->name()) + ".txt";
+    commandCall.executable = HelloWorldToStderr_Executable;
+    commandCall.stdErrChoice = makeOutputToFile(filename);
+    callCommand();
+
+    std::ifstream ifstream(filename, std::ios_base::in);
+    std::string line;
+    std::getline(ifstream, line);
+    ifstream.close();
+    EXPECT_EQ(line, std::string("Hello, World!"));
+
+    MF::Filesystem::deleteFile(filename);
+}
+
+TEST_F(CommandTestBase, HelloWorld_OutputToStringStream) {
     std::stringstream stream;
     commandCall.executable = HelloWorld_Executable;
     commandCall.stdOutChoice = makeOutputToStringStream(stream);
-    cc();
-    EXPECT_EQ(0, exitCode);
+    callCommand();
 
     std::string line;
     std::getline(stream, line);
@@ -99,51 +113,43 @@ TEST_F(Commands, OneForEachStream) {
     EXPECT_STREQ(oss.str().c_str(), commandOver.errorText.c_str());
 }*/
 
-TEST_F(Commands, LengthOfFirstArg) {
+TEST_F(CommandTestBase, LengthOfFirstArg) {
     commandCall.executable = LengthOfFirstArg_Executable;
 
     commandCall.arguments = {};
-    cc();
-    ASSERT_EQ(exitCode, 0) << "Bad config";
+    callCommand();
 
     commandCall.arguments = {"\"a\""};
-    cc();
-    EXPECT_EQ(exitCode, 1);
+    callCommand(1);
 
     commandCall.arguments = {"abcde"};
-    cc();
-    EXPECT_EQ(exitCode, 5);
+    callCommand(5);
 
     commandCall.arguments = {"\" \""};
-    cc();
-    EXPECT_EQ(exitCode, 1);
+    callCommand(1);
 }
 
-TEST_F(Commands, LengthOfInput) {
+TEST_F(CommandTestBase, LengthOfInput) {
     commandCall.executable = LengthOfInput_Executable;
     commandCall.stdInChoice = makeInputFromString("abcde\n");
-    cc();
-    EXPECT_EQ(exitCode, 5);
+    callCommand(5);
 }
 
-TEST_F(Commands, LengthOfInput_InputStreamClosed) {
+TEST_F(CommandTestBase, LengthOfInput_InputStreamClosed) {
     commandCall.executable = LengthOfInput_Executable;
     commandCall.stdInChoice = makeInputEmpty();
-    cc();
-    EXPECT_EQ(exitCode, 0);
+    callCommand();
 }
 
-TEST_F(Commands, LengthOfInput_FromFile) {
+TEST_F(CommandTestBase, LengthOfInput_FromFile) {
     commandCall.executable = LengthOfInput_Executable;
     commandCall.stdInChoice = makeInputFromFile(LOREM_IPSUM_TWO_LINES_FILE);
-    cc();
-    EXPECT_EQ(exitCode, 95);
+    callCommand(95);
 }
 
-TEST_F(Commands, GenerateOutput_Ignored) {
+TEST_F(CommandTestBase, GenerateOutput_Ignored) {
     commandCall.executable = GenerateOutput_Executable;
     commandCall.arguments = {std::to_string(2), "out"};
     commandCall.stdOutChoice = makeOutputIgnored();
-    cc();
-    EXPECT_EQ(exitCode, 0);
+    callCommand();
 }

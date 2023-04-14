@@ -37,7 +37,7 @@ namespace MF
             }
 
             void afterStop() override {
-                CloseHandle(fileStream);
+                closeH(fileStream);
             }
 
             StreamItem getStreamItem(OutputStream_e) const override {
@@ -45,9 +45,7 @@ namespace MF
             }
 
             ~ConsoleOutputChoice_Windows_Ignored() {
-                if (fileStream != INVALID_HANDLE_VALUE) {
-                    CloseHandle(fileStream);
-                }
+                closeH(fileStream);
             }
         };
 
@@ -70,7 +68,7 @@ namespace MF
             }
 
             void afterStop() override {
-                CloseHandle(readFromFile);
+                closeH(readFromFile);
             }
 
             StreamItem getStreamItem(OutputStream_e) const override {
@@ -78,9 +76,7 @@ namespace MF
             }
 
             ~ConsoleOutputChoice_Windows_File() {
-                if (readFromFile != INVALID_HANDLE_VALUE) {
-                    CloseHandle(readFromFile);
-                }
+                closeH(readFromFile);
             }
         };
 
@@ -106,7 +102,7 @@ namespace MF
             }
 
             void afterStart() override {
-                CloseHandle(writeToStream);
+                closeH(writeToStream);
             }
 
             void beforeStop() override {
@@ -122,7 +118,7 @@ namespace MF
             }
 
             void afterStop() override {
-                CloseHandle(readStream);
+                closeH(readStream);
             }
 
             StreamItem getStreamItem(OutputStream_e) const override {
@@ -130,12 +126,9 @@ namespace MF
             }
 
             ~ConsoleOutputChoice_Windows_StringStream() {
-                if (readStream != INVALID_HANDLE_VALUE) {
-                    CloseHandle(readStream);
-                }
-                if (writeToStream != INVALID_HANDLE_VALUE) {
-                    CloseHandle(writeToStream);
-                }
+                closeH(readStream);
+
+                closeH(writeToStream);
             }
         };
 
@@ -176,11 +169,11 @@ namespace MF
                     writeToStream, inputString.c_str(),
                     inputString.length() * sizeof(std::string::value_type), &lpWritten, nullptr));
 
-                CloseHandle(writeToStream);
+                closeH(writeToStream);
             }
 
             void afterStop() override {
-                CloseHandle(readStream);
+                closeH(readStream);
             }
 
             StreamItem getStreamItem() const override {
@@ -188,12 +181,8 @@ namespace MF
             }
 
             ~ConsoleInputChoice_Windows_String() {
-                if (readStream != INVALID_HANDLE_VALUE) {
-                    CloseHandle(readStream);
-                }
-                if (writeToStream != INVALID_HANDLE_VALUE) {
-                    CloseHandle(writeToStream);
-                }
+                closeH(readStream);
+                closeH(writeToStream);
             }
         };
 
@@ -222,7 +211,7 @@ namespace MF
             }
 
             void afterStop() override {
-                CloseHandle(readFromFile);
+                closeH(readFromFile);
             }
 
             StreamItem getStreamItem() const override {
@@ -230,9 +219,7 @@ namespace MF
             }
 
             ~ConsoleInputChoice_Windows_File() {
-                if (readFromFile != INVALID_HANDLE_VALUE) {
-                    CloseHandle(readFromFile);
-                }
+                closeH(readFromFile);
             }
         };
 

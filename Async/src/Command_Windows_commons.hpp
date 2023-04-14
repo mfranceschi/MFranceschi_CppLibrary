@@ -64,6 +64,13 @@ namespace MF
         int getExitCode(ProcessItem processItem);
 
         void makeHandleInheritable(HANDLE handle, bool yesOrNo);
+
+        inline void closeH(HANDLE &handle) {
+            if (handle != INVALID_HANDLE_VALUE) {
+                CloseHandle(handle);
+                handle = INVALID_HANDLE_VALUE;
+            }
+        }
     } // namespace Command
 } // namespace MF
 

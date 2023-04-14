@@ -49,7 +49,7 @@ namespace MF
                 dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdOutChoice))
                     .getStreamItem(OutputStream_e::StdOut);
             startupinfo.hStdError =
-                dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdOutChoice))
+                dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdErrChoice))
                     .getStreamItem(OutputStream_e::StdErr);
             startupinfo.hStdInput =
                 dynamic_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice))
