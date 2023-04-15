@@ -58,9 +58,23 @@ namespace MF
 
         struct CommandOver {
             const int exitCode;
+
+            bool hasSucceeded() const {
+                return exitCode == EXIT_SUCCESS;
+            }
         };
 
-        struct CommandAsyncReturn {
+        struct CommandRunner {
+            virtual CommandRunner &start() = 0;
+            virtual CommandRunner &sendStop() = 0;
+            virtual bool isRunning() = 0;
+            virtual bool isStopped() = 0;
+            virtual CommandOver &getCommandOverOrThrow() = 0;
+            virtual bool waitFor(
+                std::chrono::milliseconds duration = std::chrono::milliseconds::zero()) = 0;
+        };
+
+        struct CommandAsyncReturn { // TODO NOT THIS
             virtual void tryToStop() = 0;
             virtual void wait() = 0;
             virtual void waitFor(const std::chrono::nanoseconds &duration) = 0;
