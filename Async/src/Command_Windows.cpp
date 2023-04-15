@@ -85,6 +85,7 @@ namespace MF
 
         CommandOver runCommandAndWait(
             const CommandCall &commandCall, std::chrono::milliseconds waitFor) {
+            /*
             beforeStart(commandCall);
             ProcessItem processItem = doCreateProcess(commandCall);
             afterStart(commandCall);
@@ -94,6 +95,10 @@ namespace MF
             afterStop(commandCall);
 
             return {getExitCode(processItem)};
+             */
+            auto cmd = runCommandAsync(commandCall);
+            cmd->start().waitFor(waitFor);
+            return cmd->getCommandOverOrThrow();
         }
     } // namespace Command
 } // namespace MF

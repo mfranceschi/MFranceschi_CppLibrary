@@ -29,11 +29,13 @@ namespace MF
             static constexpr auto KILL_FILENAME = TEXT("NUL");
             StreamItem fileStream = INVALID_HANDLE_VALUE;
 
-            void beforeStart() override {
+            ConsoleOutputChoice_Windows_Ignored() {
                 fileStream = CreateFile(
                     KILL_FILENAME, // weirdly it does not work otherwise
                     FILE_GENERIC_WRITE, FILE_SHARE_READ, &getInheritableSecAttr(), OPEN_ALWAYS,
                     FILE_ATTRIBUTE_DEVICE, nullptr);
+                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
+                    fileStream == INVALID_HANDLE_VALUE);
             }
 
             void afterStop() override {
@@ -55,16 +57,14 @@ namespace MF
 
         struct ConsoleOutputChoice_Windows_File : ConsoleOutputChoice_Windows {
             StreamItem readFromFile = INVALID_HANDLE_VALUE;
-            const Filename_t filename;
 
-            ConsoleOutputChoice_Windows_File(const Filename_t &filename) : filename(filename) {
-            }
-
-            void beforeStart() override {
+            ConsoleOutputChoice_Windows_File(const Filename_t &filename) {
                 readFromFile = CreateFile(
                     filename.c_str(), // weirdly it does not work otherwise
                     FILE_GENERIC_WRITE, FILE_SHARE_READ, &getInheritableSecAttr(), OPEN_ALWAYS,
                     FILE_ATTRIBUTE_NORMAL, nullptr);
+                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
+                    readFromFile == INVALID_HANDLE_VALUE);
             }
 
             void afterStop() override {
@@ -96,7 +96,8 @@ namespace MF
 
             void beforeStart() override {
                 SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
-                CreatePipe(&readStream, &writeToStream, &securityAttributes, 0);
+                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
+                    !CreatePipe(&readStream, &writeToStream, &securityAttributes, 0));
                 makeHandleInheritable(readStream, false);
                 makeHandleInheritable(writeToStream, true);
             }
@@ -124,7 +125,6 @@ namespace MF
 
             ~ConsoleOutputChoice_Windows_StringStream() {
                 closeH(readStream);
-
                 closeH(writeToStream);
             }
         };
@@ -153,13 +153,14 @@ namespace MF
 
             void beforeStart() override {
                 SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
-                CreatePipe(
-                    &readStream, &writeToStream, &securityAttributes, inputString.length() + 1);
+                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!CreatePipe(
+                    &readStream, &writeToStream, &securityAttributes, inputString.length() + 1));
                 makeHandleInheritable(readStream, true);
                 makeHandleInheritable(writeToStream, false);
             }
 
             void afterStart() override {
+                // TODO better
                 DWORD lpWritten;
                 assert(inputString.length() < 1e3); // otherwise loop with a temp string buffer
                 assert(WriteFile(
@@ -193,12 +194,8 @@ namespace MF
 
         struct ConsoleInputChoice_Windows_File : ConsoleInputChoice_Windows {
             StreamItem readFromFile = INVALID_HANDLE_VALUE;
-            const Filename_t filename;
 
-            ConsoleInputChoice_Windows_File(const std::string &filename) : filename(filename) {
-            }
-
-            void beforeStart() override {
+            ConsoleInputChoice_Windows_File(const std::string &filename) {
                 readFromFile = CreateFile(
                     filename.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY,
                     NULL);
@@ -236,7 +233,8 @@ namespace MF
 
             void beforeStart() override {
                 SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
-                CreatePipe(&readStream, &writeToStream, &securityAttributes, 0);
+                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
+                    !CreatePipe(&readStream, &writeToStream, &securityAttributes, 0));
                 makeHandleInheritable(readStream, true);
                 makeHandleInheritable(writeToStream, false);
             }

@@ -9,6 +9,7 @@ target_sources(
             src/Command_Windows_commons.hpp
             src/Command_Windows_consoleChoices.cpp
             src/Command_Windows_misc.cpp
+            src/Command_Windows_runner.cpp
             #[[
             src/Command.cpp
             src/CommandHelper.hpp

@@ -57,7 +57,7 @@ namespace MF
         };
 
         struct CommandOver {
-            const int exitCode;
+            int exitCode;
 
             bool hasSucceeded() const {
                 return exitCode == EXIT_SUCCESS;
@@ -65,23 +65,54 @@ namespace MF
         };
 
         struct CommandRunner {
+            /**
+             * Starts the process.
+             * @return this
+             */
             virtual CommandRunner &start() = 0;
-            virtual CommandRunner &sendStop() = 0;
+
+            /**
+             * Kills the process, and only returns once the process has been successfully killed.
+             * Windows: uses "TerminateProcess" and "exitCode" is the exit code of the process.
+             * Unix: uses "kill" to send a SIGKILL to the process; "exitCode" is ignored.
+             */
+            virtual CommandRunner &kill(int exitCode = -1) = 0;
+
+            /**
+             * Returns true if the process has been started and is not finished yet.
+             */
             virtual bool isRunning() = 0;
-            virtual bool isStopped() = 0;
-            virtual CommandOver &getCommandOverOrThrow() = 0;
+
+            /**
+             * Returns true if the process has been started and is finished.
+             */
+            virtual bool isDone() = 0;
+
+            /**
+             * Waits for the specified duration.
+             * Returns true as soon as the process is finished.
+             * Returns false if the process is still running after that duration.
+             */
             virtual bool waitFor(
                 std::chrono::milliseconds duration = std::chrono::milliseconds::zero()) = 0;
+
+            /**
+             * If the process is finished, returns the corresponding CommandOver.
+             * Otherwise throws a runtime error.
+             */
+            virtual const CommandOver &getCommandOverOrThrow() = 0;
+
+            /**
+             * Returns the process handle.
+             * Windows: HANDLE
+             * Unix: pid_t
+             */
+            virtual std::uintmax_t getHandle() = 0;
+
+            virtual ~CommandRunner() = default;
         };
 
-        struct CommandAsyncReturn { // TODO NOT THIS
-            virtual void tryToStop() = 0;
-            virtual void wait() = 0;
-            virtual void waitFor(const std::chrono::nanoseconds &duration) = 0;
-            virtual std::future<CommandOver> getFutureCommandOver() = 0;
-        };
-
-        std::shared_ptr<CommandAsyncReturn> runCommandAsync(const CommandCall &commandCall);
+        std::shared_ptr<CommandRunner> runCommandAsync(const CommandCall &commandCall);
 
         CommandOver runCommandAndWait(
             const CommandCall &commandCall,

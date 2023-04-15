@@ -71,6 +71,16 @@ namespace MF
                 handle = INVALID_HANDLE_VALUE;
             }
         }
+
+        struct PipeStreams {
+            HANDLE writeToPipe;
+            HANDLE readFromPipe;
+        };
+
+        // TODO
+        PipeStreams makePipeThatChildWillRead() {
+            PipeStreams pipeStreams{0};
+        }
     } // namespace Command
 } // namespace MF
 
