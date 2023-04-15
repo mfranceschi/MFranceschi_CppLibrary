@@ -115,9 +115,6 @@ namespace MF
                     MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!result);
                     stringStream << buffer.data();
                 } while (nbBytesRead == BUFFER_SIZE);
-            }
-
-            void afterStop() override {
                 closeH(readStream);
             }
 
@@ -225,6 +222,54 @@ namespace MF
 
         std::shared_ptr<ConsoleInputChoice> makeInputFromFile(const Filename_t &filename) {
             return std::make_shared<ConsoleInputChoice_Windows_File>(filename);
+        }
+
+        struct ConsoleInputChoice_Windows_StringStream : ConsoleInputChoice_Windows {
+            std::stringstream &stringStream;
+
+            StreamItem readStream = INVALID_HANDLE_VALUE;
+            StreamItem writeToStream = INVALID_HANDLE_VALUE;
+
+            ConsoleInputChoice_Windows_StringStream(std::stringstream &stringStream1)
+                : stringStream(stringStream1) {
+            }
+
+            void beforeStart() override {
+                SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
+                CreatePipe(&readStream, &writeToStream, &securityAttributes, 0);
+                makeHandleInheritable(readStream, true);
+                makeHandleInheritable(writeToStream, false);
+            }
+
+            void afterStart() override {
+                closeH(readStream);
+
+                static constexpr size_t BUFFER_SIZE = 4096;
+                std::array<char, BUFFER_SIZE + 1> buffer{0};
+                DWORD nbBytesWritten = 0;
+                do {
+                    stringStream.get(buffer.data(), BUFFER_SIZE);
+                    BOOL result = WriteFile(
+                        writeToStream, buffer.data(), stringStream.gcount(), &nbBytesWritten,
+                        nullptr);
+                    MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!result);
+                } while (nbBytesWritten == BUFFER_SIZE);
+
+                closeH(writeToStream);
+            }
+
+            StreamItem getStreamItem() const override {
+                return readStream;
+            }
+
+            ~ConsoleInputChoice_Windows_StringStream() {
+                closeH(readStream);
+                closeH(writeToStream);
+            }
+        };
+
+        std::shared_ptr<ConsoleInputChoice> makeInputFromStringStream(std::stringstream &stream) {
+            return std::make_shared<ConsoleInputChoice_Windows_StringStream>(stream);
         }
     } // namespace Command
 } // namespace MF

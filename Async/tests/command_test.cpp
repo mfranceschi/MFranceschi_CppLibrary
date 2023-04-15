@@ -129,9 +129,21 @@ TEST_F(CommandTestBase, LengthOfFirstArg) {
     callCommand(1);
 }
 
-TEST_F(CommandTestBase, LengthOfInput) {
+TEST_F(CommandTestBase, LengthOfInput_FromString) {
     commandCall.executable = LengthOfInput_Executable;
-    commandCall.stdInChoice = makeInputFromString("abcde\n");
+    commandCall.stdInChoice = makeInputFromString(
+        "abcde\n"
+        "fghij\n");
+    callCommand(5);
+}
+
+TEST_F(CommandTestBase, LengthOfInput_FromStringStream) {
+    std::stringstream stream;
+    stream << "abcde\n"
+           << "fghij\n";
+
+    commandCall.executable = LengthOfInput_Executable;
+    commandCall.stdInChoice = makeInputFromStringStream(stream);
     callCommand(5);
 }
 
