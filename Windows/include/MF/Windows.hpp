@@ -115,5 +115,17 @@ namespace MF
                 : ResourceClosers::ResourceCloser<void*, decltype(&LocalFree)>(pointer, LocalFree) {
             }
         };
+
+        class FindVolumeCloser
+            : public ResourceClosers::ResourceCloser<HANDLE, decltype(&FindVolumeClose)> {
+           public:
+            FindVolumeCloser(HANDLE handle)
+                : ResourceCloser<HANDLE, decltype(&FindVolumeClose)>(handle, FindClose) {
+            }
+
+            bool isInvalid() const {
+                return get() == INVALID_HANDLE_VALUE;
+            }
+        };
     } // namespace Windows
 } // namespace MF

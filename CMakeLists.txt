@@ -91,6 +91,7 @@ add_subdirectory(Console)
 add_subdirectory(Clocks)
 add_subdirectory(Filesystem)
 add_subdirectory(SharedLibs)
+add_subdirectory(Volumes)
 # add_subdirectory(Datetime) # TODO - not ready yet
 # add_subdirectory(Async) # TODO - not ready yet
 add_subdirectory(Containers)
