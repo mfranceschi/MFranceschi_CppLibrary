@@ -1,5 +1,5 @@
 
-add_library(MF_Volumes STATIC src/Volumes_Windows_DiskSpaceInfo.cpp src/Volumes_Windows_DriveType.cpp)
+add_library(MF_Volumes STATIC)
 
 file(GLOB Private_Sources
         CONFIGURE_DEPENDS
@@ -15,7 +15,7 @@ target_sources(MF_Volumes
         PUBLIC
         ${Public_Sources}
         )
-target_link_libraries(MF_Volumes PUBLIC MF_Commons MF_Windows_Header MF_Filesystem MF_SystemErrors)
+target_link_libraries(MF_Volumes PUBLIC MF_Commons MF_Windows_Header MF_Filesystem MF_SystemErrors MF_Strings)
 target_include_directories(MF_Volumes PUBLIC include)
 
 if (MF_IN_DEV)

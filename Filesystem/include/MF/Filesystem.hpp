@@ -21,7 +21,7 @@ namespace MF
     {
         enum class FileEncoding_e { ENC_UTF16LE, ENC_UTF8, ENC_DEFAULT };
 
-        using Filesize_t = unsigned long;
+        using Filesize_t = std::uint64_t;
 
         using Filename_t = std::string;
 

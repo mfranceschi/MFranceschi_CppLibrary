@@ -49,7 +49,8 @@ namespace MF
                     nullptr); // Not used.
                 assert(nbChars != 0); // TODO error case.
 
-                std::string str(nbChars, 0);
+                std::string str;
+                str.resize(nbChars - 1);
                 const int returnValue = WideCharToMultiByte(
                     codePage, 0, input.c_str(), -1, &str[0], nbChars, nullptr, nullptr);
                 assert(returnValue != 0); // TODO error case.

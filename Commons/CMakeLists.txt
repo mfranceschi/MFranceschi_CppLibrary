@@ -22,6 +22,7 @@ target_sources(MF_Commons
         PUBLIC include/MF/Commons.hpp
         PRIVATE src/dummy.cpp
         )
+target_include_directories(MF_Commons PUBLIC include)
 
 if (MF_IN_DEV)
     target_compile_definitions(MF_Commons PUBLIC _CRTDBG_MAP_ALLOC=1)

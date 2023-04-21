@@ -13,6 +13,7 @@ using namespace MF::Filesystem;
 
 #if MF_WINDOWS
 #    include "MF/LightWindows.hpp"
+#    include "MF/Strings.hpp"
 std::vector<std::wstring> enumerateVolumeGuids();
 
 /**
@@ -21,28 +22,110 @@ std::vector<std::wstring> enumerateVolumeGuids();
 std::vector<std::wstring> getPathsForVolumeGuid(const std::wstring& guid);
 
 struct DiskSpaceInfo {
-    DiskSpaceInfo(const std::wstring& rootPath);
+    DiskSpaceInfo(const std::wstring& rootPath) {
+        // NOTE: while the official documentation mentions booleans,
+        // the actual returned value is NOT a boolean but a HRESULT.
+        const HRESULT hresult = GetDiskSpaceInformationW(rootPath.data(), &dsi);
+        MF::SystemErrors::Win32::throwCurrentSystemErrorIf(FAILED(hresult));
+        sizeCoeff = dsi.SectorsPerAllocationUnit * dsi.BytesPerSector;
+    }
 
-    Filesize_t getBytesPerSector();
-    Filesize_t getTotalSize();
-    Filesize_t getFreeSize();
-    Filesize_t getUsedSize();
+    Filesize_t getBytesPerSector() const {
+        return dsi.BytesPerSector;
+    }
+
+    Filesize_t getTotalSize() const {
+        return dsi.ActualTotalAllocationUnits * sizeCoeff;
+    }
+
+    Filesize_t getFreeSize() const {
+        return dsi.ActualAvailableAllocationUnits * sizeCoeff;
+    }
+
+    Filesize_t getUsedSize() const {
+        return (dsi.UsedAllocationUnits + dsi.TotalReservedAllocationUnits) * sizeCoeff;
+    }
 
    private:
-    DISK_SPACE_INFORMATION dsi;
+    DISK_SPACE_INFORMATION dsi{0};
+    Filesize_t sizeCoeff{0};
 };
 
 struct DriveType {
-    DriveType(const std::wstring& rootPath);
+    DriveType(const std::wstring& rootPath) : driveType(GetDriveTypeW(rootPath.c_str())) {
+        if (driveType == DRIVE_NO_ROOT_DIR) {
+            throw std::runtime_error("No volume for this root path!");
+        }
+    }
 
-    bool isRemovableDrive();
-    bool isNotRemovableDrive();
-    bool isCdRomDrive();
-    bool isRemoteDrive();
-    bool isRamDisk();
+    bool isRemovableDrive() const {
+        return driveType == DRIVE_REMOVABLE;
+    }
+
+    bool isNotRemovableDrive() const {
+        return driveType == DRIVE_FIXED;
+    }
+
+    bool isCdRomDrive() const {
+        return driveType == DRIVE_CDROM;
+    }
+
+    bool isRemoteDrive() const {
+        return driveType == DRIVE_REMOTE;
+    }
+
+    bool isRamDisk() const {
+        return driveType == DRIVE_RAMDISK;
+    }
 
    private:
     UINT driveType = DRIVE_UNKNOWN;
+};
+
+struct VolumeInformation {
+    VolumeInformation(const std::wstring& rootPath) {
+        std::vector<wchar_t> volumeNameBuffer(MAX_PATH + 1);
+        std::vector<wchar_t> fileSystemBuffer(MAX_PATH + 1);
+        const bool success =
+            GetVolumeInformationW(
+                rootPath.c_str(), volumeNameBuffer.data(), volumeNameBuffer.capacity(),
+                &serialNumber, &maxComponentLength, &flags, fileSystemBuffer.data(),
+                fileSystemBuffer.capacity()) == TRUE;
+        MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!success);
+        volumeName.assign(volumeNameBuffer.data());
+        fileSystem.assign(fileSystemBuffer.data());
+    }
+
+    Filename_t getName() {
+        return MF::Strings::Conversions::wideCharToUtf8(volumeName);
+    }
+
+    Filename_t getFileSystemName() {
+        return MF::Strings::Conversions::wideCharToUtf8(fileSystem);
+    }
+
+    bool isReadOnly() {
+        return flags & FILE_READ_ONLY_VOLUME;
+    }
+
+    bool hasUnicodeSupportForFileNames() {
+        return flags & FILE_UNICODE_ON_DISK;
+    }
+
+    bool hasCompressionSupport() {
+        return flags & FILE_FILE_COMPRESSION;
+    }
+
+    bool hasCaseSensitiveFileNamesSupport() {
+        return flags & FILE_CASE_SENSITIVE_SEARCH;
+    }
+
+   private:
+    std::wstring volumeName;
+    std::wstring fileSystem;
+    DWORD serialNumber{0};
+    DWORD maxComponentLength{0};
+    DWORD flags{0};
 };
 
 #endif
