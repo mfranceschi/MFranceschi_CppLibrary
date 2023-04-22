@@ -24,4 +24,6 @@ TEST(aa, bb) {
     EXPECT_TRUE(volumeInformation->hasUnicodeSupportForFileNames());
     EXPECT_TRUE(volumeInformation->hasCompressionSupport());
     EXPECT_FALSE(volumeInformation->isReadOnly());
+
+    EXPECT_EQ(volumeInformation->getBootSectorsCount(), 0);
 }

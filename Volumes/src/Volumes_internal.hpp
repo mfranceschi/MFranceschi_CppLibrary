@@ -12,8 +12,11 @@
 using namespace MF::Filesystem;
 
 #if MF_WINDOWS
-#    include "MF/LightWindows.hpp"
+#    include <Windows.h>
+#    include <winioctl.h>
+
 #    include "MF/Strings.hpp"
+
 std::vector<std::wstring> enumerateVolumeGuids();
 
 /**
@@ -104,7 +107,7 @@ struct VolumeInformation {
         return MF::Strings::Conversions::wideCharToUtf8(fileSystem);
     }
 
-    bool isReadOnly() {
+    bool isReadOnly() const {
         return flags & FILE_READ_ONLY_VOLUME;
     }
 
@@ -126,6 +129,35 @@ struct VolumeInformation {
     DWORD serialNumber{0};
     DWORD maxComponentLength{0};
     DWORD flags{0};
+};
+
+struct BootSectorsInfo {
+    BootSectorsInfo(const std::wstring& rootPath) {
+        const std::wstring name = LR"(\\.\)" + rootPath.substr(0, 2);
+        HANDLE handle = CreateFileW(
+            name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0,
+            nullptr);
+        MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle == INVALID_HANDLE_VALUE);
+
+        DWORD bytesReturned{0};
+        const bool success = DeviceIoControl(
+                                 (HANDLE)handle, // handle to volume
+                                 FSCTL_GET_BOOT_AREA_INFO, // dwIoControlCode
+                                 nullptr, // input buffer
+                                 0, // size of input buffer
+                                 &bootAreaInfo, // output buffer
+                                 sizeof(bootAreaInfo), // size of output buffer
+                                 &bytesReturned, nullptr) == TRUE;
+        CloseHandle(handle);
+        MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!success);
+    }
+
+    uint16_t getBootSectorsCount() {
+        return bootAreaInfo.BootSectorCount;
+    }
+
+   private:
+    _BOOT_AREA_INFO bootAreaInfo{0};
 };
 
 #endif

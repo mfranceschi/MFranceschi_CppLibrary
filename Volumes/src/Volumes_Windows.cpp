@@ -109,8 +109,9 @@ namespace MF
             }
 
             uint16_t getBootSectorsCount() override {
-                return 0;
+                return bootSectorsInfo.get(rootPath).getBootSectorsCount();
             }
+
             bool isCompressed() override {
                 return false;
             }
@@ -119,6 +120,7 @@ namespace MF
             ProviderWithSimpleConstructor<DiskSpaceInfo> diskSpaceInfo;
             ProviderWithSimpleConstructor<DriveType> driveType;
             ProviderWithSimpleConstructor<::VolumeInformation> volumeInformation;
+            ProviderWithSimpleConstructor<BootSectorsInfo> bootSectorsInfo;
         };
 
         std::unique_ptr<VolumeInformation> get0() {
