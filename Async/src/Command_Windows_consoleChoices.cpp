@@ -26,16 +26,9 @@ namespace MF
         }
 
         struct ConsoleOutputChoice_Windows_Ignored : ConsoleOutputChoice_Windows {
-            static constexpr auto KILL_FILENAME = TEXT("NUL");
-            StreamItem fileStream = INVALID_HANDLE_VALUE;
+            StreamItem fileStream;
 
-            ConsoleOutputChoice_Windows_Ignored() {
-                fileStream = CreateFile(
-                    KILL_FILENAME, // weirdly it does not work otherwise
-                    FILE_GENERIC_WRITE, FILE_SHARE_READ, &getInheritableSecAttr(), OPEN_ALWAYS,
-                    FILE_ATTRIBUTE_DEVICE, nullptr);
-                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                    fileStream == INVALID_HANDLE_VALUE);
+            ConsoleOutputChoice_Windows_Ignored() : fileStream(openNullFileToWrite()) {
             }
 
             void afterStop() override {
@@ -56,27 +49,22 @@ namespace MF
         }
 
         struct ConsoleOutputChoice_Windows_File : ConsoleOutputChoice_Windows {
-            StreamItem readFromFile = INVALID_HANDLE_VALUE;
+            StreamItem fileStream;
 
-            ConsoleOutputChoice_Windows_File(const Filename_t &filename) {
-                readFromFile = CreateFile(
-                    filename.c_str(), // weirdly it does not work otherwise
-                    FILE_GENERIC_WRITE, FILE_SHARE_READ, &getInheritableSecAttr(), OPEN_ALWAYS,
-                    FILE_ATTRIBUTE_NORMAL, nullptr);
-                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                    readFromFile == INVALID_HANDLE_VALUE);
+            ConsoleOutputChoice_Windows_File(const Filename_t &filename)
+                : fileStream(openFileToWrite(filename)) {
             }
 
             void afterStop() override {
-                closeH(readFromFile);
+                closeH(fileStream);
             }
 
             StreamItem getStreamItem(OutputStream_e) const override {
-                return readFromFile;
+                return fileStream;
             }
 
             ~ConsoleOutputChoice_Windows_File() {
-                closeH(readFromFile);
+                closeH(fileStream);
             }
         };
 
@@ -87,45 +75,37 @@ namespace MF
         struct ConsoleOutputChoice_Windows_StringStream : ConsoleOutputChoice_Windows {
             std::stringstream &stringStream;
 
-            StreamItem readStream = INVALID_HANDLE_VALUE;
-            StreamItem writeToStream = INVALID_HANDLE_VALUE;
+            PipeStreams pipeStreams;
 
             ConsoleOutputChoice_Windows_StringStream(std::stringstream &stringStream1)
-                : stringStream(stringStream1) {
-            }
-
-            void beforeStart() override {
-                SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
-                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                    !CreatePipe(&readStream, &writeToStream, &securityAttributes, 0));
-                makeHandleInheritable(readStream, false);
-                makeHandleInheritable(writeToStream, true);
+                : stringStream(stringStream1), pipeStreams(makePipeThatChildWillWriteOn()) {
             }
 
             void afterStart() override {
-                closeH(writeToStream);
+                closeH(pipeStreams.writeToPipe);
             }
 
-            void beforeStop() override {
+            void afterStop() override {
                 static constexpr size_t BUFFER_SIZE = 4096;
                 std::array<char, BUFFER_SIZE + 1> buffer{0};
                 DWORD nbBytesRead = 0;
                 do {
-                    BOOL result =
-                        ReadFile(readStream, buffer.data(), buffer.size(), &nbBytesRead, nullptr);
+                    BOOL result = ReadFile(
+                        pipeStreams.readFromPipe, buffer.data(), buffer.size(), &nbBytesRead,
+                        nullptr);
                     MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!result);
                     stringStream << buffer.data();
                 } while (nbBytesRead == BUFFER_SIZE);
-                closeH(readStream);
+                closeH(pipeStreams.readFromPipe);
             }
 
             StreamItem getStreamItem(OutputStream_e) const override {
-                return writeToStream;
+                return pipeStreams.writeToPipe;
             }
 
             ~ConsoleOutputChoice_Windows_StringStream() {
-                closeH(readStream);
-                closeH(writeToStream);
+                closeH(pipeStreams.readFromPipe);
+                closeH(pipeStreams.writeToPipe);
             }
         };
 
@@ -145,18 +125,10 @@ namespace MF
 
         struct ConsoleInputChoice_Windows_String : ConsoleInputChoice_Windows {
             const Filename_t inputString;
-            StreamItem readStream = INVALID_HANDLE_VALUE;
-            StreamItem writeToStream = INVALID_HANDLE_VALUE;
+            PipeStreams pipeStreams;
 
-            ConsoleInputChoice_Windows_String(const std::string &string) : inputString(string) {
-            }
-
-            void beforeStart() override {
-                SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
-                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!CreatePipe(
-                    &readStream, &writeToStream, &securityAttributes, inputString.length() + 1));
-                makeHandleInheritable(readStream, true);
-                makeHandleInheritable(writeToStream, false);
+            ConsoleInputChoice_Windows_String(const std::string &string)
+                : inputString(string), pipeStreams(makePipeThatChildWillRead()) {
             }
 
             void afterStart() override {
@@ -164,23 +136,23 @@ namespace MF
                 DWORD lpWritten;
                 assert(inputString.length() < 1e3); // otherwise loop with a temp string buffer
                 assert(WriteFile(
-                    writeToStream, inputString.c_str(),
+                    pipeStreams.writeToPipe, inputString.c_str(),
                     inputString.length() * sizeof(std::string::value_type), &lpWritten, nullptr));
 
-                closeH(writeToStream);
+                closeH(pipeStreams.writeToPipe);
             }
 
             void afterStop() override {
-                closeH(readStream);
+                closeH(pipeStreams.readFromPipe);
             }
 
             StreamItem getStreamItem() const override {
-                return readStream;
+                return pipeStreams.readFromPipe;
             }
 
             ~ConsoleInputChoice_Windows_String() {
-                closeH(readStream);
-                closeH(writeToStream);
+                closeH(pipeStreams.readFromPipe);
+                closeH(pipeStreams.writeToPipe);
             }
         };
 
@@ -193,15 +165,10 @@ namespace MF
         }
 
         struct ConsoleInputChoice_Windows_File : ConsoleInputChoice_Windows {
-            StreamItem readFromFile = INVALID_HANDLE_VALUE;
+            StreamItem readFromFile;
 
-            ConsoleInputChoice_Windows_File(const std::string &filename) {
-                readFromFile = CreateFile(
-                    filename.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY,
-                    NULL);
-                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                    readFromFile == INVALID_HANDLE_VALUE);
-                makeHandleInheritable(readFromFile, true);
+            ConsoleInputChoice_Windows_File(const std::string &filename)
+                : readFromFile(openFileToRead(filename)) {
             }
 
             void afterStop() override {
@@ -224,23 +191,14 @@ namespace MF
         struct ConsoleInputChoice_Windows_StringStream : ConsoleInputChoice_Windows {
             std::stringstream &stringStream;
 
-            StreamItem readStream = INVALID_HANDLE_VALUE;
-            StreamItem writeToStream = INVALID_HANDLE_VALUE;
+            PipeStreams pipeStreams;
 
             ConsoleInputChoice_Windows_StringStream(std::stringstream &stringStream1)
-                : stringStream(stringStream1) {
-            }
-
-            void beforeStart() override {
-                SECURITY_ATTRIBUTES securityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, true};
-                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                    !CreatePipe(&readStream, &writeToStream, &securityAttributes, 0));
-                makeHandleInheritable(readStream, true);
-                makeHandleInheritable(writeToStream, false);
+                : stringStream(stringStream1), pipeStreams(makePipeThatChildWillRead()) {
             }
 
             void afterStart() override {
-                closeH(readStream);
+                closeH(pipeStreams.readFromPipe);
 
                 static constexpr size_t BUFFER_SIZE = 4096;
                 std::array<char, BUFFER_SIZE + 1> buffer{0};
@@ -248,21 +206,21 @@ namespace MF
                 do {
                     stringStream.get(buffer.data(), BUFFER_SIZE);
                     BOOL result = WriteFile(
-                        writeToStream, buffer.data(), stringStream.gcount(), &nbBytesWritten,
-                        nullptr);
+                        pipeStreams.writeToPipe, buffer.data(), stringStream.gcount(),
+                        &nbBytesWritten, nullptr);
                     MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!result);
                 } while (nbBytesWritten == BUFFER_SIZE);
 
-                closeH(writeToStream);
+                closeH(pipeStreams.writeToPipe);
             }
 
             StreamItem getStreamItem() const override {
-                return readStream;
+                return pipeStreams.readFromPipe;
             }
 
             ~ConsoleInputChoice_Windows_StringStream() {
-                closeH(readStream);
-                closeH(writeToStream);
+                closeH(pipeStreams.readFromPipe);
+                closeH(pipeStreams.writeToPipe);
             }
         };
 

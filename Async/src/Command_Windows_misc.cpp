@@ -14,6 +14,8 @@ namespace MF
 {
     namespace Command
     {
+        const StreamItem INVALID_STREAM_ITEM = INVALID_HANDLE_VALUE;
+
         /// Use this handle as a sample for inheritable handles.
         static SECURITY_ATTRIBUTES securityAttributesForInheritableHandles{
             sizeof(SECURITY_ATTRIBUTES), nullptr, true};
@@ -37,7 +39,11 @@ namespace MF
             auto s = osStream.str();
             std::vector<TCHAR> result;
             result.reserve(s.size() + 1);
-            assert(!_tcsncpy_s(result.data(), result.capacity(), s.c_str(), s.length()));
+
+            errno_t errno1 = _tcsncpy_s(result.data(), result.capacity(), s.c_str(), s.length());
+            if (errno1) {
+                throw MF::SystemErrors::Errno::getSystemErrorForErrorCode(errno1);
+            }
             return result;
         }
 
@@ -66,6 +72,58 @@ namespace MF
         void makeHandleInheritable(HANDLE handle, bool yesOrNo) {
             assert(SetHandleInformation(
                 handle, HANDLE_FLAG_INHERIT, yesOrNo ? HANDLE_FLAG_INHERIT : 0));
+        }
+
+        void closeH(HANDLE &handle) {
+            if (handle != INVALID_HANDLE_VALUE) {
+                CloseHandle(handle);
+                handle = INVALID_HANDLE_VALUE;
+            }
+        }
+
+        PipeStreams makePipeThatChildWillRead() {
+            PipeStreams pipeStreams{0};
+            BOOL result = CreatePipe(
+                &pipeStreams.readFromPipe, &pipeStreams.writeToPipe, &getInheritableSecAttr(), 0);
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!result);
+            makeHandleInheritable(pipeStreams.readFromPipe, true);
+            makeHandleInheritable(pipeStreams.writeToPipe, false);
+            return pipeStreams;
+        }
+
+        PipeStreams makePipeThatChildWillWriteOn() {
+            PipeStreams pipeStreams{0};
+            BOOL result = CreatePipe(
+                &pipeStreams.readFromPipe, &pipeStreams.writeToPipe, &getInheritableSecAttr(), 0);
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!result);
+            makeHandleInheritable(pipeStreams.readFromPipe, false);
+            makeHandleInheritable(pipeStreams.writeToPipe, true);
+            return pipeStreams;
+        }
+
+        StreamItem openFileToRead(const Filename_t &filename) {
+            HANDLE handle = CreateFile(
+                filename.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY,
+                NULL);
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle == INVALID_HANDLE_VALUE);
+            return handle;
+        }
+
+        StreamItem openFileToWrite(const Filename_t &filename) {
+            HANDLE handle = CreateFile(
+                filename.c_str(), // weirdly it does not work otherwise
+                FILE_GENERIC_WRITE, FILE_SHARE_READ, &getInheritableSecAttr(), OPEN_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL, nullptr);
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle == INVALID_HANDLE_VALUE);
+            return handle;
+        }
+
+        StreamItem openNullFileToWrite() {
+            HANDLE handle = CreateFile(
+                TEXT("NUL"), FILE_GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_READ,
+                &getInheritableSecAttr(), OPEN_ALWAYS, FILE_ATTRIBUTE_DEVICE, nullptr);
+            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle == INVALID_HANDLE_VALUE);
+            return handle;
         }
     } // namespace Command
 } // namespace MF

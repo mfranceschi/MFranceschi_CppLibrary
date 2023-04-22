@@ -40,7 +40,6 @@ namespace MF
                 LPVOID lpEnvironment = nullptr; // We use the parent's environment
                 LPCTSTR lpCurrentDirectory =
                     currentDirectory.empty() ? nullptr : currentDirectory.c_str();
-                // TODO Use the right handles (?)
 
                 bool createProcessResult = CreateProcess(
                     lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes,

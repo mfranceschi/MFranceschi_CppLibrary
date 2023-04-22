@@ -14,6 +14,8 @@ namespace MF
     namespace Command
     {
         using StreamItem = HANDLE;
+        extern const StreamItem INVALID_STREAM_ITEM;
+
         using ProcessItem = HANDLE;
 
         enum class OutputStream_e { StdOut, StdErr };
@@ -65,22 +67,19 @@ namespace MF
 
         void makeHandleInheritable(HANDLE handle, bool yesOrNo);
 
-        inline void closeH(HANDLE &handle) {
-            if (handle != INVALID_HANDLE_VALUE) {
-                CloseHandle(handle);
-                handle = INVALID_HANDLE_VALUE;
-            }
-        }
+        void closeH(HANDLE &handle);
 
         struct PipeStreams {
-            HANDLE writeToPipe;
-            HANDLE readFromPipe;
+            StreamItem writeToPipe = INVALID_STREAM_ITEM;
+            StreamItem readFromPipe = INVALID_STREAM_ITEM;
         };
 
-        // TODO
-        PipeStreams makePipeThatChildWillRead() {
-            PipeStreams pipeStreams{0};
-        }
+        PipeStreams makePipeThatChildWillRead();
+        PipeStreams makePipeThatChildWillWriteOn();
+
+        StreamItem openFileToRead(const Filename_t &filename);
+        StreamItem openFileToWrite(const Filename_t &filename);
+        StreamItem openNullFileToWrite();
     } // namespace Command
 } // namespace MF
 
