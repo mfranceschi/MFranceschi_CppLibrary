@@ -5,7 +5,6 @@
 #if MF_WINDOWS
 
 #    include <array>
-#    include <cassert>
 
 #    include "Command_Windows_commons.hpp"
 #    include "MF/SystemErrors.hpp"
@@ -123,43 +122,6 @@ namespace MF
             return std::make_shared<ConsoleInputChoice_Windows_Console>();
         }
 
-        struct ConsoleInputChoice_Windows_String : ConsoleInputChoice_Windows {
-            const Filename_t inputString;
-            PipeStreams pipeStreams;
-
-            ConsoleInputChoice_Windows_String(const std::string &string)
-                : inputString(string), pipeStreams(makePipeThatChildWillRead()) {
-            }
-
-            void afterStart() override {
-                // TODO better
-                DWORD lpWritten;
-                assert(inputString.length() < 1e3); // otherwise loop with a temp string buffer
-                assert(WriteFile(
-                    pipeStreams.writeToPipe, inputString.c_str(),
-                    inputString.length() * sizeof(std::string::value_type), &lpWritten, nullptr));
-
-                closeH(pipeStreams.writeToPipe);
-            }
-
-            void afterStop() override {
-                closeH(pipeStreams.readFromPipe);
-            }
-
-            StreamItem getStreamItem() const override {
-                return pipeStreams.readFromPipe;
-            }
-
-            ~ConsoleInputChoice_Windows_String() {
-                closeH(pipeStreams.readFromPipe);
-                closeH(pipeStreams.writeToPipe);
-            }
-        };
-
-        std::shared_ptr<ConsoleInputChoice> makeInputFromString(const std::string &string) {
-            return std::make_shared<ConsoleInputChoice_Windows_String>(string);
-        }
-
         std::shared_ptr<ConsoleInputChoice> makeInputEmpty() {
             return makeInputFromString("");
         }
@@ -169,6 +131,7 @@ namespace MF
 
             ConsoleInputChoice_Windows_File(const std::string &filename)
                 : readFromFile(openFileToRead(filename)) {
+                makeHandleInheritable(readFromFile, true);
             }
 
             void afterStop() override {
@@ -226,6 +189,39 @@ namespace MF
 
         std::shared_ptr<ConsoleInputChoice> makeInputFromStringStream(std::stringstream &stream) {
             return std::make_shared<ConsoleInputChoice_Windows_StringStream>(stream);
+        }
+
+        struct ConsoleInputChoice_Windows_String : ConsoleInputChoice_Windows {
+            std::stringstream stringStream;
+            ConsoleInputChoice_Windows_StringStream choiceWindowsStringStream;
+
+            ConsoleInputChoice_Windows_String(const std::string &string)
+                : stringStream(string), choiceWindowsStringStream(stringStream) {
+            }
+
+            void beforeStart() override {
+                choiceWindowsStringStream.beforeStart();
+            }
+
+            void afterStart() override {
+                choiceWindowsStringStream.afterStart();
+            }
+
+            void beforeStop() override {
+                choiceWindowsStringStream.beforeStop();
+            }
+
+            void afterStop() override {
+                choiceWindowsStringStream.afterStop();
+            }
+
+            StreamItem getStreamItem() const override {
+                return choiceWindowsStringStream.getStreamItem();
+            }
+        };
+
+        std::shared_ptr<ConsoleInputChoice> makeInputFromString(const std::string &string) {
+            return std::make_shared<ConsoleInputChoice_Windows_String>(string);
         }
     } // namespace Command
 } // namespace MF

@@ -103,25 +103,24 @@ namespace MF
 
         StreamItem openFileToRead(const Filename_t &filename) {
             HANDLE handle = CreateFile(
-                filename.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY,
-                NULL);
+                filename.c_str(), GENERIC_READ, FILE_SHARE_READ, &getInheritableSecAttr(),
+                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
             MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle == INVALID_HANDLE_VALUE);
             return handle;
         }
 
         StreamItem openFileToWrite(const Filename_t &filename) {
             HANDLE handle = CreateFile(
-                filename.c_str(), // weirdly it does not work otherwise
-                FILE_GENERIC_WRITE, FILE_SHARE_READ, &getInheritableSecAttr(), OPEN_ALWAYS,
-                FILE_ATTRIBUTE_NORMAL, nullptr);
+                filename.c_str(), GENERIC_WRITE, FILE_SHARE_READ, &getInheritableSecAttr(),
+                OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
             MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle == INVALID_HANDLE_VALUE);
             return handle;
         }
 
         StreamItem openNullFileToWrite() {
             HANDLE handle = CreateFile(
-                TEXT("NUL"), FILE_GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_READ,
-                &getInheritableSecAttr(), OPEN_ALWAYS, FILE_ATTRIBUTE_DEVICE, nullptr);
+                TEXT("NUL"), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                &getInheritableSecAttr(), OPEN_EXISTING, FILE_ATTRIBUTE_DEVICE, nullptr);
             MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle == INVALID_HANDLE_VALUE);
             return handle;
         }
