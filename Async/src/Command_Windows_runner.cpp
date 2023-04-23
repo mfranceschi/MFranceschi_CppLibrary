@@ -189,5 +189,12 @@ namespace MF
         std::shared_ptr<CommandRunner> runCommandAsync(const CommandCall &commandCall) {
             return std::make_shared<CommandRunner_Windows>(commandCall);
         }
+
+        CommandOver runCommandAndWait(
+            const CommandCall &commandCall, std::chrono::milliseconds waitFor) {
+            auto cmd = runCommandAsync(commandCall);
+            cmd->start().waitFor(waitFor);
+            return cmd->getCommandOverOrThrow();
+        }
     } // namespace Command
 } // namespace MF

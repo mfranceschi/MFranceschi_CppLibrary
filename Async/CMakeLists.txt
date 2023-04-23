@@ -5,7 +5,6 @@ target_link_libraries(MF_Async PUBLIC MF_Commons MF_Filesystem PRIVATE MF_Window
 target_sources(
         MF_Async
         PRIVATE
-            src/Command_Windows.cpp
             src/Command_Windows_commons.hpp
             src/Command_Windows_consoleChoices.cpp
             src/Command_Windows_misc.cpp
