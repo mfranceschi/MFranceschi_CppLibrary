@@ -124,9 +124,9 @@ TEST_F(CommandTestBase, HelloWorld_RetrieveAllOutputs) {
     commandCall.executable = HelloWorldToStderr_Executable;
     std::stringstream outStream;
     outStream << "1";
+    commandCall.stdOutChoice = makeOutputToStringStream(outStream);
     std::stringstream errStream;
     errStream << "2";
-    commandCall.stdOutChoice = makeOutputToStringStream(outStream);
     commandCall.stdErrChoice = makeOutputToStringStream(errStream);
 
     callCommand();

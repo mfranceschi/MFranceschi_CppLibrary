@@ -193,8 +193,10 @@ namespace MF
         CommandOver runCommandAndWait(
             const CommandCall &commandCall, std::chrono::milliseconds waitFor) {
             auto cmd = runCommandAsync(commandCall);
-            cmd->start().waitFor(waitFor);
-            return cmd->getCommandOverOrThrow();
+            if (cmd->start().waitFor(waitFor)) {
+                return cmd->getCommandOverOrThrow();
+            }
+            throw std::runtime_error("Unfinished despite timeout!");
         }
     } // namespace Command
 } // namespace MF
