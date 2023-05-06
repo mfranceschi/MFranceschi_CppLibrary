@@ -8,6 +8,7 @@
 
 #    include "Command_Windows_commons.hpp"
 #    include "MF/SystemErrors.hpp"
+#    include "MF/Windows.hpp"
 
 namespace MF
 {
@@ -157,7 +158,7 @@ namespace MF
 
             ConsoleInputChoice_Windows_File(const std::string &filename)
                 : readFromFile(openFileToRead(filename)) {
-                makeHandleInheritable(readFromFile, true);
+                Windows::Handles::makeHandleInheritable(readFromFile, true);
             }
 
             void afterStop() override {
@@ -185,7 +186,7 @@ namespace MF
             PipeStreams pipeStreams;
 
             ConsoleInputChoice_Windows_IOStream(std::basic_iostream<CharT> &stringStream1)
-                : stringStream(stringStream1), pipeStreams(makePipeThatChildWillRead()) {
+                : stringStream(stringStream1), pipeStreams(makePipeThatChildWillReadFrom()) {
             }
 
             void afterStart() override {

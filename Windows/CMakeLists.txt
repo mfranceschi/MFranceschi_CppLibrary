@@ -17,6 +17,7 @@ if(WIN32)
             MF_Windows
             PRIVATE
                 src/FileAttributes.cpp
+                src/Handles.cpp
                 src/Windows.cpp
     )
     if(MF_IN_DEV)

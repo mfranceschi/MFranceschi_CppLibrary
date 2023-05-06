@@ -42,13 +42,19 @@ namespace MF
             DWORD dWord;
         };
 
-        static inline FileAttributes makeFileAttributes(DWORD value) {
+        inline FileAttributes makeFileAttributes(DWORD value) {
             FileAttributes instance(value);
             if (instance.isInvalid()) {
                 throw std::invalid_argument("Provided file attributes are invalid");
             }
             return instance;
         }
+
+        namespace Handles
+        {
+            void makeHandleInheritable(HANDLE handle, bool yesOrNo);
+            bool isHandleInheritable(HANDLE handle);
+        } // namespace Handles
 
         namespace ResourceClosers
         {

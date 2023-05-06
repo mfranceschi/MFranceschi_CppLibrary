@@ -6,8 +6,8 @@
 #define MFRANCESCHI_CPPLIBRARIES_COMMAND_WINDOWS_COMMONS_HPP
 
 #if MF_WINDOWS
-#    include "../../Commons/include/MF/Commons.hpp"
 #    include "MF/Command.hpp"
+#    include "MF/Commons.hpp"
 #    include "MF/LightWindows.hpp"
 
 namespace MF
@@ -22,15 +22,12 @@ namespace MF
         enum class OutputStream_e { StdOut, StdErr };
 
         struct CommandComponent : MF::Commons::NoCopy, MF::Commons::NoMove {
-            /// This will be called right before the command is started.
             virtual void beforeStart() {
             }
 
-            /// This will be called right after the command is started.
             virtual void afterStart() {
             }
 
-            /// This will be called right after the process is stopped.
             virtual void afterStop() {
             }
 
@@ -44,6 +41,22 @@ namespace MF
         struct ConsoleInputChoice {
             virtual ~ConsoleInputChoice() = default;
         };
+
+        struct PipeStreams {
+            StreamItem writeToPipe = INVALID_STREAM_ITEM;
+            StreamItem readFromPipe = INVALID_STREAM_ITEM;
+        };
+
+        PipeStreams makePipeThatChildWillReadFrom();
+        PipeStreams makePipeThatChildWillWriteOn();
+
+        StreamItem openFileToRead(const Filename_t &filename);
+        StreamItem openFileToWrite(const Filename_t &filename);
+        StreamItem openNullFileToWrite();
+
+#    if MF_WINDOWS
+        StreamItem openFileToRead(const WideFilename_t &filename);
+        StreamItem openFileToWrite(const WideFilename_t &filename);
 
         struct ConsoleOutputChoice_Windows : ConsoleOutputChoice, CommandComponent {
             virtual StreamItem getStreamItem(OutputStream_e) const = 0;
@@ -63,25 +76,10 @@ namespace MF
 
         SECURITY_ATTRIBUTES &getInheritableSecAttr();
 
-        int getExitCode(ProcessItem processItem);
-
-        void makeHandleInheritable(HANDLE handle, bool yesOrNo);
-
         void closeH(HANDLE &handle);
 
-        struct PipeStreams {
-            StreamItem writeToPipe = INVALID_STREAM_ITEM;
-            StreamItem readFromPipe = INVALID_STREAM_ITEM;
-        };
+#    endif
 
-        PipeStreams makePipeThatChildWillRead();
-        PipeStreams makePipeThatChildWillWriteOn();
-
-        StreamItem openFileToRead(const Filename_t &filename);
-        StreamItem openFileToRead(const WideFilename_t &filename);
-        StreamItem openFileToWrite(const Filename_t &filename);
-        StreamItem openFileToWrite(const WideFilename_t &filename);
-        StreamItem openNullFileToWrite();
     } // namespace Command
 } // namespace MF
 

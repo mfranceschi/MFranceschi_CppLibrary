@@ -3,15 +3,17 @@
 //
 
 #if MF_WINDOWS
-// #    include <tchar.h>
 
 #    include "Command_Windows_commons.hpp"
 #    include "MF/SystemErrors.hpp"
+#    include "MF/Windows.hpp"
 
 namespace MF
 {
     namespace Command
     {
+        using MF::Windows::Handles::makeHandleInheritable;
+
         const StreamItem INVALID_STREAM_ITEM = INVALID_HANDLE_VALUE;
 
         /// Use this handle as a sample for inheritable handles.
@@ -98,19 +100,6 @@ namespace MF
                     .getStreamItem();
         }
 
-        int getExitCode(ProcessItem processItem) {
-            DWORD exitCode;
-            BOOL success = GetExitCodeProcess(processItem, &exitCode);
-            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(success == FALSE);
-            return static_cast<int>(exitCode);
-        }
-
-        void makeHandleInheritable(HANDLE handle, bool yesOrNo) {
-            MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                SetHandleInformation(
-                    handle, HANDLE_FLAG_INHERIT, yesOrNo ? HANDLE_FLAG_INHERIT : 0) == FALSE);
-        }
-
         void closeH(HANDLE &handle) {
             if (handle != INVALID_HANDLE_VALUE) {
                 CloseHandle(handle);
@@ -118,7 +107,7 @@ namespace MF
             }
         }
 
-        PipeStreams makePipeThatChildWillRead() {
+        PipeStreams makePipeThatChildWillReadFrom() {
             PipeStreams pipeStreams{0};
             BOOL result = CreatePipe(
                 &pipeStreams.readFromPipe, &pipeStreams.writeToPipe, &getInheritableSecAttr(), 0);

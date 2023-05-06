@@ -10,10 +10,6 @@ namespace MF
 {
     namespace Command
     {
-        struct StatefulCommandBase_NotStartedYet_Char;
-        struct StatefulCommandBase_Running;
-        struct StatefulCommandBase_Over;
-
         struct StatefulCommandBase {
             StatefulCommandBase(
                 ConsoleInputChoice_Windows &stdInChoice,
@@ -289,7 +285,7 @@ namespace MF
                 statefulCommandBase =
                     std::make_unique<StatefulCommandBase_NotStartedYet_Char>(commandCall);
             }
-            
+
             CommandRunner_Windows(const WideCommandCall &commandCall) {
                 stdInChoice =
                     std::static_pointer_cast<ConsoleInputChoice_Windows>(commandCall.stdInChoice);
@@ -355,7 +351,7 @@ namespace MF
             std::shared_ptr<ConsoleOutputChoice_Windows> stdErrChoice;
 
             // Data of the created process
-            HANDLE processHandle = INVALID_HANDLE_VALUE;
+            ProcessItem processHandle = INVALID_HANDLE_VALUE;
         };
 
         std::shared_ptr<CommandRunner> runCommandAsync(const CommandCall &commandCall) {
