@@ -6,9 +6,7 @@
 #define MYWORKS_TEST0_COMMAND_HPP
 
 #include <chrono>
-#include <functional>
-#include <future>
-#include <sstream>
+#include <istream>
 #include <string>
 #include <vector>
 

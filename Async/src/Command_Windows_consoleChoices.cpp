@@ -5,6 +5,7 @@
 #if MF_WINDOWS
 
 #    include <array>
+#    include <sstream>
 
 #    include "Command_Windows_commons.hpp"
 #    include "MF/SystemErrors.hpp"

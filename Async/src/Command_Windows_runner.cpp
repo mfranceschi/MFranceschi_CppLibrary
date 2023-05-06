@@ -269,8 +269,8 @@ namespace MF
             CommandOver commandOver{-1};
         };
 
-        struct CommandRunner_Windows : CommandRunner {
-            CommandRunner_Windows(const CommandCall &commandCall) {
+        struct CommandRunner_Proxy : CommandRunner {
+            CommandRunner_Proxy(const CommandCall &commandCall) {
                 stdInChoice = commandCall.stdInChoice;
                 stdOutChoice = commandCall.stdOutChoice;
                 stdErrChoice = commandCall.stdErrChoice;
@@ -279,7 +279,7 @@ namespace MF
                     std::make_unique<StatefulCommandBase_NotStartedYet_Char>(commandCall);
             }
 
-            CommandRunner_Windows(const WideCommandCall &commandCall) {
+            CommandRunner_Proxy(const WideCommandCall &commandCall) {
                 stdInChoice = commandCall.stdInChoice;
                 stdOutChoice = commandCall.stdOutChoice;
                 stdErrChoice = commandCall.stdErrChoice;
@@ -328,7 +328,7 @@ namespace MF
                 return reinterpret_cast<uintmax_t>(processHandle);
             }
 
-            ~CommandRunner_Windows() {
+            ~CommandRunner_Proxy() {
                 closeH(processHandle);
             }
 
@@ -345,10 +345,20 @@ namespace MF
         };
 
         std::shared_ptr<CommandRunner> runCommandAsync(const CommandCall &commandCall) {
-            return std::make_shared<CommandRunner_Windows>(commandCall);
+            return std::make_shared<CommandRunner_Proxy>(commandCall);
+        }
+
+        std::shared_ptr<CommandRunner> runCommandAsync(const WideCommandCall &commandCall) {
+            return std::make_shared<CommandRunner_Proxy>(commandCall);
         }
 
         CommandOver runCommandAndWait(const CommandCall &commandCall) {
+            auto cmd = runCommandAsync(commandCall);
+            cmd->start().waitFor();
+            return cmd->getCommandOver();
+        }
+
+        CommandOver runCommandAndWait(const WideCommandCall &commandCall) {
             auto cmd = runCommandAsync(commandCall);
             cmd->start().waitFor();
             return cmd->getCommandOver();

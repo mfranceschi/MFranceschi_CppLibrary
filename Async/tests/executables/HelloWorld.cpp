@@ -5,6 +5,6 @@
 #include <iostream>
 
 int main() {
-    std::cout << "Hello, World!"; // not even an end of line
+    std::cout << "Hello, World!"; // no end of line
     return 0;
 }

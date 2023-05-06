@@ -16,7 +16,7 @@ using namespace ::MF::Command;
 
 #if MF_WINDOWS && UNICODE
 using CCall = WideCommandCall;
-static const auto lineEnd = MF::Filesystem::LINE_END_WIDE;
+static const auto& lineEnd = MF::Filesystem::LINE_END_WIDE;
 
 template <typename T>
 inline std::wstring toStr(T value) {
@@ -24,7 +24,7 @@ inline std::wstring toStr(T value) {
 }
 #else
 using CCall = CommandCall;
-static const auto lineEnd = MF::Filesystem::LINE_END;
+static const auto& lineEnd = MF::Filesystem::LINE_END;
 
 template <typename T>
 inline std::string toStr(T value) {
@@ -32,7 +32,8 @@ inline std::string toStr(T value) {
 }
 #endif
 
-static const std::basic_string<TCHAR> HELLO_WORLD = TEXT("Hello, World!");
+static const std::string HELLO_WORLD = "Hello, World!";
+static const std::basic_string<TCHAR> HELLO_WORLD_TCHAR = TEXT("Hello, World!");
 
 class CommandTestBase : public ::testing::Test {
    protected:
@@ -128,7 +129,7 @@ TEST_F(CommandTestBase, HelloWorld_OutputToFile) {
     std::basic_string<TCHAR> line;
     std::getline(fileStream, line);
     fileStream.close();
-    EXPECT_EQ(line, HELLO_WORLD);
+    EXPECT_EQ(line, HELLO_WORLD_TCHAR);
 
     MF::Filesystem::deleteFile(filename);
 }
@@ -143,7 +144,7 @@ TEST_F(CommandTestBase, HelloWorld_OutputToStringStream) {
 
     std::basic_string<TCHAR> line;
     std::getline(stream, line);
-    EXPECT_EQ(line, HELLO_WORLD);
+    EXPECT_EQ(line, HELLO_WORLD_TCHAR);
 }
 
 TEST_F(CommandTestBase, HelloWorld_RetrieveAllOutputs) {
@@ -161,7 +162,7 @@ TEST_F(CommandTestBase, HelloWorld_RetrieveAllOutputs) {
     callCommand();
 
     EXPECT_EQ(outStream.str(), TEXT("1"));
-    EXPECT_EQ(errStream.str(), TEXT("2") + HELLO_WORLD);
+    EXPECT_EQ(errStream.str(), TEXT("2") + HELLO_WORLD_TCHAR);
 }
 
 TEST_F(CommandTestBase, LengthOfInput_FromString) {
@@ -169,7 +170,7 @@ TEST_F(CommandTestBase, LengthOfInput_FromString) {
     // - String input works as intended
     commandCall.executable = TEXT(LengthOfInput_Executable);
     commandCall.stdInChoice = makeInputFromString(TEXT("abcde\nfghij\n"));
-    callCommand(5);
+    callCommand(5 * sizeof(TCHAR));
 }
 
 TEST_F(CommandTestBase, LengthOfInput_FromStringStream) {
@@ -181,7 +182,7 @@ TEST_F(CommandTestBase, LengthOfInput_FromStringStream) {
 
     commandCall.executable = TEXT(LengthOfInput_Executable);
     commandCall.stdInChoice = makeInputFromIOStream(stream);
-    callCommand(5);
+    callCommand(5 * sizeof(TCHAR));
 }
 
 TEST_F(CommandTestBase, LengthOfInput_InputStreamClosed) {
@@ -207,16 +208,17 @@ TEST_F(CommandTestBase, OneForEachStream) {
     // - We check at the exit code = the number of args, including the executable name.
     commandCall.executable = TEXT(OneForEachStream_Executable);
     commandCall.arguments = {TEXT("one1"), TEXT("two222")};
+
     const std::basic_string<TCHAR> inputArg = TEXT("input0123");
     commandCall.stdInChoice = makeInputFromString(inputArg);
+
     std::basic_stringstream<TCHAR> outStream;
-    std::basic_stringstream<TCHAR> errStream;
     commandCall.stdOutChoice = makeOutputToIOStream(outStream);
+
+    std::basic_stringstream<TCHAR> errStream;
     commandCall.stdErrChoice = makeOutputToIOStream(errStream);
 
     callCommand(3);
-
-    EXPECT_EQ(3, exitCode);
 
     auto outString = outStream.str();
     EXPECT_FALSE(outString.empty());
@@ -227,7 +229,7 @@ TEST_F(CommandTestBase, OneForEachStream) {
     std::basic_ostringstream<TCHAR> oss;
     oss << "1: " << commandCall.arguments[0] << lineEnd;
     oss << "2: " << commandCall.arguments[1] << lineEnd;
-    EXPECT_STREQ(oss.str().c_str(), errString.c_str());
+    EXPECT_EQ(oss.str(), errString);
 }
 
 TEST_F(CommandTestBase, GenerateOutput_Ignored) {
