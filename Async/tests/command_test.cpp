@@ -109,7 +109,7 @@ TEST_F(CommandTestBase, HelloWorld_OutputToStringStream) {
     // - StringStream output works as intended
     std::stringstream stream;
     commandCall.executable = HelloWorld_Executable;
-    commandCall.stdOutChoice = makeOutputToStringStream(stream);
+    commandCall.stdOutChoice = makeOutputToIOStream(stream);
     callCommand();
 
     std::string line;
@@ -124,10 +124,10 @@ TEST_F(CommandTestBase, HelloWorld_RetrieveAllOutputs) {
     commandCall.executable = HelloWorldToStderr_Executable;
     std::stringstream outStream;
     outStream << "1";
-    commandCall.stdOutChoice = makeOutputToStringStream(outStream);
+    commandCall.stdOutChoice = makeOutputToIOStream(outStream);
     std::stringstream errStream;
     errStream << "2";
-    commandCall.stdErrChoice = makeOutputToStringStream(errStream);
+    commandCall.stdErrChoice = makeOutputToIOStream(errStream);
 
     callCommand();
 
@@ -153,7 +153,7 @@ TEST_F(CommandTestBase, LengthOfInput_FromStringStream) {
            << "fghij\n";
 
     commandCall.executable = LengthOfInput_Executable;
-    commandCall.stdInChoice = makeInputFromStringStream(stream);
+    commandCall.stdInChoice = makeInputFromIOStream(stream);
     callCommand(5);
 }
 
@@ -184,8 +184,8 @@ TEST_F(CommandTestBase, OneForEachStream) {
     commandCall.stdInChoice = makeInputFromString(inputArg);
     std::stringstream outStream;
     std::stringstream errStream;
-    commandCall.stdOutChoice = makeOutputToStringStream(outStream);
-    commandCall.stdErrChoice = makeOutputToStringStream(errStream);
+    commandCall.stdOutChoice = makeOutputToIOStream(outStream);
+    commandCall.stdErrChoice = makeOutputToIOStream(errStream);
 
     callCommand(3);
 

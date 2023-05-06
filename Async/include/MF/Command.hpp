@@ -23,14 +23,16 @@ namespace MF
 
         struct ConsoleOutputChoice;
         std::shared_ptr<ConsoleOutputChoice> makeOutputToFile(const Filename_t &filename);
-        std::shared_ptr<ConsoleOutputChoice> makeOutputToStringStream(std::stringstream &stream);
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToIOStream(
+            std::basic_iostream<char> &stream);
         std::shared_ptr<ConsoleOutputChoice> makeOutputToConsole();
         std::shared_ptr<ConsoleOutputChoice> makeOutputIgnored();
 
         struct ConsoleInputChoice;
         std::shared_ptr<ConsoleInputChoice> makeInputFromFile(const Filename_t &filename);
         std::shared_ptr<ConsoleInputChoice> makeInputFromString(const std::string &string);
-        std::shared_ptr<ConsoleInputChoice> makeInputFromStringStream(std::stringstream &stream);
+        std::shared_ptr<ConsoleInputChoice> makeInputFromIOStream(
+            std::basic_iostream<char> &stream);
         std::shared_ptr<ConsoleInputChoice> makeInputFromConsole();
         std::shared_ptr<ConsoleInputChoice> makeInputEmpty();
 
@@ -114,8 +116,13 @@ namespace MF
         };
 
         std::shared_ptr<CommandRunner> runCommandAsync(const CommandCall &commandCall);
-
         CommandOver runCommandAndWait(const CommandCall &commandCall);
+
+#if MF_WINDOWS
+
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToFile(const WideFilename_t &filename);
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToStringStream(
+            std::basic_iostream<wchar_t> &stream);
 
         struct WideCommandCall {
             /**
@@ -143,6 +150,7 @@ namespace MF
         std::shared_ptr<CommandRunner> runCommandAsync(const WideCommandCall &commandCall);
 
         CommandOver runCommandAndWait(const WideCommandCall &commandCall);
+#endif
     } // namespace Command
 } // namespace MF
 #endif // MYWORKS_TEST0_COMMAND_HPP

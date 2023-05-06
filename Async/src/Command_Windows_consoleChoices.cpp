@@ -54,6 +54,10 @@ namespace MF
                 : fileStream(openFileToWrite(filename)) {
             }
 
+            ConsoleOutputChoice_Windows_File(const WideFilename_t &filename)
+                : fileStream(openFileToWrite(filename)) {
+            }
+
             void afterStop() override {
                 closeH(fileStream);
             }
@@ -71,13 +75,17 @@ namespace MF
             return std::make_shared<ConsoleOutputChoice_Windows_File>(filename);
         }
 
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToFile(const WideFilename_t &filename) {
+            return std::make_shared<ConsoleOutputChoice_Windows_File>(filename);
+        }
+
         template <typename CharT>
-        struct ConsoleOutputChoice_Windows_StringStream : ConsoleOutputChoice_Windows {
-            std::basic_stringstream<CharT> &stringStream;
+        struct ConsoleOutputChoice_Windows_IOStream : ConsoleOutputChoice_Windows {
+            std::basic_iostream<CharT> &stringStream;
 
             PipeStreams pipeStreams;
 
-            ConsoleOutputChoice_Windows_StringStream(std::basic_stringstream<CharT> &stringStream1)
+            ConsoleOutputChoice_Windows_IOStream(std::basic_iostream<CharT> &stringStream1)
                 : stringStream(stringStream1), pipeStreams(makePipeThatChildWillWriteOn()) {
             }
 
@@ -114,18 +122,20 @@ namespace MF
                 return pipeStreams.writeToPipe;
             }
 
-            ~ConsoleOutputChoice_Windows_StringStream() override {
+            ~ConsoleOutputChoice_Windows_IOStream() override {
                 closeH(pipeStreams.readFromPipe);
                 closeH(pipeStreams.writeToPipe);
             }
         };
 
-        std::shared_ptr<ConsoleOutputChoice> makeOutputToStringStream(std::stringstream &stream) {
-            return std::make_shared<ConsoleOutputChoice_Windows_StringStream<char>>(stream);
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToIOStream(
+            std::basic_iostream<char> &stream) {
+            return std::make_shared<ConsoleOutputChoice_Windows_IOStream<char>>(stream);
         }
 
-        std::shared_ptr<ConsoleOutputChoice> makeOutputToStringStream(std::wstringstream &stream) {
-            return std::make_shared<ConsoleOutputChoice_Windows_StringStream<wchar_t>>(stream);
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToIOStream(
+            std::basic_iostream<wchar_t> &stream) {
+            return std::make_shared<ConsoleOutputChoice_Windows_IOStream<wchar_t>>(stream);
         }
 
         struct ConsoleInputChoice_Windows_Console : ConsoleInputChoice_Windows {
@@ -167,13 +177,14 @@ namespace MF
             return std::make_shared<ConsoleInputChoice_Windows_File>(filename);
         }
 
-        struct ConsoleInputChoice_Windows_StringStream : ConsoleInputChoice_Windows {
+        template <typename CharT>
+        struct ConsoleInputChoice_Windows_IOStream : ConsoleInputChoice_Windows {
             // TODO: Unicode-friendly
-            std::stringstream &stringStream;
+            std::basic_iostream<CharT> &stringStream;
 
             PipeStreams pipeStreams;
 
-            ConsoleInputChoice_Windows_StringStream(std::stringstream &stringStream1)
+            ConsoleInputChoice_Windows_IOStream(std::basic_iostream<CharT> &stringStream1)
                 : stringStream(stringStream1), pipeStreams(makePipeThatChildWillRead()) {
             }
 
@@ -181,7 +192,7 @@ namespace MF
                 closeH(pipeStreams.readFromPipe);
 
                 static constexpr size_t BUFFER_SIZE = 4096;
-                std::array<char, BUFFER_SIZE + 1> buffer{0};
+                std::array<CharT, BUFFER_SIZE + 1> buffer{0};
                 DWORD nbBytesWritten = 0;
                 do {
                     stringStream.get(buffer.data(), BUFFER_SIZE);
@@ -198,22 +209,24 @@ namespace MF
                 return pipeStreams.readFromPipe;
             }
 
-            ~ConsoleInputChoice_Windows_StringStream() override {
+            ~ConsoleInputChoice_Windows_IOStream() override {
                 closeH(pipeStreams.readFromPipe);
                 closeH(pipeStreams.writeToPipe);
             }
         };
 
-        std::shared_ptr<ConsoleInputChoice> makeInputFromStringStream(std::stringstream &stream) {
-            return std::make_shared<ConsoleInputChoice_Windows_StringStream>(stream);
+        std::shared_ptr<ConsoleInputChoice> makeInputFromIOStream(
+            std::basic_iostream<char> &stream) {
+            return std::make_shared<ConsoleInputChoice_Windows_IOStream<char>>(stream);
         }
 
+        template <typename CharT>
         struct ConsoleInputChoice_Windows_String : ConsoleInputChoice_Windows {
             // TODO: Unicode-friendly
-            std::stringstream stringStream;
-            ConsoleInputChoice_Windows_StringStream choiceWindowsStringStream;
+            std::basic_stringstream<CharT> stringStream;
+            ConsoleInputChoice_Windows_IOStream<CharT> choiceWindowsStringStream;
 
-            ConsoleInputChoice_Windows_String(const std::string &string)
+            ConsoleInputChoice_Windows_String(const std::basic_string<CharT> &string)
                 : stringStream(string), choiceWindowsStringStream(stringStream) {
             }
 
@@ -235,7 +248,11 @@ namespace MF
         };
 
         std::shared_ptr<ConsoleInputChoice> makeInputFromString(const std::string &string) {
-            return std::make_shared<ConsoleInputChoice_Windows_String>(string);
+            return std::make_shared<ConsoleInputChoice_Windows_String<char>>(string);
+        }
+
+        std::shared_ptr<ConsoleInputChoice> makeInputFromString(const std::wstring &string) {
+            return std::make_shared<ConsoleInputChoice_Windows_String<wchar_t>>(string);
         }
     } // namespace Command
 } // namespace MF
