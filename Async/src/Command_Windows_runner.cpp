@@ -46,7 +46,7 @@ namespace MF
                 throw std::runtime_error("Invalid call to " + std::string(__func__));
             }
 
-            virtual ~StatefulCommandBase() = default; // Note: we don't close the handle yet.
+            virtual ~StatefulCommandBase() = default;
 
             ConsoleInputChoice_Windows &stdInChoice;
             ConsoleOutputChoice_Windows &stdOutChoice;
@@ -98,7 +98,7 @@ namespace MF
                 return processInformation.hProcess;
             }
 
-            ~StatefulCommandBase_NotStartedYet() = default; // Note: we don't close the handle yet.
+            ~StatefulCommandBase_NotStartedYet() override = default;
 
            private:
             void beforeStart() {
@@ -204,7 +204,7 @@ namespace MF
                 return commandOver;
             }
 
-            ~StatefulCommandBase_Over() = default; // Note: we don't close the handle yet.
+            ~StatefulCommandBase_Over() = default;
 
            private:
             // Data of the created process

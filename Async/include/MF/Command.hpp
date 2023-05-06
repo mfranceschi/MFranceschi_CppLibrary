@@ -19,6 +19,7 @@ namespace MF
     namespace Command
     {
         using Filesystem::Filename_t;
+        using Filesystem::WideFilename_t;
 
         struct ConsoleOutputChoice;
         std::shared_ptr<ConsoleOutputChoice> makeOutputToFile(const Filename_t &filename);
@@ -115,6 +116,33 @@ namespace MF
         std::shared_ptr<CommandRunner> runCommandAsync(const CommandCall &commandCall);
 
         CommandOver runCommandAndWait(const CommandCall &commandCall);
+
+        struct WideCommandCall {
+            /**
+             * Name or path to the executable.
+             */
+            WideFilename_t executable;
+
+            /**
+             * List of arguments.
+             * The interpretation may depend on the OS.
+             */
+            std::vector<std::wstring> arguments{};
+
+            /**
+             * Expected 'current working directory' of the child process.
+             * Empty = same as parent.
+             */
+            WideFilename_t workingDirectory;
+
+            std::shared_ptr<ConsoleOutputChoice> stdOutChoice = makeOutputToConsole();
+            std::shared_ptr<ConsoleOutputChoice> stdErrChoice = makeOutputToConsole();
+            std::shared_ptr<ConsoleInputChoice> stdInChoice = makeInputFromConsole();
+        };
+
+        std::shared_ptr<CommandRunner> runCommandAsync(const WideCommandCall &commandCall);
+
+        CommandOver runCommandAndWait(const WideCommandCall &commandCall);
     } // namespace Command
 } // namespace MF
 #endif // MYWORKS_TEST0_COMMAND_HPP

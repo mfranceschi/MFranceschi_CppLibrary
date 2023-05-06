@@ -53,10 +53,13 @@ namespace MF
             virtual StreamItem getStreamItem() const = 0;
         };
 
-        std::vector<TCHAR> makeCommandLine(
-            const Filename_t *executable, const std::vector<Filename_t> *arguments);
+        std::vector<char> makeCommandLine(
+            const Filename_t *executable, const std::vector<std::string> *arguments);
+        std::vector<wchar_t> makeCommandLine(
+            const WideFilename_t *executable, const std::vector<std::wstring> *arguments);
 
-        void populateStartupInfo(const CommandCall &commandCall, STARTUPINFO &startupinfo);
+        void populateStartupInfo(const CommandCall &commandCall, STARTUPINFOA &startupinfo);
+        void populateStartupInfo(const WideCommandCall &commandCall, STARTUPINFOW &startupinfo);
 
         SECURITY_ATTRIBUTES &getInheritableSecAttr();
 
@@ -75,7 +78,9 @@ namespace MF
         PipeStreams makePipeThatChildWillWriteOn();
 
         StreamItem openFileToRead(const Filename_t &filename);
+        StreamItem openFileToRead(const WideFilename_t &filename);
         StreamItem openFileToWrite(const Filename_t &filename);
+        StreamItem openFileToWrite(const WideFilename_t &filename);
         StreamItem openNullFileToWrite();
     } // namespace Command
 } // namespace MF
