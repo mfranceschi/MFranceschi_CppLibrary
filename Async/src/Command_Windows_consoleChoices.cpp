@@ -15,9 +15,12 @@ namespace MF
     namespace Command
     {
         struct ConsoleOutputChoice_Windows_Console : ConsoleOutputChoice_Windows {
-            StreamItem getStreamItem(OutputStream_e outputStream) const override {
-                return GetStdHandle(
-                    outputStream == OutputStream_e::StdOut ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE);
+            StreamItem getStreamItemForStdOut() const override {
+                return GetStdHandle(STD_OUTPUT_HANDLE);
+            }
+
+            StreamItem getStreamItemForStdErr() const override {
+                return GetStdHandle(STD_ERROR_HANDLE);
             }
         };
 
@@ -35,7 +38,7 @@ namespace MF
                 closeH(fileStream);
             }
 
-            StreamItem getStreamItem(OutputStream_e) const override {
+            StreamItem getStreamItemForStdOut() const override {
                 return fileStream;
             }
 
@@ -63,7 +66,7 @@ namespace MF
                 closeH(fileStream);
             }
 
-            StreamItem getStreamItem(OutputStream_e) const override {
+            StreamItem getStreamItemForStdOut() const override {
                 return fileStream;
             }
 
@@ -119,7 +122,7 @@ namespace MF
                 closeH(pipeStreams.readFromPipe);
             }
 
-            StreamItem getStreamItem(OutputStream_e) const override {
+            StreamItem getStreamItemForStdOut() const override {
                 return pipeStreams.writeToPipe;
             }
 
@@ -140,7 +143,7 @@ namespace MF
         }
 
         struct ConsoleInputChoice_Windows_Console : ConsoleInputChoice_Windows {
-            StreamItem getStreamItem() const override {
+            StreamItem getStreamItemForStdIn() const override {
                 return GetStdHandle(STD_INPUT_HANDLE);
             }
         };
@@ -165,7 +168,7 @@ namespace MF
                 closeH(readFromFile);
             }
 
-            StreamItem getStreamItem() const override {
+            StreamItem getStreamItemForStdIn() const override {
                 return readFromFile;
             }
 
@@ -180,7 +183,6 @@ namespace MF
 
         template <typename CharT>
         struct ConsoleInputChoice_Windows_IOStream : ConsoleInputChoice_Windows {
-            // TODO: Unicode-friendly
             std::basic_iostream<CharT> &stringStream;
 
             PipeStreams pipeStreams;
@@ -206,7 +208,7 @@ namespace MF
                 closeH(pipeStreams.writeToPipe);
             }
 
-            StreamItem getStreamItem() const override {
+            StreamItem getStreamItemForStdIn() const override {
                 return pipeStreams.readFromPipe;
             }
 
@@ -223,7 +225,6 @@ namespace MF
 
         template <typename CharT>
         struct ConsoleInputChoice_Windows_String : ConsoleInputChoice_Windows {
-            // TODO: Unicode-friendly
             std::basic_stringstream<CharT> stringStream;
             ConsoleInputChoice_Windows_IOStream<CharT> choiceWindowsStringStream;
 
@@ -243,8 +244,8 @@ namespace MF
                 choiceWindowsStringStream.afterStop();
             }
 
-            StreamItem getStreamItem() const override {
-                return choiceWindowsStringStream.getStreamItem();
+            StreamItem getStreamItemForStdIn() const override {
+                return choiceWindowsStringStream.getStreamItemForStdIn();
             }
         };
 

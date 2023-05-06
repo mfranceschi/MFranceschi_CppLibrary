@@ -76,13 +76,13 @@ namespace MF
             startupinfo.dwFlags |= STARTF_USESTDHANDLES;
             startupinfo.hStdOutput =
                 dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdOutChoice))
-                    .getStreamItem(OutputStream_e::StdOut);
+                    .getStreamItemForStdOut();
             startupinfo.hStdError =
                 dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdErrChoice))
-                    .getStreamItem(OutputStream_e::StdErr);
+                    .getStreamItemForStdErr();
             startupinfo.hStdInput =
                 dynamic_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice))
-                    .getStreamItem();
+                    .getStreamItemForStdIn();
         }
 
         void populateStartupInfo(const WideCommandCall &commandCall, STARTUPINFOW &startupinfo) {
@@ -91,13 +91,13 @@ namespace MF
             startupinfo.dwFlags |= STARTF_USESTDHANDLES;
             startupinfo.hStdOutput =
                 dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdOutChoice))
-                    .getStreamItem(OutputStream_e::StdOut);
+                    .getStreamItemForStdOut();
             startupinfo.hStdError =
                 dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdErrChoice))
-                    .getStreamItem(OutputStream_e::StdErr);
+                    .getStreamItemForStdErr();
             startupinfo.hStdInput =
                 dynamic_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice))
-                    .getStreamItem();
+                    .getStreamItemForStdIn();
         }
 
         void closeH(HANDLE &handle) {

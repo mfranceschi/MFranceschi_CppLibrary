@@ -19,8 +19,6 @@ namespace MF
 
         using ProcessItem = HANDLE;
 
-        enum class OutputStream_e { StdOut, StdErr };
-
         struct CommandComponent : MF::Commons::NoCopy, MF::Commons::NoMove {
             virtual void beforeStart() {
             }
@@ -59,11 +57,14 @@ namespace MF
         StreamItem openFileToWrite(const WideFilename_t &filename);
 
         struct ConsoleOutputChoice_Windows : ConsoleOutputChoice, CommandComponent {
-            virtual StreamItem getStreamItem(OutputStream_e) const = 0;
+            virtual StreamItem getStreamItemForStdOut() const = 0;
+            virtual StreamItem getStreamItemForStdErr() const {
+                return getStreamItemForStdOut();
+            }
         };
 
         struct ConsoleInputChoice_Windows : ConsoleInputChoice, CommandComponent {
-            virtual StreamItem getStreamItem() const = 0;
+            virtual StreamItem getStreamItemForStdIn() const = 0;
         };
 
         std::vector<char> makeCommandLine(
@@ -77,7 +78,6 @@ namespace MF
         SECURITY_ATTRIBUTES &getInheritableSecAttr();
 
         void closeH(HANDLE &handle);
-
 #    endif
 
     } // namespace Command
