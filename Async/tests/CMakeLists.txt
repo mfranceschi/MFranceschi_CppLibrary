@@ -5,6 +5,7 @@ target_link_libraries(
         PRIVATE
             MF_Commons_Tests
             MF_Async
+            MF_Strings
 )
 
 target_sources(

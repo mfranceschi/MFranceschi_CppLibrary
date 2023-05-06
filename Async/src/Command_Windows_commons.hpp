@@ -31,13 +31,16 @@ namespace MF
 
             virtual ~CommandComponent() = default;
         };
-
-        struct ConsoleOutputChoice {
-            virtual ~ConsoleOutputChoice() = default;
+        
+        struct ConsoleOutputChoice : CommandComponent {
+            virtual StreamItem getStreamItemForStdOut() const = 0;
+            virtual StreamItem getStreamItemForStdErr() const {
+                return getStreamItemForStdOut();
+            }
         };
 
-        struct ConsoleInputChoice {
-            virtual ~ConsoleInputChoice() = default;
+        struct ConsoleInputChoice : CommandComponent {
+            virtual StreamItem getStreamItemForStdIn() const = 0;
         };
 
         struct PipeStreams {
@@ -55,17 +58,6 @@ namespace MF
 #    if MF_WINDOWS
         StreamItem openFileToRead(const WideFilename_t &filename);
         StreamItem openFileToWrite(const WideFilename_t &filename);
-
-        struct ConsoleOutputChoice_Windows : ConsoleOutputChoice, CommandComponent {
-            virtual StreamItem getStreamItemForStdOut() const = 0;
-            virtual StreamItem getStreamItemForStdErr() const {
-                return getStreamItemForStdOut();
-            }
-        };
-
-        struct ConsoleInputChoice_Windows : ConsoleInputChoice, CommandComponent {
-            virtual StreamItem getStreamItemForStdIn() const = 0;
-        };
 
         std::vector<char> makeCommandLine(
             const Filename_t *executable, const std::vector<std::string> *arguments);

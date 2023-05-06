@@ -121,7 +121,12 @@ namespace MF
 #if MF_WINDOWS
 
         std::shared_ptr<ConsoleOutputChoice> makeOutputToFile(const WideFilename_t &filename);
-        std::shared_ptr<ConsoleOutputChoice> makeOutputToStringStream(
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToIOStream(
+            std::basic_iostream<wchar_t> &stream);
+
+        std::shared_ptr<ConsoleInputChoice> makeInputFromFile(const WideFilename_t &filename);
+        std::shared_ptr<ConsoleInputChoice> makeInputFromString(const std::wstring &string);
+        std::shared_ptr<ConsoleInputChoice> makeInputFromIOStream(
             std::basic_iostream<wchar_t> &stream);
 
         struct WideCommandCall {

@@ -12,9 +12,9 @@ namespace MF
     {
         struct StatefulCommandBase {
             StatefulCommandBase(
-                ConsoleInputChoice_Windows &stdInChoice,
-                ConsoleOutputChoice_Windows &stdOutChoice,
-                ConsoleOutputChoice_Windows &stdErrChoice)
+                ConsoleInputChoice &stdInChoice,
+                ConsoleOutputChoice &stdOutChoice,
+                ConsoleOutputChoice &stdErrChoice)
                 : stdInChoice(stdInChoice), stdOutChoice(stdOutChoice), stdErrChoice(stdErrChoice) {
             }
 
@@ -44,17 +44,17 @@ namespace MF
 
             virtual ~StatefulCommandBase() = default;
 
-            ConsoleInputChoice_Windows &stdInChoice;
-            ConsoleOutputChoice_Windows &stdOutChoice;
-            ConsoleOutputChoice_Windows &stdErrChoice;
+            ConsoleInputChoice &stdInChoice;
+            ConsoleOutputChoice &stdOutChoice;
+            ConsoleOutputChoice &stdErrChoice;
         };
 
         struct StatefulCommandBase_NotStartedYet_Base : StatefulCommandBase {
             StatefulCommandBase_NotStartedYet_Base(
-                const std::shared_ptr<ConsoleInputChoice_Windows> &stdInChoice,
-                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdOutChoice,
-                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdErrChoice)
-                : StatefulCommandBase(*stdInChoice, *stdOutChoice, *stdErrChoice) {
+                ConsoleInputChoice &stdInChoice,
+                ConsoleOutputChoice &stdOutChoice,
+                ConsoleOutputChoice &stdErrChoice)
+                : StatefulCommandBase(stdInChoice, stdOutChoice, stdErrChoice) {
                 ZeroMemory(&processInformation, sizeof(processInformation));
                 processInformation.hProcess = INVALID_HANDLE_VALUE;
             }
@@ -82,11 +82,9 @@ namespace MF
         struct StatefulCommandBase_NotStartedYet_Char : StatefulCommandBase_NotStartedYet_Base {
             StatefulCommandBase_NotStartedYet_Char(const CommandCall &commandCall)
                 : StatefulCommandBase_NotStartedYet_Base(
-                      std::static_pointer_cast<ConsoleInputChoice_Windows>(commandCall.stdInChoice),
-                      std::static_pointer_cast<ConsoleOutputChoice_Windows>(
-                          commandCall.stdOutChoice),
-                      std::static_pointer_cast<ConsoleOutputChoice_Windows>(
-                          commandCall.stdErrChoice)),
+                      *(commandCall.stdInChoice),
+                      *(commandCall.stdOutChoice),
+                      *(commandCall.stdErrChoice)),
                   commandLine(makeCommandLine(&commandCall.executable, &commandCall.arguments)),
                   currentDirectory(commandCall.workingDirectory) {
                 populateStartupInfo(commandCall, startupInfo);
@@ -132,11 +130,9 @@ namespace MF
         struct StatefulCommandBase_NotStartedYet_WideChar : StatefulCommandBase_NotStartedYet_Base {
             StatefulCommandBase_NotStartedYet_WideChar(const WideCommandCall &commandCall)
                 : StatefulCommandBase_NotStartedYet_Base(
-                      std::static_pointer_cast<ConsoleInputChoice_Windows>(commandCall.stdInChoice),
-                      std::static_pointer_cast<ConsoleOutputChoice_Windows>(
-                          commandCall.stdOutChoice),
-                      std::static_pointer_cast<ConsoleOutputChoice_Windows>(
-                          commandCall.stdErrChoice)),
+                      *(commandCall.stdInChoice),
+                      *(commandCall.stdOutChoice),
+                      *(commandCall.stdErrChoice)),
                   commandLine(makeCommandLine(&commandCall.executable, &commandCall.arguments)),
                   currentDirectory(commandCall.workingDirectory) {
                 populateStartupInfo(commandCall, startupInfo);
@@ -182,9 +178,9 @@ namespace MF
         struct StatefulCommandBase_Running : StatefulCommandBase {
             StatefulCommandBase_Running(
                 ProcessItem processItem,
-                const std::shared_ptr<ConsoleInputChoice_Windows> &stdInChoice,
-                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdOutChoice,
-                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdErrChoice)
+                const std::shared_ptr<ConsoleInputChoice> &stdInChoice,
+                const std::shared_ptr<ConsoleOutputChoice> &stdOutChoice,
+                const std::shared_ptr<ConsoleOutputChoice> &stdErrChoice)
                 : StatefulCommandBase(*stdInChoice, *stdOutChoice, *stdErrChoice),
                   processHandle(processItem) {
             }
@@ -244,9 +240,9 @@ namespace MF
         struct StatefulCommandBase_Over : StatefulCommandBase {
             StatefulCommandBase_Over(
                 ProcessItem processItem,
-                const std::shared_ptr<ConsoleInputChoice_Windows> &stdInChoice,
-                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdOutChoice,
-                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdErrChoice)
+                const std::shared_ptr<ConsoleInputChoice> &stdInChoice,
+                const std::shared_ptr<ConsoleOutputChoice> &stdOutChoice,
+                const std::shared_ptr<ConsoleOutputChoice> &stdErrChoice)
                 : StatefulCommandBase(*stdInChoice, *stdOutChoice, *stdErrChoice),
                   processHandle(processItem) {
                 DWORD exitCode;
@@ -275,24 +271,18 @@ namespace MF
 
         struct CommandRunner_Windows : CommandRunner {
             CommandRunner_Windows(const CommandCall &commandCall) {
-                stdInChoice =
-                    std::static_pointer_cast<ConsoleInputChoice_Windows>(commandCall.stdInChoice);
-                stdOutChoice =
-                    std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdOutChoice);
-                stdErrChoice =
-                    std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdErrChoice);
+                stdInChoice = commandCall.stdInChoice;
+                stdOutChoice = commandCall.stdOutChoice;
+                stdErrChoice = commandCall.stdErrChoice;
 
                 statefulCommandBase =
                     std::make_unique<StatefulCommandBase_NotStartedYet_Char>(commandCall);
             }
 
             CommandRunner_Windows(const WideCommandCall &commandCall) {
-                stdInChoice =
-                    std::static_pointer_cast<ConsoleInputChoice_Windows>(commandCall.stdInChoice);
-                stdOutChoice =
-                    std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdOutChoice);
-                stdErrChoice =
-                    std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdErrChoice);
+                stdInChoice = commandCall.stdInChoice;
+                stdOutChoice = commandCall.stdOutChoice;
+                stdErrChoice = commandCall.stdErrChoice;
 
                 statefulCommandBase =
                     std::make_unique<StatefulCommandBase_NotStartedYet_WideChar>(commandCall);
@@ -346,9 +336,9 @@ namespace MF
             std::unique_ptr<StatefulCommandBase> statefulCommandBase;
 
             // Console choices
-            std::shared_ptr<ConsoleInputChoice_Windows> stdInChoice;
-            std::shared_ptr<ConsoleOutputChoice_Windows> stdOutChoice;
-            std::shared_ptr<ConsoleOutputChoice_Windows> stdErrChoice;
+            std::shared_ptr<ConsoleInputChoice> stdInChoice;
+            std::shared_ptr<ConsoleOutputChoice> stdOutChoice;
+            std::shared_ptr<ConsoleOutputChoice> stdErrChoice;
 
             // Data of the created process
             ProcessItem processHandle = INVALID_HANDLE_VALUE;

@@ -75,14 +75,12 @@ namespace MF
             startupinfo.cb = sizeof(startupinfo);
             startupinfo.dwFlags |= STARTF_USESTDHANDLES;
             startupinfo.hStdOutput =
-                dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdOutChoice))
+                dynamic_cast<ConsoleOutputChoice &>(*(commandCall.stdOutChoice))
                     .getStreamItemForStdOut();
-            startupinfo.hStdError =
-                dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdErrChoice))
-                    .getStreamItemForStdErr();
-            startupinfo.hStdInput =
-                dynamic_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice))
-                    .getStreamItemForStdIn();
+            startupinfo.hStdError = dynamic_cast<ConsoleOutputChoice &>(*(commandCall.stdErrChoice))
+                                        .getStreamItemForStdErr();
+            startupinfo.hStdInput = dynamic_cast<ConsoleInputChoice &>(*(commandCall.stdInChoice))
+                                        .getStreamItemForStdIn();
         }
 
         void populateStartupInfo(const WideCommandCall &commandCall, STARTUPINFOW &startupinfo) {
@@ -90,14 +88,12 @@ namespace MF
             startupinfo.cb = sizeof(startupinfo);
             startupinfo.dwFlags |= STARTF_USESTDHANDLES;
             startupinfo.hStdOutput =
-                dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdOutChoice))
+                dynamic_cast<ConsoleOutputChoice &>(*(commandCall.stdOutChoice))
                     .getStreamItemForStdOut();
-            startupinfo.hStdError =
-                dynamic_cast<ConsoleOutputChoice_Windows &>(*(commandCall.stdErrChoice))
-                    .getStreamItemForStdErr();
-            startupinfo.hStdInput =
-                dynamic_cast<ConsoleInputChoice_Windows &>(*(commandCall.stdInChoice))
-                    .getStreamItemForStdIn();
+            startupinfo.hStdError = dynamic_cast<ConsoleOutputChoice &>(*(commandCall.stdErrChoice))
+                                        .getStreamItemForStdErr();
+            startupinfo.hStdInput = dynamic_cast<ConsoleInputChoice &>(*(commandCall.stdInChoice))
+                                        .getStreamItemForStdIn();
         }
 
         void closeH(HANDLE &handle) {

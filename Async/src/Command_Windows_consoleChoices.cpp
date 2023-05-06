@@ -14,7 +14,7 @@ namespace MF
 {
     namespace Command
     {
-        struct ConsoleOutputChoice_Windows_Console : ConsoleOutputChoice_Windows {
+        struct ConsoleOutputChoice_Windows_Console : ConsoleOutputChoice {
             StreamItem getStreamItemForStdOut() const override {
                 return GetStdHandle(STD_OUTPUT_HANDLE);
             }
@@ -28,7 +28,7 @@ namespace MF
             return std::make_shared<ConsoleOutputChoice_Windows_Console>();
         }
 
-        struct ConsoleOutputChoice_Windows_Ignored : ConsoleOutputChoice_Windows {
+        struct ConsoleOutputChoice_Windows_Ignored : ConsoleOutputChoice {
             StreamItem fileStream;
 
             ConsoleOutputChoice_Windows_Ignored() : fileStream(openNullFileToWrite()) {
@@ -51,7 +51,7 @@ namespace MF
             return std::make_shared<ConsoleOutputChoice_Windows_Ignored>();
         }
 
-        struct ConsoleOutputChoice_Windows_File : ConsoleOutputChoice_Windows {
+        struct ConsoleOutputChoice_Windows_File : ConsoleOutputChoice {
             StreamItem fileStream;
 
             ConsoleOutputChoice_Windows_File(const Filename_t &filename)
@@ -84,7 +84,7 @@ namespace MF
         }
 
         template <typename CharT>
-        struct ConsoleOutputChoice_Windows_IOStream : ConsoleOutputChoice_Windows {
+        struct ConsoleOutputChoice_Windows_IOStream : ConsoleOutputChoice {
             std::basic_iostream<CharT> &stringStream;
 
             PipeStreams pipeStreams;
@@ -142,7 +142,7 @@ namespace MF
             return std::make_shared<ConsoleOutputChoice_Windows_IOStream<wchar_t>>(stream);
         }
 
-        struct ConsoleInputChoice_Windows_Console : ConsoleInputChoice_Windows {
+        struct ConsoleInputChoice_Windows_Console : ConsoleInputChoice {
             StreamItem getStreamItemForStdIn() const override {
                 return GetStdHandle(STD_INPUT_HANDLE);
             }
@@ -156,10 +156,15 @@ namespace MF
             return makeInputFromString("");
         }
 
-        struct ConsoleInputChoice_Windows_File : ConsoleInputChoice_Windows {
+        struct ConsoleInputChoice_Windows_File : ConsoleInputChoice {
             StreamItem readFromFile;
 
-            ConsoleInputChoice_Windows_File(const std::string &filename)
+            ConsoleInputChoice_Windows_File(const Filename_t &filename)
+                : readFromFile(openFileToRead(filename)) {
+                Windows::Handles::makeHandleInheritable(readFromFile, true);
+            }
+
+            ConsoleInputChoice_Windows_File(const WideFilename_t &filename)
                 : readFromFile(openFileToRead(filename)) {
                 Windows::Handles::makeHandleInheritable(readFromFile, true);
             }
@@ -181,8 +186,12 @@ namespace MF
             return std::make_shared<ConsoleInputChoice_Windows_File>(filename);
         }
 
+        std::shared_ptr<ConsoleInputChoice> makeInputFromFile(const WideFilename_t &filename) {
+            return std::make_shared<ConsoleInputChoice_Windows_File>(filename);
+        }
+
         template <typename CharT>
-        struct ConsoleInputChoice_Windows_IOStream : ConsoleInputChoice_Windows {
+        struct ConsoleInputChoice_Windows_IOStream : ConsoleInputChoice {
             std::basic_iostream<CharT> &stringStream;
 
             PipeStreams pipeStreams;
@@ -200,8 +209,8 @@ namespace MF
                 do {
                     stringStream.get(buffer.data(), BUFFER_SIZE);
                     BOOL result = WriteFile(
-                        pipeStreams.writeToPipe, buffer.data(), stringStream.gcount(),
-                        &nbBytesWritten, nullptr);
+                        pipeStreams.writeToPipe, buffer.data(),
+                        stringStream.gcount() * sizeof(CharT), &nbBytesWritten, nullptr);
                     MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!result);
                 } while (nbBytesWritten == BUFFER_SIZE);
 
@@ -223,8 +232,13 @@ namespace MF
             return std::make_shared<ConsoleInputChoice_Windows_IOStream<char>>(stream);
         }
 
+        std::shared_ptr<ConsoleInputChoice> makeInputFromIOStream(
+            std::basic_iostream<wchar_t> &stream) {
+            return std::make_shared<ConsoleInputChoice_Windows_IOStream<wchar_t>>(stream);
+        }
+
         template <typename CharT>
-        struct ConsoleInputChoice_Windows_String : ConsoleInputChoice_Windows {
+        struct ConsoleInputChoice_Windows_String : ConsoleInputChoice {
             std::basic_stringstream<CharT> stringStream;
             ConsoleInputChoice_Windows_IOStream<CharT> choiceWindowsStringStream;
 
