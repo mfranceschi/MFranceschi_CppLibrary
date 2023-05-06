@@ -10,7 +10,7 @@ namespace MF
 {
     namespace Command
     {
-        struct StatefulCommandBase_NotStartedYet;
+        struct StatefulCommandBase_NotStartedYet_Char;
         struct StatefulCommandBase_Running;
         struct StatefulCommandBase_Over;
 
@@ -53,54 +53,21 @@ namespace MF
             ConsoleOutputChoice_Windows &stdErrChoice;
         };
 
-        struct StatefulCommandBase_NotStartedYet : StatefulCommandBase {
-            StatefulCommandBase_NotStartedYet(const CommandCall &commandCall)
-                : StatefulCommandBase(
-                      *std::static_pointer_cast<ConsoleInputChoice_Windows>(
-                          commandCall.stdInChoice),
-                      *std::static_pointer_cast<ConsoleOutputChoice_Windows>(
-                          commandCall.stdOutChoice),
-                      *std::static_pointer_cast<ConsoleOutputChoice_Windows>(
-                          commandCall.stdErrChoice)),
-                  commandLine(makeCommandLine(&commandCall.executable, &commandCall.arguments)),
-                  currentDirectory(commandCall.workingDirectory) {
-                populateStartupInfo(commandCall, startupInfo);
+        struct StatefulCommandBase_NotStartedYet_Base : StatefulCommandBase {
+            StatefulCommandBase_NotStartedYet_Base(
+                const std::shared_ptr<ConsoleInputChoice_Windows> &stdInChoice,
+                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdOutChoice,
+                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdErrChoice)
+                : StatefulCommandBase(*stdInChoice, *stdOutChoice, *stdErrChoice) {
                 ZeroMemory(&processInformation, sizeof(processInformation));
                 processInformation.hProcess = INVALID_HANDLE_VALUE;
             }
 
-            ProcessItem start() override {
-                beforeStart();
+            virtual ProcessItem start() override = 0;
 
-                LPCTCH lpApplicationName = nullptr;
-                LPTSTR lpCommandLine = commandLine.data();
+            ~StatefulCommandBase_NotStartedYet_Base() override = default;
 
-                LPSECURITY_ATTRIBUTES lpProcessAttributes =
-                    nullptr; // No specific security attribute
-                LPSECURITY_ATTRIBUTES lpThreadAttributes =
-                    nullptr; // No specific security attribute
-                bool bInheritHandles = true; // Handles are inherited
-                DWORD dwCreationFlags = 0; // Creation flags
-                LPVOID lpEnvironment = nullptr; // We use the parent's environment
-                LPCTSTR lpCurrentDirectory =
-                    currentDirectory.empty() ? nullptr : currentDirectory.c_str();
-
-                bool createProcessResult = CreateProcess(
-                    lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes,
-                    bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory,
-                    &startupInfo, &processInformation);
-                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!createProcessResult);
-
-                CloseHandle(processInformation.hThread);
-
-                afterStart();
-
-                return processInformation.hProcess;
-            }
-
-            ~StatefulCommandBase_NotStartedYet() override = default;
-
-           private:
+           protected:
             void beforeStart() {
                 stdInChoice.beforeStart();
                 stdOutChoice.beforeStart();
@@ -113,11 +80,107 @@ namespace MF
                 stdErrChoice.afterStart();
             }
 
-            // Data preparing the call to CreateProcess
+            PROCESS_INFORMATION processInformation{0};
+        };
+
+        struct StatefulCommandBase_NotStartedYet_Char : StatefulCommandBase_NotStartedYet_Base {
+            StatefulCommandBase_NotStartedYet_Char(const CommandCall &commandCall)
+                : StatefulCommandBase_NotStartedYet_Base(
+                      std::static_pointer_cast<ConsoleInputChoice_Windows>(commandCall.stdInChoice),
+                      std::static_pointer_cast<ConsoleOutputChoice_Windows>(
+                          commandCall.stdOutChoice),
+                      std::static_pointer_cast<ConsoleOutputChoice_Windows>(
+                          commandCall.stdErrChoice)),
+                  commandLine(makeCommandLine(&commandCall.executable, &commandCall.arguments)),
+                  currentDirectory(commandCall.workingDirectory) {
+                populateStartupInfo(commandCall, startupInfo);
+            }
+
+            ProcessItem start() override {
+                beforeStart();
+
+                const char *lpApplicationName = nullptr;
+                char *lpCommandLine = commandLine.data();
+
+                LPSECURITY_ATTRIBUTES lpProcessAttributes =
+                    nullptr; // No specific security attribute
+                LPSECURITY_ATTRIBUTES lpThreadAttributes =
+                    nullptr; // No specific security attribute
+                bool bInheritHandles = true; // Handles are inherited
+                DWORD dwCreationFlags = 0; // Creation flags
+                LPVOID lpEnvironment = nullptr; // We use the parent's environment
+                const char *lpCurrentDirectory =
+                    currentDirectory.empty() ? nullptr : currentDirectory.c_str();
+
+                bool createProcessResult = CreateProcessA(
+                    lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes,
+                    bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory,
+                    &startupInfo, &processInformation);
+                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!createProcessResult);
+
+                CloseHandle(processInformation.hThread);
+
+                afterStart();
+
+                return processInformation.hProcess;
+            }
+
+            ~StatefulCommandBase_NotStartedYet_Char() override = default;
+
+           private:
             std::vector<char> commandLine;
             const Filename_t currentDirectory;
-            STARTUPINFO startupInfo{0};
-            PROCESS_INFORMATION processInformation{0};
+            STARTUPINFOA startupInfo{0};
+        };
+
+        struct StatefulCommandBase_NotStartedYet_WideChar : StatefulCommandBase_NotStartedYet_Base {
+            StatefulCommandBase_NotStartedYet_WideChar(const WideCommandCall &commandCall)
+                : StatefulCommandBase_NotStartedYet_Base(
+                      std::static_pointer_cast<ConsoleInputChoice_Windows>(commandCall.stdInChoice),
+                      std::static_pointer_cast<ConsoleOutputChoice_Windows>(
+                          commandCall.stdOutChoice),
+                      std::static_pointer_cast<ConsoleOutputChoice_Windows>(
+                          commandCall.stdErrChoice)),
+                  commandLine(makeCommandLine(&commandCall.executable, &commandCall.arguments)),
+                  currentDirectory(commandCall.workingDirectory) {
+                populateStartupInfo(commandCall, startupInfo);
+            }
+
+            ProcessItem start() override {
+                beforeStart();
+
+                const wchar_t *lpApplicationName = nullptr;
+                wchar_t *lpCommandLine = commandLine.data();
+
+                LPSECURITY_ATTRIBUTES lpProcessAttributes =
+                    nullptr; // No specific security attribute
+                LPSECURITY_ATTRIBUTES lpThreadAttributes =
+                    nullptr; // No specific security attribute
+                bool bInheritHandles = true; // Handles are inherited
+                DWORD dwCreationFlags = 0; // Creation flags
+                LPVOID lpEnvironment = nullptr; // We use the parent's environment
+                const wchar_t *lpCurrentDirectory =
+                    currentDirectory.empty() ? nullptr : currentDirectory.c_str();
+
+                bool createProcessResult = CreateProcessW(
+                    lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes,
+                    bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory,
+                    &startupInfo, &processInformation);
+                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!createProcessResult);
+
+                CloseHandle(processInformation.hThread);
+
+                afterStart();
+
+                return processInformation.hProcess;
+            }
+
+            ~StatefulCommandBase_NotStartedYet_WideChar() override = default;
+
+           private:
+            std::vector<wchar_t> commandLine;
+            const WideFilename_t currentDirectory;
+            STARTUPINFOW startupInfo{0};
         };
 
         struct StatefulCommandBase_Running : StatefulCommandBase {
@@ -224,7 +287,19 @@ namespace MF
                     std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdErrChoice);
 
                 statefulCommandBase =
-                    std::make_unique<StatefulCommandBase_NotStartedYet>(commandCall);
+                    std::make_unique<StatefulCommandBase_NotStartedYet_Char>(commandCall);
+            }
+            
+            CommandRunner_Windows(const WideCommandCall &commandCall) {
+                stdInChoice =
+                    std::static_pointer_cast<ConsoleInputChoice_Windows>(commandCall.stdInChoice);
+                stdOutChoice =
+                    std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdOutChoice);
+                stdErrChoice =
+                    std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdErrChoice);
+
+                statefulCommandBase =
+                    std::make_unique<StatefulCommandBase_NotStartedYet_WideChar>(commandCall);
             }
 
             CommandRunner &start() override {
