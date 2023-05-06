@@ -6,6 +6,7 @@
 #define MFRANCESCHI_CPPLIBRARIES_COMMAND_WINDOWS_COMMONS_HPP
 
 #if MF_WINDOWS
+#    include "../../Commons/include/MF/Commons.hpp"
 #    include "MF/Command.hpp"
 #    include "MF/LightWindows.hpp"
 
@@ -20,17 +21,13 @@ namespace MF
 
         enum class OutputStream_e { StdOut, StdErr };
 
-        struct CommandComponent {
+        struct CommandComponent : MF::Commons::NoCopy, MF::Commons::NoMove {
             /// This will be called right before the command is started.
             virtual void beforeStart() {
             }
 
             /// This will be called right after the command is started.
             virtual void afterStart() {
-            }
-
-            /// This will be called right before we initiate the process stopping procedure.
-            virtual void beforeStop() {
             }
 
             /// This will be called right after the process is stopped.

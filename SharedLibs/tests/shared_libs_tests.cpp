@@ -54,7 +54,7 @@ TEST(OpenSharedLib, it_cannot_open_without_correct_search_path) {
 
     if (HasFailure()) {
 #if MF_WINDOWS
-        static constexpr std::size_t MODULE_PATH_LENGTH = 1e6;
+        static constexpr std::size_t MODULE_PATH_LENGTH = 1000 * 1000;
         std::vector<char> modulePath(MODULE_PATH_LENGTH);
         GetModuleFileNameA(
             static_cast<HMODULE>(lib->GetSystemItem()), modulePath.data(), MODULE_PATH_LENGTH);

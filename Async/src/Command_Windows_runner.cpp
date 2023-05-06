@@ -10,22 +10,66 @@ namespace MF
 {
     namespace Command
     {
-        struct CommandRunner_Windows : CommandRunner {
-            CommandRunner_Windows(const CommandCall &commandCall) {
-                commandLine = makeCommandLine(&commandCall.executable, &commandCall.arguments);
-                currentDirectory = commandCall.workingDirectory;
-                populateStartupInfo(commandCall, startupInfo);
-                ZeroMemory(&processInformation, sizeof(processInformation));
+        struct StatefulCommandBase_NotStartedYet;
+        struct StatefulCommandBase_Running;
+        struct StatefulCommandBase_Over;
 
-                stdInChoice =
-                    std::static_pointer_cast<ConsoleInputChoice_Windows>(commandCall.stdInChoice);
-                stdOutChoice =
-                    std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdOutChoice);
-                stdErrChoice =
-                    std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdErrChoice);
+        struct StatefulCommandBase {
+            StatefulCommandBase(
+                ConsoleInputChoice_Windows &stdInChoice,
+                ConsoleOutputChoice_Windows &stdOutChoice,
+                ConsoleOutputChoice_Windows &stdErrChoice)
+                : stdInChoice(stdInChoice), stdOutChoice(stdOutChoice), stdErrChoice(stdErrChoice) {
             }
 
-            CommandRunner &start() override {
+            virtual ProcessItem start() {
+                throw std::runtime_error("Invalid call to " + std::string(__func__));
+            }
+
+            virtual void kill(int exitCode) {
+                throw std::runtime_error("Invalid call to " + std::string(__func__));
+            }
+
+            virtual bool isRunning() {
+                return false;
+            }
+
+            virtual bool isDone() {
+                return false;
+            }
+
+            virtual const CommandOver &getCommandOver() {
+                throw std::runtime_error("Invalid call to " + std::string(__func__));
+            }
+
+            virtual bool waitFor(std::chrono::milliseconds duration) {
+                throw std::runtime_error("Invalid call to " + std::string(__func__));
+            }
+
+            virtual ~StatefulCommandBase() = default; // Note: we don't close the handle yet.
+
+            ConsoleInputChoice_Windows &stdInChoice;
+            ConsoleOutputChoice_Windows &stdOutChoice;
+            ConsoleOutputChoice_Windows &stdErrChoice;
+        };
+
+        struct StatefulCommandBase_NotStartedYet : StatefulCommandBase {
+            StatefulCommandBase_NotStartedYet(const CommandCall &commandCall)
+                : StatefulCommandBase(
+                      *std::static_pointer_cast<ConsoleInputChoice_Windows>(
+                          commandCall.stdInChoice),
+                      *std::static_pointer_cast<ConsoleOutputChoice_Windows>(
+                          commandCall.stdOutChoice),
+                      *std::static_pointer_cast<ConsoleOutputChoice_Windows>(
+                          commandCall.stdErrChoice)),
+                  commandLine(makeCommandLine(&commandCall.executable, &commandCall.arguments)),
+                  currentDirectory(commandCall.workingDirectory) {
+                populateStartupInfo(commandCall, startupInfo);
+                ZeroMemory(&processInformation, sizeof(processInformation));
+                processInformation.hProcess = INVALID_HANDLE_VALUE;
+            }
+
+            ProcessItem start() override {
                 beforeStart();
 
                 LPCTCH lpApplicationName = nullptr;
@@ -48,59 +92,69 @@ namespace MF
                 MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!createProcessResult);
 
                 CloseHandle(processInformation.hThread);
-                processHandle = processInformation.hProcess;
-                started = true;
 
                 afterStart();
 
-                return *this;
+                return processInformation.hProcess;
             }
 
-            CommandRunner &kill(int exitCode) override {
-                beforeStop();
+            ~StatefulCommandBase_NotStartedYet() = default; // Note: we don't close the handle yet.
+
+           private:
+            void beforeStart() {
+                stdInChoice.beforeStart();
+                stdOutChoice.beforeStart();
+                stdErrChoice.beforeStart();
+            }
+
+            void afterStart() {
+                stdInChoice.afterStart();
+                stdOutChoice.afterStart();
+                stdErrChoice.afterStart();
+            }
+
+            // Data preparing the call to CreateProcess
+            std::vector<char> commandLine;
+            const Filename_t currentDirectory;
+            STARTUPINFO startupInfo{0};
+            PROCESS_INFORMATION processInformation{0};
+        };
+
+        struct StatefulCommandBase_Running : StatefulCommandBase {
+            StatefulCommandBase_Running(
+                ProcessItem processItem,
+                const std::shared_ptr<ConsoleInputChoice_Windows> &stdInChoice,
+                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdOutChoice,
+                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdErrChoice)
+                : StatefulCommandBase(*stdInChoice, *stdOutChoice, *stdErrChoice),
+                  processHandle(processItem) {
+            }
+
+            void kill(int exitCode) override {
                 MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
                     TerminateProcess(processHandle, exitCode) == FALSE);
                 MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
                     WaitForSingleObject(processHandle, INFINITE) != WAIT_OBJECT_0);
-                isOver = true;
-                commandOver.exitCode = exitCode;
-
-                afterStop();
-
-                return *this;
             }
 
             bool isRunning() override {
-                if (!started || isOver) {
-                    return false;
-                }
-                return storeExitCodeOrReturnFalse();
+                DWORD exitCode;
+                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
+                    !GetExitCodeProcess(processHandle, &exitCode));
+                return exitCode == STILL_ACTIVE;
             }
 
             bool isDone() override {
-                if (isOver) {
-                    return true;
-                }
-                return !storeExitCodeOrReturnFalse();
-            }
-
-            const CommandOver &getCommandOverOrThrow() override {
-                if (isDone()) {
-                    return commandOver;
-                }
-                throw std::runtime_error("Process has not finished yet!");
+                return !isRunning();
             }
 
             bool waitFor(
                 std::chrono::milliseconds duration = std::chrono::milliseconds::zero()) override {
-                beforeStop();
-
                 DWORD result = WaitForSingleObject(
                     processHandle,
                     duration == std::chrono::milliseconds::zero() ? INFINITE : duration.count());
                 if (result == WAIT_OBJECT_0) {
                     // It means that the process terminated.
-                    storeExitCodeOrReturnFalse();
                     return true;
                 }
 
@@ -113,6 +167,102 @@ namespace MF
                 throw MF::SystemErrors::Win32::getCurrentSystemError();
             }
 
+            ~StatefulCommandBase_Running() override {
+                afterStop();
+            }
+
+           private:
+            void afterStop() {
+                stdInChoice.afterStop();
+                stdOutChoice.afterStop();
+                stdErrChoice.afterStop();
+            }
+
+            // Data of the created process
+            const HANDLE processHandle = INVALID_HANDLE_VALUE;
+        };
+
+        struct StatefulCommandBase_Over : StatefulCommandBase {
+            StatefulCommandBase_Over(
+                ProcessItem processItem,
+                const std::shared_ptr<ConsoleInputChoice_Windows> &stdInChoice,
+                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdOutChoice,
+                const std::shared_ptr<ConsoleOutputChoice_Windows> &stdErrChoice)
+                : StatefulCommandBase(*stdInChoice, *stdOutChoice, *stdErrChoice),
+                  processHandle(processItem) {
+                DWORD exitCode;
+                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
+                    !GetExitCodeProcess(processHandle, &exitCode));
+                commandOver.exitCode = exitCode;
+            }
+
+            bool isDone() override {
+                return true;
+            }
+
+            const CommandOver &getCommandOver() override {
+                return commandOver;
+            }
+
+            ~StatefulCommandBase_Over() = default; // Note: we don't close the handle yet.
+
+           private:
+            // Data of the created process
+            const HANDLE processHandle;
+
+            // Data of the terminated process
+            CommandOver commandOver{-1};
+        };
+
+        struct CommandRunner_Windows : CommandRunner {
+            CommandRunner_Windows(const CommandCall &commandCall) {
+                stdInChoice =
+                    std::static_pointer_cast<ConsoleInputChoice_Windows>(commandCall.stdInChoice);
+                stdOutChoice =
+                    std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdOutChoice);
+                stdErrChoice =
+                    std::static_pointer_cast<ConsoleOutputChoice_Windows>(commandCall.stdErrChoice);
+
+                statefulCommandBase =
+                    std::make_unique<StatefulCommandBase_NotStartedYet>(commandCall);
+            }
+
+            CommandRunner &start() override {
+                processHandle = statefulCommandBase->start();
+                statefulCommandBase = std::make_unique<StatefulCommandBase_Running>(
+                    processHandle, stdInChoice, stdOutChoice, stdErrChoice);
+                return *this;
+            }
+
+            CommandRunner &kill(int exitCode) override {
+                statefulCommandBase->kill(exitCode);
+                statefulCommandBase = std::make_unique<StatefulCommandBase_Over>(
+                    processHandle, stdInChoice, stdOutChoice, stdErrChoice);
+                return *this;
+            }
+
+            bool isRunning() override {
+                return statefulCommandBase->isRunning();
+            }
+
+            bool isDone() override {
+                return statefulCommandBase->isDone();
+            }
+
+            const CommandOver &getCommandOver() override {
+                return statefulCommandBase->getCommandOver();
+            }
+
+            bool waitFor(
+                std::chrono::milliseconds duration = std::chrono::milliseconds::zero()) override {
+                bool result = statefulCommandBase->waitFor(duration);
+                if (result) {
+                    statefulCommandBase = std::make_unique<StatefulCommandBase_Over>(
+                        processHandle, stdInChoice, stdOutChoice, stdErrChoice);
+                }
+                return result;
+            }
+
             std::uintmax_t getHandle() override {
                 return reinterpret_cast<uintmax_t>(processHandle);
             }
@@ -122,81 +272,25 @@ namespace MF
             }
 
            private:
-            bool storeExitCodeOrReturnFalse() {
-                beforeStop();
-
-                DWORD exitCode;
-                MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                    !GetExitCodeProcess(processHandle, &exitCode));
-                if (exitCode == STILL_ACTIVE) {
-                    return false;
-                }
-
-                markAsOver(exitCode);
-                return true;
-            }
-
-            void beforeStart() {
-                stdInChoice->beforeStart();
-                stdOutChoice->beforeStart();
-                stdErrChoice->beforeStart();
-            }
-
-            void afterStart() {
-                stdInChoice->afterStart();
-                stdOutChoice->afterStart();
-                stdErrChoice->afterStart();
-            }
-
-            void beforeStop() {
-                stdInChoice->beforeStop();
-                stdOutChoice->beforeStop();
-                stdErrChoice->beforeStop();
-            }
-
-            void afterStop() {
-                stdInChoice->afterStop();
-                stdOutChoice->afterStop();
-                stdErrChoice->afterStop();
-            }
-
-            void markAsOver(int exitCode) {
-                afterStop();
-                isOver = true;
-                commandOver.exitCode = exitCode;
-            }
+            std::unique_ptr<StatefulCommandBase> statefulCommandBase;
 
             // Console choices
             std::shared_ptr<ConsoleInputChoice_Windows> stdInChoice;
             std::shared_ptr<ConsoleOutputChoice_Windows> stdOutChoice;
             std::shared_ptr<ConsoleOutputChoice_Windows> stdErrChoice;
 
-            // Data preparing the call to CreateProcess
-            STARTUPINFO startupInfo{0};
-            Filename_t currentDirectory;
-            PROCESS_INFORMATION processInformation{0};
-            std::vector<char> commandLine;
-
             // Data of the created process
             HANDLE processHandle = INVALID_HANDLE_VALUE;
-            bool started = false;
-
-            // Data of the terminated process
-            CommandOver commandOver{-1};
-            bool isOver = false;
         };
 
         std::shared_ptr<CommandRunner> runCommandAsync(const CommandCall &commandCall) {
             return std::make_shared<CommandRunner_Windows>(commandCall);
         }
 
-        CommandOver runCommandAndWait(
-            const CommandCall &commandCall, std::chrono::milliseconds waitFor) {
+        CommandOver runCommandAndWait(const CommandCall &commandCall) {
             auto cmd = runCommandAsync(commandCall);
-            if (cmd->start().waitFor(waitFor)) {
-                return cmd->getCommandOverOrThrow();
-            }
-            throw std::runtime_error("Unfinished despite timeout!");
+            cmd->start().waitFor();
+            return cmd->getCommandOver();
         }
     } // namespace Command
 } // namespace MF

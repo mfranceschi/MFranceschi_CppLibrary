@@ -38,7 +38,7 @@ namespace MF
                 return fileStream;
             }
 
-            ~ConsoleOutputChoice_Windows_Ignored() {
+            ~ConsoleOutputChoice_Windows_Ignored() override {
                 closeH(fileStream);
             }
         };
@@ -62,7 +62,7 @@ namespace MF
                 return fileStream;
             }
 
-            ~ConsoleOutputChoice_Windows_File() {
+            ~ConsoleOutputChoice_Windows_File() override {
                 closeH(fileStream);
             }
         };
@@ -92,7 +92,18 @@ namespace MF
                     BOOL result = ReadFile(
                         pipeStreams.readFromPipe, buffer.data(), buffer.size(), &nbBytesRead,
                         nullptr);
-                    MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!result);
+                    if (!result) {
+                        auto lastError = MF::SystemErrors::Win32::getCurrentErrorCode();
+                        if (lastError == ERROR_BROKEN_PIPE) {
+                            // It means that the pipe has already been closed on its WRITE end,
+                            // aka we have nothing to read here.
+                            // https://devblogs.microsoft.com/oldnewthing/20190405-00/?p=102389
+                            // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile#pipes
+                            break;
+                        } else {
+                            throw MF::SystemErrors::Win32::getSystemErrorForErrorCode(lastError);
+                        }
+                    }
                     stringStream << buffer.data();
                 } while (nbBytesRead == BUFFER_SIZE);
                 closeH(pipeStreams.readFromPipe);
@@ -102,7 +113,7 @@ namespace MF
                 return pipeStreams.writeToPipe;
             }
 
-            ~ConsoleOutputChoice_Windows_StringStream() {
+            ~ConsoleOutputChoice_Windows_StringStream() override {
                 closeH(pipeStreams.readFromPipe);
                 closeH(pipeStreams.writeToPipe);
             }
@@ -142,7 +153,7 @@ namespace MF
                 return readFromFile;
             }
 
-            ~ConsoleInputChoice_Windows_File() {
+            ~ConsoleInputChoice_Windows_File() override {
                 closeH(readFromFile);
             }
         };
@@ -181,7 +192,7 @@ namespace MF
                 return pipeStreams.readFromPipe;
             }
 
-            ~ConsoleInputChoice_Windows_StringStream() {
+            ~ConsoleInputChoice_Windows_StringStream() override {
                 closeH(pipeStreams.readFromPipe);
                 closeH(pipeStreams.writeToPipe);
             }
@@ -205,10 +216,6 @@ namespace MF
 
             void afterStart() override {
                 choiceWindowsStringStream.afterStart();
-            }
-
-            void beforeStop() override {
-                choiceWindowsStringStream.beforeStop();
             }
 
             void afterStop() override {

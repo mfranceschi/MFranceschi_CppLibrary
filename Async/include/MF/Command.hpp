@@ -75,6 +75,7 @@ namespace MF
              * Kills the process, and only returns once the process has been successfully killed.
              * Windows: uses "TerminateProcess" and "exitCode" is the exit code of the process.
              * Unix: uses "kill" to send a SIGKILL to the process; "exitCode" is ignored.
+             * @return this
              */
             virtual CommandRunner &kill(int exitCode = -1) = 0;
 
@@ -89,7 +90,7 @@ namespace MF
             virtual bool isDone() = 0;
 
             /**
-             * Waits for the specified duration.
+             * Blocks until the process finishes. Waits for the specified duration.
              * Returns true as soon as the process is finished.
              * Returns false if the process is still running after that duration.
              */
@@ -98,9 +99,8 @@ namespace MF
 
             /**
              * If the process is finished, returns the corresponding CommandOver.
-             * Otherwise throws a runtime error.
              */
-            virtual const CommandOver &getCommandOverOrThrow() = 0;
+            virtual const CommandOver &getCommandOver() = 0;
 
             /**
              * Returns the process handle.
@@ -114,9 +114,7 @@ namespace MF
 
         std::shared_ptr<CommandRunner> runCommandAsync(const CommandCall &commandCall);
 
-        CommandOver runCommandAndWait(
-            const CommandCall &commandCall,
-            std::chrono::milliseconds waitFor = std::chrono::milliseconds::zero());
+        CommandOver runCommandAndWait(const CommandCall &commandCall);
     } // namespace Command
 } // namespace MF
 #endif // MYWORKS_TEST0_COMMAND_HPP
