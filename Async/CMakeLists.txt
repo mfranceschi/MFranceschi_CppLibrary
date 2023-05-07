@@ -6,9 +6,12 @@ target_sources(
         MF_Async
         PRIVATE
         src/Command_commons.hpp
-        src/Command_windows_console_choices.cpp
-        src/Command_windows_utils.cpp
-            src/Command_Windows_runner.cpp
+        src/Command_stateful_base.cpp
+        src/Command_run.cpp
+        src/Command_commons_windows.hpp
+        src/Command_console_choices_windows.cpp
+        src/Command_commons_windows.cpp
+        src/Command_runner_windows.cpp
             #[[
             src/Command.cpp
             src/CommandHelper.hpp

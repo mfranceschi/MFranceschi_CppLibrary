@@ -3,10 +3,9 @@
 //
 
 #if MF_WINDOWS
-#    include "Command_windows_utils.hpp"
-
 #    include <sstream>
 
+#    include "Command_commons_windows.hpp"
 #    include "MF/SystemErrors.hpp"
 #    include "MF/Windows.hpp"
 

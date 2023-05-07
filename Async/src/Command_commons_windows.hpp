@@ -2,8 +2,8 @@
 // Created by MartinF on 08/05/2023.
 //
 
-#ifndef MFRANCESCHI_CPPLIBRARIES_COMMAND_WINDOWS_UTILS_HPP
-#define MFRANCESCHI_CPPLIBRARIES_COMMAND_WINDOWS_UTILS_HPP
+#ifndef MFRANCESCHI_CPPLIBRARIES_COMMAND_COMMONS_WINDOWS_HPP
+#define MFRANCESCHI_CPPLIBRARIES_COMMAND_COMMONS_WINDOWS_HPP
 
 #if MF_WINDOWS
 #    include "Command_commons.hpp"
@@ -25,9 +25,13 @@ namespace MF
 
         SECURITY_ATTRIBUTES &getInheritableSecAttr();
 
+        /**
+         * If the handle is invalid, do nothing.
+         * Otherwise calls CloseHandle then assigns it to invalid handle.
+         */
         void closeH(HANDLE &handle);
     } // namespace Command
 } // namespace MF
 #endif
 
-#endif // MFRANCESCHI_CPPLIBRARIES_COMMAND_WINDOWS_UTILS_HPP
+#endif // MFRANCESCHI_CPPLIBRARIES_COMMAND_COMMONS_WINDOWS_HPP

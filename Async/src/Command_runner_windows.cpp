@@ -1,53 +1,16 @@
 //
-// Created by MartinF on 15/04/2023.
+// Created by MartinF on 08/05/2023.
 //
+#if MF_WINDOWS
 
-#include "Command_windows_utils.hpp"
-#include "MF/SystemErrors.hpp"
+#    include "Command_commons.hpp"
+#    include "Command_commons_windows.hpp"
+#    include "MF/SystemErrors.hpp"
 
 namespace MF
 {
     namespace Command
     {
-        struct StatefulCommand_Base {
-            StatefulCommand_Base(
-                ConsoleInputChoice &stdInChoice,
-                ConsoleOutputChoice &stdOutChoice,
-                ConsoleOutputChoice &stdErrChoice)
-                : stdInChoice(stdInChoice), stdOutChoice(stdOutChoice), stdErrChoice(stdErrChoice) {
-            }
-
-            virtual ProcessItem start() {
-                throw std::runtime_error("Unexpected call to " + std::string(__func__));
-            }
-
-            virtual void kill(int exitCode) {
-                throw std::runtime_error("Unexpected call to " + std::string(__func__));
-            }
-
-            virtual bool isRunning() {
-                return false;
-            }
-
-            virtual bool isDone() {
-                return false;
-            }
-
-            virtual const CommandOver &getCommandOver() {
-                throw std::runtime_error("Unexpected call to " + std::string(__func__));
-            }
-
-            virtual bool waitFor(std::chrono::milliseconds duration) {
-                throw std::runtime_error("Unexpected call to " + std::string(__func__));
-            }
-
-            virtual ~StatefulCommand_Base() = default;
-
-            ConsoleInputChoice &stdInChoice;
-            ConsoleOutputChoice &stdOutChoice;
-            ConsoleOutputChoice &stdErrChoice;
-        };
-
         struct StatefulCommand_NotStartedYet_Base : StatefulCommand_Base {
             StatefulCommand_NotStartedYet_Base(
                 ConsoleInputChoice &stdInChoice,
@@ -268,99 +231,72 @@ namespace MF
             CommandOver commandOver{-1};
         };
 
-        struct CommandRunner_Proxy : CommandRunner {
-            CommandRunner_Proxy(const CommandCall &commandCall) {
-                stdInChoice = commandCall.stdInChoice;
-                stdOutChoice = commandCall.stdOutChoice;
-                stdErrChoice = commandCall.stdErrChoice;
+        CommandRunner_Proxy::CommandRunner_Proxy(const CommandCall &commandCall) {
+            stdInChoice = commandCall.stdInChoice;
+            stdOutChoice = commandCall.stdOutChoice;
+            stdErrChoice = commandCall.stdErrChoice;
 
-                statefulCommandBase =
-                    std::make_unique<StatefulCommand_NotStartedYet_Char>(commandCall);
-            }
+            statefulCommandBase = std::make_unique<StatefulCommand_NotStartedYet_Char>(commandCall);
+        }
 
-            CommandRunner_Proxy(const WideCommandCall &commandCall) {
-                stdInChoice = commandCall.stdInChoice;
-                stdOutChoice = commandCall.stdOutChoice;
-                stdErrChoice = commandCall.stdErrChoice;
+        CommandRunner_Proxy::CommandRunner_Proxy(const WideCommandCall &commandCall) {
+            stdInChoice = commandCall.stdInChoice;
+            stdOutChoice = commandCall.stdOutChoice;
+            stdErrChoice = commandCall.stdErrChoice;
 
-                statefulCommandBase =
-                    std::make_unique<StatefulCommand_NotStartedYet_WideChar>(commandCall);
-            }
+            statefulCommandBase =
+                std::make_unique<StatefulCommand_NotStartedYet_WideChar>(commandCall);
+        }
 
-            CommandRunner &start() override {
-                processHandle = statefulCommandBase->start();
-                statefulCommandBase = std::make_unique<StatefulCommand_Running>(
-                    processHandle, stdInChoice, stdOutChoice, stdErrChoice);
-                return *this;
-            }
+        CommandRunner &CommandRunner_Proxy::start() {
+            processHandle = statefulCommandBase->start();
+            statefulCommandBase = std::make_unique<StatefulCommand_Running>(
+                processHandle, stdInChoice, stdOutChoice, stdErrChoice);
+            return *this;
+        }
 
-            CommandRunner &kill(int exitCode) override {
-                statefulCommandBase->kill(exitCode);
+        CommandRunner &CommandRunner_Proxy::kill(int exitCode) {
+            statefulCommandBase->kill(exitCode);
+            statefulCommandBase = std::make_unique<StatefulCommand_Over>(
+                processHandle, stdInChoice, stdOutChoice, stdErrChoice);
+            return *this;
+        }
+
+        bool CommandRunner_Proxy::isRunning() {
+            return statefulCommandBase->isRunning();
+        }
+
+        bool CommandRunner_Proxy::isDone() {
+            return statefulCommandBase->isDone();
+        }
+
+        const CommandOver &CommandRunner_Proxy::getCommandOver() {
+            return statefulCommandBase->getCommandOver();
+        }
+
+        bool CommandRunner_Proxy::waitFor(std::chrono::milliseconds duration) {
+            bool result = statefulCommandBase->waitFor(duration);
+            if (result) {
                 statefulCommandBase = std::make_unique<StatefulCommand_Over>(
                     processHandle, stdInChoice, stdOutChoice, stdErrChoice);
-                return *this;
             }
-
-            bool isRunning() override {
-                return statefulCommandBase->isRunning();
-            }
-
-            bool isDone() override {
-                return statefulCommandBase->isDone();
-            }
-
-            const CommandOver &getCommandOver() override {
-                return statefulCommandBase->getCommandOver();
-            }
-
-            bool waitFor(
-                std::chrono::milliseconds duration = std::chrono::milliseconds::zero()) override {
-                bool result = statefulCommandBase->waitFor(duration);
-                if (result) {
-                    statefulCommandBase = std::make_unique<StatefulCommand_Over>(
-                        processHandle, stdInChoice, stdOutChoice, stdErrChoice);
-                }
-                return result;
-            }
-
-            std::uintmax_t getHandle() override {
-                return reinterpret_cast<uintmax_t>(processHandle);
-            }
-
-            ~CommandRunner_Proxy() {
-                closeH(processHandle);
-            }
-
-           private:
-            std::unique_ptr<StatefulCommand_Base> statefulCommandBase;
-
-            // Console choices
-            std::shared_ptr<ConsoleInputChoice> stdInChoice;
-            std::shared_ptr<ConsoleOutputChoice> stdOutChoice;
-            std::shared_ptr<ConsoleOutputChoice> stdErrChoice;
-
-            // Data of the created process
-            ProcessItem processHandle = INVALID_HANDLE_VALUE;
-        };
-
-        std::shared_ptr<CommandRunner> runCommandAsync(const CommandCall &commandCall) {
-            return std::make_shared<CommandRunner_Proxy>(commandCall);
+            return result;
         }
 
-        std::shared_ptr<CommandRunner> runCommandAsync(const WideCommandCall &commandCall) {
-            return std::make_shared<CommandRunner_Proxy>(commandCall);
+        void CommandRunner_Proxy::wait() {
+            statefulCommandBase->waitFor(std::chrono::milliseconds::zero());
+            statefulCommandBase = std::make_unique<StatefulCommand_Over>(
+                processHandle, stdInChoice, stdOutChoice, stdErrChoice);
         }
 
-        CommandOver runCommandAndWait(const CommandCall &commandCall) {
-            auto cmd = runCommandAsync(commandCall);
-            cmd->start().waitFor();
-            return cmd->getCommandOver();
+        std::uintmax_t CommandRunner_Proxy::getHandle() {
+            return reinterpret_cast<uintmax_t>(processHandle);
         }
 
-        CommandOver runCommandAndWait(const WideCommandCall &commandCall) {
-            auto cmd = runCommandAsync(commandCall);
-            cmd->start().waitFor();
-            return cmd->getCommandOver();
+        CommandRunner_Proxy::~CommandRunner_Proxy() {
+            closeH(processHandle);
         }
     } // namespace Command
 } // namespace MF
+
+#endif

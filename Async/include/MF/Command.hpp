@@ -91,12 +91,16 @@ namespace MF
             virtual bool isDone() = 0;
 
             /**
-             * Blocks until the process finishes. Waits for the specified duration.
+             * Blocks until the process finishes OR until the specified duration has elapsed.
              * Returns true as soon as the process is finished.
              * Returns false if the process is still running after that duration.
              */
-            virtual bool waitFor(
-                std::chrono::milliseconds duration = std::chrono::milliseconds::zero()) = 0;
+            virtual bool waitFor(std::chrono::milliseconds duration) = 0;
+
+            /**
+             * Blocks until the process finishes.
+             */
+            virtual void wait() = 0;
 
             /**
              * If the process is finished, returns the corresponding CommandOver.
