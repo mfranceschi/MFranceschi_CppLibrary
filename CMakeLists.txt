@@ -20,7 +20,7 @@ project(MFranceschi_CppLibraries
 set(CMAKE_CXX_STANDARD 14)
 
 option(MF_IN_DEV "If true then also builds the testing framework." OFF)
-option(MF_UNICODE "If true then adds the compile definition 'UNICODE=1'." OFF)
+option(MF_UNICODE "If true AND target is Windows then adds the compile definitions 'UNICODE=1' and 'MF_UNICODE=1'." OFF)
 
 # ----- GET THE THREADS LIBRARY ----- #
 find_package(Threads REQUIRED)
@@ -42,8 +42,10 @@ add_compile_definitions(
 ]]
 
 # ----- WINDOWS UNICODE ----- #
-if(MF_UNICODE OR UNICODE)
-    add_compile_definitions(UNICODE=1)
+if(WIN32 AND (MF_UNICODE OR UNICODE))
+    add_compile_definitions(UNICODE=1 MF_UNICODE=1)
+else()
+    add_compile_definitions(MF_UNICODE=0)
 endif()
 
 # ----- DEV AND TESTS SETUP ----- #

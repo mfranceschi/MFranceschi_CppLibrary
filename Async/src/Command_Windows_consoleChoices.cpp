@@ -99,12 +99,12 @@ namespace MF
             }
 
             void afterStop() override {
-                static constexpr size_t BUFFER_LENGTH = 4096;
+                static constexpr size_t BUFFER_LENGTH = 4095;
                 std::array<CharT, BUFFER_LENGTH + 1> buffer{0};
                 DWORD nbBytesRead = 0;
                 do {
                     BOOL result = ReadFile(
-                        pipeStreams.readFromPipe, buffer.data(), buffer.size() * sizeof(CharT),
+                        pipeStreams.readFromPipe, buffer.data(), BUFFER_LENGTH * sizeof(CharT),
                         &nbBytesRead, nullptr);
                     if (!result) {
                         auto lastError = MF::SystemErrors::Win32::getCurrentErrorCode();
@@ -119,7 +119,7 @@ namespace MF
                         }
                     }
                     stringStream << buffer.data();
-                } while (nbBytesRead == buffer.size() * sizeof(CharT));
+                } while (nbBytesRead == BUFFER_LENGTH * sizeof(CharT));
                 closeH(pipeStreams.readFromPipe);
             }
 

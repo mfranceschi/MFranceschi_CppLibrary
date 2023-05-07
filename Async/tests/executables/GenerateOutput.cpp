@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 void throwInvalidInput() {
     throw std::runtime_error(
@@ -25,10 +26,10 @@ int main(int argc, char** argv) {
                             : stream == "err" ? std::cerr
                                               : (throwInvalidInput(), std::cout);
 
-    srand(time(nullptr));
-    const char charToWrite = static_cast<char>('A' + rand() % ('Z' - 'A'));
-    for (auto i = 0; i < expectedLength; i++) {
-        ostream << charToWrite;
-    }
+    std::unique_ptr<char[]> chars = std::make_unique<char[]>(expectedLength + 1);
+    chars[expectedLength] = '\0';
+    std::memset(chars.get(), 'a', sizeof(char));
+
+    ostream << chars;
     return EXIT_SUCCESS;
 }

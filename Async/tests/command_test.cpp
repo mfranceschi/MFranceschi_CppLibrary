@@ -9,12 +9,15 @@
 #include "tests_data.hpp"
 
 #ifndef TEXT
+// Macro used to convert a given string to wide string or not.
+// If not defined then we are not using Windows and the 'UNICODE' macro support,
+// so this macro does nothing and returns its input.
 #    define TEXT(the_string) the_string
 #endif
 
 using namespace ::MF::Command;
 
-#if MF_WINDOWS && UNICODE
+#if MF_UNICODE
 using CCall = WideCommandCall;
 static const auto& lineEnd = MF::Filesystem::LINE_END_WIDE;
 
@@ -116,7 +119,8 @@ TEST_F(CommandTestBase, HelloWorld_OutputToFile) {
     // Features verified:
     // - File output works as intended
     const std::basic_string<TCHAR> filename =
-#if MF_WINDOWS && UNICODE
+        TEXT(CMAKE_CURRENT_BINARY_DIR) +
+#if MF_UNICODE
         MF::Strings::Conversions::ansiToWideChar(Filename_t(test_info_->name()) + ".txt");
 #else
         Filename_t(test_info_->name()) + ".txt";
@@ -125,11 +129,13 @@ TEST_F(CommandTestBase, HelloWorld_OutputToFile) {
     commandCall.stdOutChoice = makeOutputToFile(filename);
     callCommand();
 
-    std::basic_ifstream<TCHAR> fileStream(filename, std::ios_base::in);
-    std::basic_string<TCHAR> line;
-    std::getline(fileStream, line);
-    fileStream.close();
-    EXPECT_EQ(line, HELLO_WORLD_TCHAR);
+    {
+        auto wholeFile = MF::Filesystem::readWholeFile(filename);
+        EXPECT_GT(wholeFile->getSize(), 0) << "Resulting file is empty!";
+        EXPECT_EQ(
+            std::memcmp(wholeFile->getContent(), HELLO_WORLD_TCHAR.data(), wholeFile->getSize()), 0)
+            << "File content (size=" << wholeFile->getSize() << "): " << wholeFile->getContent();
+    }
 
     MF::Filesystem::deleteFile(filename);
 }
@@ -226,10 +232,10 @@ TEST_F(CommandTestBase, OneForEachStream) {
 
     auto errString = errStream.str();
     EXPECT_FALSE(errString.empty());
-    std::basic_ostringstream<TCHAR> oss;
-    oss << "1: " << commandCall.arguments[0] << lineEnd;
-    oss << "2: " << commandCall.arguments[1] << lineEnd;
-    EXPECT_EQ(oss.str(), errString);
+    std::basic_ostringstream<TCHAR> expectedErr;
+    expectedErr << TEXT("1: ") << commandCall.arguments[0] << lineEnd;
+    expectedErr << TEXT("2: ") << commandCall.arguments[1] << lineEnd;
+    EXPECT_EQ(expectedErr.str(), errString);
 }
 
 TEST_F(CommandTestBase, GenerateOutput_Ignored) {

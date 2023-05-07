@@ -4,7 +4,18 @@
 
 #include <iostream>
 
+#if MF_UNICODE
+#    include <fcntl.h>
+#    include <io.h>
 int main() {
-    std::cerr << "Hello, World!"; // not even an end of line
+    _setmode(_fileno(stderr), _O_WTEXT);
+    std::wcerr << L"Hello, World!"; // no end of line
     return 0;
 }
+
+#else
+int main() {
+    std::cerr << "Hello, World!"; // no end of line
+    return 0;
+}
+#endif
