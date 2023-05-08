@@ -73,11 +73,11 @@ namespace MF
 
             /**
              * Kills the process, and only returns once the process has been successfully killed.
-             * Windows: uses "TerminateProcess" and "exitCode" is the exit code of the process.
-             * Unix: uses "kill" to send a SIGKILL to the process; "exitCode" is ignored.
+             * Windows: uses "TerminateProcess" with param EXIT_FAILURE.
+             * Unix: uses "kill" to send a SIGKILL to the process.
              * @return this
              */
-            virtual CommandRunner &kill(int exitCode = -1) = 0;
+            virtual CommandRunner &kill() = 0;
 
             /**
              * Returns true if the process has been started and is not finished yet.

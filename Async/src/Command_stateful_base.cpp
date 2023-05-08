@@ -19,7 +19,7 @@ namespace MF
             throw std::runtime_error("Unexpected call to " + std::string(__func__));
         }
 
-        void StatefulCommand_Base::kill(int exitCode) {
+        void StatefulCommand_Base::kill() {
             throw std::runtime_error("Unexpected call to " + std::string(__func__));
         }
 

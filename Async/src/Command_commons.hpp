@@ -21,10 +21,15 @@ namespace MF
         using ProcessItem = HANDLE;
 #else
         using StreamItem = int;
-        using ProcessItem = pid_t;
+        struct ProcessItem {
+            pid_t pid = -1;
+            int exitStatus = -1;
+            bool hasWaited = false;
+        };
 #endif
 
         extern const StreamItem INVALID_STREAM_ITEM;
+        extern const ProcessItem INVALID_PROCESS_ITEM;
 
         struct ConsoleOutputChoice : Commons::NoCopy, Commons::NoMove {
             virtual void beforeStart() {
@@ -82,14 +87,14 @@ namespace MF
             CommandRunner_Proxy(const WideCommandCall &commandCall);
 #endif
             CommandRunner &start() override;
-            CommandRunner &kill(int exitCode) override;
+            CommandRunner &kill() override;
             bool isRunning() override;
             bool isDone() override;
             const CommandOver &getCommandOver() override;
             bool waitFor(std::chrono::milliseconds duration) override;
             void wait() override;
             std::uintmax_t getHandle() override;
-            ~CommandRunner_Proxy();
+            ~CommandRunner_Proxy() override;
 
            private:
             std::unique_ptr<StatefulCommand_Base> statefulCommandBase;
@@ -100,13 +105,13 @@ namespace MF
             std::shared_ptr<ConsoleOutputChoice> stdErrChoice;
 
             // Data of the created process
-            ProcessItem processHandle = INVALID_STREAM_ITEM;
+            ProcessItem processItem = INVALID_PROCESS_ITEM;
         };
 
         /**
          * The CommandRunner_Proxy uses an underlying state-controlled class.
          */
-        struct StatefulCommand_Base {
+        struct StatefulCommand_Base : Commons::NoCopy, Commons::NoMove {
             StatefulCommand_Base(
                 ConsoleInputChoice &stdInChoice,
                 ConsoleOutputChoice &stdOutChoice,
@@ -114,7 +119,7 @@ namespace MF
 
             virtual ProcessItem start();
 
-            virtual void kill(int exitCode);
+            virtual void kill();
 
             virtual bool isRunning();
 
