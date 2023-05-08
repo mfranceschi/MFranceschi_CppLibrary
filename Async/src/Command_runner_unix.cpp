@@ -7,6 +7,7 @@
 #    include <signal.h>
 #    include <sys/types.h>
 #    include <sys/wait.h>
+#    include <unistd.h>
 
 #    include "Command_commons_unix.hpp"
 #    include "MF/SystemErrors.hpp"
@@ -23,14 +24,53 @@ namespace MF
                       *(commandCall.stdInChoice),
                       *(commandCall.stdOutChoice),
                       *(commandCall.stdErrChoice)) {
+                const char *file = commandCall.executable.c_str();
+
+                const auto &arguments = commandCall.arguments;
+                // TODO: fix this horrible memory mess
+                argv = new const char *[arguments.size() + 2];
+                {
+                    argv[0] = file;
+                    for (std::size_t i = 0; i < arguments.size(); i++) {
+                        const std::string &current = arguments[i];
+                        if (current[0] == '\"' && current[current.size() - 1] == '\"') {
+                            argv[i + 1] = current.substr(1, current.size() - 2).c_str();
+                        } else {
+                            argv[i + 1] = current.c_str();
+                        }
+                    }
+                    argv[arguments.size() + 1] = static_cast<char *>(nullptr);
+                }
             }
 
             ProcessItem start() override {
                 beforeStart();
 
-                // TODO
+                pid_t childProcessItem = fork();
 
-                throw std::runtime_error("Not yet implemented!");
+                if (childProcessItem == 0) {
+                    // Child process
+
+                    dup2(stdInChoice.getStreamItemForStdIn(), STDIN_FILENO);
+                    dup2(stdOutChoice.getStreamItemForStdOut(), STDOUT_FILENO);
+                    dup2(stdErrChoice.getStreamItemForStdErr(), STDERR_FILENO);
+                    /*processInputStream->closeOnFork();
+                    processOutputStream->closeOnFork();
+                    processErrorStream->closeOnFork();*/
+
+                    /*
+                     * Using "Exec VP" because I want the shell to find the executable according to
+                     * usual rules, and I cannot use variadic functions because the number of
+                     * arguments is only known at runtime.
+                     */
+                    int hasError = execvp(file, const_cast<char *const *>(argv));
+                    Errno::throwCurrentSystemErrorIf(true);
+                } else {
+                    // Parent process
+                    ProcessItem processItem;
+                    processItem.pid = childProcessItem;
+                    return processItem;
+                }
             }
 
             ~StatefulCommand_NotStartedYet() override = default;
@@ -47,6 +87,9 @@ namespace MF
                 stdOutChoice.afterStart();
                 stdErrChoice.afterStart();
             }
+
+            const char *file;
+            const char **const argv;
         };
 
         struct StatefulCommand_Running : StatefulCommand_Base {
