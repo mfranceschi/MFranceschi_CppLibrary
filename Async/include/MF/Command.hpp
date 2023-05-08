@@ -17,7 +17,6 @@ namespace MF
     namespace Command
     {
         using Filesystem::Filename_t;
-        using Filesystem::WideFilename_t;
 
         struct ConsoleOutputChoice;
         std::shared_ptr<ConsoleOutputChoice> makeOutputToFile(const Filename_t &filename);
@@ -121,6 +120,7 @@ namespace MF
         CommandOver runCommandAndWait(const CommandCall &commandCall);
 
 #if MF_WINDOWS
+        using Filesystem::WideFilename_t;
 
         std::shared_ptr<ConsoleOutputChoice> makeOutputToFile(const WideFilename_t &filename);
         std::shared_ptr<ConsoleOutputChoice> makeOutputToIOStream(

@@ -3,10 +3,11 @@
 //
 
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 void throwInvalidInput() {
     throw std::runtime_error(
@@ -28,8 +29,9 @@ int main(int argc, char** argv) {
 
     std::unique_ptr<char[]> chars = std::make_unique<char[]>(expectedLength + 1);
     chars[expectedLength] = '\0';
-    std::memset(chars.get(), 'a', sizeof(char));
+    std::memset(chars.get(), 'a', sizeof(char) * expectedLength);
 
-    ostream << chars;
+    ostream << chars.get();
+
     return EXIT_SUCCESS;
 }

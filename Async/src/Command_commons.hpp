@@ -19,6 +19,9 @@ namespace MF
 #if MF_WINDOWS
         using StreamItem = HANDLE;
         using ProcessItem = HANDLE;
+#else
+        using StreamItem = int;
+        using ProcessItem = pid_t;
 #endif
 
         extern const StreamItem INVALID_STREAM_ITEM;

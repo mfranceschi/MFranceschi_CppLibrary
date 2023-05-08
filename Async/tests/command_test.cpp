@@ -4,6 +4,8 @@
 
 #include "MF/Command.hpp"
 
+#include <cstring>
+
 #include "MF/LightWindows.hpp"
 #include "MF/Strings.hpp"
 #include "tests_data.hpp"
@@ -33,6 +35,9 @@ template <typename T>
 inline std::string toStr(T value) {
     return std::to_string(value);
 }
+#    if MF_WINDOWS == 0
+using TCHAR = char;
+#    endif
 #endif
 
 static const std::string HELLO_WORLD = "Hello, World!";
