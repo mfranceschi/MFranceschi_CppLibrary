@@ -24,8 +24,8 @@ std::vector<std::wstring> enumerateVolumeGuids();
  */
 std::vector<std::wstring> getPathsForVolumeGuid(const std::wstring& guid);
 
-struct DiskSpaceInfo {
-    DiskSpaceInfo(const std::wstring& rootPath) {
+struct GetDiskSpaceInfo_Windows {
+    GetDiskSpaceInfo_Windows(const std::wstring& rootPath) {
         // NOTE: while the official documentation mentions booleans,
         // the actual returned value is NOT a boolean but a HRESULT.
         const HRESULT hresult = GetDiskSpaceInformationW(rootPath.data(), &dsi);
@@ -35,6 +35,10 @@ struct DiskSpaceInfo {
 
     Filesize_t getBytesPerSector() const {
         return dsi.BytesPerSector;
+    }
+
+    std::uint16_t getSectorsPerAllocationUnit() const {
+        return dsi.SectorsPerAllocationUnit;
     }
 
     Filesize_t getTotalSize() const {
@@ -54,8 +58,9 @@ struct DiskSpaceInfo {
     Filesize_t sizeCoeff{0};
 };
 
-struct DriveType {
-    DriveType(const std::wstring& rootPath) : driveType(GetDriveTypeW(rootPath.c_str())) {
+struct GetDriveType_Windows {
+    GetDriveType_Windows(const std::wstring& rootPath)
+        : driveType(GetDriveTypeW(rootPath.c_str())) {
         if (driveType == DRIVE_NO_ROOT_DIR) {
             throw std::runtime_error("No volume for this root path!");
         }
@@ -85,8 +90,8 @@ struct DriveType {
     UINT driveType = DRIVE_UNKNOWN;
 };
 
-struct VolumeInformation {
-    VolumeInformation(const std::wstring& rootPath) {
+struct GetVolumeInformation_Windows {
+    GetVolumeInformation_Windows(const std::wstring& rootPath) {
         std::vector<wchar_t> volumeNameBuffer(MAX_PATH + 1);
         std::vector<wchar_t> fileSystemBuffer(MAX_PATH + 1);
         const bool success =
@@ -111,15 +116,15 @@ struct VolumeInformation {
         return flags & FILE_READ_ONLY_VOLUME;
     }
 
-    bool hasUnicodeSupportForFileNames() {
+    bool hasUnicodeSupportForFileNames() const {
         return flags & FILE_UNICODE_ON_DISK;
     }
 
-    bool hasCompressionSupport() {
+    bool hasCompressionSupport() const {
         return flags & FILE_FILE_COMPRESSION;
     }
 
-    bool hasCaseSensitiveFileNamesSupport() {
+    bool hasCaseSensitiveFileNamesSupport() const {
         return flags & FILE_CASE_SENSITIVE_SEARCH;
     }
 
@@ -131,8 +136,8 @@ struct VolumeInformation {
     DWORD flags{0};
 };
 
-struct BootSectorsInfo {
-    BootSectorsInfo(const std::wstring& rootPath) {
+struct IoControl_GetBootSectorsInfo {
+    IoControl_GetBootSectorsInfo(const std::wstring& rootPath) {
         const std::wstring name = LR"(\\.\)" + rootPath.substr(0, 2);
         HANDLE handle = CreateFileW(
             name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0,
@@ -152,7 +157,7 @@ struct BootSectorsInfo {
         MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!success);
     }
 
-    uint16_t getBootSectorsCount() {
+    uint16_t getBootSectorsCount() const {
         return bootAreaInfo.BootSectorCount;
     }
 

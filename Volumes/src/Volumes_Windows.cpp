@@ -18,6 +18,8 @@ namespace MF
 {
     namespace Volumes
     {
+        static const std::wstring EMPTY;
+
         template <typename T>
         struct ProviderWithSimpleConstructor : MF::Commons::NoCopy, MF::Commons::NoMove {
            public:
@@ -40,16 +42,25 @@ namespace MF
             std::unique_ptr<T> store;
         };
 
-        struct VolumeInfo_Windows : VolumeInformation {
-            VolumeInfo_Windows(const std::wstring& rootPath) : rootPath(rootPath) {
+        struct VolumeInfo_Windows : Volume {
+            VolumeInfo_Windows(const std::wstring& volumeGuid)
+                : volumeGuid(volumeGuid),
+                  paths(getPathsForVolumeGuid(volumeGuid)),
+                  rootPath(paths.empty() ? EMPTY : paths[0]) {
             }
 
            private:
-            const std::wstring rootPath;
+            const std::wstring volumeGuid;
+            const std::vector<std::wstring> paths;
+            const std::wstring& rootPath;
 
            public:
             Filesystem::Filesize_t getBytesPerSector() override {
                 return diskSpaceInfo.get(rootPath).getBytesPerSector();
+            }
+
+            std::uint16_t getSectorsPerAllocationUnit() override {
+                return diskSpaceInfo.get(rootPath).getSectorsPerAllocationUnit();
             }
 
             Filesystem::Filesize_t getTotalSize() override {
@@ -117,16 +128,26 @@ namespace MF
             }
 
            private:
-            ProviderWithSimpleConstructor<DiskSpaceInfo> diskSpaceInfo;
-            ProviderWithSimpleConstructor<DriveType> driveType;
-            ProviderWithSimpleConstructor<::VolumeInformation> volumeInformation;
-            ProviderWithSimpleConstructor<BootSectorsInfo> bootSectorsInfo;
+            ProviderWithSimpleConstructor<GetDiskSpaceInfo_Windows> diskSpaceInfo;
+            ProviderWithSimpleConstructor<GetDriveType_Windows> driveType;
+            ProviderWithSimpleConstructor<GetVolumeInformation_Windows> volumeInformation;
+            ProviderWithSimpleConstructor<IoControl_GetBootSectorsInfo> bootSectorsInfo;
         };
 
-        std::unique_ptr<VolumeInformation> get0() {
+        std::unique_ptr<Volume> get0() {
             auto rootPath0 = getPathsForVolumeGuid(enumerateVolumeGuids()[0])[0];
             std::wcout << rootPath0 << std::endl;
             return std::make_unique<VolumeInfo_Windows>(rootPath0);
+        }
+
+        std::vector<std::unique_ptr<Volume>> get1() {
+            const std::vector<std::wstring> volumeGuids = enumerateVolumeGuids();
+            std::vector<std::unique_ptr<Volume>> volumes;
+            volumes.reserve(volumeGuids.size());
+            for (const std::wstring& guid : volumeGuids) {
+                volumes.push_back(std::make_unique<VolumeInfo_Windows>(guid));
+            }
+            return volumes;
         }
     } // namespace Volumes
 } // namespace MF

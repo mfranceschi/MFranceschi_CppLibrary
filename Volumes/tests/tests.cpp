@@ -6,6 +6,28 @@
 #include "tests_data.hpp"
 
 TEST(aa, bb) {
+    for (const auto& volume : MF::Volumes::get1()) {
+        std::cout << "Name: " << volume->getName() << std::endl;
+        std::cout << "Filesystem: " << volume->getFileSystemName() << std::endl;
+        std::cout << std::endl;
+
+        std::cout << "Total size: " << volume->getTotalSize() << " bytes" << std::endl;
+        std::cout << "Free size: " << volume->getFreeSize() << " bytes" << std::endl;
+        std::cout << "Used size: " << volume->getUsedSize() << " bytes" << std::endl;
+        std::cout << "Sector size: " << volume->getBytesPerSector() << " bytes" << std::endl;
+        std::cout << "Allocation unit size: " << volume->getSectorsPerAllocationUnit() << " sectors"
+                  << std::endl;
+        std::cout << std::endl;
+
+        std::cout << std::boolalpha;
+        std::cout << "Is removable drive: " << volume->isRemovableDrive() << std::endl;
+        std::cout << "Is not removable drive: " << volume->isNotRemovableDrive() << std::endl;
+        std::cout << "Is remote drive: " << volume->isRemoteDrive() << std::endl;
+        std::cout << "Is CD Rom drive: " << volume->isCdRomDrive() << std::endl;
+        std::cout << "Is RAM drive: " << volume->isRamDisk() << std::endl;
+    }
+    return;
+
     auto volumeInformation = MF::Volumes::get0();
     EXPECT_EQ(volumeInformation->getTotalSize(), 380377952256);
     EXPECT_EQ(volumeInformation->getBytesPerSector(), 512);

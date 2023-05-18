@@ -11,10 +11,15 @@ namespace MF
 {
     namespace Volumes
     {
-        struct VolumeInformation {
+        struct Volume {
             // From
             // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdiskspaceinformationw
+
+            /** @returns the disk sector size */
             virtual Filesystem::Filesize_t getBytesPerSector() = 0;
+
+            /** @returns the number  */
+            virtual std::uint16_t getSectorsPerAllocationUnit() = 0;
             virtual Filesystem::Filesize_t getTotalSize() = 0;
             virtual Filesystem::Filesize_t getFreeSize() = 0;
             virtual Filesystem::Filesize_t getUsedSize() = 0;
@@ -45,7 +50,7 @@ namespace MF
             virtual std::uint16_t getBootSectorsCount() = 0;
 
             virtual bool isBootable() {
-                return getBootSectorsCount() == 0;
+                return getBootSectorsCount() > 0;
             }
 
             // From
@@ -55,9 +60,12 @@ namespace MF
 
             // If I need to create a File Handle to a drive, to know is this:
             // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea#physical-disks-and-volumes
+
+            virtual ~Volume() = default;
         };
 
-        std::unique_ptr<VolumeInformation> get0();
+        std::unique_ptr<Volume> get0();
+        std::vector<std::unique_ptr<Volume>> get1();
     } // namespace Volumes
 } // namespace MF
 
