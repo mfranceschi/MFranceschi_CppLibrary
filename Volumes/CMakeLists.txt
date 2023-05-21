@@ -1,5 +1,5 @@
 
-add_library(MF_Volumes STATIC)
+add_library(MF_Volumes STATIC src/NotMountedException.cpp)
 
 file(GLOB Private_Sources
         CONFIGURE_DEPENDS

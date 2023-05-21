@@ -5,6 +5,7 @@
 #ifndef MFRANCESCHI_CPPLIBRARIES_VOLUMES_INTERNAL_HPP
 #define MFRANCESCHI_CPPLIBRARIES_VOLUMES_INTERNAL_HPP
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -140,8 +141,8 @@ struct IoControl_GetBootSectorsInfo {
     IoControl_GetBootSectorsInfo(const std::wstring& rootPath) {
         const std::wstring name = LR"(\\.\)" + rootPath.substr(0, 2);
         HANDLE handle = CreateFileW(
-            name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0,
-            nullptr);
+            name.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            nullptr, OPEN_EXISTING, 0, nullptr);
         MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle == INVALID_HANDLE_VALUE);
 
         DWORD bytesReturned{0};
@@ -158,11 +159,14 @@ struct IoControl_GetBootSectorsInfo {
     }
 
     uint16_t getBootSectorsCount() const {
+        std::cout << "BootSectorCount=" << bootAreaInfo.BootSectorCount
+                  << ", BootSector0=" << bootAreaInfo.BootSectors[0].Offset.QuadPart
+                  << ", BootSector1=" << bootAreaInfo.BootSectors[1].Offset.QuadPart;
         return bootAreaInfo.BootSectorCount;
     }
 
    private:
-    _BOOT_AREA_INFO bootAreaInfo{0};
+    BOOT_AREA_INFO bootAreaInfo{0};
 };
 
 #endif

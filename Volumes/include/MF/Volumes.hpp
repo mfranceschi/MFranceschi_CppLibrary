@@ -11,18 +11,47 @@ namespace MF
 {
     namespace Volumes
     {
+        using ::MF::Filesystem::Filename_t;
+        using ::MF::Filesystem::Filesize_t;
+#if MF_WINDOWS
+        using ::MF::Filesystem::WideFilename_t;
+#endif
+
+        struct FileSystem {
+            virtual Filename_t getName() = 0;
+            virtual bool hasUnicodeSupportForFileNames() = 0;
+            virtual bool hasFileBasedCompressionSupport() = 0;
+            virtual bool hasCaseSensitiveFileNamesSupport() = 0;
+        };
+
         struct Volume {
-            // From
-            // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdiskspaceinformationw
+            virtual Filename_t getName() = 0;
+            virtual Filename_t getFileSystemName() = 0;
+            virtual Filename_t getSystemIdentifier() = 0;
+            virtual std::vector<Filename_t> getMountPoints() = 0;
+            virtual bool isMounted() {
+                return !getMountPoints().empty();
+            }
+
+            /*
+#if MF_WINDOWS
+            virtual WideFilename_t getNameWide() = 0;
+            virtual Filename_t getFileSystemName() = 0;
+            virtual Filename_t getSystemIdentifier() = 0;
+            virtual std::vector<Filename_t> getMountPoints() = 0;
+#endif
+             */
 
             /** @returns the disk sector size */
-            virtual Filesystem::Filesize_t getBytesPerSector() = 0;
+            virtual Filesize_t getBytesPerSector() = 0;
 
-            /** @returns the number  */
+            /** @returns the number of sectors in a given allocation unit (also known as cluster, or
+             * block). */
             virtual std::uint16_t getSectorsPerAllocationUnit() = 0;
-            virtual Filesystem::Filesize_t getTotalSize() = 0;
-            virtual Filesystem::Filesize_t getFreeSize() = 0;
-            virtual Filesystem::Filesize_t getUsedSize() = 0;
+
+            virtual Filesize_t getTotalSize() = 0;
+            virtual Filesize_t getFreeSize() = 0;
+            virtual Filesize_t getUsedSize() = 0;
 
             // From
             // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypew
@@ -34,11 +63,9 @@ namespace MF
 
             // From
             // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getvolumeinformationa
-            virtual Filesystem::Filename_t getName() = 0;
-            virtual Filesystem::Filename_t getFileSystemName() = 0;
             virtual bool isReadOnly() = 0;
             virtual bool hasUnicodeSupportForFileNames() = 0;
-            virtual bool hasCompressionSupport() = 0;
+            virtual bool hasFileBasedCompressionSupport() = 0;
             virtual bool hasCaseSensitiveFileNamesSupport() = 0;
 
             // From
@@ -64,8 +91,15 @@ namespace MF
             virtual ~Volume() = default;
         };
 
-        std::unique_ptr<Volume> get0();
-        std::vector<std::unique_ptr<Volume>> get1();
+        std::vector<std::unique_ptr<Volume>> listAll();
+
+        /**
+         * Exception type thrown when calling most methods on a volume that is not mounted.
+         */
+        struct NotMountedException : std::runtime_error {
+            NotMountedException(const std::string& volumeSystemId);
+            NotMountedException(const std::wstring& volumeSystemId);
+        };
     } // namespace Volumes
 } // namespace MF
 
