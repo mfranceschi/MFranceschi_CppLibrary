@@ -5,6 +5,7 @@
 #ifndef MFRANCESCHI_CPPLIBRARIES_OPTIONALS_HPP
 #define MFRANCESCHI_CPPLIBRARIES_OPTIONALS_HPP
 
+#include <bitset>
 #include <functional>
 #include <memory>
 #include <stdexcept>
@@ -44,7 +45,6 @@ namespace MF
          * An Optional can contain a value, or be empty.
          * The API is inspired from Java's Optional, with some changes.
          *
-         * An optional contains a value, or does not contain a value (in which case it is empty).
          * You can build an optional with the functions "empty()" and "of(...)".
          */
         template <typename T>
@@ -307,6 +307,108 @@ namespace MF
 
         template <typename T>
         const OptionalPtr<T> Optional<T>::EMPTY = std::make_shared<OptionalEmpty<T>>();
+
+        /**
+         * Optimized Optional class for booleans.
+         * Uses only 2 bits in theory!
+         */
+        class OptionalBool {
+           private:
+            const std::bitset<2> theBitset;
+
+            constexpr bool isSet() const {
+                return theBitset[0];
+            }
+
+            constexpr bool isTrue() const {
+                return theBitset[1];
+            }
+
+            constexpr OptionalBool(bool value) : theBitset(0b10 | static_cast<int>(value)) {
+            }
+
+            constexpr OptionalBool() : theBitset() {
+            }
+
+           public:
+            static constexpr OptionalBool of(bool value) {
+                return OptionalBool(value);
+            }
+
+            static constexpr OptionalBool empty() {
+                return OptionalBool();
+            }
+
+            constexpr bool get() const {
+                return getOrThrow();
+            }
+
+            constexpr bool isPresent() const {
+                return isSet();
+            }
+
+            constexpr bool isEmpty() const {
+                return !isPresent();
+            }
+
+            constexpr operator bool() const {
+                return isPresent();
+            }
+
+            constexpr OptionalBool filter(const std::function<bool(bool)>& predicate) {
+                if (isEmpty()) {
+                    return empty();
+                }
+
+                return predicate(isTrue()) ? *this : empty();
+            }
+
+            OptionalBool useThisOrRun(const std::function<OptionalBool(void)>& supplier) {
+                return isPresent() ? *this : supplier();
+            }
+
+            constexpr bool getOrDefault(bool other) const {
+                return isPresent() ? isTrue() : other;
+            }
+
+            bool getOrRun(const std::function<bool(void)>& supplier) {
+                return isPresent() ? isTrue() : supplier();
+            }
+
+            constexpr bool getOrThrow() const {
+                if (!isSet()) {
+                    throw EmptyOptionalException();
+                }
+                return isTrue();
+            }
+
+            template <typename ExceptionToThrow>
+            constexpr bool getOrThrow(const std::function<ExceptionToThrow(void)> supplier) const {
+                if (isPresent()) {
+                    return isTrue();
+                }
+
+                throw supplier();
+            }
+
+            constexpr bool operator==(const OptionalBool& other) const {
+                if (isPresent()) {
+                    return other.contains(isTrue());
+                }
+
+                return other.isEmpty();
+            }
+
+            constexpr bool contains(bool other) const {
+                return isPresent() ? isTrue() == other : false;
+            }
+
+            OptionalPtr<bool> toOptionalPtr() const {
+                return isSet() ? Optionals::ofLvalue(isTrue()) : Optionals::empty<bool>();
+            }
+
+            ~OptionalBool() = default;
+        };
     } // namespace Optionals
 } // namespace MF
 

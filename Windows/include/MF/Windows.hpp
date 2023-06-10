@@ -42,6 +42,22 @@ namespace MF
             DWORD dWord;
         };
 
+        struct HResult {
+            bool isSuccess() const {
+                return SUCCEEDED(hr);
+            }
+            bool isFailure() const {
+                return FAILED(hr);
+            }
+            std::uint16_t getFacility() const {
+                return HRESULT_FACILITY(hr);
+            }
+            std::uint16_t getCode() const {
+                return HRESULT_CODE(hr);
+            }
+            const HRESULT hr;
+        };
+
         static inline FileAttributes makeFileAttributes(DWORD value) {
             FileAttributes instance(value);
             if (instance.isInvalid()) {

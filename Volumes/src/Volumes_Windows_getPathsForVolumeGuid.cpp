@@ -2,7 +2,6 @@
 // Created by Utilisateur on 04/04/2023.
 //
 
-#include <iostream>
 #include <vector>
 
 #include "MF/LightWindows.hpp"
@@ -13,7 +12,6 @@ std::vector<std::wstring> getPathsForVolumeGuid(const std::wstring& guid) {
 
     DWORD charCount = MAX_PATH + 1;
     std::vector<wchar_t> names;
-    std::wcout << "Volume GUID is " << guid << std::endl;
 
     for (;;) {
         names.reserve(charCount);

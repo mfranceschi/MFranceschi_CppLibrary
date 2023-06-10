@@ -29,7 +29,9 @@ struct GetDiskSpaceInfo_Windows {
     GetDiskSpaceInfo_Windows(const std::wstring& rootPath) {
         // NOTE: while the official documentation mentions booleans,
         // the actual returned value is NOT a boolean but a HRESULT.
+        MF::SystemErrors::Win32::setCurrentErrorCode(0);
         const HRESULT hresult = GetDiskSpaceInformationW(rootPath.data(), &dsi);
+        MF::SystemErrors::Win32::getCurrentErrorCode();
         MF::SystemErrors::Win32::throwCurrentSystemErrorIf(FAILED(hresult));
         sizeCoeff = dsi.SectorsPerAllocationUnit * dsi.BytesPerSector;
     }

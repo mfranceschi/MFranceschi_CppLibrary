@@ -15,7 +15,7 @@ target_sources(MF_Volumes
         PUBLIC
         ${Public_Sources}
         )
-target_link_libraries(MF_Volumes PUBLIC MF_Commons MF_Windows_Header MF_Filesystem MF_SystemErrors MF_Strings)
+target_link_libraries(MF_Volumes PUBLIC MF_Commons MF_Windows_Header MF_Filesystem MF_SystemErrors MF_Strings MF_Optionals)
 target_include_directories(MF_Volumes PUBLIC include)
 
 if (MF_IN_DEV)

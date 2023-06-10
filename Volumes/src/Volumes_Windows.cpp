@@ -18,8 +18,6 @@ namespace MF
 {
     namespace Volumes
     {
-        static const std::wstring EMPTY;
-
         template <typename T>
         struct ProviderWithSimpleConstructor : MF::Commons::NoCopy, MF::Commons::NoMove {
            public:
@@ -45,9 +43,7 @@ namespace MF
         struct VolumeInfo_Windows : Volume {
             VolumeInfo_Windows(
                 const std::wstring& volumeGuid, const std::vector<std::wstring>& paths)
-                : volumeGuid(volumeGuid),
-                  paths(paths),
-                  rootPath(paths.empty() ? EMPTY : this->paths[0]) {
+                : volumeGuid(volumeGuid), paths(paths), rootPath(this->paths[0]) {
             }
 
            private:
@@ -60,44 +56,45 @@ namespace MF
                 return true;
             }
 
-            Filesystem::Filesize_t getBytesPerSector() override {
-                return diskSpaceInfo.get(rootPath).getBytesPerSector();
+            OptionalPtr<Filesize_t> getBytesPerSector() override {
+                return Optionals::ofLvalue(diskSpaceInfo.get(rootPath).getBytesPerSector());
             }
 
-            std::uint16_t getSectorsPerAllocationUnit() override {
-                return diskSpaceInfo.get(rootPath).getSectorsPerAllocationUnit();
+            OptionalPtr<std::uint16_t> getSectorsPerAllocationUnit() override {
+                return Optionals::ofLvalue(
+                    diskSpaceInfo.get(rootPath).getSectorsPerAllocationUnit());
             }
 
-            Filesystem::Filesize_t getTotalSize() override {
-                return diskSpaceInfo.get(rootPath).getTotalSize();
+            OptionalPtr<Filesize_t> getTotalSize() override {
+                return Optionals::ofLvalue(diskSpaceInfo.get(rootPath).getTotalSize());
             }
 
-            Filesystem::Filesize_t getFreeSize() override {
-                return diskSpaceInfo.get(rootPath).getFreeSize();
+            OptionalPtr<Filesize_t> getFreeSize() override {
+                return Optionals::ofLvalue(diskSpaceInfo.get(rootPath).getFreeSize());
             }
 
-            Filesystem::Filesize_t getUsedSize() override {
-                return diskSpaceInfo.get(rootPath).getUsedSize();
+            OptionalPtr<Filesize_t> getUsedSize() override {
+                return Optionals::ofLvalue(diskSpaceInfo.get(rootPath).getUsedSize());
             }
 
-            bool isRemovableDrive() override {
-                return driveType.get(rootPath).isRemovableDrive();
+            OptionalBool isRemovableDrive() override {
+                return OptionalBool::of(driveType.get(rootPath).isRemovableDrive());
             }
 
-            bool isNotRemovableDrive() override {
-                return driveType.get(rootPath).isNotRemovableDrive();
+            OptionalBool isNotRemovableDrive() override {
+                return OptionalBool::of(driveType.get(rootPath).isNotRemovableDrive());
             }
 
-            bool isCdRomDrive() override {
-                return driveType.get(rootPath).isCdRomDrive();
+            OptionalBool isCdRomDrive() override {
+                return OptionalBool::of(driveType.get(rootPath).isCdRomDrive());
             }
 
-            bool isRemoteDrive() override {
-                return driveType.get(rootPath).isRemoteDrive();
+            OptionalBool isRemoteDrive() override {
+                return OptionalBool::of(driveType.get(rootPath).isRemoteDrive());
             }
 
-            bool isRamDisk() override {
-                return driveType.get(rootPath).isRamDisk();
+            OptionalBool isRamDisk() override {
+                return OptionalBool::of(driveType.get(rootPath).isRamDisk());
             }
 
             Filesystem::Filename_t getName() override {
@@ -108,28 +105,22 @@ namespace MF
                 return volumeInformation.get(rootPath).getFileSystemName();
             }
 
-            bool isReadOnly() override {
-                return volumeInformation.get(rootPath).isReadOnly();
+            OptionalBool isReadOnly() override {
+                return OptionalBool::of(volumeInformation.get(rootPath).isReadOnly());
             }
 
-            bool hasUnicodeSupportForFileNames() override {
-                return volumeInformation.get(rootPath).hasUnicodeSupportForFileNames();
+            OptionalBool hasUnicodeSupportForFileNames() override {
+                return OptionalBool::of(
+                    volumeInformation.get(rootPath).hasUnicodeSupportForFileNames());
             }
 
-            bool hasFileBasedCompressionSupport() override {
-                return volumeInformation.get(rootPath).hasCompressionSupport();
+            OptionalBool hasFileBasedCompressionSupport() override {
+                return OptionalBool::of(volumeInformation.get(rootPath).hasCompressionSupport());
             }
 
-            bool hasCaseSensitiveFileNamesSupport() override {
-                return volumeInformation.get(rootPath).hasCaseSensitiveFileNamesSupport();
-            }
-
-            uint16_t getBootSectorsCount() override {
-                return bootSectorsInfo.get(rootPath).getBootSectorsCount();
-            }
-
-            bool isCompressed() override {
-                return false;
+            OptionalBool hasCaseSensitiveFileNamesSupport() override {
+                return OptionalBool::of(
+                    volumeInformation.get(rootPath).hasCaseSensitiveFileNamesSupport());
             }
 
             Filesystem::Filename_t getSystemIdentifier() override {
@@ -168,44 +159,44 @@ namespace MF
                 return false;
             }
 
-            Filesystem::Filesize_t getBytesPerSector() override {
-                throwNotMounted();
+            OptionalPtr<Filesize_t> getBytesPerSector() override {
+                return Optionals::empty<Filesize_t>();
             }
 
-            std::uint16_t getSectorsPerAllocationUnit() override {
-                throwNotMounted();
+            OptionalPtr<std::uint16_t> getSectorsPerAllocationUnit() override {
+                return Optionals::empty<std::uint16_t>();
             }
 
-            Filesystem::Filesize_t getTotalSize() override {
-                throwNotMounted();
+            OptionalPtr<Filesize_t> getTotalSize() override {
+                return Optionals::empty<Filesize_t>();
             }
 
-            Filesystem::Filesize_t getFreeSize() override {
-                throwNotMounted();
+            OptionalPtr<Filesize_t> getFreeSize() override {
+                return Optionals::empty<Filesize_t>();
             }
 
-            Filesystem::Filesize_t getUsedSize() override {
-                throwNotMounted();
+            OptionalPtr<Filesize_t> getUsedSize() override {
+                return Optionals::empty<Filesize_t>();
             }
 
-            bool isRemovableDrive() override {
-                throwNotMounted();
+            OptionalBool isRemovableDrive() override {
+                return OptionalBool::empty();
             }
 
-            bool isNotRemovableDrive() override {
-                throwNotMounted();
+            OptionalBool isNotRemovableDrive() override {
+                return OptionalBool::empty();
             }
 
-            bool isCdRomDrive() override {
-                throwNotMounted();
+            OptionalBool isCdRomDrive() override {
+                return OptionalBool::empty();
             }
 
-            bool isRemoteDrive() override {
-                throwNotMounted();
+            OptionalBool isRemoteDrive() override {
+                return OptionalBool::empty();
             }
 
-            bool isRamDisk() override {
-                throwNotMounted();
+            OptionalBool isRamDisk() override {
+                return OptionalBool::empty();
             }
 
             Filesystem::Filename_t getName() override {
@@ -216,28 +207,20 @@ namespace MF
                 throwNotMounted();
             }
 
-            bool isReadOnly() override {
-                throwNotMounted();
+            OptionalBool isReadOnly() override {
+                return OptionalBool::empty();
             }
 
-            bool hasUnicodeSupportForFileNames() override {
-                throwNotMounted();
+            OptionalBool hasUnicodeSupportForFileNames() override {
+                return OptionalBool::empty();
             }
 
-            bool hasFileBasedCompressionSupport() override {
-                throwNotMounted();
+            OptionalBool hasFileBasedCompressionSupport() override {
+                return OptionalBool::empty();
             }
 
-            bool hasCaseSensitiveFileNamesSupport() override {
-                throwNotMounted();
-            }
-
-            uint16_t getBootSectorsCount() override {
-                throwNotMounted();
-            }
-
-            bool isCompressed() override {
-                throwNotMounted();
+            OptionalBool hasCaseSensitiveFileNamesSupport() override {
+                return OptionalBool::empty();
             }
 
             Filesystem::Filename_t getSystemIdentifier() override {

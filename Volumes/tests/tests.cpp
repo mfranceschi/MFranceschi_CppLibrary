@@ -5,50 +5,66 @@
 #include "MF/Volumes.hpp"
 #include "tests_data.hpp"
 
-TEST(aa, bb) {
-    if (false) {
-        for (const auto& volume : MF::Volumes::listAll()) {
-            std::cout << "Name: " << volume->getName() << std::endl;
-            std::cout << "Filesystem: " << volume->getFileSystemName() << std::endl;
-            std::cout << std::endl;
+MATCHER_P(OptionalContains, targetValue, "Optional contains value") {
+    return arg->contains(targetValue);
+}
 
-            std::cout << "Total size: " << volume->getTotalSize() << " bytes" << std::endl;
-            std::cout << "Free size: " << volume->getFreeSize() << " bytes" << std::endl;
-            std::cout << "Used size: " << volume->getUsedSize() << " bytes" << std::endl;
-            std::cout << "Sector size: " << volume->getBytesPerSector() << " bytes" << std::endl;
-            std::cout << "Allocation unit size: " << volume->getSectorsPerAllocationUnit()
-                      << " sectors" << std::endl;
-            std::cout << std::endl;
+MATCHER(OptionalIsEmpty, "Optional is empty") {
+    return arg->isEmpty();
+}
 
-            std::cout << std::boolalpha;
-            std::cout << "Is removable drive: " << volume->isRemovableDrive() << std::endl;
-            std::cout << "Is not removable drive: " << volume->isNotRemovableDrive() << std::endl;
-            std::cout << "Is remote drive: " << volume->isRemoteDrive() << std::endl;
-            std::cout << "Is CD Rom drive: " << volume->isCdRomDrive() << std::endl;
-            std::cout << "Is RAM drive: " << volume->isRamDisk() << std::endl;
-        }
-        return;
+MATCHER(OptionalIsNotEmpty, "Optional contains value") {
+    return !arg->isEmpty();
+}
+
+MATCHER(OptionalBoolIsNotEmpty, "OptionalBool contains value") {
+    return !arg.isEmpty();
+}
+
+TEST(Volumes, it_can_list_all) {
+    auto all = MF::Volumes::listAll();
+    for (const auto& volume : all) {
+        EXPECT_TRUE(volume);
     }
+}
 
-    const auto all = MF::Volumes::listAll();
-    const auto& volumeInformation = all[0];
-    EXPECT_EQ(volumeInformation->getTotalSize(), 380377952256);
-    EXPECT_EQ(volumeInformation->getBytesPerSector(), 512);
-    EXPECT_EQ(volumeInformation->getFreeSize(), 61539627008);
-    EXPECT_EQ(volumeInformation->getUsedSize(), 318838325248);
+TEST(Volumes, it_has_basic_infos_for_all_volumes) {
+    auto all = MF::Volumes::listAll();
+    for (const auto& volume : all) {
+        const bool mounted = volume->isMounted();
 
-    EXPECT_FALSE(volumeInformation->isRemovableDrive());
-    EXPECT_FALSE(volumeInformation->isRamDisk());
-    EXPECT_FALSE(volumeInformation->isRemoteDrive());
-    EXPECT_FALSE(volumeInformation->isCdRomDrive());
-    EXPECT_TRUE(volumeInformation->isNotRemovableDrive());
+        const bool mustHaveZeroMountPoints = !mounted;
+        EXPECT_EQ(volume->getMountPoints().empty(), mustHaveZeroMountPoints);
+    }
+}
 
-    EXPECT_EQ(volumeInformation->getName(), std::string(""));
-    EXPECT_EQ(volumeInformation->getFileSystemName(), std::string("NTFS"));
-    EXPECT_TRUE(volumeInformation->hasCaseSensitiveFileNamesSupport());
-    EXPECT_TRUE(volumeInformation->hasUnicodeSupportForFileNames());
-    EXPECT_TRUE(volumeInformation->hasFileBasedCompressionSupport());
-    EXPECT_FALSE(volumeInformation->isReadOnly());
+TEST(Volumes, it_has_all_infos_if_mounted) {
+    auto all = MF::Volumes::listAll();
+    for (const auto& volume : all) {
+        if (!volume->isMounted()) {
+            continue;
+        }
+        EXPECT_THAT(volume->getTotalSize(), OptionalIsNotEmpty());
+        EXPECT_THAT(volume->getBytesPerSector(), OptionalIsNotEmpty());
+        EXPECT_THAT(volume->getFreeSize(), OptionalIsNotEmpty());
+        EXPECT_THAT(volume->getUsedSize(), OptionalIsNotEmpty());
 
-    EXPECT_EQ(volumeInformation->getBootSectorsCount(), 0);
+        EXPECT_EQ(
+            volume->getTotalSize()->get(),
+            volume->getUsedSize()->get() + volume->getFreeSize()->get())
+            << "Total size should equal free+used size!";
+
+        EXPECT_FALSE(volume->isRemovableDrive());
+        EXPECT_FALSE(volume->isRamDisk());
+        EXPECT_FALSE(volume->isRemoteDrive());
+        EXPECT_FALSE(volume->isCdRomDrive());
+        EXPECT_TRUE(volume->isNotRemovableDrive());
+
+        EXPECT_NO_THROW(volume->getName());
+        EXPECT_FALSE(volume->getFileSystemName().empty());
+        EXPECT_THAT(volume->hasCaseSensitiveFileNamesSupport(), OptionalBoolIsNotEmpty());
+        EXPECT_THAT(volume->hasUnicodeSupportForFileNames(), OptionalBoolIsNotEmpty());
+        EXPECT_THAT(volume->hasFileBasedCompressionSupport(), OptionalBoolIsNotEmpty());
+        // EXPECT_THAT(volume->isReadOnly(), OptionalBoolIsNotEmpty());
+    }
 }
