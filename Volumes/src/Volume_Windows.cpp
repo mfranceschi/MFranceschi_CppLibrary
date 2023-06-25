@@ -5,13 +5,13 @@
 #if MF_WINDOWS
 
 #    include <cassert>
-#    include <iostream>
 #    include <mutex>
 
 #    include "MF/Commons.hpp"
 #    include "MF/SystemErrors.hpp"
 #    include "MF/Volumes.hpp"
-#    include "Volumes_internal.hpp"
+#    include "NotMountedVolume.hpp"
+#    include "Volumes_Windows_internal.hpp"
 
 using namespace MF::Volumes;
 
@@ -41,9 +41,8 @@ namespace MF
             std::unique_ptr<T> store;
         };
 
-        struct VolumeInfo_Windows : Volume {
-            VolumeInfo_Windows(
-                const std::wstring& volumeGuid, const std::vector<std::wstring>& paths)
+        struct Volume_Windows : Volume {
+            Volume_Windows(const std::wstring& volumeGuid, const std::vector<std::wstring>& paths)
                 : volumeGuid(volumeGuid), paths(paths), rootPath(this->paths[0]) {
             }
 
@@ -159,111 +158,6 @@ namespace MF
             ProviderWithSimpleConstructor<GetVolumeInformation_Windows> volumeInformation;
         };
 
-        struct NotMountedVolumeInfo_Windows : Volume {
-            NotMountedVolumeInfo_Windows(const std::wstring& volumeGuid) : volumeGuid(volumeGuid) {
-            }
-
-           private:
-            [[noreturn]] void throwNotMounted() {
-                throw NotMountedException(volumeGuid);
-            }
-
-            const std::wstring volumeGuid;
-
-           public:
-            bool isMounted() override {
-                return false;
-            }
-
-            OptionalPtr<Filesize_t> getBytesPerSector() override {
-                return Optionals::empty<Filesize_t>();
-            }
-
-            OptionalPtr<std::uint16_t> getSectorsPerAllocationUnit() override {
-                return Optionals::empty<std::uint16_t>();
-            }
-
-            OptionalPtr<Filesize_t> getTotalSize() override {
-                return Optionals::empty<Filesize_t>();
-            }
-
-            OptionalPtr<Filesize_t> getFreeSize() override {
-                return Optionals::empty<Filesize_t>();
-            }
-
-            OptionalPtr<Filesize_t> getUsedSize() override {
-                return Optionals::empty<Filesize_t>();
-            }
-
-            OptionalBool isRemovableDrive() override {
-                return OptionalBool::empty();
-            }
-
-            OptionalBool isNotRemovableDrive() override {
-                return OptionalBool::empty();
-            }
-
-            OptionalBool isCdRomDrive() override {
-                return OptionalBool::empty();
-            }
-
-            OptionalBool isRemoteDrive() override {
-                return OptionalBool::empty();
-            }
-
-            OptionalBool isRamDisk() override {
-                return OptionalBool::empty();
-            }
-
-            Filename_t getName() override {
-                throwNotMounted();
-            }
-
-            Filename_t getFileSystemName() override {
-                throwNotMounted();
-            }
-
-            WideFilename_t getNameWide() override {
-                throwNotMounted();
-            }
-
-            WideFilename_t getFileSystemNameWide() override {
-                throwNotMounted();
-            }
-
-            OptionalBool isReadOnly() override {
-                return OptionalBool::empty();
-            }
-
-            OptionalBool hasUnicodeSupportForFileNames() override {
-                return OptionalBool::empty();
-            }
-
-            OptionalBool hasFileBasedCompressionSupport() override {
-                return OptionalBool::empty();
-            }
-
-            OptionalBool hasCaseSensitiveFileNamesSupport() override {
-                return OptionalBool::empty();
-            }
-
-            Filename_t getSystemIdentifier() override {
-                return MF::Strings::Conversions::wideCharToUtf8(volumeGuid);
-            }
-
-            WideFilename_t getSystemIdentifierWide() override {
-                return volumeGuid;
-            }
-
-            std::vector<Filename_t> getMountPoints() override {
-                return {};
-            }
-
-            std::vector<WideFilename_t> getMountPointsWide() override {
-                return {};
-            }
-        };
-
         std::vector<std::unique_ptr<Volume>> listAll() {
             const std::vector<std::wstring> volumeGuids = enumerateVolumeGuids();
             std::vector<std::unique_ptr<Volume>> volumes;
@@ -271,9 +165,9 @@ namespace MF
             for (const std::wstring& guid : volumeGuids) {
                 const auto paths = getPathsForVolumeGuid(guid);
                 if (paths.empty()) {
-                    volumes.push_back(std::make_unique<NotMountedVolumeInfo_Windows>(guid));
+                    volumes.push_back(std::make_unique<NotMountedVolume>(guid));
                 } else {
-                    volumes.push_back(std::make_unique<VolumeInfo_Windows>(guid, paths));
+                    volumes.push_back(std::make_unique<Volume_Windows>(guid, paths));
                 }
             }
             return volumes;
@@ -289,7 +183,7 @@ namespace MF
 
             const auto paths = getPathsForVolumeGuid(guid);
             assert(!paths.empty());
-            return std::make_unique<VolumeInfo_Windows>(guid, paths);
+            return std::make_unique<Volume_Windows>(guid, paths);
         }
     } // namespace Volumes
 } // namespace MF

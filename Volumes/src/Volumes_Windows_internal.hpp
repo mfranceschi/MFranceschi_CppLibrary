@@ -2,27 +2,19 @@
 // Created by Utilisateur on 04/04/2023.
 //
 
-#ifndef MFRANCESCHI_CPPLIBRARIES_VOLUMES_INTERNAL_HPP
-#define MFRANCESCHI_CPPLIBRARIES_VOLUMES_INTERNAL_HPP
-
-#include <iostream>
-#include <string>
-#include <vector>
-
-#include "MF/Filesystem.hpp"
-using namespace MF::Filesystem;
+#ifndef MFRANCESCHI_CPPLIBRARIES_VOLUMES_WINDOWS_INTERNAL_HPP
+#define MFRANCESCHI_CPPLIBRARIES_VOLUMES_WINDOWS_INTERNAL_HPP
 
 #if MF_WINDOWS
-#    include <Windows.h>
-#    include <winioctl.h>
+#    include <string>
+#    include <vector>
 
+#    include "MF/LightWindows.hpp"
 #    include "MF/Strings.hpp"
+#    include "MF/Volumes.hpp"
 
 std::vector<std::wstring> enumerateVolumeGuids();
 
-/**
- * Returns an array of root paths for that volume, often of format "C:\".
- */
 std::vector<std::wstring> getPathsForVolumeGuid(const std::wstring& guid);
 
 struct GetDiskSpaceInfo_Windows {
@@ -107,19 +99,19 @@ struct GetVolumeInformation_Windows {
         fileSystem.assign(fileSystemBuffer.data());
     }
 
-    Filename_t getName() {
+    Filename_t getName() const {
         return MF::Strings::Conversions::wideCharToUtf8(volumeName);
     }
 
-    WideFilename_t getNameWide() {
+    WideFilename_t getNameWide() const {
         return volumeName;
     }
 
-    Filename_t getFileSystemName() {
+    Filename_t getFileSystemName() const {
         return MF::Strings::Conversions::wideCharToUtf8(fileSystem);
     }
 
-    WideFilename_t getFileSystemNameWide() {
+    WideFilename_t getFileSystemNameWide() const {
         return fileSystem;
     }
 
@@ -149,4 +141,4 @@ struct GetVolumeInformation_Windows {
 
 #endif
 
-#endif // MFRANCESCHI_CPPLIBRARIES_VOLUMES_INTERNAL_HPP
+#endif // MFRANCESCHI_CPPLIBRARIES_VOLUMES_WINDOWS_INTERNAL_HPP

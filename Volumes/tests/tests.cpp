@@ -88,7 +88,7 @@ TEST(Volumes, it_can_get_root_drive) {
 }
 
 TEST(Volumes, it_works_on_g_drive) {
-    GTEST_SKIP() << "For local testing for now."; // TODO remove
+    // GTEST_SKIP() << "For local testing for now."; // TODO remove
 
     auto volume = MF::Volumes::getMaybeForMountPoint("G:\\");
     EXPECT_NO_THROW(volume->isRamDisk());

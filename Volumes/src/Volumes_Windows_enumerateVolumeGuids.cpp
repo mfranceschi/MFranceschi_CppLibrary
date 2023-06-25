@@ -5,7 +5,6 @@
 #include "MF/LightWindows.hpp"
 #include "MF/SystemErrors.hpp"
 #include "MF/Windows.hpp"
-#include "Volumes_internal.hpp"
 
 std::vector<std::wstring> enumerateVolumeGuids() {
     std::vector<std::wstring> result;
