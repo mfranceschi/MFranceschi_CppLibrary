@@ -324,7 +324,7 @@ namespace MF
                 return theBitset[1];
             }
 
-            constexpr OptionalBool(bool value) : theBitset(0b10 | static_cast<int>(value)) {
+            constexpr OptionalBool(bool value) : theBitset(1 + (static_cast<int>(value) << 1)) {
             }
 
             constexpr OptionalBool() : theBitset() {

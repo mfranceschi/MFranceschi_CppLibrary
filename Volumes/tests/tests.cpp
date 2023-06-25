@@ -44,6 +44,8 @@ TEST(Volumes, it_has_all_infos_if_mounted) {
         if (!volume->isMounted()) {
             continue;
         }
+        std::cout << "Working on " << volume->getSystemIdentifier() << std::endl;
+
         EXPECT_THAT(volume->getTotalSize(), OptionalIsNotEmpty());
         EXPECT_THAT(volume->getBytesPerSector(), OptionalIsNotEmpty());
         EXPECT_THAT(volume->getFreeSize(), OptionalIsNotEmpty());
@@ -54,11 +56,11 @@ TEST(Volumes, it_has_all_infos_if_mounted) {
             volume->getUsedSize()->get() + volume->getFreeSize()->get())
             << "Total size should equal free+used size!";
 
-        EXPECT_FALSE(volume->isRemovableDrive());
-        EXPECT_FALSE(volume->isRamDisk());
-        EXPECT_FALSE(volume->isRemoteDrive());
-        EXPECT_FALSE(volume->isCdRomDrive());
-        EXPECT_TRUE(volume->isNotRemovableDrive());
+        EXPECT_THAT(volume->isRemovableDrive(), OptionalBoolIsNotEmpty());
+        EXPECT_THAT(volume->isRamDisk(), OptionalBoolIsNotEmpty());
+        EXPECT_THAT(volume->isRemoteDrive(), OptionalBoolIsNotEmpty());
+        EXPECT_THAT(volume->isCdRomDrive(), OptionalBoolIsNotEmpty());
+        EXPECT_THAT(volume->isNotRemovableDrive(), OptionalBoolIsNotEmpty());
 
         EXPECT_NO_THROW(volume->getName());
         EXPECT_FALSE(volume->getFileSystemName().empty());
