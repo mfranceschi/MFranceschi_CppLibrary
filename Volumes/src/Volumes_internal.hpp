@@ -111,8 +111,16 @@ struct GetVolumeInformation_Windows {
         return MF::Strings::Conversions::wideCharToUtf8(volumeName);
     }
 
+    WideFilename_t getNameWide() {
+        return volumeName;
+    }
+
     Filename_t getFileSystemName() {
         return MF::Strings::Conversions::wideCharToUtf8(fileSystem);
+    }
+
+    WideFilename_t getFileSystemNameWide() {
+        return fileSystem;
     }
 
     bool isReadOnly() const {
@@ -137,38 +145,6 @@ struct GetVolumeInformation_Windows {
     DWORD serialNumber{0};
     DWORD maxComponentLength{0};
     DWORD flags{0};
-};
-
-struct IoControl_GetBootSectorsInfo {
-    IoControl_GetBootSectorsInfo(const std::wstring& rootPath) {
-        const std::wstring name = LR"(\\.\)" + rootPath.substr(0, 2);
-        HANDLE handle = CreateFileW(
-            name.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-            nullptr, OPEN_EXISTING, 0, nullptr);
-        MF::SystemErrors::Win32::throwCurrentSystemErrorIf(handle == INVALID_HANDLE_VALUE);
-
-        DWORD bytesReturned{0};
-        const bool success = DeviceIoControl(
-                                 (HANDLE)handle, // handle to volume
-                                 FSCTL_GET_BOOT_AREA_INFO, // dwIoControlCode
-                                 nullptr, // input buffer
-                                 0, // size of input buffer
-                                 &bootAreaInfo, // output buffer
-                                 sizeof(bootAreaInfo), // size of output buffer
-                                 &bytesReturned, nullptr) == TRUE;
-        CloseHandle(handle);
-        MF::SystemErrors::Win32::throwCurrentSystemErrorIf(!success);
-    }
-
-    uint16_t getBootSectorsCount() const {
-        std::cout << "BootSectorCount=" << bootAreaInfo.BootSectorCount
-                  << ", BootSector0=" << bootAreaInfo.BootSectors[0].Offset.QuadPart
-                  << ", BootSector1=" << bootAreaInfo.BootSectors[1].Offset.QuadPart;
-        return bootAreaInfo.BootSectorCount;
-    }
-
-   private:
-    BOOT_AREA_INFO bootAreaInfo{0};
 };
 
 #endif

@@ -98,12 +98,20 @@ namespace MF
                 return OptionalBool::of(driveType.get(rootPath).isRamDisk());
             }
 
-            Filesystem::Filename_t getName() override {
+            Filename_t getName() override {
                 return volumeInformation.get(rootPath).getName();
             }
 
-            Filesystem::Filename_t getFileSystemName() override {
+            WideFilename_t getNameWide() override {
+                return volumeInformation.get(rootPath).getNameWide();
+            }
+
+            Filename_t getFileSystemName() override {
                 return volumeInformation.get(rootPath).getFileSystemName();
+            }
+
+            WideFilename_t getFileSystemNameWide() override {
+                return volumeInformation.get(rootPath).getFileSystemNameWide();
             }
 
             OptionalBool isReadOnly() override {
@@ -124,12 +132,16 @@ namespace MF
                     volumeInformation.get(rootPath).hasCaseSensitiveFileNamesSupport());
             }
 
-            Filesystem::Filename_t getSystemIdentifier() override {
+            Filename_t getSystemIdentifier() override {
                 return MF::Strings::Conversions::wideCharToUtf8(volumeGuid);
             }
 
-            std::vector<Filesystem::Filename_t> getMountPoints() override {
-                std::vector<Filesystem::Filename_t> mountPoints;
+            WideFilename_t getSystemIdentifierWide() override {
+                return volumeGuid;
+            }
+
+            std::vector<Filename_t> getMountPoints() override {
+                std::vector<Filename_t> mountPoints;
                 mountPoints.reserve(paths.size());
                 for (const std::wstring& path : paths) {
                     mountPoints.push_back(MF::Strings::Conversions::wideCharToUtf8(path));
@@ -137,11 +149,14 @@ namespace MF
                 return mountPoints;
             }
 
+            std::vector<WideFilename_t> getMountPointsWide() override {
+                return paths;
+            }
+
            private:
             ProviderWithSimpleConstructor<GetDiskSpaceInfo_Windows> diskSpaceInfo;
             ProviderWithSimpleConstructor<GetDriveType_Windows> driveType;
             ProviderWithSimpleConstructor<GetVolumeInformation_Windows> volumeInformation;
-            ProviderWithSimpleConstructor<IoControl_GetBootSectorsInfo> bootSectorsInfo;
         };
 
         struct NotMountedVolumeInfo_Windows : Volume {
@@ -200,11 +215,19 @@ namespace MF
                 return OptionalBool::empty();
             }
 
-            Filesystem::Filename_t getName() override {
+            Filename_t getName() override {
                 throwNotMounted();
             }
 
-            Filesystem::Filename_t getFileSystemName() override {
+            Filename_t getFileSystemName() override {
+                throwNotMounted();
+            }
+
+            WideFilename_t getNameWide() override {
+                throwNotMounted();
+            }
+
+            WideFilename_t getFileSystemNameWide() override {
                 throwNotMounted();
             }
 
@@ -224,11 +247,19 @@ namespace MF
                 return OptionalBool::empty();
             }
 
-            Filesystem::Filename_t getSystemIdentifier() override {
+            Filename_t getSystemIdentifier() override {
                 return MF::Strings::Conversions::wideCharToUtf8(volumeGuid);
             }
 
-            std::vector<Filesystem::Filename_t> getMountPoints() override {
+            WideFilename_t getSystemIdentifierWide() override {
+                return volumeGuid;
+            }
+
+            std::vector<Filename_t> getMountPoints() override {
+                return {};
+            }
+
+            std::vector<WideFilename_t> getMountPointsWide() override {
                 return {};
             }
         };
