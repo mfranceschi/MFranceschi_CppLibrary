@@ -4,6 +4,7 @@
 
 #if MF_WINDOWS
 
+#    include <cassert>
 #    include <iostream>
 #    include <mutex>
 
@@ -245,6 +246,19 @@ namespace MF
                 }
             }
             return volumes;
+        }
+
+        std::unique_ptr<Volume> getMaybeForMountPoint(const Filename_t& path) {
+            const WideFilename_t wPath = Strings::Conversions::utf8ToWideChar(path);
+            WideFilename_t guid;
+            guid.resize(50);
+            const BOOL volumeGuidFound =
+                GetVolumeNameForVolumeMountPointW(wPath.data(), &(guid[0]), 50);
+            SystemErrors::Win32::throwCurrentSystemErrorIf(volumeGuidFound == FALSE);
+
+            const auto paths = getPathsForVolumeGuid(guid);
+            assert(!paths.empty());
+            return std::make_unique<VolumeInfo_Windows>(guid, paths);
         }
     } // namespace Volumes
 } // namespace MF

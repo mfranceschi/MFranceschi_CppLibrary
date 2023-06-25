@@ -95,6 +95,8 @@ namespace MF
 
         std::vector<std::unique_ptr<Volume>> listAll();
 
+        std::unique_ptr<Volume> getMaybeForMountPoint(const Filename_t& path);
+
         /**
          * Exception type thrown when calling most methods on a volume that is not mounted.
          */
