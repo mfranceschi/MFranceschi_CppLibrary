@@ -26,7 +26,7 @@ std::ostream &operator<<(std::ostream &theOstream, const std::vector<T> &data) {
     return theOstream;
 }
 
-TEST(UnpolishedTest, FromAnotherRepo) {
+TEST(Containers, stream_full) {
     using namespace MF::Containers;
     using std::cout;
 

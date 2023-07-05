@@ -1,5 +1,5 @@
 
-add_executable(MF_Containers_Tests)
+add_executable(MF_Containers_Tests fixed_length_vector_tests.cpp)
 target_link_libraries(
         MF_Containers_Tests
         PUBLIC
