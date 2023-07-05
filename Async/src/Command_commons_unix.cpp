@@ -16,6 +16,7 @@ namespace MF
     {
         using ::MF::SystemErrors::Errno;
         const StreamItem INVALID_STREAM_ITEM = -1;
+        const ProcessItem INVALID_PROCESS_ITEM = {-1};
 
         static void makePipe(StreamItem &read, StreamItem &write) {
             std::array<int, 2> fileDescriptors{};
@@ -56,6 +57,13 @@ namespace MF
 
         StreamItem openNullFileToWrite() {
             return openFileToWrite("/dev/null");
+        }
+
+        void closeFd(int &fd) {
+            if (fd < 0) {
+                close(fd);
+                fd = -1;
+            }
         }
     } // namespace Command
 } // namespace MF

@@ -1,5 +1,5 @@
 
-add_library(MF_Async STATIC EXCLUDE_FROM_ALL)
+add_library(MF_Async STATIC EXCLUDE_FROM_ALL src/Command_console_choices_unix.cpp)
 target_include_directories(MF_Async PUBLIC include)
 target_link_libraries(MF_Async PUBLIC MF_Commons MF_Filesystem PRIVATE MF_Windows_Header MF_SystemErrors MF_Windows)
 target_sources(

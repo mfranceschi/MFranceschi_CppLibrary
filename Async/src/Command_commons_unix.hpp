@@ -7,6 +7,14 @@
 
 #if MF_UNIX
 #    include "Command_commons.hpp"
+
+namespace MF
+{
+    namespace Command
+    {
+        void closeFd(int& fd);
+    }
+} // namespace MF
 #endif
 
 #endif // MFRANCESCHI_CPPLIBRARIES_COMMAND_COMMONS_UNIX_HPP
