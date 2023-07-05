@@ -9,6 +9,8 @@
 #    include <sys/wait.h>
 #    include <unistd.h>
 
+#    include <cstring>
+
 #    include "Command_commons_unix.hpp"
 #    include "MF/SystemErrors.hpp"
 
@@ -23,30 +25,37 @@ namespace MF
                 : StatefulCommand_Base(
                       *(commandCall.stdInChoice),
                       *(commandCall.stdOutChoice),
-                      *(commandCall.stdErrChoice)) {
-                const char *file = commandCall.executable.c_str();
+                      *(commandCall.stdErrChoice)),
+                  nbrArgs(commandCall.arguments.size()),
+                  argv(new char *[nbrArgs + 2]),
+                  file(commandCall.executable.c_str()) {
+                // Arg 0 is the executable name, by convention.
+                argv[0] = new char[commandCall.executable.size() + 1];
+                std::strncpy(argv[0], file, commandCall.executable.size() + 1);
 
-                const auto &arguments = commandCall.arguments;
-                // TODO: fix this horrible memory mess
-                argv = new const char *[arguments.size() + 2];
-                {
-                    argv[0] = file;
-                    for (std::size_t i = 0; i < arguments.size(); i++) {
-                        const std::string &current = arguments[i];
-                        if (current[0] == '\"' && current[current.size() - 1] == '\"') {
-                            argv[i + 1] = current.substr(1, current.size() - 2).c_str();
-                        } else {
-                            argv[i + 1] = current.c_str();
-                        }
+                // Last item of the 'argv' array is a NULL pointer to indicate the end.
+                argv[nbrArgs + 1] = nullptr;
+
+                for (std::size_t i = 0; i < nbrArgs; i++) {
+                    const std::string &current = commandCall.arguments[i];
+                    char *newArray = new char[current.size() + 1];
+                    std::strncpy(newArray, current.c_str(), current.size());
+                    newArray[current.size()] = '\0';
+
+                    if (current[0] == '\"' && current[current.size() - 1] == '\"') {
+                        // If the current arg string is surrounded by double quotes, remove
+                        // those. TODO: does it make sense?
+                        newArray[current.size() - 1] = '\0';
+                        newArray++;
                     }
-                    argv[arguments.size() + 1] = static_cast<char *>(nullptr);
+                    argv[i + 1] = newArray;
                 }
             }
 
             ProcessItem start() override {
                 beforeStart();
 
-                pid_t childProcessItem = fork();
+                const pid_t childProcessItem = fork();
 
                 if (childProcessItem == 0) {
                     // Child process
@@ -58,13 +67,8 @@ namespace MF
                     processOutputStream->closeOnFork();
                     processErrorStream->closeOnFork();*/
 
-                    /*
-                     * Using "Exec VP" because I want the shell to find the executable according to
-                     * usual rules, and I cannot use variadic functions because the number of
-                     * arguments is only known at runtime.
-                     */
-                    int hasError = execvp(file, const_cast<char *const *>(argv));
-                    Errno::throwCurrentSystemErrorIf(true);
+                    execvp(file, argv);
+                    throw Errno::getCurrentSystemError();
                 } else {
                     // Parent process
                     ProcessItem processItem;
@@ -73,7 +77,13 @@ namespace MF
                 }
             }
 
-            ~StatefulCommand_NotStartedYet() override = default;
+            ~StatefulCommand_NotStartedYet() override {
+                delete[] argv[0];
+                for (size_t iArg = 0; iArg < nbrArgs; iArg++) {
+                    delete[] argv[iArg + 1];
+                }
+                delete[] argv;
+            }
 
            protected:
             void beforeStart() {
@@ -88,8 +98,10 @@ namespace MF
                 stdErrChoice.afterStart();
             }
 
+           private:
+            const size_t nbrArgs;
+            char **const argv;
             const char *file;
-            const char **const argv;
         };
 
         struct StatefulCommand_Running : StatefulCommand_Base {
