@@ -26,11 +26,11 @@ namespace MF
                       *(commandCall.stdOutChoice),
                       *(commandCall.stdErrChoice)),
                   nbrArgs(commandCall.arguments.size()),
-                  argv(new char *[nbrArgs + 2]),
-                  file(commandCall.executable.c_str()) {
+                  argv(new char *[nbrArgs + 2]) {
                 // Arg 0 is the executable name, by convention.
                 argv[0] = new char[commandCall.executable.size() + 1];
-                std::strncpy(argv[0], file, commandCall.executable.size() + 1);
+                std::strncpy(
+                    argv[0], commandCall.executable.c_str(), commandCall.executable.size() + 1);
 
                 // Last item of the 'argv' array is a NULL pointer to indicate the end.
                 argv[nbrArgs + 1] = nullptr;
@@ -46,6 +46,7 @@ namespace MF
                         // those. TODO: does it make sense?
                         newArray[current.size() - 1] = '\0';
                         newArray++;
+                        argHasFixedQuotes[i] = true;
                     }
                     argv[i + 1] = newArray;
                 }
@@ -66,7 +67,7 @@ namespace MF
                     processOutputStream->closeOnFork();
                     processErrorStream->closeOnFork();*/
 
-                    execvp(file, argv);
+                    execvp(argv[0], argv);
                     throw Errno::getCurrentSystemError();
                 } else {
                     // Parent process
@@ -79,7 +80,11 @@ namespace MF
             ~StatefulCommand_NotStartedYet() override {
                 delete[] argv[0];
                 for (size_t iArg = 0; iArg < nbrArgs; iArg++) {
-                    delete[] argv[iArg + 1];
+                    char *toDelete = argv[iArg + 1];
+                    if (argHasFixedQuotes[iArg]) {
+                        toDelete--;
+                    }
+                    delete[] toDelete;
                 }
                 delete[] argv;
             }
@@ -100,7 +105,7 @@ namespace MF
            private:
             const size_t nbrArgs;
             char **const argv;
-            const char *file;
+            std::vector<bool> argHasFixedQuotes = std::vector<bool>(nbrArgs);
         };
 
         struct StatefulCommand_Running : StatefulCommand_Base {

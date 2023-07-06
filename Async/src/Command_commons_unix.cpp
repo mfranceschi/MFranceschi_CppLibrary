@@ -50,7 +50,7 @@ namespace MF
         }
 
         StreamItem openFileToWrite(const Filename_t &filename) {
-            StreamItem streamItem = open(filename.c_str(), O_WRONLY);
+            StreamItem streamItem = open(filename.c_str(), O_WRONLY | O_CREAT);
             Errno::throwCurrentSystemErrorIf(streamItem == -1);
             return streamItem;
         }
