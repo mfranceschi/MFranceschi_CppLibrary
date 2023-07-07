@@ -12,6 +12,11 @@ namespace MF
 {
     namespace Containers
     {
+        struct DefaultConstruct_t {
+            explicit DefaultConstruct_t() = default;
+        };
+        extern const DefaultConstruct_t use_default_constructor;
+
         namespace internals
         {
             template <typename size_type>
@@ -49,6 +54,16 @@ namespace MF
 
             FixedLengthVector(size_type nbrElements)
                 : ptr(new T[nbrElements]), nbrElements(nbrElements) {
+            }
+
+            FixedLengthVector(size_type nbrElements, DefaultConstruct_t defaultConstruct)
+                : FixedLengthVector(nbrElements) {
+                static_assert(
+                    std::is_default_constructible<T>::value,
+                    "Cannot use if T is not default constructible!");
+                for (size_type i = 0; i < nbrElements; i++) {
+                    ptr[i] = T{};
+                }
             }
 
             FixedLengthVector(

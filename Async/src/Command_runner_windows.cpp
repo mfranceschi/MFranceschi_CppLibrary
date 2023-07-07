@@ -7,6 +7,8 @@
 #    include "Command_commons_windows.hpp"
 #    include "MF/SystemErrors.hpp"
 
+static constexpr UINT EXIT_CODE_FOR_KILLED = -1;
+
 namespace MF
 {
     namespace Command
@@ -144,20 +146,20 @@ namespace MF
                 const std::shared_ptr<ConsoleOutputChoice> &stdOutChoice,
                 const std::shared_ptr<ConsoleOutputChoice> &stdErrChoice)
                 : StatefulCommand_Base(*stdInChoice, *stdOutChoice, *stdErrChoice),
-                  processHandle(processItem) {
+                  processItem(processItem) {
             }
 
-            void kill(int exitCode) override {
+            void kill() override {
                 MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                    TerminateProcess(processHandle, exitCode) == FALSE);
+                    TerminateProcess(processItem, EXIT_CODE_FOR_KILLED) == FALSE);
                 MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                    WaitForSingleObject(processHandle, INFINITE) != WAIT_OBJECT_0);
+                    WaitForSingleObject(processItem, INFINITE) != WAIT_OBJECT_0);
             }
 
             bool isRunning() override {
                 DWORD exitCode;
                 MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                    !GetExitCodeProcess(processHandle, &exitCode));
+                    !GetExitCodeProcess(processItem, &exitCode));
                 return exitCode == STILL_ACTIVE;
             }
 
@@ -168,7 +170,7 @@ namespace MF
             bool waitFor(
                 std::chrono::milliseconds duration = std::chrono::milliseconds::zero()) override {
                 DWORD result = WaitForSingleObject(
-                    processHandle,
+                    processItem,
                     duration == std::chrono::milliseconds::zero() ? INFINITE : duration.count());
                 if (result == WAIT_OBJECT_0) {
                     // It means that the process terminated.
@@ -196,7 +198,7 @@ namespace MF
             }
 
             // Data of the created process
-            const HANDLE processHandle = INVALID_HANDLE_VALUE;
+            const HANDLE processItem = INVALID_HANDLE_VALUE;
         };
 
         struct StatefulCommand_Over : StatefulCommand_Base {
@@ -206,10 +208,10 @@ namespace MF
                 const std::shared_ptr<ConsoleOutputChoice> &stdOutChoice,
                 const std::shared_ptr<ConsoleOutputChoice> &stdErrChoice)
                 : StatefulCommand_Base(*stdInChoice, *stdOutChoice, *stdErrChoice),
-                  processHandle(processItem) {
+                  processItem(processItem) {
                 DWORD exitCode;
                 MF::SystemErrors::Win32::throwCurrentSystemErrorIf(
-                    !GetExitCodeProcess(processHandle, &exitCode));
+                    !GetExitCodeProcess(processItem, &exitCode));
                 commandOver.exitCode = exitCode;
             }
 
@@ -225,7 +227,7 @@ namespace MF
 
            private:
             // Data of the created process
-            const HANDLE processHandle;
+            const HANDLE processItem;
 
             // Data of the terminated process
             CommandOver commandOver{-1};
@@ -249,16 +251,16 @@ namespace MF
         }
 
         CommandRunner &CommandRunner_Proxy::start() {
-            processHandle = statefulCommandBase->start();
+            processItem = statefulCommandBase->start();
             statefulCommandBase = std::make_unique<StatefulCommand_Running>(
-                processHandle, stdInChoice, stdOutChoice, stdErrChoice);
+                processItem, stdInChoice, stdOutChoice, stdErrChoice);
             return *this;
         }
 
-        CommandRunner &CommandRunner_Proxy::kill(int exitCode) {
-            statefulCommandBase->kill(exitCode);
+        CommandRunner &CommandRunner_Proxy::kill() {
+            statefulCommandBase->kill();
             statefulCommandBase = std::make_unique<StatefulCommand_Over>(
-                processHandle, stdInChoice, stdOutChoice, stdErrChoice);
+                processItem, stdInChoice, stdOutChoice, stdErrChoice);
             return *this;
         }
 
@@ -278,7 +280,7 @@ namespace MF
             bool result = statefulCommandBase->waitFor(duration);
             if (result) {
                 statefulCommandBase = std::make_unique<StatefulCommand_Over>(
-                    processHandle, stdInChoice, stdOutChoice, stdErrChoice);
+                    processItem, stdInChoice, stdOutChoice, stdErrChoice);
             }
             return result;
         }
@@ -286,15 +288,15 @@ namespace MF
         void CommandRunner_Proxy::wait() {
             statefulCommandBase->waitFor(std::chrono::milliseconds::zero());
             statefulCommandBase = std::make_unique<StatefulCommand_Over>(
-                processHandle, stdInChoice, stdOutChoice, stdErrChoice);
+                processItem, stdInChoice, stdOutChoice, stdErrChoice);
         }
 
         std::uintmax_t CommandRunner_Proxy::getHandle() {
-            return reinterpret_cast<uintmax_t>(processHandle);
+            return reinterpret_cast<uintmax_t>(processItem);
         }
 
         CommandRunner_Proxy::~CommandRunner_Proxy() {
-            closeH(processHandle);
+            closeH(processItem);
         }
     } // namespace Command
 } // namespace MF

@@ -26,7 +26,7 @@ namespace MF
         }
 
         static void makeFdClosedOnExec(int fileDescriptor) {
-            Errno::throwCurrentSystemErrorIf(fcntl(fileDescriptor, F_SETFD, FD_CLOEXEC) != -1);
+            Errno::throwCurrentSystemErrorIf(fcntl(fileDescriptor, F_SETFD, FD_CLOEXEC) == -1);
         }
 
         PipeStreams makePipeThatChildWillReadFrom() {

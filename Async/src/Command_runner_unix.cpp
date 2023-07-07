@@ -9,6 +9,7 @@
 #    include <unistd.h>
 
 #    include <cstring>
+#    include <thread>
 
 #    include "Command_commons_unix.hpp"
 #    include "MF/SystemErrors.hpp"
@@ -73,6 +74,9 @@ namespace MF
                     // Parent process
                     ProcessItem processItem;
                     processItem.pid = childProcessItem;
+
+                    afterStart();
+
                     return processItem;
                 }
             }
@@ -134,13 +138,17 @@ namespace MF
                 return !isRunning();
             }
 
-            bool waitFor(
-                std::chrono::milliseconds duration = std::chrono::milliseconds::zero()) override {
+            bool waitFor(std::chrono::milliseconds duration) override {
                 if (duration == std::chrono::milliseconds::zero()) {
                     Errno::throwCurrentSystemErrorIf(
                         ::waitpid(processItem.pid, &processItem.exitStatus, 0) == -1);
                     processItem.hasWaited = true;
                     return true;
+                }
+                using std::chrono::steady_clock;
+                const auto startTime = steady_clock::now();
+                while (steady_clock::now() < startTime + duration) {
+                    std::this_thread::yield();
                 }
                 // TODO
                 return false;

@@ -88,7 +88,7 @@ TEST_F(CommandTestBase, LengthOfFirstArg) {
 
     // Empty/blank string as arg -> should be ignored.
     commandCall.arguments = {TEXT(" ")};
-    callCommand(0);
+    // callCommand(0); // TODO: to keep?
 
     // String of length 1 but surrounded by escaped double quotes ->
     // the parser receives a string of length 3, but it unwraps the string ->

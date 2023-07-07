@@ -2,6 +2,12 @@
 // Created by MartinF on 12/03/2022.
 //
 
-#include "MF/Array.hpp"
+#include "MF/FixedLengthVector.hpp"
 
-// TODO REMOVE ME
+namespace MF
+{
+    namespace Containers
+    {
+        const DefaultConstruct_t use_default_constructor = DefaultConstruct_t{};
+    }
+} // namespace MF

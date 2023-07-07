@@ -3,9 +3,10 @@
 //
 
 #if MF_WINDOWS
+#    include "Command_commons_windows.hpp"
+
 #    include <sstream>
 
-#    include "Command_commons_windows.hpp"
 #    include "MF/SystemErrors.hpp"
 #    include "MF/Windows.hpp"
 
@@ -16,6 +17,7 @@ namespace MF
         using MF::Windows::Handles::makeHandleInheritable;
 
         const StreamItem INVALID_STREAM_ITEM = INVALID_HANDLE_VALUE;
+        const StreamItem INVALID_PROCESS_ITEM = INVALID_HANDLE_VALUE;
 
         /// Use this handle as a sample for inheritable handles.
         static SECURITY_ATTRIBUTES securityAttributesForInheritableHandles{

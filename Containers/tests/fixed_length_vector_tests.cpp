@@ -10,7 +10,7 @@
 using namespace MF::Containers;
 
 TEST(Containers, fixed_length_vector_full) {
-    FixedLengthVector<int> fixedLengthVector(2);
+    FixedLengthVector<int> fixedLengthVector(2, use_default_constructor);
 
     EXPECT_EQ(fixedLengthVector[0], 0);
     EXPECT_EQ(fixedLengthVector.at(0), 0);
