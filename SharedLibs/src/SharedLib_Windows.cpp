@@ -4,6 +4,7 @@
 
 #if MF_WINDOWS
 #    include <algorithm>
+#    include <mutex>
 #    include <vector>
 
 #    include "MF/LightWindows.hpp"
