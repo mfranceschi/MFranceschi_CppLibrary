@@ -6,7 +6,7 @@
 #include <cwctype>
 #include <locale>
 
-#include "../../Commons/include/MF/Commons.hpp"
+#include "MF/Commons.hpp"
 #include "MF/Strings.hpp"
 
 namespace MF

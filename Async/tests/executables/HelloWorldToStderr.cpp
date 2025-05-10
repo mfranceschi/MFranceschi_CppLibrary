@@ -8,14 +8,14 @@
 #    include <fcntl.h>
 #    include <io.h>
 int main() {
-    _setmode(_fileno(stdout), _O_WTEXT);
-    std::wcout << L"Hello, World!"; // no end of line
+    _setmode(_fileno(stderr), _O_WTEXT);
+    std::wcerr << L"Hello, World!"; // no end of line
     return 0;
 }
 
 #else
 int main() {
-    std::cout << "Hello, World!"; // no end of line
+    std::cerr << "Hello, World!"; // no end of line
     return 0;
 }
 #endif

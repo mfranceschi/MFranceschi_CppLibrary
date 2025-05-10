@@ -5,8 +5,8 @@
 #ifndef MYWORKS_TEST0_COMMAND_HPP
 #define MYWORKS_TEST0_COMMAND_HPP
 
-#include <functional>
-#include <sstream>
+#include <chrono>
+#include <istream>
 #include <string>
 #include <vector>
 
@@ -16,150 +16,148 @@ namespace MF
 {
     namespace Command
     {
+        using Filesystem::Filename_t;
 
-        enum class OutputChoice {
-            KEEP, // Let it on the console
-            KILL, // Silent and ignore
-            EXPORT, // Write outputs into the file "outputFile"
-            EXPORT_APPEND, // Append outputs into the file "outputFile"
-            RETRIEVE // Get outputs as string in the return structure
-        };
+        struct ConsoleOutputChoice;
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToFile(const Filename_t &filename);
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToIOStream(
+            std::basic_iostream<char> &stream);
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToConsole();
+        std::shared_ptr<ConsoleOutputChoice> makeOutputIgnored();
 
-        using ErrorChoice = OutputChoice;
-
-        enum class InputChoice {
-            NONE, // Nothing
-            STRING, // Give the string "inputString"
-            FROM_FILE // Gives the file named "inputString" as input
-        };
-
-        enum class ReturnChoice {
-            WHEN_DONE, // Return the function right after it finishes (no new thread created)
-            IMMEDIATELY, // The function returns now and the command runs independently
-            FUNCTION // Same as IMMEDIATELY, but also calls the given function when done
-        };
-
-        enum class InterruptChoice {
-            NEVER, // No restriction for the execution
-            AFTER_TIME, // Interrupts the execution after the given time
-            ON_DEMAND // Interrupts the execution when some function is called (returned in
-                      // CommandReturn)
-        };
-
-        struct CommandReturn {
-            int returnCode = 0; // Return value of the command
-            std::string outputText; // [?] Complete string of the outputs
-            std::string errorText; // [?] Complete string of the errors
-            std::function<void()>
-                callToTerminate; // [?] Call this to (try to) force the command to terminate
-        };
-
-        using Filesystem::SFilename_t;
+        struct ConsoleInputChoice;
+        std::shared_ptr<ConsoleInputChoice> makeInputFromFile(const Filename_t &filename);
+        std::shared_ptr<ConsoleInputChoice> makeInputFromString(const std::string &string);
+        std::shared_ptr<ConsoleInputChoice> makeInputFromIOStream(
+            std::basic_iostream<char> &stream);
+        std::shared_ptr<ConsoleInputChoice> makeInputFromConsole();
+        std::shared_ptr<ConsoleInputChoice> makeInputEmpty();
 
         struct CommandCall {
-            SFilename_t executable; // Name or path to the executable
-            std::vector<SFilename_t> arguments; // List of arguments to the executable, they will be
-                                                // concatenated with " ".
-            SFilename_t outputFile; // [?] File in which to write outputs
-            OutputChoice outputChoice = OutputChoice::KEEP; // Choice for outputs
-            SFilename_t errorFile; // [?] File in which to write errors
-            ErrorChoice errorChoice = ErrorChoice::KEEP; // Choice for errors
-            SFilename_t inputString; // [?] String as input
-            SFilename_t inputFile; // [?] File as input
-            InputChoice inputChoice = InputChoice::NONE; // Choice for inputs
-            std::function<void(CommandReturn &)> returnFunction;
-            ReturnChoice returnChoice = ReturnChoice::WHEN_DONE;
-            unsigned int executionDuration = -1; // In milliseconds
-            InterruptChoice interruptChoice = InterruptChoice::NEVER;
+            /**
+             * Name or path to the executable.
+             */
+            Filename_t executable;
+
+            /**
+             * List of arguments.
+             * The interpretation may depend on the OS.
+             */
+            std::vector<std::string> arguments{};
+
+            /**
+             * Expected 'current working directory' of the child process.
+             * Empty = same as parent.
+             */
+            Filename_t workingDirectory;
+
+            std::shared_ptr<ConsoleOutputChoice> stdOutChoice = makeOutputToConsole();
+            std::shared_ptr<ConsoleOutputChoice> stdErrChoice = makeOutputToConsole();
+            std::shared_ptr<ConsoleInputChoice> stdInChoice = makeInputFromConsole();
         };
 
-        void Command(const CommandCall &call, CommandReturn &);
+        struct CommandOver {
+            int exitCode;
 
-        namespace Reboot
-        {
-            struct StdConsoleOutChoice {};
+            bool hasSucceeded() const {
+                return exitCode == EXIT_SUCCESS;
+            }
+        };
 
-            struct OutputToFile : StdConsoleOutChoice {
-               private:
-                const Filename_t filename;
-            };
+        struct CommandRunner {
+            /**
+             * Starts the process.
+             * @return this
+             */
+            virtual CommandRunner &start() = 0;
 
-            struct OutputToConsole : StdConsoleOutChoice {};
+            /**
+             * Kills the process, and only returns once the process has been successfully killed.
+             * Windows: uses "TerminateProcess" with param EXIT_FAILURE.
+             * Unix: uses "kill" to send a SIGKILL to the process.
+             * @return this
+             */
+            virtual CommandRunner &kill() = 0;
 
-            struct OutputSilenced : StdConsoleOutChoice {};
+            /**
+             * Returns true if the process has been started and is not finished yet.
+             */
+            virtual bool isRunning() = 0;
 
-            struct OutputToStringStream : StdConsoleOutChoice {
-               private:
-                std::istringstream iss;
+            /**
+             * Returns true if the process has been started and is finished.
+             */
+            virtual bool isDone() = 0;
 
-               public:
-                std::istringstream &getStringStream();
-            };
+            /**
+             * Blocks until the process finishes OR until the specified duration has elapsed.
+             * Returns true as soon as the process is finished.
+             * Returns false if the process is still running after that duration.
+             */
+            virtual bool waitFor(std::chrono::milliseconds duration) = 0;
 
-            struct StdConsoleInChoice {};
+            /**
+             * Blocks until the process finishes.
+             */
+            virtual void wait() = 0;
 
-            struct InputSomeFile : StdConsoleInChoice {
-               private:
-                const Filename_t filename;
-            };
+            /**
+             * If the process is finished, returns the corresponding CommandOver.
+             */
+            virtual const CommandOver &getCommandOver() = 0;
 
-            struct InputSomeString : StdConsoleInChoice {
-               private:
-                const Filename_t text;
-            };
+            /**
+             * Returns the process handle.
+             * Windows: HANDLE
+             * Unix: pid_t
+             */
+            virtual std::uintmax_t getHandle() = 0;
 
-            struct InputNothing : StdConsoleInChoice {};
+            virtual ~CommandRunner() = default;
+        };
 
-            struct CommandCall2 {
-                /**
-                 * Name or path to the executable.
-                 */
-                Filename_t executable;
+        std::shared_ptr<CommandRunner> runCommandAsync(const CommandCall &commandCall);
+        CommandOver runCommandAndWait(const CommandCall &commandCall);
 
-                /**
-                 * List of arguments.
-                 * The interpretation depends on the OS; we recommend using just 1 string.
-                 */
-                std::vector<Filename_t> arguments{};
+#if MF_WINDOWS
+        using Filesystem::WideFilename_t;
 
-                std::unique_ptr<StdConsoleOutChoice> stdOutChoice =
-                    std::make_unique<OutputToConsole>();
-                std::unique_ptr<StdConsoleOutChoice> stdErrChoice =
-                    std::make_unique<OutputToConsole>();
-                std::unique_ptr<StdConsoleInChoice> stdInChoice = std::make_unique<InputNothing>();
-            };
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToFile(const WideFilename_t &filename);
+        std::shared_ptr<ConsoleOutputChoice> makeOutputToIOStream(
+            std::basic_iostream<wchar_t> &stream);
 
-            struct CommandOver2 {
-                int exitCode = 0;
-            };
+        std::shared_ptr<ConsoleInputChoice> makeInputFromFile(const WideFilename_t &filename);
+        std::shared_ptr<ConsoleInputChoice> makeInputFromString(const std::wstring &string);
+        std::shared_ptr<ConsoleInputChoice> makeInputFromIOStream(
+            std::basic_iostream<wchar_t> &stream);
 
-            struct CommandAsyncReturn2 {
-                std::future<CommandOver2> futureCommandOver;
+        struct WideCommandCall {
+            /**
+             * Name or path to the executable.
+             */
+            WideFilename_t executable;
 
-                void tryToInterrupt();
-                void wait();
-                void waitFor(const std::chrono::duration &duration);
-                void getReturnCode();
-            };
+            /**
+             * List of arguments.
+             * The interpretation may depend on the OS.
+             */
+            std::vector<std::wstring> arguments{};
 
-            CommandAsyncReturn2 runCommandAsynchrone(const CommandCall2 &);
-            CommandOver2 runCommandSynchrously(const CommandCall2 &);
-        } // namespace Reboot
+            /**
+             * Expected 'current working directory' of the child process.
+             * Empty = same as parent.
+             */
+            WideFilename_t workingDirectory;
 
-        // TODO implement
-        // - Normal call
-        // - CMD specific call
-        // - PowerShell specific call
-        // - Bash specific call
-        // - Shell specific call
-        // - ZSH specific call
-        // - Script Bash
-        // - Script PowerShell
-        // - Script Shell
-        // - Script Bash
-        // - Get list of available stuff (bitfield: Bash, PowerShell, etc.)
-        // - Common structure of parameters: quiet option, etc.
+            std::shared_ptr<ConsoleOutputChoice> stdOutChoice = makeOutputToConsole();
+            std::shared_ptr<ConsoleOutputChoice> stdErrChoice = makeOutputToConsole();
+            std::shared_ptr<ConsoleInputChoice> stdInChoice = makeInputFromConsole();
+        };
 
+        std::shared_ptr<CommandRunner> runCommandAsync(const WideCommandCall &commandCall);
+
+        CommandOver runCommandAndWait(const WideCommandCall &commandCall);
+#endif
     } // namespace Command
 } // namespace MF
 #endif // MYWORKS_TEST0_COMMAND_HPP

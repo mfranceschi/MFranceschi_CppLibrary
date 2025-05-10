@@ -6,7 +6,9 @@
 #include <string>
 
 int main() {
-    std::string s;
-    std::cin >> s;
-    return s.size();
+    std::cout << "HEY THERE I AM STARTING!!" << std::endl << std::flush;
+    std::string inputString;
+    std::cin >> inputString;
+    std::cout << "HEY THERE I AM ENDING!!" << std::endl << std::flush;
+    return inputString.size();
 }
