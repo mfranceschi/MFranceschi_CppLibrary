@@ -20,6 +20,18 @@ namespace MF
     {
         using MF::SystemErrors::Errno;
 
+        struct AssignFd {
+            AssignFd(int fd) : sourceFd(fd) {
+            }
+
+            void toExistingFd(int destFd) const {
+                Errno::throwCurrentSystemErrorIf(dup2(sourceFd, destFd) < 0);
+            }
+
+           private:
+            const int sourceFd;
+        };
+
         struct StatefulCommand_NotStartedYet : StatefulCommand_Base {
             StatefulCommand_NotStartedYet(const CommandCall &commandCall)
                 : StatefulCommand_Base(
@@ -61,9 +73,9 @@ namespace MF
                 if (childProcessItem == 0) {
                     // Child process
 
-                    dup2(stdInChoice.getStreamItemForStdIn(), STDIN_FILENO);
-                    dup2(stdOutChoice.getStreamItemForStdOut(), STDOUT_FILENO);
-                    dup2(stdErrChoice.getStreamItemForStdErr(), STDERR_FILENO);
+                    AssignFd(stdInChoice.getStreamItemForStdIn()).toExistingFd(STDIN_FILENO);
+                    AssignFd(stdOutChoice.getStreamItemForStdOut()).toExistingFd(STDOUT_FILENO);
+                    AssignFd(stdErrChoice.getStreamItemForStdErr()).toExistingFd(STDERR_FILENO);
                     /*processInputStream->closeOnFork();
                     processOutputStream->closeOnFork();
                     processErrorStream->closeOnFork();*/
