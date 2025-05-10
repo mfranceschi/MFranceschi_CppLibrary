@@ -2,10 +2,8 @@
 #if !defined(DYNAMIC_LIBRARY_H)
 #    define DYNAMIC_LIBRARY_H
 
-#    include <exception>
-#    include <functional>
 #    include <memory>
-#    include <mutex>
+#    include <stdexcept>
 #    include <string>
 
 namespace MF
