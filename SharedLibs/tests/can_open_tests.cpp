@@ -13,7 +13,7 @@ TEST(CanOpenFunction, it_returns_true_if_library_can_be_opened) {
 
         AddToSearchPaths(lib.folder);
 
-        EXPECT_TRUE(CanOpen(lib.name));
+        EXPECT_TRUE(CanOpen(lib.name)) << "for library " << lib.name << " at index " << i;
 
         RemoveFromSearchPaths(lib.folder);
     }
@@ -28,7 +28,7 @@ TEST(CanOpenFunction, it_returns_false_if_library_cannot_be_opened) {
 
         AddToSearchPaths(lib.folder);
 
-        EXPECT_FALSE(CanOpen(lib.name));
+        EXPECT_FALSE(CanOpen(lib.name)) << "for library " << lib.name << " at index " << i;
 
         RemoveFromSearchPaths(lib.folder);
     }
