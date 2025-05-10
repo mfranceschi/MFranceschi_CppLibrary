@@ -5,6 +5,7 @@
 #ifndef MFRANCESCHI_CPPLIBRARIES_CONSOLE_HPP
 #define MFRANCESCHI_CPPLIBRARIES_CONSOLE_HPP
 
+#include <cstdint>
 #include <limits>
 #include <regex>
 #include <string>
