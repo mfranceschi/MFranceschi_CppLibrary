@@ -69,7 +69,8 @@ if(MF_IN_DEV)
         #cmake-lint: disable=readability/wonkycase
         FetchContent_Declare(
                 googletest
-                URL ${_MF_GTEST_GIT_URL}/archive/e2239ee6043f73722e7aa812a459f54a28552929.zip
+                GIT_REPOSITORY https://github.com/google/googletest.git
+                GIT_TAG         v1.16.0
         )
         # For Windows: Prevent overriding the parent project's compiler/linker settings
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)

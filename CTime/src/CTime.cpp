@@ -9,6 +9,7 @@
 #include <array>
 
 #if MF_WINDOWS
+#    include <cstring>
 #    include <iomanip>
 #    include <sstream>
 #endif

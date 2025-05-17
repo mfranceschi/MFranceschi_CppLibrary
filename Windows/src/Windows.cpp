@@ -14,33 +14,35 @@ namespace MF
     namespace Windows
     {
         void ShowErrorMessage(const char *functionName) {
-            // Source:
+            // Adapted from:
             // https://docs.microsoft.com/fr-fr/windows/win32/debug/retrieving-the-last-error-code
 
             // Retrieve the system error message for the last-error code
-            LPVOID lpMsgBuf;
-            LPVOID lpDisplayBuf;
-            DWORD dw = GetLastError();
+            
+            LPTSTR errorMessageBuffer = nullptr;
+            LPTSTR textToDisplayInMessageBox;
+            const DWORD lastError = GetLastError();
 
             FormatMessage(
                 FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                     FORMAT_MESSAGE_IGNORE_INSERTS,
-                nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0,
-                nullptr);
+                nullptr, lastError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), errorMessageBuffer,
+                0, nullptr);
 
             // Display the error message and exit the process
 
-            lpDisplayBuf = (LPVOID)LocalAlloc(
+            textToDisplayInMessageBox = static_cast<LPTSTR>(LocalAlloc(
                 LMEM_ZEROINIT,
-                (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)functionName) + 40) * sizeof(TCHAR));
+                (lstrlen((LPCTSTR)errorMessageBuffer) + lstrlen((LPCTSTR)functionName) + 40) *
+                    sizeof(TCHAR)));
             StringCchPrintf(
-                (LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR),
-                TEXT("%s failed with error %d: %s"), functionName, dw, lpMsgBuf);
-            MessageBox(nullptr, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+                textToDisplayInMessageBox, LocalSize(textToDisplayInMessageBox) / sizeof(TCHAR),
+                TEXT("%s failed with error %lu: %s"), functionName, lastError, errorMessageBuffer);
+            MessageBox(nullptr, (LPCTSTR)textToDisplayInMessageBox, TEXT("Error"), MB_OK);
 
-            LocalFree(lpMsgBuf);
-            LocalFree(lpDisplayBuf);
-            ExitProcess(dw);
+            LocalFree(errorMessageBuffer);
+            LocalFree(textToDisplayInMessageBox);
+            ExitProcess(lastError);
         }
 
         std::system_error GetCurrentSystemError() {

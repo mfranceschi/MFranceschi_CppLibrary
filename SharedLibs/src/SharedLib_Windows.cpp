@@ -92,7 +92,9 @@ namespace MF
                 std::string result = modulePath.data();
                 std::replace(result.begin(), result.end(), '\\', '/');
                 auto iterator = result.rfind(".DLL");
-                result.replace(iterator, 4, GetExtension());
+                if (iterator != std::string::npos) {
+                    result.replace(iterator, 4, GetExtension());
+                }
 
                 systemPath = result;
 
@@ -108,11 +110,17 @@ namespace MF
         };
 
         std::shared_ptr<SharedLib> OpenExplicitly(const std::string &libName) {
+            std::string fixedName =
+#    if MF_MINGW
+                "lib" + libName + ".dll";
+#    else
+                libName;
+#    endif
             HMODULE libHandle =
-                LoadLibraryExA(libName.data(), nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+                LoadLibraryExA(fixedName.data(), nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
             if (libHandle == nullptr) {
                 throw SharedLib::element_not_found_exception(
-                    "Could not open library with name " + libName);
+                    "Could not open library with name " + fixedName);
             }
 
             return std::make_shared<SharedLib_Windows>(libHandle);

@@ -34,10 +34,6 @@ namespace MF
 
         using ErrorCode_t = Errno::ErrorCode_t;
 
-        static std::string getErrorMessage_Strerror(ErrorCode_t errorCode) {
-            return strerror(errorCode);
-        }
-
 #if MF_HAS_strerror_localized
 #    error strerror_l
         static const locale_t theRawLocale =
@@ -105,7 +101,7 @@ namespace MF
 #elif MF_HAS_strerror_repeatable
             return getErrorMessage_Strerror_r(errorCode);
 #else
-            return getErrorMessage_Strerror(errorCode);
+            return strerror(errorCode);
 #endif
         }
 

@@ -12,8 +12,7 @@ namespace MF
 {
     namespace CTime
     {
-        /** Value corresponding to Asctime and Ctime, for use in Strftime. */
-        static constexpr const char *DEFAULT_STRFTIME_FORMAT = "%a %b %e %H:%M:%S %Y\n";
+        static constexpr const char *DEFAULT_STRFTIME_FORMAT = "%c";
 
         std::time_t Time();
         double Difftime(std::time_t time_end, std::time_t time_beg);
