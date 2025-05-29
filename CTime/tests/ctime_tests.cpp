@@ -22,7 +22,7 @@ TEST(CTime_Time, it_returns_the_time_at_1s_close) {
 }
 
 TEST(CTime_Localtime, it_returns_a_value) {
-    struct std::tm theDestination {};
+    struct std::tm theDestination{};
 
     bool success = Localtime(theDestination);
 
@@ -31,7 +31,7 @@ TEST(CTime_Localtime, it_returns_a_value) {
 }
 
 TEST(CTime_Gmtime, it_returns_a_value) {
-    struct std::tm theDestination {};
+    struct std::tm theDestination{};
 
     bool success = Gmtime(theDestination);
 
@@ -40,7 +40,7 @@ TEST(CTime_Gmtime, it_returns_a_value) {
 }
 
 TEST(CTime_LocaltimeReversed, it_returns_a_value) {
-    struct std::tm currentLocalTime {};
+    struct std::tm currentLocalTime{};
     bool success = Localtime(currentLocalTime);
     ASSERT_TRUE(success);
 
@@ -50,7 +50,7 @@ TEST(CTime_LocaltimeReversed, it_returns_a_value) {
 }
 
 TEST(CTime_GmtimeReversed, it_returns_a_value) {
-    struct std::tm currentGmtTime {};
+    struct std::tm currentGmtTime{};
     bool success = Gmtime(currentGmtTime);
     ASSERT_TRUE(success);
 
@@ -76,25 +76,10 @@ TEST(CTime_Mktime, it_returns_a_value) {
 }
 
 TEST(CTime_Strftime, it_returns_a_value) {
-    struct std::tm currentLocalTime {};
+    struct std::tm currentLocalTime{};
     bool success = Localtime(currentLocalTime);
     ASSERT_TRUE(success);
 
     std::string result = Strftime(currentLocalTime);
     EXPECT_NE(result, "") << "errno=" << errno;
-}
-
-TEST(CTime_Strptime, it_returns_a_value) {
-    struct std::tm currentLocalTime {};
-    bool success = Localtime(currentLocalTime);
-    ASSERT_TRUE(success);
-
-    std::string strfTimeResult = Strftime(currentLocalTime);
-    ASSERT_NE(strfTimeResult, "");
-
-    struct std::tm strpTimeResultTm {};
-    bool result = Strptime(strpTimeResultTm, strfTimeResult.c_str());
-
-    EXPECT_TRUE(result);
-    EXPECT_NE(strpTimeResultTm.tm_year, 0);
 }

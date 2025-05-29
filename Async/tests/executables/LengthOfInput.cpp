@@ -3,12 +3,8 @@
  */
 
 #include <iostream>
-#include <string>
 
 int main() {
-    std::cout << "HEY THERE I AM STARTING!!" << std::endl << std::flush;
-    std::string inputString;
-    std::cin >> inputString;
-    std::cout << "HEY THERE I AM ENDING!!" << std::endl << std::flush;
-    return inputString.size();
+    std::cin.seekg(0, std::ios::end);
+    return static_cast<int>(std::cin.tellg());
 }

@@ -209,7 +209,7 @@ TEST_F(CommandTestBase, LengthOfInput_FromFile) {
     // - File input works as intended
     commandCall.executable = TEXT(LengthOfInput_Executable);
     commandCall.stdInChoice = makeInputFromFile(TEXT(LOREM_IPSUM_TWO_LINES_FILE));
-    callCommand(95);
+    callCommand(174);
 }
 
 TEST_F(CommandTestBase, OneForEachStream) {

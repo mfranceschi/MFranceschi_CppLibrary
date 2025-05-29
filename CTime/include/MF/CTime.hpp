@@ -49,9 +49,6 @@ namespace MF
 
         /** Like strftime but returns a std::string. Returns empty string on failure. */
         std::string Strftime(const std::tm &src, const char *format = DEFAULT_STRFTIME_FORMAT);
-
-        /** Like strptime. */
-        bool Strptime(std::tm &dest, const char *src, const char *format = DEFAULT_STRFTIME_FORMAT);
     } // namespace CTime
 } // namespace MF
 

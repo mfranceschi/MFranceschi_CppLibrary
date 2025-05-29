@@ -95,22 +95,12 @@ namespace MF
             // https://en.cppreference.com/w/c/chrono/asctime
             static constexpr std::size_t BUFFER_SIZE_LIKE_CTIME = 25 + 1;
 
+            const auto cLocale = std::setlocale(LC_ALL, nullptr);
+            const auto cppLocale = std::locale();
+
             std::array<char, BUFFER_SIZE_LIKE_CTIME> buffer{0};
             size_t charsCount = std::strftime(buffer.data(), buffer.size(), format, &src);
             return charsCount ? buffer.data() : "";
-        }
-
-        bool Strptime(std::tm &dest, const char *src, const char *format) {
-#if MF_WINDOWS
-            // From https://stackoverflow.com/a/33542189
-
-            std::istringstream input(src);
-            input.imbue(std::locale(setlocale(LC_ALL, nullptr)));
-            input >> std::get_time(&dest, format);
-            return !input.fail();
-#else
-            return strptime(src, format, &dest) != nullptr;
-#endif
         }
     } // namespace CTime
 } // namespace MF
