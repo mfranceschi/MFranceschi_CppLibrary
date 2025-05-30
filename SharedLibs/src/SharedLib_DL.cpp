@@ -9,6 +9,8 @@
 #    include <dlfcn.h>
 #    include <link.h>
 
+#    include <mutex>
+
 #    include "MF/SharedLibs.hpp"
 #    include "SharedLibs_DL_internals.hpp"
 

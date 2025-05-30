@@ -1,5 +1,10 @@
 
-add_executable(MF_Async_Tests)
+add_executable(MF_Async_Tests
+        command_test_LengthOfFirstArg.cpp
+        command_test_ReturnNbArgs.cpp
+        command_test_HelloWorld.cpp
+        command_test_LengthOfInput.cpp
+        command_test_OneForEachStream.cpp)
 target_link_libraries(
         MF_Async_Tests
         PRIVATE
@@ -12,6 +17,7 @@ target_sources(
         MF_Async_Tests
         PRIVATE
             command_test.cpp
+            command_test_commons.hpp
 )
 
 function(mf_add_test_exec Name)

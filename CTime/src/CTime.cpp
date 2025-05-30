@@ -95,9 +95,6 @@ namespace MF
             // https://en.cppreference.com/w/c/chrono/asctime
             static constexpr std::size_t BUFFER_SIZE_LIKE_CTIME = 25 + 1;
 
-            const auto cLocale = std::setlocale(LC_ALL, nullptr);
-            const auto cppLocale = std::locale();
-
             std::array<char, BUFFER_SIZE_LIKE_CTIME> buffer{0};
             size_t charsCount = std::strftime(buffer.data(), buffer.size(), format, &src);
             return charsCount ? buffer.data() : "";
