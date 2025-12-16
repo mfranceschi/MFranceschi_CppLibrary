@@ -110,10 +110,11 @@ TEST(ListEnv, it_can_list_all) {
     ASSERT_FALSE(result.empty());
 
     for (const auto& pair : result) {
-        EXPECT_FALSE(pair.first.empty());
+        // Name must not be empty. Value can.
+        EXPECT_FALSE(pair.first.empty()) << "key=" << pair.first << " value=" << pair.second;
 
-        EXPECT_EQ(pair.first.find('='), std::string::npos);
-        EXPECT_EQ(pair.second.find('='), std::string::npos);
+        // Name must not contain equal sign. Value can.
+        EXPECT_EQ(pair.first.find('='), std::string::npos) << "key=" << pair.first << " value=" << pair.second;
     }
 
     EXPECT_EQ(result.size(), listNames().size());

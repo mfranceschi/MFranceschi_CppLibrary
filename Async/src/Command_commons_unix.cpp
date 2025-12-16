@@ -8,6 +8,8 @@
 #    include <fcntl.h>
 #    include <unistd.h>
 
+#    include <array>
+
 #    include "MF/SystemErrors.hpp"
 
 namespace MF
@@ -50,7 +52,7 @@ namespace MF
         }
 
         StreamItem openFileToWrite(const Filename_t &filename) {
-            StreamItem streamItem = open(filename.c_str(), O_WRONLY | O_CREAT);
+            StreamItem streamItem = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
             Errno::throwCurrentSystemErrorIf(streamItem == -1);
             return streamItem;
         }
@@ -60,7 +62,7 @@ namespace MF
         }
 
         void closeFd(int &fd) {
-            if (fd < 0) {
+            if (fd >= 0) {
                 close(fd);
                 fd = -1;
             }
